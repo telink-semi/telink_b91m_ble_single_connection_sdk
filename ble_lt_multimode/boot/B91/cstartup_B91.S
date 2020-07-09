@@ -1,0 +1,391 @@
+/********************************************************************************************************
+ * @file     cstartup_9518.s
+ *
+ * @brief    This is the source file for TLSR9518
+ *
+ * @author   Driver Group
+ * @date     Mar. 16, 2020
+ *
+ * @par      Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd.
+ *           All rights reserved.
+ *
+ *           The information contained herein is confidential property of Telink
+ *           Semiconductor (Shanghai) Co., Ltd. and is available under the terms
+ *           of Commercial License Agreement between Telink Semiconductor (Shanghai)
+ *           Co., Ltd. and the licensee or the terms described here-in. This heading
+ *           MUST NOT be removed from this file.
+ *
+ *           Licensees are granted free, non-transferable use of the information in this
+ *           file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
+ * @par      History:
+ *           1.initial release(Mar. 16, 2020)
+ *
+ * @version  A001
+ *
+ *******************************************************************************************************/
+
+    .section .vectors, "ax"
+
+    //.org  and linker's relaxation (-flto) cannot be used at the same time
+    //Pop corresponds to push. Before using .option norelax, use push to save the current .option configuration
+    //and then modify .option. After using norelax, use pop to restore
+	.option push
+	.option norelax
+    .org 0x0
+
+
+    .global _RESET_ENTRY
+ 	.type _RESET_ENTRY,@function
+
+    .align 2
+_RESET_ENTRY:
+	/* Decide whether this is an NMI or cold reset */
+	csrr t0, mcause
+	bnez t0, nmi_handler
+    j 		 _START
+
+    .org 0x20
+    .word ('T'<<24 | 'L'<<16 | 'N'<<8 | 'K')
+
+    .org 0x26
+    //.short (0x0003)           //READ:    cmd:1x, addr:1x, data:1x, dummy:0
+    //.short (0x070B)           //FREAD:   cmd:1x, addr:1x, data:1x, dummy:8
+    .short (0x173B)           //DREAD:   cmd:1x, addr:1x, data:2x, dummy:8
+    //.short (0x53BB)           //X2READ:  cmd:1x, addr:2x, data:2x, dummy:4
+    //.short (0x276B)           //QREAD:   cmd:1x, addr:1x, data:4x, dummy:8
+    //.short (0x65EB)             //X4READ:  cmd:1x, addr:4x, data:4x, dummy:6
+    .option pop
+    .align 2
+
+_START:
+
+#if 0
+	// add debug, PB4 output 1
+	lui		t0,0x80140 			//0x8014030a
+	li		t1, 0xef
+	li		t2, 0x10
+	sb		t1 , 0x30a(t0)		 //0x8014030a  PB oen     =  0xef
+	sb		t2 , 0x30b(t0)		 //0x8014030b  PB output  =  0x10
+#endif
+	/* Initialize global pointer */
+    .option push
+    .option norelax
+    la     gp, __global_pointer$
+    .option pop
+
+	/* Initialize stack pointer */
+    la     t0, _STACK_TOP
+    mv     sp, t0
+
+#ifdef __nds_execit
+	/* Initialize EXEC.IT table */
+	la t0, _ITB_BASE_
+	csrw uitb, t0
+#endif
+
+#ifdef __riscv_flen
+	/* Enable FPU */
+	li t0, 0x00006000
+	csrrs t0, mstatus, t0
+	/* Initialize FCSR */
+	fscsr zero
+#endif
+
+    /* Initial machine trap-vector Base */
+    la     t0, __vectors
+    csrw   mtvec, t0
+
+    /* Enable vectored external plic interrupt */
+    csrsi  mmisc_ctl, 2
+
+    /* Enable I/D-Cache */
+    csrr   t0,  mcache_ctl
+    ori    t0,  t0,  1  #/I-Cache
+    ori    t0,  t0,  2  #/D-Cache
+    csrw   mcache_ctl,  t0
+    fence.i
+	/* Move retention reset from flash to sram */
+_RETENTION_RESET_INIT:
+
+    la     t1, _RETENTION_RESET_LMA_START
+    la     t2, _RETENTION_RESET_VMA_START
+    la     t3, _RETENTION_RESET_VMA_END
+_RETENTION_RESET_BEGIN:
+    bleu    t3, t2, _RETENTION_DATA_INIT
+    lw     t0, 0(t1)
+    sw     t0, 0(t2)
+    addi   t1, t1, 4
+    addi   t2, t2, 4
+    j      _RETENTION_RESET_BEGIN
+
+	/* Move retention from flash to sram */
+_RETENTION_DATA_INIT:
+
+    la     t1, _RETENTION_DATA_LMA_START
+    la     t2, _RETENTION_DATA_VMA_START
+    la     t3, _RETENTION_DATA_VMA_END
+_RETENTION_DATA_INIT_BEGIN:
+    bleu   t3, t2, _RAMCODE_INIT
+    lw     t0, 0(t1)
+    sw     t0, 0(t2)
+    addi   t1, t1, 4
+    addi   t2, t2, 4
+    j      _RETENTION_DATA_INIT_BEGIN
+
+	/* Move ramcode from flash to sram */
+_RAMCODE_INIT:
+
+    la     t1, _RAMCODE_LMA_START
+    la     t2, _RAMCODE_VMA_START
+    la     t3, _RAMCODE_VMA_END
+_RAMCODE_INIT_BEGIN:
+    bleu    t3, t2, _DATA_INIT
+    lw     t0, 0(t1)
+    sw     t0, 0(t2)
+    addi   t1, t1, 4
+    addi   t2, t2, 4
+    j      _RAMCODE_INIT_BEGIN
+
+
+	/* Move Data from flash to sram */
+_DATA_INIT:
+    la     t1, _DATA_LMA_START
+    la     t2, _DATA_VMA_START
+    la     t3, _DATA_VMA_END
+_DATA_INIT_BEGIN:
+    bleu   t3, t2, _ZERO_BSS
+    lw     t0, 0(t1)
+    sw     t0, 0(t2)
+    addi   t1, t1, 4
+    addi   t2, t2, 4
+    j      _DATA_INIT_BEGIN
+
+
+
+	/* Zero .bss section in sram */
+_ZERO_BSS:
+    lui    t0, 0
+    addi   t0, t0, 0
+    la     t2, _BSS_VMA_START
+    la     t3, _BSS_VMA_END
+_ZERO_BSS_BEGIN:
+    bleu   t3, t2, _FILL_STK
+    sw     t0, 0(t2)
+    addi   t2, t2, 4
+    j      _ZERO_BSS_BEGIN
+
+	/* Fill the remaining section in sram */
+_FILL_STK:
+
+    lui    t0, 0x55555
+    addi   t0, t0, 0x555
+    la     t2, _BSS_VMA_END
+    la     t3, _STACK_TOP
+_FILL_STK_BEGIN:
+    bleu   t3, t2, _MAIN_FUNC
+    sw     t0, 0(t2)
+    addi   t2, t2, 4
+    j      _FILL_STK_BEGIN
+
+	/* Jump to the main function */
+_MAIN_FUNC:
+    nop
+
+    la     t0, main
+    jalr   t0
+
+    nop
+    nop
+    nop
+    nop
+    nop
+_END:
+    j    _END
+
+
+
+	.weak nmi_handler
+nmi_handler:
+1:	j 	 1b
+
+
+ .section .retention_reset, "ax"
+
+
+    .global _IRESET_ENTRY
+ 	.type _IRESET_ENTRY,@function
+
+    .align 2
+_IRESET_ENTRY:
+	/* Decide whether this is an NMI or cold reset */
+	csrr t0, mcause
+	beqz t0, _ISTART
+	call nmi_handler
+	j 		_ISTART
+
+    .align 2
+
+_ISTART:
+#if 0
+	// add debug, PB4 output 1
+	lui		t0,0x80140 			//0x8014030a
+	li		t1, 0xef
+	li		t2, 0x10
+	sb		t1 , 0x30a(t0)		 //0x8014030a  PB oen     =  0xef
+	sb		t2 , 0x30b(t0)		 //0x8014030b  PB output  =  0x10
+#endif
+	/* Initialize global pointer */
+    .option push
+    .option norelax
+    la     gp, __global_pointer$
+    .option pop
+
+	/* Initialize stack pointer */
+    la     t0, _STACK_TOP
+    mv     sp, t0
+
+#ifdef __nds_execit
+	/* Initialize EXEC.IT table */
+	la t0, _ITB_BASE_
+	csrw uitb, t0
+#endif
+
+#ifdef __riscv_flen
+	/* Enable FPU */
+	li t0, 0x00006000
+	csrrs t0, mstatus, t0
+	/* Initialize FCSR */
+	fscsr zero
+#endif
+
+    /* Initial machine trap-vector Base */
+    la     t0, __vectors
+    csrw   mtvec, t0
+
+    /* Enable vectored external plic interrupt */
+    csrsi  mmisc_ctl, 2
+
+    /* Enable I/D-Cache */
+    csrr   t0,  mcache_ctl
+    ori    t0,  t0,  1  #/I-Cache
+    ori    t0,  t0,  2  #/D-Cache
+    csrw   mcache_ctl,  t0
+    fence.i
+
+MULTI_ADDRESS_BEGIN:
+	lui		t0 , 0x80140
+	la		t1 , tl_multi_addr
+	lw		t2 , 0(t1)
+	sw		t2 , 0x104(t0)			 //tl_multi_addr->0x80140104
+
+#if 0
+	/* Move ramcode from flash to sram */
+_IRAMCODE_INIT:
+
+    la     t1, _RAMCODE_LMA_START
+    la     t2, _RAMCODE_VMA_START
+    la     t3, _RAMCODE_VMA_END
+_IRAMCODE_INIT_BEGIN:
+    bleu   t3, t2, _IDATA_INIT
+    lw     t0, 0(t1)
+    sw     t0, 0(t2)
+    addi   t1, t1, 4
+    addi   t2, t2, 4
+    j      _IRAMCODE_INIT_BEGIN
+#endif
+
+	/* Move Data from flash to sram */
+_IDATA_INIT:
+    la     t1, _DATA_LMA_START
+    la     t2, _DATA_VMA_START
+    la     t3, _DATA_VMA_END
+_IDATA_INIT_BEGIN:
+    bleu   t3, t2, _IZERO_BSS
+    lw     t0, 0(t1)
+    sw     t0, 0(t2)
+    addi   t1, t1, 4
+    addi   t2, t2, 4
+    j      _IDATA_INIT_BEGIN
+
+
+
+	/* Zero .bss section in sram */
+_IZERO_BSS:
+    lui    t0, 0
+    addi   t0, t0, 0
+    la     t2, _BSS_VMA_START
+    la     t3, _BSS_VMA_END
+_IZERO_BSS_BEGIN:
+    bleu   t3, t2, _IFILL_STK
+    sw     t0, 0(t2)
+    addi   t2, t2, 4
+    j      _IZERO_BSS_BEGIN
+
+	/* Fill the remaining section in sram */
+_IFILL_STK:
+
+    lui    t0, 0x55555
+    addi   t0, t0, 0x555
+    la     t2, _BSS_VMA_END
+    la     t3, _STACK_TOP
+_IFILL_STK_BEGIN:
+    bleu   t3, t2, _IMAIN_FUNC
+    sw     t0, 0(t2)
+    addi   t2, t2, 4
+    j      _IFILL_STK_BEGIN
+
+	/* Jump to the main function */
+_IMAIN_FUNC:
+    nop
+
+    la     t0, main
+    jalr   t0
+
+    nop
+    nop
+    nop
+    nop
+    nop
+_IEND:
+    j    _IEND
+
+
+.text
+	.global default_irq_entry
+	.align 2
+
+default_irq_entry:
+1:	j 1b
+
+       .weak trap_handler
+
+ trap_handler:
+1:	j 1b
+
+    .macro INTERRUPT num
+	.weak entry_irq\num
+	.set entry_irq\num, default_irq_entry
+	.long entry_irq\num
+	.endm
+
+
+
+#define VECTOR_NUMINTRS         63
+
+   	.section .rodata
+
+	.global __vectors
+	.balign 256
+
+
+__vectors:
+	/* Trap vector */
+	.long trap_entry
+
+	/* PLIC interrupt vector */
+	.altmacro
+	.set irqno, 1
+	.rept VECTOR_NUMINTRS/*  .rept  .endr  */
+	INTERRUPT %irqno
+	.set irqno, irqno+1
+	.endr
