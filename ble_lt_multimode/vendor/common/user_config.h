@@ -34,6 +34,8 @@
 	#include "../B91_feature_test/app_config.h"
 #elif(__PROJECT_B91_MASTER_KMA_DONGLE__)
 	#include "../B91_master_kma_dongle/app_config.h"
+#elif(__PROJECT_B91_INTERNAL_TEST__)
+	#include "../B91_internal_test/app_config.h"
 #elif(__PROJECT_B91_DEBUG_DEMO__)
 	#include "../B91_debug_demo/app_config.h"
 #else

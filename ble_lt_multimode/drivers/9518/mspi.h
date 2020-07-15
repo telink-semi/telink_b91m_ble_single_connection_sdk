@@ -29,76 +29,96 @@
 #include "compiler.h"
 #include "gpio.h"
 #include "reg_include/register_9518.h"
-
- /**
+/**
   * @brief     This function servers to set the spi wait.
   * @param[in] none
   * @return    none
   */
- void mspi_wait(void);
+_attribute_ram_code_without_oninline static inline void mspi_wait(void){
+	while(reg_mspi_status & FLD_MSPI_BUSY);
+}
+
 
 /**
  * @brief     This function servers to set the spi high level.
  * @param[in] none
  * @return    none
  */
-void mspi_fm_rd_en(void);
+_attribute_ram_code_without_oninline static inline  void mspi_fm_rd_en(void){
+	reg_mspi_fm |= FLD_MSPI_RD_TRIG_EN;
+}
 
 /**
  * @brief     This function servers to set the spi high level.
  * @param[in] none
  * @return    none
  */
-void mspi_fm_rd_dis(void);
+_attribute_ram_code_without_oninline static inline void mspi_fm_rd_dis(void){
+	reg_mspi_fm &= ~FLD_MSPI_RD_TRIG_EN;
+}
 
 /**
  * @brief     This function servers to set the spi high level.
  * @param[in] none
  * @return    none
  */
-void mspi_high(void);
+_attribute_ram_code_without_oninline static inline void mspi_high(void){
+	reg_mspi_fm |= FLD_MSPI_CSN;
+}
 
 /**
  * @brief     This function servers to set the spi low level.
  * @param[in] none
  * @return    none
  */
-void mspi_low(void);
-
+_attribute_ram_code_without_oninline static inline void mspi_low(void){
+	reg_mspi_fm &= ~FLD_MSPI_CSN;
+}
 /**
  * @brief     This function servers to gets the spi data.
  * @param[in] none.
  * @return    the spi data.
  */
-unsigned char mspi_get(void);
+_attribute_ram_code_without_oninline static inline unsigned char mspi_get(void){
+	return reg_mspi_data;
+}
+
 
 /**
  * @brief     This function servers to write the spi.
  * @param[in] c - the char need to be write.
  * @return    none
  */
-void mspi_write(unsigned char c);
+_attribute_ram_code_without_oninline static inline  void mspi_write(unsigned char c){
+	reg_mspi_data = c;
+}
 
 /**
  * @brief     This function servers to control the write.
  * @param[in] c - need to be write.
  * @return    none
  */
-void mspi_fm_write(unsigned char c);
+_attribute_ram_code_without_oninline static inline void mspi_fm_write(unsigned char c){
+	reg_mspi_fm = c;
+}
 
 /**
  * @brief     This function servers to spi read.
  * @param[in] none.
  * @return    read reault.
  */
-unsigned char mspi_read(void);
+_attribute_ram_code_without_oninline static inline unsigned char mspi_read(void){
+	mspi_write(0);		// dummy, issue clock
+	mspi_wait();
+	return mspi_get();
+}
 
 /**
  * @brief     This function serves to Stop XIP operation before flash.
  * @param[in] none.
  * @return    none.
  */
-static inline void mspi_stop_xip(void)
+_attribute_ram_code_without_oninline static inline void mspi_stop_xip(void)
 {
 	mspi_wait();	//wait xip busy=0
 	mspi_high();	//mspi_cn=1, stop xip read

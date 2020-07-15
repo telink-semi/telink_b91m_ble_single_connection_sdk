@@ -11,13 +11,22 @@
 #include "compiler.h"
 #include "./reg_include/aes_reg.h"
 
-static inline void aes_reset(void)
-{
-	REG_ADDR32(0x1600b0) = BIT(7);
-}
+/**
+ * @brief     This function refer to encrypt. AES module register must be used by word.
+ * @param[in] Key - the key of encrypt.
+ * @param[in] plaintext - the plaintext of encrypt.
+ * @param[in] result - the result of encrypt.
+ * @return    none
+ */
+int aes_encrypt(unsigned char *Key, unsigned char* plaintext, unsigned char *result);
 
-int aes_encrypt(unsigned int *Key, unsigned int* cipher_data);
-
-int aes_decrypt(unsigned int *Key, unsigned int* cipher_data);
+/**
+ * @brief     This function refer to encrypt. AES module register must be used by word.
+ * @param[in] Key - the key of decrypt.
+ * @param[in] decrypttext - the decrypttext of decrypt.
+ * @param[in] result - the result of decrypt.
+ * @return    none
+ */
+int aes_decrypt(unsigned char *Key, unsigned char* decrypttext, unsigned char *result);
 
 #endif /* _AES_H_ */

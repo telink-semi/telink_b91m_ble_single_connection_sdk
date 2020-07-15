@@ -39,7 +39,7 @@
 
 
 
-#define		MY_RF_POWER_INDEX					RF_POWER_P3p01dBm
+#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
 
 
 #define		BLE_DEVICE_ADDRESS_TYPE 			BLE_DEVICE_ADDRESS_PUBLIC
@@ -54,6 +54,26 @@ _attribute_data_retention_	own_addr_type_t 	app_own_address_type = OWN_ADDRESS_P
 //////////////////////////////////////////////////////////////////////////////
 //	 Adv Packet, Response Packet
 //////////////////////////////////////////////////////////////////////////////
+
+#if(0)
+
+
+	const u8	tbl_advData[] = {
+		 17,   0x09, 'E','a','g','l','e',' ', 's','a','m', 'p','l','e', 'T','e','s', 't',
+		 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
+		 0x03, 0x19, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
+		 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
+	};
+
+	const u8	tbl_scanRsp [] = {
+		 17,   0x09, 'E','a','g','l','e',' ', 's','a','m', 'p','l','e', 'T','e','s', 't',
+		 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
+		 0x03, 0x19, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
+		 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
+	};
+
+#else
+
 const u8	tbl_advData[] = {
 	 0x05, 0x09, 'e', 'H', 'I', 'D',
 	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
@@ -65,6 +85,7 @@ const u8	tbl_scanRsp [] = {
 		 0x08, 0x09, 'e', 'S', 'a', 'm', 'p', 'l', 'e',
 	};
 
+#endif
 
 
 _attribute_data_retention_	int device_in_connection_state;
@@ -190,7 +211,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 {
-//	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
 
@@ -504,7 +525,7 @@ void main_loop (void)
 		static u32 tick_data = 0;
 
 		DBG_CHN6_HIGH;
-		if(sys_timeout(tick_str, 500*1000)){
+		if(clock_time_exceed(tick_str, 500*1000)){
 			tick_str = clock_time();
 			test_cnt1 ++;
 			my_dump_str_data (1, "test_cnt:", &test_cnt1, 4);
@@ -512,7 +533,7 @@ void main_loop (void)
 		DBG_CHN6_LOW;
 
 		DBG_CHN7_HIGH;
-		if(sys_timeout(tick_logEvt, 9*1000)){
+		if(clock_time_exceed(tick_logEvt, 9*1000)){
 			tick_logEvt = clock_time();
 			log_tick(1, SLEV_timestamp);
 			log_event(1, SLEV_test_event);
@@ -521,7 +542,7 @@ void main_loop (void)
 
 
 		DBG_CHN8_HIGH;
-		if(sys_timeout(tick_logTask, 13*1000)){
+		if(clock_time_exceed(tick_logTask, 13*1000)){
 			tick_logTask = clock_time();
 
 			log_task(1, SL01_test_task, 1);
@@ -532,7 +553,7 @@ void main_loop (void)
 
 
 		DBG_CHN9_HIGH;
-		if(sys_timeout(tick_data, 7*1000)){
+		if(clock_time_exceed(tick_data, 7*1000)){
 			tick_data = clock_time();
 			test_cnt2 ++;
 			log_tick(1, SLEV_timestamp);

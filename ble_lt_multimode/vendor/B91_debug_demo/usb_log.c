@@ -99,7 +99,7 @@ void main_loop(void)
 	    static u32 tick_t2 = 0;
 		int i;
 		u32 len;
-		if (sys_timeout (tick_t1, 100000))
+		if (clock_time_exceed (tick_t1, 100000))
 		{
 
 			tick_t1 = clock_time ();
@@ -122,7 +122,7 @@ void main_loop(void)
 
 		}
 
-		if (sys_timeout (tick_t2, 220))
+		if (clock_time_exceed (tick_t2, 220))
 		{
 
 			tick_t2 = clock_time ();

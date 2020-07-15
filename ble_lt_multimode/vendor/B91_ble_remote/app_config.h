@@ -28,8 +28,8 @@
 #define BLE_APP_PM_ENABLE					0
 #define PM_DEEPSLEEP_RETENTION_ENABLE		0
 #define TEST_CONN_CURRENT_ENABLE            0 //test connection current, disable UI to have a pure power
-#define BLE_REMOTE_SECURITY_ENABLE      	0  //TODO, add SMP to test
-
+#define BLE_REMOTE_SECURITY_ENABLE      	1
+#define REMOTE_IR_ENABLE					1
 #define BLE_AUDIO_ENABLE					1
 ////////////////////////// AUDIO CONFIG (RCU board) /////////////////////////////
 #if (BLE_AUDIO_ENABLE)
@@ -54,7 +54,7 @@
 
 #endif
 
-#define	UDB_DEBUG_EN						1
+#define	UDB_DEBUG_EN						0
 
 
 #if (UDB_DEBUG_EN)
@@ -95,8 +95,12 @@
 			#define		KB_MAP_NORMAL	{	CR_VOL_UP,		VK_1,	 \
 											CR_VOL_DN,		VOICE }
 
-
-
+#if REMOTE_IR_ENABLE
+			#define			IR_VOL_UP		0x0b
+			#define 		IR_VK_1			0x01
+			#define			IR_VOL_DN		0x0c
+			#define 		IR_HOME			0x24
+#endif
 			//////////////////// KEY CONFIG (EVK board) ///////////////////////////
 			#define  KB_DRIVE_PINS  {GPIO_PC2, GPIO_PC0}
 			#define  KB_SCAN_PINS   {GPIO_PC3, GPIO_PC1}
@@ -221,7 +225,7 @@
 
 
 /////////////////// Clock  /////////////////////////////////
-#define CLOCK_SYS_CLOCK_HZ  	16000000
+#define CLOCK_SYS_CLOCK_HZ  	24000000
 
 enum{
 	CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,

@@ -73,16 +73,12 @@ _attribute_data_retention_	my_fifo_t	blt_txfifo = {
 
 
 
+#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
 
-#if (MCU_CORE_TYPE == MCU_CORE_8278)
-	#define		MY_RF_POWER_INDEX					RF_POWER_P3p50dBm
-#else
-	#define		MY_RF_POWER_INDEX					RF_POWER_P3p01dBm
-#endif
 
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {
-//	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
 
@@ -171,7 +167,7 @@ void feature_soft_timer_test_init_normal(void)
 	//for 1M  Flash, flash_sector_mac_address equals to 0xFF000
 	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
-//	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();   //mandatory
@@ -250,7 +246,7 @@ _attribute_ram_code_ void feature_soft_timer_test_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
 	blc_ll_initBasicMCU();   //mandatory
-//	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 	blc_ll_recoverDeepRetention();
 

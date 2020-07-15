@@ -68,8 +68,8 @@ int user_manual_paring;
 const u8 	telink_adv_trigger_paring[] = {5, 0xFF, 0x11, 0x02, 0x01, 0x00};
 const u8 	telink_adv_trigger_unpair[] = {5, 0xFF, 0x11, 0x02, 0x01, 0x01};
 
-const u8 	telink_adv_trigger_paring_8258[] = {7, 0xFF, 0x11, 0x02, 0x01, 0x00, 0x58, 0x82};
-const u8 	telink_adv_trigger_unpair_8258[] = {7, 0xFF, 0x11, 0x02, 0x01, 0x01, 0x58, 0x82};
+const u8 	telink_adv_trigger_paring_8258[] = {7, 0xFF, 0x11, 0x02, 0x01, 0x00, 0x18, 0x95};
+const u8 	telink_adv_trigger_unpair_8258[] = {7, 0xFF, 0x11, 0x02, 0x01, 0x01, 0x18, 0x95};
 
 
 #if (BLE_HOST_SIMPLE_SDP_ENABLE)
@@ -245,6 +245,7 @@ int blm_le_adv_report_event_handle(u8 *p)
 
 	if(master_auto_connect || user_manual_paring)
 	{
+		DBG_CHN8_TOGGLE;
 		if((pa->event_type == ADV_REPORT_EVENT_TYPE_ADV_IND) || (pa->event_type == ADV_REPORT_EVENT_TYPE_DIRECT_IND)){
 			//send create connection cmd to controller, trigger it switch to initiating state, after this cmd,
 			//controller will scan all the adv packets it received but not report to host, to find the specified

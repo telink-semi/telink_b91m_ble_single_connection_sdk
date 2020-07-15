@@ -51,4 +51,5 @@
 
 #include "rf.h"
 #include "rf_pa.h"
-
+#include "lpc.h"
+#include "clock.h"

@@ -56,7 +56,7 @@ void analog_write_reg32(u8 addr, u32 data);
  * @param[in]  len - the length of read value.
  * @return     none.
  */
-//void analog_read_buff(unsigned char addr, unsigned char* buff, int len);
+void analog_read_buff(unsigned char addr, unsigned char *buff, int len);
 
 /**
  * @brief      This function serves to analog register write.
@@ -65,9 +65,7 @@ void analog_write_reg32(u8 addr, u32 data);
  * @param[in]  len - the length of write value.
  * @return     none.
  */
-
-//void analog_write_buff(unsigned char addr, unsigned char* buff, int len);
-
+void analog_write_buff(unsigned char addr, unsigned char *buff, int len);
 
 
 /**

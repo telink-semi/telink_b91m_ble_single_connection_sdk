@@ -36,6 +36,133 @@ typedef enum {
 } RF_PATxPinDef;
 
 
+/**
+ *  @brief  Define power list of RF
+ */
+typedef enum {
+	 /*VBAT*/
+	 RF_POWER_P9p11dBm = 63, //  11.26 dbm
+	 RF_POWER_P9p05dBm = 61, //  11.09 dbm
+	 RF_POWER_P9p00dBm = 58, //  10.83 dbm
+	 RF_POWER_P8p95dBm  = 56, //  10.62 dbm
+	 RF_POWER_P8p90dBm  = 53, //  10.30 dbm
+	 RF_POWER_P8p80dBm  = 51, // 10.05 dbm
+	 RF_POWER_P8p70dBm  = 49, //   9.79 dbm
+	 RF_POWER_P8p65dBm  = 47, //   9.54 dbm
+	 RF_POWER_P8p57dBm  = 45, //   9.23 dbm
+	 RF_POWER_P8p46dBm  = 43, //   8.92 dbm
+	 RF_POWER_P8p39dBm  = 41, //   8.57 dbm
+	 RF_POWER_P8p30dBm  = 39, //   8.20 dbm
+	 RF_POWER_P8p20dBm  = 37, //   7.80 dbm
+	 RF_POWER_P8p05dBm  = 35, //   7.37 dbm
+	 RF_POWER_P7p91dBm  = 33, //   6.91 dbm
+	 RF_POWER_P7p73dBm  = 31, //   6.45 dbm
+	 RF_POWER_P7p65dBm  = 29, //   5.92 dbm
+	 RF_POWER_P7p45dBm  = 27, //   5.33 dbm
+	 RF_POWER_P7p21dBm  = 25, //   4.69 dbm
+	 RF_POWER_P6p98dBm  = 23, //   3.99 dbm
+	 /*VANT*/
+	 RF_POWER_P4p35dBm  = BIT(7) | 63,   //   3.50 dbm
+	 RF_POWER_P4p26dBm  = BIT(7) | 61,   //   3.33 dbm
+	 RF_POWER_P4p21dBm  = BIT(7) | 59,   //   3.13 dbm
+	 RF_POWER_P4p11dBm  = BIT(7) | 57,   //   2.93 dbm
+	 RF_POWER_P4p01dBm  = BIT(7) | 54,   //   2.60 dbm
+	 RF_POWER_P3p93dBm  = BIT(7) | 52,   //   2.36 dbm
+	 RF_POWER_P3p83dBm  = BIT(7) | 50,   //   2.10 dbm
+	 RF_POWER_P3p73dBm  = BIT(7) | 48,   //   1.83 dbm
+	 RF_POWER_P3p54dBm  = BIT(7) | 46,   //   1.56 dbm
+	 RF_POWER_P3p46dBm  = BIT(7) | 44,   //   1.25 dbm
+	 RF_POWER_P3p25dBm  = BIT(7) | 41,   //   0.71 dbm
+	 RF_POWER_P3p11dBm  = BIT(7) | 40,   //   0.52 dbm
+	 RF_POWER_P2p79dBm  = BIT(7) | 36,   //  -0.28 dbm
+	 RF_POWER_P2p66dBm  = BIT(7) | 35,   //  -0.51 dbm
+	 RF_POWER_P2p54dBm  = BIT(7) | 34,   //  -0.74 dbm
+	 RF_POWER_P2p32dBm  = BIT(7) | 32,   //  -1.21 dbm
+	 RF_POWER_P2p28dBm  = BIT(7) | 30,   //  -1.69 dbm
+	 RF_POWER_P2p11dBm  = BIT(7) | 28,   //  -2.23 dbm
+	 RF_POWER_P1p72dBm  = BIT(7) | 26,   //  -2.84 dbm
+	 RF_POWER_P1p29dBm  = BIT(7) | 24,   //  -3.48 dbm
+	 RF_POWER_P0p80dBm  = BIT(7) | 22,   //  -4.18 dbm
+	 RF_POWER_P0p01dBm  = BIT(7) | 20,   //  -4.97 dbm
+	 RF_POWER_N0p53dBm  = BIT(7) | 18,   //  -5.85 dbm
+	 RF_POWER_N1p37dBm  = BIT(7) | 16,   //  -6.83 dbm
+	 RF_POWER_N2p01dBm  = BIT(7) | 14,   //  -7.88 dbm
+	 RF_POWER_N3p37dBm  = BIT(7) | 12,   //  -9.14 dbm
+	 RF_POWER_N4p77dBm  = BIT(7) | 10,   //-10.70 dbm
+	 RF_POWER_N6p54dBm = BIT(7) | 8,   //  -12.57 dbm
+	 RF_POWER_N8p78dBm = BIT(7) | 6,   //  -15.01 dbm
+	 RF_POWER_N12p06dBm = BIT(7) | 4,   //  -18.40 dbm
+	 RF_POWER_N17p83dBm = BIT(7) | 2,   //  -24.28 dbm
+	 RF_POWER_N23p54dBm = BIT(7) | 1,   //  -30.33 dbm
+
+	 RF_POWER_N30dBm    = 0xff,         //  -30 dbm
+	 RF_POWER_N50dBm    = BIT(7) | 0,   //  -50 dbm
+
+} RF_PowerTypeDef;
+
+extern const RF_PowerTypeDef rf_power_Level_list[60];
+/**
+ *  @brief  Define power index list of RF
+ */
+typedef enum {
+	 /*VBAT*/
+	 RF_POWER_INDEX_P9p11dBm,
+	 RF_POWER_INDEX_P9p05dBm,
+	 RF_POWER_INDEX_P9p00dBm,
+	 RF_POWER_INDEX_P8p95dBm,
+	 RF_POWER_INDEX_P8p90dBm,
+	 RF_POWER_INDEX_P8p80dBm,
+	 RF_POWER_INDEX_P8p70dBm,
+	 RF_POWER_INDEX_P8p65dBm,
+	 RF_POWER_INDEX_P8p57dBm,
+	 RF_POWER_INDEX_P8p16dBm,
+	 RF_POWER_INDEX_P8p39dBm,
+	 RF_POWER_INDEX_P8p30dBm,
+	 RF_POWER_INDEX_P8p20dBm,
+	 RF_POWER_INDEX_P8p05dBm,
+	 RF_POWER_INDEX_P7p91dBm,
+	 RF_POWER_INDEX_P7p73dBm,
+	 RF_POWER_INDEX_P7p65dBm,
+	 RF_POWER_INDEX_P7p45dBm,
+	 RF_POWER_INDEX_P7p21dBm,
+	 RF_POWER_INDEX_P6p98dBm,
+	 /*VANT*/
+	 RF_POWER_INDEX_P4p35dBm,
+	 RF_POWER_INDEX_P4p26dBm,
+	 RF_POWER_INDEX_P4p21dBm,
+	 RF_POWER_INDEX_P4p11dBm,
+	 RF_POWER_INDEX_P4p01dBm,
+	 RF_POWER_INDEX_P3p93dBm,
+	 RF_POWER_INDEX_P3p83dBm,
+	 RF_POWER_INDEX_P3p73dBm,
+	 RF_POWER_INDEX_P3p54dBm,
+	 RF_POWER_INDEX_P3p46dBm,
+	 RF_POWER_INDEX_P3p25dBm,
+	 RF_POWER_INDEX_P3p11dBm,
+	 RF_POWER_INDEX_P2p79dBm,
+	 RF_POWER_INDEX_P2p66dBm,
+	 RF_POWER_INDEX_P2p54dBm,
+	 RF_POWER_INDEX_P2p32dBm,
+	 RF_POWER_INDEX_P2p28dBm,
+	 RF_POWER_INDEX_P2p11dBm,
+	 RF_POWER_INDEX_P1p72dBm,
+	 RF_POWER_INDEX_P1p29dBm,
+	 RF_POWER_INDEX_P0p80dBm,
+	 RF_POWER_INDEX_P0p01dBm,
+	 RF_POWER_INDEX_N0p53dBm,
+	 RF_POWER_INDEX_N1p37dBm,
+	 RF_POWER_INDEX_N2p01dBm,
+	 RF_POWER_INDEX_N3p37dBm,
+	 RF_POWER_INDEX_N4p77dBm,
+	 RF_POWER_INDEX_N6p54dBm,
+	 RF_POWER_INDEX_N8p78dBm,
+	 RF_POWER_INDEX_N12p06dBm,
+	 RF_POWER_INDEX_N17p83dBm,
+	 RF_POWER_INDEX_N23p54dBm,
+} RF_PowerIndexTypeDef;
+
+
+
 #define DMA_RFRX_LEN_HW_INFO				0	// 826x: 8
 #define DMA_RFRX_OFFSET_HEADER				4	// 826x: 12
 #define DMA_RFRX_OFFSET_RFLEN				5   // 826x: 13
@@ -151,7 +278,7 @@ static inline void rf_set_irq_mask(u16 mask)
 *   @param      mask:RX/TX irq value.
 *	@return	 	none
 */
-static inline void rf_clr_irq_mask(u8 mask)
+static inline void rf_clr_irq_mask(u16 mask)
 {
 	BM_CLR(reg_rf_irq_mask,mask);
 }
@@ -294,7 +421,7 @@ static inline void rf_longrange_access_code_comm (unsigned int acc)
 	reg_rf_access_2 = (acc>>16) & 0xff;
 	reg_rf_access_3 = (acc>>24) & 0xff;//notice: This state will be reset after reset baseband
 
-	reg_modem_mode_cfg_rx1_0 |= FLD_LR_TRIG_MODE;
+	reg_rf_modem_mode_cfg_rx1_0 |= FLD_RF_LR_TRIG_MODE;
 //	reg_rf_acclen |= 0x80;//setting acess code needs to writ 0x405 access code trigger bit 1 to enable in long range mode,,and the mode of  BLE1M and BLE2M need not.
 }
 
@@ -466,6 +593,12 @@ static inline void rf_set_tx_rx_off_auto_mode(void)
 extern void rf_start_brx  (void* addr, unsigned int tick);
 extern void rf_start_btx (void* addr, unsigned int tick);
 /**
+ * @brief   This function serves to set the max length of rx packet.
+ * @param   maxlen:the longest of rx packet.
+ * @return  none.
+ */
+void rf_set_rx_maxlen(unsigned int maxlen);
+/**
  * @brief     This function performs to enable RF Tx.
  * @param[in] none.
  * @return    none.
@@ -484,6 +617,12 @@ static inline void rf_ble_tx_done ()
 {
 	write_reg8  (0x80140a02, 0x45);
 }
+/**
+ * @brief   This function serves to set RF power level index.
+ * @param   RF_PowerTypeDef - the RF power types.
+ * @return  none.
+ */
+void rf_set_power_level_index (RF_PowerTypeDef level);
 
 #if 0
 

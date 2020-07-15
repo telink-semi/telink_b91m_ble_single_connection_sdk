@@ -40,8 +40,8 @@ void	myudb_set_txfifo (void *p);
 #define			LOG_DATA_B1_0			0
 #define			LOG_DATA_B1_1			1
 
-//#define			get_systemtick()  	    (sys_get_stimer_tick()*3/2)
-#define			get_systemtick()  	    sys_get_stimer_tick()
+//#define			get_systemtick()  	    (clock_time()*3/2)
+#define			get_systemtick()  	    clock_time()
 
 //#define			log_uart(d)				uart_send_byte_dma(0,d)
 #define			log_uart(d)				reg_usb_ep8_dat=d

@@ -37,7 +37,7 @@
 #define 				APBRG_APB_BASE	 (APBRG_BASE+0x0000)
 
 
-#define RADIO_BASE						(APBRG_BASE+0x0e00)
+#define REG_TL_RADIO_BASE_ADDR						(APBRG_BASE+0x0e00)
 
 
 #define reg_rf_bb_auto_ctrl				REG_ADDR8(0x10050c)
@@ -504,7 +504,7 @@ enum{
 
 #define    reg_rf_ll_rx_l           REG_ADDR8(REG_BB_LL_BASE_ADDR+0x0a)
 
-#define    reg_rf_rx_timeout		reg_rf_ll_rx_l
+#define    reg_rf_rx_timeout		REG_ADDR16(REG_BB_LL_BASE_ADDR+0x0a)
 
 #define    reg_rf_ll_rx_h           REG_ADDR8(REG_BB_LL_BASE_ADDR+0x0b)
 enum{
@@ -678,120 +678,148 @@ enum{
 #define	  CLEAR_ALL_RFIRQ_STATUS   		(reg_rf_irq_status = 0xffff)
 #define	  REG_TL_MODEM_BASE_ADDR				0x140c00//140c00
 
-#define		reg_modem_mode_cfg_rx1_0	REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x20)
+#define		reg_rf_modem_mode_cfg_rx1_0	REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x20)
 enum
 {
-	FLD_LR_MODE					  =	BIT(0),
-	FLD_BT_BLE_SEL_AUTO			  =	BIT(1),
-	FLD_BT_BLE_SEL_EN_RX		  =	BIT(2),
-	FLD_CONT_MODE				  =	BIT(3),
-	FLD_NTL_CV					  =	BIT(4),
-	FLD_RX_DATA_CLK_DBG			  =	BIT(5),
-	FLD_LR_TRIG_MODE			  =	BIT(6),
-	FLD_FDC_DBG_SEL				  =	BIT(7),
+	FLD_RF_LR_MODE					  =	BIT(0),
+	FLD_RF_BT_BLE_SEL_AUTO			  =	BIT(1),
+	FLD_RF_BT_BLE_SEL_EN_RX		  =	BIT(2),
+	FLD_RF_CONT_MODE				  =	BIT(3),
+	FLD_RF_NTL_CV					  =	BIT(4),
+	FLD_RF_RX_DATA_CLK_DBG			  =	BIT(5),
+	FLD_RF_LR_TRIG_MODE			  =	BIT(6),
+	FLD_RF_FDC_DBG_SEL				  =	BIT(7),
 
 };
-#define		reg_modem_mode_ctrl_tx1_0	REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x22)
+#define		reg_rf_modem_mode_ctrl_tx1_0	REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x22)
 enum
 {
-	FLD_BLE_MODEM_TX			  = BIT(0),
+	FLD_RF_BLE_MODEM_TX			  = BIT(0),
 };
 
-#define		reg_modem_rx_ctrl_0		REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x4c)
+#define		reg_rf_modem_rx_ctrl_0		REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x4c)
 enum
 {
-	FLD_RX_ACC_LNE				  = BIT_RNG(0,2),
-	FLD_CRC_EN					  = BIT(3),
-	FLD_SFD0_NUM				  = BIT_RNG(4,6),
+	FLD_RF_RX_ACC_LNE				  = BIT_RNG(0,2),
+	FLD_RF_RX_CRC_EN					  = BIT(3),
+	FLD_RF_SFD0_NUM				  = BIT_RNG(4,6),
 };
 
-#define		reg_modem_sync_thre_ble		REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x4e)
+#define		reg_rf_modem_sync_thre_ble		REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x4e)
 
-#define		reg_agc_rssi_lat		REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x5d)
+#define		reg_rf_agc_rssi_lat		REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x5d)
 
-#define 	reg_tx_tl_ctrl			REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x9a)
+#define 	reg_rf_tx_tl_ctrl			REG_ADDR8(REG_TL_MODEM_BASE_ADDR+0x9a)
 enum
 {
-	FLD_TX_TP_EN					= BIT(0),
-	FLD_TX_IQ_EN					= BIT(1),
-	FLD_TX_MPSK_EN					= BIT(2),
-	FLD_TX_TP_ALIGN					= BIT(3),
-
-};
-
-#define		reg_mode_cfg_rx1_0		REG_ADDR8(RADIO_BASE+0x20)
-enum
-{
-	FLD_BW_CODE					  = BIT_RNG(1,3),
-	FLD_SC_CODE					  = BIT(4),
-};
-
-#define		reg_mode_cfg_rx1_1		REG_ADDR8(RADIO_BASE+0x21)
-enum
-{
-	FLD_MODE_VANT_RX			  =	BIT(1),
-	FLD_FE_RTRIM_RX				  = BIT_RNG(2,4),
-	FLD_IF_FREQ					  = BIT_RNG(5,6),
+	FLD_RF_TX_TP_EN					= BIT(0),
+	FLD_RF_TX_IQ_EN					= BIT(1),
+	FLD_RF_TX_MPSK_EN					= BIT(2),
+	FLD_RF_TX_TP_ALIGN					= BIT(3),
 
 };
 
-#define		reg_mode_cfg_tx1_0		REG_ADDR8(RADIO_BASE+0x22)
+#define		reg_rf_mode_cfg_rx1_0		REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x20)
 enum
 {
-	FLD_BLE_MODE_TX			      =	BIT(0),
-	FLD_VCO_TRIM_KVM			  = BIT_RNG(1,3),
-	FLD_HPMC_EXP_DIFF_COUNT_L	  = BIT_RNG(4,7),
+	FLD_RF_BW_CODE					  = BIT_RNG(1,3),
+	FLD_RF_SC_CODE					  = BIT(4),
 };
 
-#define		reg_mode_cfg_tx1_1		REG_ADDR8(RADIO_BASE+0x23)
+#define		reg_rf_mode_cfg_rx1_1		REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x21)
 enum
 {
-	FLD_HPMC_EXP_DIFF_COUNT_H	  = BIT_RNG(0,4),
-	FLD_DAC_TRIM_CFBK	  		  = BIT_RNG(5,6),
-
-};
-
-
-#define		reg_burst_cfg_txrx_0	REG_ADDR8(RADIO_BASE+0x28)
-enum
-{
-	FLD_CHNL_NUM				= BIT_RNG(0,7),
-};
-
-#define		reg_burst_cfg_txrx_1	REG_ADDR8(RADIO_BASE+0x29)
-enum
-{
-	FLD_CH_NUMLL_SEL			= BIT(0),
-	FLD_TX_EN_PIF				= BIT(1),
-	FLD_RX_EN_PIF				= BIT(2),
-	FLD_RX_TIM_SRQ_SEL_TESQ		= BIT(3),
-	FLD_TX_TIM_SRQ_SEL_TESQ		= BIT(4),
-	FLD_FE_CTRIM				= BIT_RNG(5,7),
-};
-
-#define		reg_mode_cfg_tx3_1		REG_ADDR8(RADIO_BASE+0x3d)
-enum
-{
-	FLD_LDO_ANT_TRIM_BLE		= BIT_RNG(0,2),
-	FLD_BT_BLE_SEL_EN			= BIT(3),
-	FLD_TXC_PWR_SRL				= BIT(4),
-	FLD_BW_CODE_BLE				= BIT_RNG(5,7),
+	FLD_RF_MODE_VANT_RX			  =	BIT(1),
+	FLD_RF_FE_RTRIM_RX				  = BIT_RNG(2,4),
+	FLD_RF_IF_FREQ					  = BIT_RNG(5,6),
 
 };
 
-#define		reg_txrx_dbg3_0		    REG_ADDR8(RADIO_BASE+0x44)
+#define		reg_rf_mode_cfg_tx1_0		REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x22)
 enum
 {
-	CHNL_FREQ_DIRECT			= BIT(0),
-	CHNL_FREQ_L					= BIT_RNG(1,7),
+	FLD_RF_BLE_MODE_TX			      =	BIT(0),
+	FLD_RF_VCO_TRIM_KVM			  = BIT_RNG(1,3),
+	FLD_RF_HPMC_EXP_DIFF_COUNT_L	  = BIT_RNG(4,7),
 };
 
-#define		reg_txrx_dbg3_1		    REG_ADDR8(RADIO_BASE+0x45)
+#define		reg_rf_mode_cfg_tx1_1		REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x23)
 enum
 {
-	CHNL_FREQ_H					= BIT_RNG(0,5),
-	DSN_DITHER_DISABLE			= BIT(6),
-	DSM_INT_MODE				= BIT(7),
+	FLD_RF_HPMC_EXP_DIFF_COUNT_H	  = BIT_RNG(0,4),
+	FLD_RF_DAC_TRIM_CFBK	  		  = BIT_RNG(5,6),
+
+};
+
+#define		reg_rf_mode_cfg_txrx_0		REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x26)
+enum
+{
+	FLD_RF_DIS_CLK_DIG_O			= BIT(0),
+	FLD_RF_VANT_PULLDN				= BIT(1),
+	FLD_RF_GF_BT					= BIT(2),
+	FLD_RF_LDO_ANT_TRIM				= BIT_RNG(3,5),
+	FLD_RF_CBPF_TYPE				= BIT(6),
+	FLD_RF_TX_PA_PWR_L				= BIT(7),
+};
+
+
+#define		reg_rf_mode_cfg_txrx_1		REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x27)
+
+enum
+{
+	FLD_RF_TX_PA_PWR_H				= BIT_RNG(0,4),
+};
+
+#define		reg_rf_burst_cfg_txrx_0	REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x28)
+enum
+{
+	FLD_RF_CHNL_NUM				= BIT_RNG(0,7),
+};
+
+#define		reg_rf_burst_cfg_txrx_1	REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x29)
+enum
+{
+	FLD_RF_CH_NUMLL_SEL			= BIT(0),
+	FLD_RF_TX_EN_PIF				= BIT(1),
+	FLD_RF_RX_EN_PIF				= BIT(2),
+	FLD_RF_RX_TIM_SRQ_SEL_TESQ		= BIT(3),
+	FLD_RF_TX_TIM_SRQ_SEL_TESQ		= BIT(4),
+	FLD_RF_FE_CTRIM				= BIT_RNG(5,7),
+};
+
+#define     reg_rf_mode_cfg_tx3_0		REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x3c)
+enum
+{
+	FLD_RF_MODE_CFG_TX3				= BIT_RNG(0,5),
+	FLD_RF_MODE_VANT_TX_BLE			= BIT(6),
+	FLD_RF_TX_IQ_MODE_EN_BLE		= BIT(7),
+};
+
+
+
+#define		reg_rf_mode_cfg_tx3_1		REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x3d)
+enum
+{
+	FLD_RF_LDO_ANT_TRIM_BLE		= BIT_RNG(0,2),
+	FLD_RF_BT_BLE_SEL_EN			= BIT(3),
+	FLD_RF_TXC_PWR_SRL				= BIT(4),
+	FLD_RF_BW_CODE_BLE				= BIT_RNG(5,7),
+
+};
+
+#define		reg_rf_txrx_dbg3_0		    REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x44)
+enum
+{
+	FLD_RF_CHNL_FREQ_DIRECT			= BIT(0),
+	FLD_RF_CHNL_FREQ_L					= BIT_RNG(1,7),
+};
+
+#define		reg_rf_txrx_dbg3_1		    REG_ADDR8(REG_TL_RADIO_BASE_ADDR+0x45)
+enum
+{
+	FLD_RF_CHNL_FREQ_H					= BIT_RNG(0,5),
+	FLD_RF_DSN_DITHER_DISABLE			= BIT(6),
+	FLD_RF_DSM_INT_MODE				= BIT(7),
 };
 
 #endif

@@ -44,29 +44,29 @@
 #define reg_gpio_pb_oen			REG_ADDR8(0x14030a)
 #define reg_gpio_pb_out			REG_ADDR8(0x14030b)
 #define reg_gpio_pb_pol			REG_ADDR8(0x14030c)
-#define areg_gpio_pb_ds			REG_ADDR8(0x14030d)
+#define reg_gpio_pb_ds			REG_ADDR8(0x14030d)
 #define reg_gpio_pb_gpio		REG_ADDR8(0x14030e)
 #define reg_gpio_pb_irq_en		REG_ADDR8(0x14030f)
 #define reg_gpio_pb_fuc_l		REG_ADDR8(0x140332)
 #define reg_gpio_pb_fuc_h		REG_ADDR8(0x140333)
 
 #define reg_gpio_pc_in			REG_ADDR8(0x140310)
-#define areg_gpio_pc_ie			0xc0
+#define areg_gpio_pc_ie			0xbd
 #define reg_gpio_pc_oen			REG_ADDR8(0x140312)
 #define reg_gpio_pc_out			REG_ADDR8(0x140313)
 #define reg_gpio_pc_pol			REG_ADDR8(0x140314)
-#define areg_gpio_pc_ds			0xc2
+#define areg_gpio_pc_ds			0xbf
 #define reg_gpio_pc_gpio		REG_ADDR8(0x140316)
 #define reg_gpio_pc_irq_en		REG_ADDR8(0x140317)
 #define reg_gpio_pc_fuc_l		REG_ADDR8(0x140334)
 #define reg_gpio_pc_fuc_h		REG_ADDR8(0x140335)
 
 #define reg_gpio_pd_in			REG_ADDR8(0x140318)
-#define reg_gpio_pd_ie			REG_ADDR8(0x140319)
+#define areg_gpio_pd_ie			0xc0
 #define reg_gpio_pd_oen			REG_ADDR8(0x14031a)
 #define reg_gpio_pd_out			REG_ADDR8(0x14031b)
 #define reg_gpio_pd_pol			REG_ADDR8(0x14031c)
-#define reg_gpio_pd_ds			REG_ADDR8(0x14031d)
+#define areg_gpio_pd_ds			0xc2
 #define reg_gpio_pd_gpio		REG_ADDR8(0x14031e)
 #define reg_gpio_pd_irq_en		REG_ADDR8(0x14031f)
 #define reg_gpio_pd_fuc_l		REG_ADDR8(0x140336)//default 0xf0

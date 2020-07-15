@@ -416,7 +416,7 @@ void feature_mdle_test_init_normal(void)
 #if (MCU_CORE_TYPE == MCU_CORE_8278)
 	rf_set_power_level_index (RF_POWER_P3p50dBm);
 #else
-//	rf_set_power_level_index (RF_POWER_P3p01dBm);
+	rf_set_power_level_index (RF_POWER_P3p11dBm);
 #endif
 
 	////// Host Initialization  //////////

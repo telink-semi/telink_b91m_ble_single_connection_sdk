@@ -183,6 +183,98 @@ void analog_dma_read_reg32(dma_chn_e chn, unsigned char addr,void * pdat)
 }
 
 /**
+ * @brief      This function write buffer to analog register.
+ * @param[in]  addr - address need to be write.
+ * @param[in]  *buff - the buffer need to be write.
+ * @param[in]  len - the length of buffer.
+ * @return     none.
+ */
+_attribute_ram_code_ void analog_write_buff(unsigned char addr, unsigned char *buff, int len)
+{
+	unsigned char wr_idx = 0;
+	unsigned char len_t = len;
+	unsigned char r = core_disable_interrupt();
+	reg_ana_len=len;
+	reg_ana_addr = addr;
+	reg_ana_ctrl = FLD_ANA_CYC | FLD_ANA_RW;
+	if(len_t <= 4)
+	{
+		while(len_t--)
+			reg_ana_data(wr_idx++) = *(buff++);
+		write_reg8(ALG_BASE_ADDR + 0x2, 0x60);
+		while((read_reg8(ALG_BASE_ADDR + 0x2) & BIT(7)) == BIT(7));
+	}
+	else
+	{
+		len_t = 4;
+		while(len_t--)
+			reg_ana_data(wr_idx++) = *(buff++);
+		write_reg8(ALG_BASE_ADDR + 0x2, 0x60);
+		len_t = len - 4;
+		wr_idx = 0;
+		while(len_t--)
+		{
+			reg_ana_data(wr_idx++) = *(buff++);
+			if(wr_idx == 4)
+			{
+				if(len_t == 0)
+					break;
+				wr_idx = 0;
+				while((read_reg8(ALG_BASE_ADDR + 0xa) & BIT(0)) == 0);
+			}
+		}
+		if(wr_idx != 0)
+		while((read_reg8(ALG_BASE_ADDR + 0x2) & BIT(7)) == BIT(7));
+	}
+	reg_ana_ctrl = 0x00;
+	core_restore_interrupt(r);
+}
+
+/**
+ * @brief      This function read data from analog register to buffer.
+ * @param[in]  addr - address need to be read from.
+ * @param[in]  *buff - the buffer need to be put data.
+ * @param[in]  len - the length of read data.
+ * @return     none.
+ */
+_attribute_ram_code_ void analog_read_buff(unsigned char addr, unsigned char *buff, int len)
+{
+	unsigned char r = core_disable_interrupt();
+	unsigned char rd_idx = 0;
+	unsigned char len_t = len;
+	reg_ana_len=len;
+	reg_ana_addr = addr;
+	reg_ana_ctrl = FLD_ANA_CYC;
+	if (len_t <= 4)
+	{
+		while((read_reg8(ALG_BASE_ADDR + 0x9) & BIT(7)) == 0);
+		while(len_t--)
+			(*buff++) = reg_ana_data(rd_idx++);
+	}
+	else
+	{
+		while((read_reg8(ALG_BASE_ADDR + 0xa) & BIT(1)) == 0);
+		while(len_t--)
+		{
+			(*buff++) = reg_ana_data(rd_idx++);
+			if(rd_idx == 4)
+			{
+				rd_idx = 0;
+				if(len_t <= 4)
+					break;
+				else
+					while((read_reg8(ALG_BASE_ADDR + 0xa) & BIT(1)) == 0);
+			}
+		}
+		while((read_reg8(ALG_BASE_ADDR + 0x9) & BIT(7)) == 0);
+		while(len_t--)
+			(*buff++) = reg_ana_data(rd_idx++);
+	}
+	reg_ana_ctrl = 0x00;
+	core_restore_interrupt(r);
+}
+
+/**
  * @brief      This function serves to analog register read.
  * @param[in]  addr - address need to be read.
  * @param[in]  *buff - the value need to be read.

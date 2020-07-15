@@ -53,7 +53,7 @@ void user_init()
 {
 	gpio_set_gpio_en(GPIO_LED_BLUE|GPIO_LED_GREEN|GPIO_LED_WHITE|GPIO_LED_RED);
 	gpio_set_output_en(GPIO_LED_BLUE|GPIO_LED_GREEN|GPIO_LED_WHITE|GPIO_LED_RED);
-	system_timer_tick = sys_get_stimer_tick();
+	system_timer_tick = clock_time();
 	gpio_write(GPIO_LED_BLUE,1);
 }
 
@@ -63,22 +63,22 @@ void user_init()
 void main_loop (void)
 {
 	static u8 led_mode = 0;
-	if((led_mode == 0) && sys_timeout(system_timer_tick,500*1000)){
+	if((led_mode == 0) && clock_time_exceed(system_timer_tick,500*1000)){
 		gpio_toggle(GPIO_LED_BLUE);
 		led_mode = 1;
 	}
-	else if((led_mode == 1) && sys_timeout(system_timer_tick,1000*1000)){
+	else if((led_mode == 1) && clock_time_exceed(system_timer_tick,1000*1000)){
 		gpio_toggle(GPIO_LED_GREEN);
 		led_mode = 2;
 	}
-	else if((led_mode == 2) && sys_timeout(system_timer_tick,1500*1000)){
+	else if((led_mode == 2) && clock_time_exceed(system_timer_tick,1500*1000)){
 		gpio_toggle(GPIO_LED_WHITE);
 		led_mode = 3;
 	}
-	else if((led_mode == 3) && sys_timeout(system_timer_tick,2000*1000)){
+	else if((led_mode == 3) && clock_time_exceed(system_timer_tick,2000*1000)){
 		gpio_toggle(GPIO_LED_RED);
 		led_mode = 0;
-		system_timer_tick = sys_get_stimer_tick();
+		system_timer_tick = clock_time();
 	}
 
 }

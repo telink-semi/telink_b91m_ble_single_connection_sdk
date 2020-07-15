@@ -96,16 +96,12 @@ _attribute_data_retention_	u16 cur_conn_handle;
 
 
 
-#if (MCU_CORE_TYPE == MCU_CORE_8278)
-	#define		MY_RF_POWER_INDEX					RF_POWER_P3p50dBm
-#else
-	#define		MY_RF_POWER_INDEX					RF_POWER_P3p01dBm
-#endif
+#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
 
 
 _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 {
-//	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
 
@@ -225,7 +221,7 @@ _attribute_ram_code_ void feature_csa2_init_deepRetn(void)
 
 	blc_ll_initBasicMCU();   //mandatory
 
-//	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 	blc_ll_recoverDeepRetention();
 

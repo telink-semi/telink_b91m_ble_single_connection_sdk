@@ -26,17 +26,21 @@
 #include "application/keyboard/keyboard.h"
 #include "application/usbstd/usbkeycode.h"
 #include "app_att.h"
-
+#include "rc_ir.h"
 
 
 _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 _attribute_data_retention_	int 	key_not_released;
+u8      ir_hw_initialed = 0;   //note: can not be retention variable
 
 extern u32	latest_user_event_tick;
 
 #define CONSUMER_KEY   	   		1
 #define KEYBOARD_KEY   	   		2
-_attribute_data_retention_	u8 		key_type;
+#define IR_KEY   	   			3
+_attribute_data_retention_	u8 			key_type;
+_attribute_data_retention_	int 		key_not_released;
+_attribute_data_retention_	int 		ir_not_released;
 
 
 
@@ -71,7 +75,38 @@ ble_sts_t  app_debug_pushNotifyData (u16 attHandle, u8 *p, int len)
 
 	return BLE_SUCCESS;
 }
+#if (REMOTE_IR_ENABLE)
+	//ir key
+	#define TYPE_IR_SEND			1
+	#define TYPE_IR_RELEASE			2
 
+	///////////////////// key mode //////////////////////
+	#define KEY_MODE_BLE	   		0    //ble key
+	#define KEY_MODE_IR        		1    //ir  key
+
+
+//	static const u8 kb_map_ble[30] = 	KB_MAP_BLE;
+//	static const u8 kb_map_ir[30] = 	KB_MAP_IR;
+
+
+	void ir_dispatch(u8 type, u8 syscode ,u8 ircode){
+
+		if(!ir_hw_initialed){
+			ir_hw_initialed = 1;
+			rc_ir_init();
+		}
+
+		if(type == TYPE_IR_SEND){
+			ir_nec_send(syscode,~(syscode),ircode);
+
+		}
+		else if(type == TYPE_IR_RELEASE){
+			ir_send_release();
+		}
+	}
+
+
+#endif
 #if (BLE_AUDIO_ENABLE)
 #include "tl_audio.h"
 
@@ -258,10 +293,9 @@ void key_change_proc(void)
 
 	latest_user_event_tick = clock_time();  //record latest key change time
 
-
 	u8 key0 = kb_event.keycode[0];
 	u8 key_buf[8] = {0,0,0,0,0,0,0,0};
-
+	u8 key_value;
 	key_not_released = 1;
 	if (kb_event.cnt == 2)   //two key press, do  not process
 	{
@@ -269,6 +303,26 @@ void key_change_proc(void)
 	}
 	else if(kb_event.cnt == 1)
 	{
+#if (REMOTE_IR_ENABLE)
+		if(key0 == CR_VOL_UP){  	//volume up
+			key_value = IR_VOL_UP;
+		}
+		else if(key0 == CR_VOL_DN){ //volume down
+			key_value = IR_VOL_DN;
+		}
+		else if(key0 == VK_1){
+			key_value = IR_VK_1;
+		}
+		else{
+			key_value = IR_HOME;
+		}
+		gpio_write(GPIO_LED_WHITE,1);
+		key_type = IR_KEY;
+		if(!ir_not_released){
+			ir_dispatch(TYPE_IR_SEND, 0x88, key_value);
+			ir_not_released = 1;
+		}
+#else
 		if(key0 >= CR_VOL_UP )  //volume up/down
 		{
 			key_type = CONSUMER_KEY;
@@ -282,8 +336,8 @@ void key_change_proc(void)
 				gpio_write(GPIO_LED_GREEN,1);
 			}
 
-			app_debug_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
-			//blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
+//			app_debug_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
+			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 		}
 		else
 		{
@@ -305,10 +359,10 @@ void key_change_proc(void)
 #endif
 			}
 
-			app_debug_pushNotifyData(HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
-			//blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
+//			app_debug_pushNotifyData(HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
+			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
 		}
-
+#endif
 	}
 	else   //kb_event.cnt == 0,  key release
 	{
@@ -319,15 +373,22 @@ void key_change_proc(void)
 		{
 			u16 consumer_key = 0;
 
-			app_debug_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
-			//blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
+			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 		}
 		else if(key_type == KEYBOARD_KEY)
 		{
 			key_buf[2] = 0;
-			app_debug_pushNotifyData(HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
-			//blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
+			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
 		}
+#if (REMOTE_IR_ENABLE)
+		else if(key_type == IR_KEY)
+		{
+			if(ir_not_released){
+				ir_not_released = 0;
+				ir_dispatch(TYPE_IR_RELEASE, 0, 0);  //release
+			}
+		}
+#endif
 	}
 
 
@@ -369,10 +430,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
 #endif
 }
 
-
 extern u32	scan_pin_need;
-
-
 
 #if (UI_BUTTON_ENABLE)
 

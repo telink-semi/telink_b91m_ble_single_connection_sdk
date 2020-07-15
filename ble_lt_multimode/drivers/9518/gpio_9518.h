@@ -388,6 +388,8 @@ static inline void gpio_set_ds_en(gpio_pin_e pin)
 	unsigned short group = pin & 0xf00;
 	if(group == GPIO_GROUPC)
 	{analog_write_reg8(areg_gpio_pc_ds, analog_read_reg8(areg_gpio_pc_ds)|bit);}
+	else if(group == GPIO_GROUPD)
+	{analog_write_reg8(areg_gpio_pd_ds, analog_read_reg8(areg_gpio_pd_ds)|bit);}
 	else
 	{BM_SET(reg_gpio_ds(pin), bit);}
 }
@@ -403,6 +405,8 @@ static inline void gpio_set_ds_dis(gpio_pin_e pin)
 	unsigned short group = pin & 0xf00;
 	if(group == GPIO_GROUPC)
 	{analog_write_reg8(areg_gpio_pc_ds, analog_read_reg8(areg_gpio_pc_ds)&(~bit));}
+	else if(group == GPIO_GROUPD)
+	{analog_write_reg8(areg_gpio_pd_ds, analog_read_reg8(areg_gpio_pd_ds)&(~bit));}
 	else
 	{BM_CLR(reg_gpio_ds(pin), bit);}
 }

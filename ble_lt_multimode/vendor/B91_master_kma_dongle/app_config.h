@@ -46,7 +46,6 @@
 
 #define UI_AUDIO_ENABLE								0//1
 #define UI_BUTTON_ENABLE							0//1
-#define UI_LED_ENABLE								0//1
 #define UI_UPPER_COMPUTER_ENABLE					0  //work with upper computer
 
 #define BLT_APP_LED_ENABLE							1
@@ -89,7 +88,7 @@
 
 
 
-#define UART_PRINT_DEBUG_ENABLE				1
+#define UART_PRINT_DEBUG_ENABLE				0
 /////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
 #if (UART_PRINT_DEBUG_ENABLE)
 	//the baud rate should not bigger than 1M(system timer clock is constant 16M)
@@ -103,7 +102,7 @@
 
 
 #if BLT_APP_LED_ENABLE
-#define     UI_LED_ENABLE           1
+#define     UI_LED_ENABLE           0
 #else
 #define     UI_LED_ENABLE           1
 #endif
@@ -170,7 +169,7 @@ enum{
 
 
 
-#define	UDB_DEBUG_EN						1
+#define	UDB_DEBUG_EN						0
 #if (UDB_DEBUG_EN)
 	#define PA5_FUNC						AS_USB_DM
 	#define PA6_FUNC						AS_USB_DP
@@ -191,7 +190,7 @@ enum{
 
 	#define GPIO_CHN0							GPIO_PE1
 	#define GPIO_CHN1							GPIO_PE2
-//	#define GPIO_CHN2							GPIO_PA0
+	#define GPIO_CHN2							GPIO_PA0
     #define GPIO_CHN3							GPIO_PA4
 	#define GPIO_CHN4							GPIO_PA3
 	#define GPIO_CHN5							GPIO_PB0
@@ -212,7 +211,7 @@ enum{
 
 	#define PE1_OUTPUT_ENABLE					1
 	#define PE2_OUTPUT_ENABLE					1
-//	#define PA0_OUTPUT_ENABLE					1
+	#define PA0_OUTPUT_ENABLE					1
 	#define PA4_OUTPUT_ENABLE					1
 	#define PA3_OUTPUT_ENABLE					1
 	#define PB0_OUTPUT_ENABLE					1
@@ -235,9 +234,9 @@ enum{
 	#define DBG_CHN1_LOW		gpio_write(GPIO_CHN1, 0)
 	#define DBG_CHN1_HIGH		gpio_write(GPIO_CHN1, 1)
 	#define DBG_CHN1_TOGGLE		gpio_toggle(GPIO_CHN1)
-	#define DBG_CHN2_LOW		//gpio_write(GPIO_CHN2, 0)
-	#define DBG_CHN2_HIGH		//gpio_write(GPIO_CHN2, 1)
-	#define DBG_CHN2_TOGGLE		//gpio_toggle(GPIO_CHN2)
+	#define DBG_CHN2_LOW		gpio_write(GPIO_CHN2, 0)
+	#define DBG_CHN2_HIGH		gpio_write(GPIO_CHN2, 1)
+	#define DBG_CHN2_TOGGLE		gpio_toggle(GPIO_CHN2)
 	#define DBG_CHN3_LOW		gpio_write(GPIO_CHN3, 0)
 	#define DBG_CHN3_HIGH		gpio_write(GPIO_CHN3, 1)
 	#define DBG_CHN3_TOGGLE		gpio_toggle(GPIO_CHN3)

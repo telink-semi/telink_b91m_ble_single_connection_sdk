@@ -39,7 +39,7 @@ void user_init()
 {
 	gpio_set_gpio_en(GPIO_LED_BLUE|GPIO_LED_GREEN|GPIO_LED_WHITE|GPIO_LED_RED);
 	gpio_set_output_en(GPIO_LED_BLUE|GPIO_LED_GREEN|GPIO_LED_WHITE|GPIO_LED_RED, 1);
-	system_timer_tick = sys_get_stimer_tick();
+	system_timer_tick = clock_time();
 	gpio_write(GPIO_LED_BLUE,1);
 }
 
@@ -49,22 +49,22 @@ void user_init()
 void main_loop (void)
 {
 	static u8 led_mode = 0;
-	if((led_mode == 0) && sys_timeout(system_timer_tick,500*1000)){
+	if((led_mode == 0) && clock_time_exceed(system_timer_tick,500*1000)){
 		gpio_toggle(GPIO_LED_BLUE);
 		led_mode = 1;
 	}
-	else if((led_mode == 1) && sys_timeout(system_timer_tick,1000*1000)){
+	else if((led_mode == 1) && clock_time_exceed(system_timer_tick,1000*1000)){
 		gpio_toggle(GPIO_LED_GREEN);
 		led_mode = 2;
 	}
-	else if((led_mode == 2) && sys_timeout(system_timer_tick,1500*1000)){
+	else if((led_mode == 2) && clock_time_exceed(system_timer_tick,1500*1000)){
 		gpio_toggle(GPIO_LED_WHITE);
 		led_mode = 3;
 	}
-	else if((led_mode == 3) && sys_timeout(system_timer_tick,2000*1000)){
+	else if((led_mode == 3) && clock_time_exceed(system_timer_tick,2000*1000)){
 		gpio_toggle(GPIO_LED_RED);
 		led_mode = 0;
-		system_timer_tick = sys_get_stimer_tick();
+		system_timer_tick = clock_time();
 	}
 
 }
@@ -215,7 +215,7 @@ void main_loop (void)
 #if 1
 	rf_set_ble_chn(TEST_CHN);
 	rf_access_code_comm(BLE_ACCESS_CODE);
-//	rf_set_power_level_index (RF_POWER_P3p50dBm);
+	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();
 //	rf_set_ble_access_code_value(BLE_ACCESS_CODE);
 
@@ -227,7 +227,7 @@ void main_loop (void)
 	rf_set_txmode();
 	u32 tx_begin_tick;
 	while(1){
-		tx_begin_tick = sys_get_stimer_tick();
+		tx_begin_tick = clock_time();
 		debug_pkt_adv.data[0] ++;
 //		printf("Tx packet: %d \n",debug_pkt_adv.data[0]);
 //		array_printf((u8*)&debug_pkt_adv,sizeof (rf_packet_dbg_adv_t));
@@ -240,7 +240,7 @@ void main_loop (void)
 //			DBG_CHN0_TOGGLE;
 //		}
 		A_dbg = read_sram32(0xe4001104);
-		while(!sys_timeout(tx_begin_tick, TX_INTERVAL_US) );   //10mS
+		while(!clock_time_exceed(tx_begin_tick, TX_INTERVAL_US) );   //10mS
 	}
 #endif
 }
@@ -347,7 +347,7 @@ void rf_irq_handler(void)
 #if (TEST_MODE_SELECT == TEST_MODE_SRX)
 	if(rf_get_irq_status(FLD_RF_IRQ_RX))
 	{
-		blt_tick_now = sys_get_stimer_tick();
+		blt_tick_now = clock_time();
 		DBG_CHN0_TOGGLE;
 		u8 * raw_pkt = (u8 *) (blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE);
 		blt_rx_wptr = ( blt_rx_wptr + 1) & 3;
@@ -373,7 +373,7 @@ void rf_irq_handler(void)
 	if(rf_get_irq_status(FLD_RF_IRQ_RX))
 	{
 		static u8 dma_rx_wptr_last = 0;
-		blt_tick_now = sys_get_stimer_tick();
+		blt_tick_now = clock_time();
 		u8 rx_wptr = read_reg8(0x1004f4);
 		u8 rx_rptr = read_reg8(0x1004f5);
 		DBG_CHN0_TOGGLE;
@@ -445,7 +445,7 @@ void rf_irq_handler(void)
 #elif (TEST_MODE_SELECT == TEST_MODE_MANUAL_RX)
 	if(rf_get_irq_status(FLD_RF_IRQ_RX))
 	{
-		blt_tick_now = sys_get_stimer_tick();
+		blt_tick_now = clock_time();
 		DBG_CHN0_TOGGLE;
 		u8 * raw_pkt = (u8 *) blt_rxbuffer ;
 		AA_rx_irq_cnt ++;
@@ -488,7 +488,7 @@ void ble_manual_tx_test(void){
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
 	rf_set_ble_chn(TEST_CHN);
 	rf_access_code_comm(BLE_ACCESS_CODE);
-//	rf_set_power_level_index (RF_POWER_P3p50dBm);
+	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();
 //	rf_set_ble_access_code_value(BLE_ACCESS_CODE);
 
@@ -506,7 +506,7 @@ void ble_manual_tx_test(void){
 	rf_set_txmode();
 	u32 tx_begin_tick;
 	while(1){
-		tx_begin_tick = sys_get_stimer_tick();
+		tx_begin_tick = clock_time();
 		debug_pkt_adv.data[0] ++;
 		printf("Tx packet: %d \n",debug_pkt_adv.data[0]);
 		array_printf((u8*)&debug_pkt_adv,sizeof (rf_packet_dbg_adv_t));
@@ -518,14 +518,14 @@ void ble_manual_tx_test(void){
 			gpio_toggle(GPIO_LED_GREEN);
 			DBG_CHN0_TOGGLE;
 		}
-		while(!sys_timeout(tx_begin_tick, TX_INTERVAL_US) );   //10mS
+		while(!clock_time_exceed(tx_begin_tick, TX_INTERVAL_US) );   //10mS
 	}
 }
 
 volatile int AA_size;
 void ble_stx_test(void){
 
-	//	rf_set_power_level_index (RF_POWER_P3p50dBm);
+		rf_set_power_level_index (RF_POWER_P3p11dBm);
 
 
 	AA_size = sizeof (rf_packet_dbg_adv_t);
@@ -555,7 +555,7 @@ void ble_stx_test(void){
 	while(1){
 		DBG_CHN0_TOGGLE;
 
-		tx_begin_tick = sys_get_stimer_tick();
+		tx_begin_tick = clock_time();
 
 		debug_pkt_adv.data[0] ++;
 
@@ -568,7 +568,7 @@ void ble_stx_test(void){
 //		printf("STx packet: %d \n",debug_pkt_adv.data[0]);
 //		array_printf((u8*)&debug_pkt_adv,sizeof (rf_packet_dbg_adv_t));
 
-		rf_start_stx((void *)&debug_pkt_adv, 1,  sys_get_stimer_tick() + 100);
+		rf_start_stx((void *)&debug_pkt_adv, 1,  clock_time() + 100);
 
 		delay_us(2000);  //2mS is enough for packet sending
 		if(rf_get_irq_status(FLD_RF_IRQ_TX)){
@@ -579,7 +579,7 @@ void ble_stx_test(void){
 			DBG_CHN0_TOGGLE;
 		}
 
-		while(!sys_timeout(tx_begin_tick, TX_INTERVAL_US) );   //10mS
+		while(!clock_time_exceed(tx_begin_tick, TX_INTERVAL_US) );   //10mS
 	}
 
 }
@@ -604,7 +604,7 @@ void ble_btx_tx_test(void){
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
 	rf_set_ble_chn(TEST_CHN);
 	write_reg8(0x140830,0x36);//disable tx timestamp
-//	rf_set_power_level_index (RF_POWER_P3p50dBm);
+	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
@@ -624,7 +624,7 @@ void ble_btx_tx_test(void){
 	static u32 stx_ok_cnt;
 	while(1){
 		u8 wptr = read_reg8(0x100500);
-		tx_begin_tick = sys_get_stimer_tick();
+		tx_begin_tick = clock_time();
 		STOP_RF_STATE_MACHINE;//STOP SM
 		printf("BTX tx wptr: %d\n",wptr);
 		debug_pkt_adv.data[0] ++;
@@ -634,7 +634,7 @@ void ble_btx_tx_test(void){
 		blt_tx_wptr = (blt_tx_wptr + 1) & 3;
 		write_reg8(0x100500,wptr+1);//dma tx wptr ++
 
-		rf_start_btx ((void *)blt_txbuffer, sys_get_stimer_tick() + 100);
+		rf_start_btx ((void *)blt_txbuffer, clock_time() + 100);
 		delay_us(2000);  //2mS is enough for packet sending
 		STOP_RF_STATE_MACHINE;//STOP SM
 
@@ -646,7 +646,7 @@ void ble_btx_tx_test(void){
 		DBG_CHN0_TOGGLE;
 
 
-		while(!sys_timeout(tx_begin_tick, TX_INTERVAL_US) );   //10mS
+		while(!clock_time_exceed(tx_begin_tick, TX_INTERVAL_US) );   //10mS
 	}
 
 
@@ -654,7 +654,7 @@ void ble_btx_tx_test(void){
 void ble_manual_rx_test(void){
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
 	rf_set_ble_chn(TEST_CHN);
-//	rf_set_power_level_index (RF_POWER_P3p50dBm);
+	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
@@ -719,7 +719,7 @@ void ble_brx_rx_test(void){
 	rf_set_ble_chn(TEST_CHN);
 	write_reg8(0x140830,0x36);//disable tx timestamp
 	REG_ADDR16(0x80140a04) = 80;
-//	rf_set_power_level_index (RF_POWER_P3p50dBm);
+	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
@@ -762,7 +762,7 @@ void ble_brx_rx_test(void){
 	{
 		// 2mS before peer devoce TX
 		u8 wptr = read_reg8(0x100500);
-		while( (u32)(sys_get_stimer_tick() - (bltc_connExpectTime - 2 * 16*1000)) > BIT(30) );
+		while( (u32)(clock_time() - (bltc_connExpectTime - 2 * 16*1000)) > BIT(30) );
 		bltc_tick_1st_rx = 0;
 		bltParam_conn_rx_num = 0;
 		AA_rx_match_flag = 0;
@@ -771,7 +771,7 @@ void ble_brx_rx_test(void){
 		tmemcpy((void*)(blt_txbuffer + (blt_tx_wptr + 1)*BLE_LL_BUFF_SIZE),(void *)blt_tx_empty_packet,6);
 		blt_tx_wptr = (blt_tx_wptr + 1) & 3;
 		write_reg8(0x100500,wptr+1);//dma tx wptr ++
-		rf_start_brx ((void *)blt_txbuffer, sys_get_stimer_tick () + 100);   //BRX
+		rf_start_brx ((void *)blt_txbuffer, clock_time () + 100);   //BRX
 		DBG_CHN2_HIGH;
 		delay_us(4 * 1000);  //4mS RX duration
 		DBG_CHN2_LOW;
@@ -800,7 +800,7 @@ void ble_srx_test(void){
 
 	rf_set_ble_chn(TEST_CHN);
 
-//	rf_set_power_level_index (RF_POWER_P3p50dBm);
+	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);

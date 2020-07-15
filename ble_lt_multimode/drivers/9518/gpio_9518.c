@@ -156,18 +156,26 @@ _attribute_ram_code_ void gpio_init(int anaRes_init_en)
 		(PC4_FUNC==AS_GPIO ? BIT(4):0)	| (PC5_FUNC==AS_GPIO ? BIT(5):0)| (PC6_FUNC==AS_GPIO ? BIT(6):0)| (PC7_FUNC==AS_GPIO ? BIT(7):0);
 
 	//PD group
-	reg_gpio_pd_setting1 =
-		(PD0_INPUT_ENABLE<<8) 	| (PD1_INPUT_ENABLE<<9)	| (PD2_INPUT_ENABLE<<10)	| (PD3_INPUT_ENABLE<<11) |
-		(PD4_INPUT_ENABLE<<12)	| (PD5_INPUT_ENABLE<<13)| (PD6_INPUT_ENABLE<<14)	| (PD7_INPUT_ENABLE<<15) |
-		((PD0_OUTPUT_ENABLE?0:1)<<16)	| ((PD1_OUTPUT_ENABLE?0:1)<<17) | ((PD2_OUTPUT_ENABLE?0:1)<<18)	| ((PD3_OUTPUT_ENABLE?0:1)<<19) |
-		((PD4_OUTPUT_ENABLE?0:1)<<20)	| ((PD5_OUTPUT_ENABLE?0:1)<<21) | ((PD6_OUTPUT_ENABLE?0:1)<<22)	| ((PD7_OUTPUT_ENABLE?0:1)<<23) |
-		(PD0_DATA_OUT<<24)	| (PD1_DATA_OUT<<25)	| (PD2_DATA_OUT<<26)	| (PD3_DATA_OUT<<27) |
-		(PD4_DATA_OUT<<28)	| (PD5_DATA_OUT<<29)	| (PD6_DATA_OUT<<30)	| (PD7_DATA_OUT<<31) ;
-	reg_gpio_pd_setting2 =
-		(PD0_DATA_STRENGTH<<8)	| (PD1_DATA_STRENGTH<<9)	| (PD2_DATA_STRENGTH<<10)	| (PD3_DATA_STRENGTH<<11) |
-		(PD4_DATA_STRENGTH<<12)	| (PD5_DATA_STRENGTH<<13)	| (PD6_DATA_STRENGTH<<14)	| (PD7_DATA_STRENGTH<<15) |
-		(PD0_FUNC==AS_GPIO ? BIT(16):0)	| (PD1_FUNC==AS_GPIO ? BIT(17):0)| (PD2_FUNC==AS_GPIO ? BIT(18):0)| (PD3_FUNC==AS_GPIO ? BIT(19):0) |
-		(PD4_FUNC==AS_GPIO ? BIT(20):0)	| (PD5_FUNC==AS_GPIO ? BIT(21):0)| (PD6_FUNC==AS_GPIO ? BIT(22):0)| (PD7_FUNC==AS_GPIO ? BIT(23):0);
+	//ie
+	analog_write_reg8(areg_gpio_pd_ie, 	(PD0_INPUT_ENABLE<<0) 	| (PD1_INPUT_ENABLE<<1)	| (PD2_INPUT_ENABLE<<2)	| (PD3_INPUT_ENABLE<<3) |
+									(PD4_INPUT_ENABLE<<4)	| (PD5_INPUT_ENABLE<<5) | (PD6_INPUT_ENABLE<<6)	| (PD7_INPUT_ENABLE<<7) );
+
+	//oen
+	reg_gpio_pd_oen =
+		((PD0_OUTPUT_ENABLE?0:1)<<0)	| ((PD1_OUTPUT_ENABLE?0:1)<<1) | ((PD2_OUTPUT_ENABLE?0:1)<<2)	| ((PD3_OUTPUT_ENABLE?0:1)<<3) |
+		((PD4_OUTPUT_ENABLE?0:1)<<4)	| ((PD5_OUTPUT_ENABLE?0:1)<<5) | ((PD6_OUTPUT_ENABLE?0:1)<<6)	| ((PD7_OUTPUT_ENABLE?0:1)<<7);
+	//dataO
+	reg_gpio_pd_out =
+		(PD0_DATA_OUT<<0)	| (PD1_DATA_OUT<<1)	| (PD2_DATA_OUT<<2)	| (PD3_DATA_OUT<<3) |
+		(PD4_DATA_OUT<<4)	| (PD5_DATA_OUT<<5)	| (PD6_DATA_OUT<<6)	| (PD7_DATA_OUT<<7) ;
+
+	//ds
+	analog_write_reg8(areg_gpio_pd_ds, 	(PD0_DATA_STRENGTH<<0) 	| (PD1_DATA_STRENGTH<<1)  | (PD2_DATA_STRENGTH<<2)	| (PD3_DATA_STRENGTH<<3) |
+									(PD4_DATA_STRENGTH<<4)	| (PD5_DATA_STRENGTH<<5)  | (PD6_DATA_STRENGTH<<6)	| (PD7_DATA_STRENGTH<<7) );
+
+	reg_gpio_pd_gpio =
+		(PD0_FUNC==AS_GPIO ? BIT(0):0)	| (PD1_FUNC==AS_GPIO ? BIT(1):0)| (PD2_FUNC==AS_GPIO ? BIT(2):0)| (PD3_FUNC==AS_GPIO ? BIT(3):0) |
+		(PD4_FUNC==AS_GPIO ? BIT(4):0)	| (PD5_FUNC==AS_GPIO ? BIT(5):0)| (PD6_FUNC==AS_GPIO ? BIT(6):0)| (PD7_FUNC==AS_GPIO ? BIT(7):0);
 
 	//PE group
 	reg_gpio_pe_setting1 =
@@ -223,18 +231,20 @@ void gpio_set_input_en(gpio_pin_e pin)
 	unsigned char	bit = pin & 0xff;
 	unsigned short group = pin & 0xf00;
 
-	if(group == GPIO_GROUPA || GPIO_GROUPB|| group == GPIO_GROUPD || group == GPIO_GROUPE)
+	if(group == GPIO_GROUPA || group == GPIO_GROUPB || group == GPIO_GROUPE)
 	{
-			BM_SET(reg_gpio_ie(pin), bit);
+		BM_SET(reg_gpio_ie(pin), bit);
 	}
 
     else if(group == GPIO_GROUPC)
     {
-
     	analog_write_reg8(areg_gpio_pc_ie, analog_read_reg8(areg_gpio_pc_ie)|bit);
-
     }
 
+    else if(group == GPIO_GROUPD)
+    {
+    	analog_write_reg8(areg_gpio_pd_ie, analog_read_reg8(areg_gpio_pd_ie)|bit);
+    }
 }
 
 /**
@@ -287,18 +297,20 @@ void gpio_set_input_dis(gpio_pin_e pin)
 	unsigned char	bit = pin & 0xff;
 	unsigned short group = pin & 0xf00;
 
-	if(group == GPIO_GROUPA || group == GPIO_GROUPD || group == GPIO_GROUPE|| group == GPIO_GROUPB)
+	if(group == GPIO_GROUPA || group == GPIO_GROUPB || group == GPIO_GROUPE)
 	{
-
-			BM_CLR(reg_gpio_ie(pin), bit);
+		BM_CLR(reg_gpio_ie(pin), bit);
 	}
 
     else if(group == GPIO_GROUPC)
     {
-
     	analog_write_reg8(areg_gpio_pc_ie, analog_read_reg8(areg_gpio_pc_ie)&(~bit));
     }
 
+    else if(group == GPIO_GROUPD)
+    {
+    	analog_write_reg8(areg_gpio_pd_ie, analog_read_reg8(areg_gpio_pd_ie)&(~bit));
+    }
 }
 
 /**
@@ -314,29 +326,29 @@ void gpio_shutdown(gpio_pin_e pin)
 	{
 		case GPIO_GROUPA:
 			reg_gpio_pa_oen |= bit;//disable output
-			reg_gpio_pa_out &= (!bit);//set low level
-			reg_gpio_pa_ie &= (!bit);//disable input
+			reg_gpio_pa_out &= (~bit);//set low level
+			reg_gpio_pa_ie &= (~bit);//disable input
 			break;
 		case GPIO_GROUPB:
 			reg_gpio_pb_oen |= bit;
-			reg_gpio_pb_out &= (!bit);
-			reg_gpio_pb_ie &= (!bit);
+			reg_gpio_pb_out &= (~bit);
+			reg_gpio_pb_ie &= (~bit);
 			break;
 		case GPIO_GROUPC:
 			reg_gpio_pc_oen |= bit;
-			reg_gpio_pc_out &= (!bit);
-			analog_write_reg8(areg_gpio_pc_ie, analog_read_reg8(areg_gpio_pc_ie) & (!bit));
+			reg_gpio_pc_out &= (~bit);
+			analog_write_reg8(areg_gpio_pc_ie, analog_read_reg8(areg_gpio_pc_ie) & (~bit));
 			break;
 		case GPIO_GROUPD:
 			reg_gpio_pd_oen |= bit;
-			reg_gpio_pd_out &= (!bit);
-			reg_gpio_pd_ie &= (!bit);
+			reg_gpio_pd_out &= (~bit);
+			analog_write_reg8(areg_gpio_pd_ie, analog_read_reg8(areg_gpio_pd_ie) & (~bit));
 			break;
 
 		case GPIO_GROUPE:
 			reg_gpio_pe_oen |= bit;
-			reg_gpio_pe_out &= (!bit);
-			reg_gpio_pe_ie &= (!bit);
+			reg_gpio_pe_out &= (~bit);
+			reg_gpio_pe_ie &= (~bit);
 			break;
 
 		case GPIO_ALL:
@@ -357,7 +369,7 @@ void gpio_shutdown(gpio_pin_e pin)
 			reg_gpio_pa_ie = 0x80;					//SWS
 			reg_gpio_pb_ie = 0x00;
 			analog_write_reg8(areg_gpio_pc_ie, 0);
-			reg_gpio_pd_ie = 0x00;
+			analog_write_reg8(areg_gpio_pd_ie, 0);
 		}
 	}
 }

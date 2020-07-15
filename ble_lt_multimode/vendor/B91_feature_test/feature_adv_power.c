@@ -81,15 +81,12 @@ void  func_suspend_enter (u8 e, u8 *p, int n)
 	AA_dbg_suspend ++;
 }
 
-#if (MCU_CORE_TYPE == MCU_CORE_8278)
-	#define		MY_RF_POWER_INDEX					RF_POWER_P0p71dBm
-#else
-//	#define		MY_RF_POWER_INDEX					RF_POWER_P0p04dBm
-#endif
+#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
+
 
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {
-//	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
 
@@ -113,7 +110,7 @@ void feature_adv_power_test_init_normal(void)
 //	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
 
-//	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();   //mandatory
@@ -272,7 +269,7 @@ void feature_adv_power_test_init_normal(void)
 	bls_ll_setAdvEnable(1);  //adv enable
 
 
-//	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 
 
@@ -304,7 +301,7 @@ _attribute_ram_code_ void feature_adv_power_test_init_deepRetn(void)
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
 
 	blc_ll_initBasicMCU();   //mandatory
-//	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 	blc_ll_recoverDeepRetention();
 

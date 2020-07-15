@@ -496,7 +496,7 @@ void myudb_usb_handle_irq(void) {
 			myudb_usb_handle_ctl_ep_setup();
 			if (!tick_sync)
 			{
-				tick_sync = sys_get_stimer_tick () | 1;
+				tick_sync = clock_time () | 1;
 			}
 		}
 		if (irq & FLD_CTRL_EP_IRQ_DATA) {
@@ -520,9 +520,9 @@ void myudb_usb_handle_irq(void) {
 
 	myudb_hci_cmd_from_usb ();
 
-	if (tick_sync && sys_timeout (tick_sync, 10000))
+	if (tick_sync && clock_time_exceed (tick_sync, 10000))
 	{
-		tick_sync = sys_get_stimer_tick () | 1;
+		tick_sync = clock_time () | 1;
 		log_sync (SL_STACK_EN);
 	}
 

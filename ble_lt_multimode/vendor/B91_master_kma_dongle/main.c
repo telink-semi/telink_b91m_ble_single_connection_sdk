@@ -101,7 +101,6 @@ int main (void)   //must on ramcode
 
 	user_init_normal();
 
-	printf("{Enter main loop\n");
 
 	irq_enable();
 

@@ -62,7 +62,7 @@
 #endif
 
 
-#define		MY_RF_POWER_INDEX					RF_POWER_P3p01dBm
+#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
 
 #define		BLE_DEVICE_ADDRESS_TYPE 			BLE_DEVICE_ADDRESS_PUBLIC
 
@@ -239,7 +239,7 @@ void triggerAdvertisingInDisconnPaired(void)
 
 _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 {
-	//rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
 
@@ -647,9 +647,9 @@ void main_loop (void)
 	////////////////////////////////////// UI entry /////////////////////////////////
 	static u32 t_sync = 0;
 
-	if(sys_timeout(t_sync, 200000))
+	if(clock_time_exceed(t_sync, 200000))
 	{
-		t_sync = sys_get_stimer_tick();
+		t_sync = clock_time();
 //		gpio_toggle(GPIO_LED_WHITE);
 	}
 

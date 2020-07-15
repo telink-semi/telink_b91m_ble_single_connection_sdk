@@ -41,14 +41,14 @@
 #include "blm_ota.h"
 
 
-#define		MY_RF_POWER_INDEX					RF_POWER_P3p01dBm
+#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
 
 
 #define		BLE_DEVICE_ADDRESS_TYPE 			BLE_DEVICE_ADDRESS_PUBLIC
 
 _attribute_data_retention_	own_addr_type_t 	app_own_address_type = OWN_ADDRESS_PUBLIC;
 
-
+int main_idle_loop (void);
 
 
 
@@ -71,13 +71,13 @@ void user_init_normal(void)
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
-
 	blc_ll_initScanning_module(mac_public); 			//scan module: 		 mandatory for BLE master,
-
 	blc_ll_initInitiating_module();						//initiate module: 	 mandatory for BLE master,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initMasterRoleSingleConn_module();			//master module: 	 mandatory for BLE master,
 
+
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
 	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
@@ -119,8 +119,8 @@ void user_init_normal(void)
 
 #endif
 
-//	extern int host_att_register_idle_func (void *p);
-//	host_att_register_idle_func (main_idle_loop);
+	extern int host_att_register_idle_func (void *p);
+	host_att_register_idle_func (main_idle_loop);
 
 
 
@@ -142,33 +142,6 @@ void user_init_normal(void)
 	#endif
 
 
-
-
-
-
-
-
-
-
-
-#if (UI_KEYBOARD_ENABLE)
-	/////////// keyboard gpio wakeup init ////////
-//	u32 pin[] = KB_DRIVE_PINS;
-//	for (int i=0; i<(sizeof (pin)/sizeof(*pin)); i++)
-//	{
-//		cpu_set_gpio_wakeup (pin[i], Level_High,1);  //drive pin pad high wakeup deepsleep
-//	}
-//
-//	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboard);
-#elif (UI_BUTTON_ENABLE)
-
-	cpu_set_gpio_wakeup (SW1_GPIO, Level_Low,1);  //button pin pad low wakeUp suspend/deepSleep
-	cpu_set_gpio_wakeup (SW2_GPIO, Level_Low,1);  //button pin pad low wakeUp suspend/deepSleep
-
-	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_button);
-#endif
-
-
 #if (UDB_DEBUG_EN)
 	myudb_usb_init (0x120,&uart_txfifo);		//0x120: usb sub-id
 	usb_set_pin_en ();
@@ -176,54 +149,91 @@ void user_init_normal(void)
 
 }
 
-
-
-void main_loop (void)
+/////////////////////////////////////////////////////////////////////
+// main loop flow
+/////////////////////////////////////////////////////////////////////
+int main_idle_loop (void)
 {
+
 
 	////////////////////////////////////// BLE entry /////////////////////////////////
 	blt_sdk_main_loop();
 
 
+	///////////////////////////////////// proc usb cmd from host /////////////////////
+//	usb_handle_irq();
+
+
+
+	/////////////////////////////////////// HCI ///////////////////////////////////////
+//	blc_hci_proc ();
+
+
+
 	////////////////////////////////////// UI entry /////////////////////////////////
-	static u32 t_sync = 0;
-
-	if(sys_timeout(t_sync, 200000))
-	{
-		t_sync = sys_get_stimer_tick();
-		gpio_toggle(GPIO_LED_WHITE);// LLJ
+#if (UI_BUTTON_ENABLE)
+	static u8 button_detect_en = 0;
+	if(!button_detect_en && clock_time_exceed(0, 1000000)){// proc button 1 second later after power on
+		button_detect_en = 1;
 	}
+	static u32 button_detect_tick = 0;
+	if(button_detect_en && clock_time_exceed(button_detect_tick, 5000))
+	{
+		button_detect_tick = clock_time();
+		proc_button();  //button triggers pair & unpair  and OTA
+	}
+#endif
 
 
-	#if (UI_KEYBOARD_ENABLE)
-			proc_keyboard (0,0, 0);
-	#elif (UI_BUTTON_ENABLE)
-			// process button 1 second later after power on, to avoid power unstable
-			if(!button_detect_en && clock_time_exceed(0, 1000000)){
-				button_detect_en = 1;
-			}
-			if(button_detect_en && clock_time_exceed(button_detect_tick, 5000))
-			{
-				button_detect_tick = clock_time();
-				proc_button(0, 0, 0);  //button triggers pair & unpair  and OTA
-			}
-	#endif
+#if (UI_UPPER_COMPUTER_ENABLE)
+	extern void app_upper_com_proc(void);
+	app_upper_com_proc();
+#endif
 
 
-	////////////////////////////////////// PM Process /////////////////////////////////
-	#if (UI_KEYBOARD_ENABLE)
-			blt_pm_proc();
-	#elif (UI_BUTTON_ENABLE)
-			if(button_not_released){
-				bls_pm_setSuspendMask (SUSPEND_DISABLE);
-			}
-			else{
-				bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
-			}
-	#endif
+	////////////////////////////////////// proc audio ////////////////////////////////
+#if (UI_AUDIO_ENABLE)
+	proc_audio();
+
+	static u32 tick_bo;
+	if (REG_ADDR8(0x125) & BIT(0))
+	{
+		tick_bo = clock_time ();
+	}
+	else if (clock_time_exceed (tick_bo, 200000))
+	{
+		REG_ADDR8(0x125) = BIT(0);
+	}
+#endif
+
+
+//	host_pair_unpair_proc();
+
+
+#if(BLE_MASTER_OTA_ENABLE)
+	proc_ota();
+#endif
+
+#if 1
+	//proc master update
+//	if(host_update_conn_param_req){
+//		host_update_conn_proc();
+//	}
+#endif
 
 
 
+
+	return 0;
+}
+
+
+
+
+void main_loop (void)
+{
+
+	main_idle_loop ();
 
 #if (UDB_DEBUG_EN)
 	myudb_usb_handle_irq ();
@@ -238,7 +248,7 @@ void main_loop (void)
 		static u32 tick_data = 0;
 
 		DBG_CHN6_HIGH;
-		if(sys_timeout(tick_str, 500*1000)){
+		if(clock_time_exceed(tick_str, 500*1000)){
 			tick_str = clock_time();
 			test_cnt1 ++;
 			my_dump_str_data (1, "test_cnt:", &test_cnt1, 4);
@@ -246,7 +256,7 @@ void main_loop (void)
 		DBG_CHN6_LOW;
 
 		DBG_CHN7_HIGH;
-		if(sys_timeout(tick_logEvt, 9*1000)){
+		if(clock_time_exceed(tick_logEvt, 9*1000)){
 			tick_logEvt = clock_time();
 			log_tick(1, SLEV_timestamp);
 			log_event(1, SLEV_test_event);
@@ -255,7 +265,7 @@ void main_loop (void)
 
 
 		DBG_CHN8_HIGH;
-		if(sys_timeout(tick_logTask, 13*1000)){
+		if(clock_time_exceed(tick_logTask, 13*1000)){
 			tick_logTask = clock_time();
 
 			log_task(1, SL01_test_task, 1);
@@ -266,7 +276,7 @@ void main_loop (void)
 
 
 		DBG_CHN9_HIGH;
-		if(sys_timeout(tick_data, 7*1000)){
+		if(clock_time_exceed(tick_data, 7*1000)){
 			tick_data = clock_time();
 			test_cnt2 ++;
 			log_tick(1, SLEV_timestamp);
@@ -278,7 +288,15 @@ void main_loop (void)
 	#endif
 
 #endif
+
+	if (main_service)
+	{
+		main_service ();
+		main_service = 0;
+	}
 }
+
+
 
 
 
