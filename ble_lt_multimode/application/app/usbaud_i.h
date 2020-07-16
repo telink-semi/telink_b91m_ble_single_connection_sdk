@@ -26,8 +26,8 @@
 #include "drivers.h"
 #include "usbaud.h"
 #include "../usbstd/AudioClassCommon.h"
-#include "../usbstd/usbhw.h"
-#include "../usbstd/usbhw_i.h"
+#include "../../drivers/9518/usbhw.h"
+#include "../../drivers/9518/usbhw_i.h"
 #include "../../common/config/user_config.h"
 
 

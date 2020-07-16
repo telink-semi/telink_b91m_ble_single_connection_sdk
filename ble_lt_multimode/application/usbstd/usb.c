@@ -39,8 +39,8 @@
 #include "usb.h"
 #include "usbdesc.h"
 #include "../usbstd/StdRequestType.h"
-#include "usbhw.h"				// inline
-#include "usbhw_i.h"
+#include "../../drivers/9518/usbhw.h"
+#include "../../drivers/9518/usbhw_i.h"
 
 
 #if (USB_MOUSE_ENABLE)
@@ -63,6 +63,9 @@
 #ifdef WIN32
 #include <stdio.h>
 #endif
+
+
+
 
 extern u8 keyboard_interface_number, mouse_interface_number;
 
@@ -262,7 +265,7 @@ void usb_handle_std_intf_req() {
 		}
 #endif
 #if(USB_KEYBOARD_ENABLE)
-		if (index_l == (USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE ? keyboard_interface_number : USB_INTF_KEYBOARD)) {
+		 if (index_l == (USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE ? keyboard_interface_number : USB_INTF_KEYBOARD)) {
 			//keyboard
 			g_response = (u8*) usbkb_get_report_desc();
 			g_response_len = usbkb_get_report_desc_size();
@@ -396,10 +399,10 @@ void usb_handle_out_class_intf_req(int data_request) {
 					}
 					else {	//read core register
 						if (len == 0) {
-							custom_read_dat = analog_read (host_cmd[2]);
+							custom_read_dat = analog_read_reg8 (host_cmd[2]);
 						}
 						else {
-							analog_write (host_cmd[2], host_cmd[4]);
+							analog_write_reg8 (host_cmd[2], host_cmd[4]);
 						}
 					}
 				}
@@ -538,9 +541,9 @@ void usb_handle_in_class_intf_req() {
 
 
 void usb_handle_in_class_endp_req() {
+#if (USB_MIC_ENABLE || USB_SPEAKER_ENABLE)
 	u8 property = control_request.Request;
 	u8 ep_ctrl = control_request.Value >> 8;
-#if (USB_MIC_ENABLE || USB_SPEAKER_ENABLE)
 	//u8 addr = (control_request.Index >> 8);
 
 	if(ep_ctrl == AUDIO_EPCONTROL_SamplingFreq){
@@ -573,7 +576,7 @@ void usb_handle_set_intf() {
 #if (USB_SPEAKER_ENABLE || USB_MIC_ENABLE)
 	u8 value_l = (control_request.Value) & 0xff;
 	u8 intf_index = (control_request.Index) & 0x07;
-	assert(intf_index < USB_INTF_MAX);
+	//assert(intf_index < USB_INTF_MAX);
 	usb_alt_intf[intf_index] = value_l;
 
 #if (USB_MIC_ENABLE)
@@ -602,7 +605,7 @@ void usb_handle_set_intf() {
 #if (USB_SPEAKER_ENABLE || USB_MIC_ENABLE)
 void usb_handle_get_intf() {
 	u8 intf_index = (control_request.Index) & 0x07;
-	assert(intf_index < USB_INTF_MAX);
+	//assert(intf_index < USB_INTF_MAX);
 
 	usbhw_write_ctrl_ep_data(usb_alt_intf[intf_index]);
 
@@ -787,7 +790,7 @@ void usb_handle_irq(void) {
 		usbhw_data_ep_ack(USB_EDP_SOMATIC_OUT);
 	}
 #endif
-	if(IRQ_USB_PWDN_ENABLE && (reg_irq_src & FLD_IRQ_USB_PWDN_EN)){
+	if(IRQ_USB_PWDN_ENABLE && (reg_irq_src(FLD_IRQ_USB_PWDN_EN) & FLD_IRQ_USB_PWDN_EN)){
 		usb_has_suspend_irq = 1;
 	}else{
 		usb_has_suspend_irq = 0;
@@ -829,7 +832,7 @@ void usb_handle_irq(void) {
 #endif
 
 #if (!USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE)
-	if ((reg_irq_src & FLD_IRQ_USB_PWDN_EN))
+	if ((reg_irq_src(FLD_IRQ_USB_PWDN_EN) & FLD_IRQ_USB_PWDN_EN))
 	{
 		return;
 	}
@@ -855,7 +858,7 @@ void usb_handle_irq(void) {
 void usb_init_interrupt() {
 
 	usbhw_enable_manual_interrupt(FLD_CTRL_EP_AUTO_STD | FLD_CTRL_EP_AUTO_DESC);
-
+	reg_usb_edp_en = ( FLD_USB_EDP8_EN|FLD_USB_EDP1_EN|FLD_USB_EDP2_EN|FLD_USB_EDP4_EN|FLD_USB_EDP5_EN|FLD_USB_EDP6_EN|FLD_USB_EDP7_EN );
 }
 
 void usb_init() {
@@ -868,13 +871,26 @@ void usb_init() {
     extern void usbkb_init();
     usbkb_init();
 #endif
-
+	//1.enable USB DP pull up 1.5k
+	usb_set_pin_en();
+	//2.enable USB manual interrupt(in auto interrupt mode,USB device would be USB printer device)
 	usb_init_interrupt();
+	//3.set ep3 BUSY(BUSY same as ACK) bit as 1 means output endpoint buffer can receive data from USB host
+	usbhw_data_ep_ack(3);
+
+	//4.enable global interrupt
+	core_enable_interrupt();
+
+	reg_usb_irq_mask |= 1;
+
 #if 1 //FLOW_NO_OS
 #else
 	usb_handle_irq();
 #endif
 }
+
+
+
 
 
 #endif
