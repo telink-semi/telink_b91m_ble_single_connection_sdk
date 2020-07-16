@@ -26,8 +26,8 @@
 #include "usbmouse.h"
 #include "usbkb.h"
 #include "../usbstd/usb.h"
-#include "../usbstd/usbhw.h"
-#include "../usbstd/usbhw_i.h"
+#include "../../drivers/9518/usbhw.h"
+#include "../../drivers/9518/usbhw_i.h"
 #include "../rf_frame.h"
 
 #ifndef	USB_MOUSE_REPORT_SMOOTH

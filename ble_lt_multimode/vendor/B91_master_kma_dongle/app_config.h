@@ -52,10 +52,10 @@
 
 
 
-#define APPLICATION_DONGLE							0//1
+#define APPLICATION_DONGLE							1//1
 #if(APPLICATION_DONGLE)
-	#define PA5_FUNC				AS_USB
-	#define PA6_FUNC				AS_USB
+	#define PA5_FUNC				AS_USB_DM
+	#define PA6_FUNC				AS_USB_DP
 	#define PA5_INPUT_ENABLE		1
 	#define PA6_INPUT_ENABLE		1
 
@@ -88,7 +88,7 @@
 
 
 
-#define UART_PRINT_DEBUG_ENABLE				0
+#define UART_PRINT_DEBUG_ENABLE				1
 /////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
 #if (UART_PRINT_DEBUG_ENABLE)
 	//the baud rate should not bigger than 1M(system timer clock is constant 16M)
@@ -102,9 +102,9 @@
 
 
 #if BLT_APP_LED_ENABLE
-#define     UI_LED_ENABLE           0
-#else
 #define     UI_LED_ENABLE           1
+#else
+#define     UI_LED_ENABLE           0
 #endif
 
 #if UI_LED_ENABLE

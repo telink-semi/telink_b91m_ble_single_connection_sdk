@@ -99,10 +99,12 @@ int main (void)   //must on ramcode
 
 	gpio_init(1);
 
+	usb_init();
+
 	user_init_normal();
 
-
 	irq_enable();
+
 
 	while (1) {
 		main_loop ();
