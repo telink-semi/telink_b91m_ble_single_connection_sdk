@@ -858,7 +858,11 @@ void usb_handle_irq(void) {
 void usb_init_interrupt() {
 
 	usbhw_enable_manual_interrupt(FLD_CTRL_EP_AUTO_STD | FLD_CTRL_EP_AUTO_DESC);
+#if 1//usb setting
 	reg_usb_edp_en = ( FLD_USB_EDP8_EN|FLD_USB_EDP1_EN|FLD_USB_EDP2_EN|FLD_USB_EDP4_EN|FLD_USB_EDP5_EN|FLD_USB_EDP6_EN|FLD_USB_EDP7_EN );
+#else
+	reg_usb_edp_en = 0xff;//todo by zhangchong
+#endif
 }
 
 void usb_init() {
@@ -871,18 +875,18 @@ void usb_init() {
     extern void usbkb_init();
     usbkb_init();
 #endif
+#if 1//usb setting
 	//1.enable USB DP pull up 1.5k
 	usb_set_pin_en();
 	//2.enable USB manual interrupt(in auto interrupt mode,USB device would be USB printer device)
 	usb_init_interrupt();
 	//3.set ep3 BUSY(BUSY same as ACK) bit as 1 means output endpoint buffer can receive data from USB host
 	usbhw_data_ep_ack(3);
-
-	//4.enable global interrupt
 	core_enable_interrupt();
-
-	reg_usb_irq_mask |= 1;
-
+	reg_usb_irq_mask |=1;
+#else
+	usb_init_interrupt();
+#endif
 #if 1 //FLOW_NO_OS
 #else
 	usb_handle_irq();

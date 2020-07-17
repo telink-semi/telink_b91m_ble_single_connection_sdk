@@ -407,7 +407,7 @@ void proc_ota (void)
 			p->data[2] = ~adr_index_max_l;  //adr_index_max check
 			p->data[3] = ~adr_index_max_h;
 
-			memset(p->data + 4, 0, 12);
+			tmemset(p->data + 4, 0, 12);
 
 			att_req_write_cmd (dat, slave_ota_handle, (u8 *)p, 6);
 

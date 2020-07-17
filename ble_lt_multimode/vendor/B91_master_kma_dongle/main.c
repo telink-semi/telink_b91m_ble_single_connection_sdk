@@ -35,11 +35,10 @@
 
 extern void user_init_normal();
 extern void main_loop (void);
+extern void usb_init(void) ;
 
 
-
-_attribute_ram_code_
-void rf_irq_handler(void)
+_attribute_ram_code_ void rf_irq_handler(void)
 {
 	DBG_CHN10_HIGH;
 
@@ -48,14 +47,13 @@ void rf_irq_handler(void)
 	irq_blt_sdk_handler ();
 
 
-	plic_interrupt_complete(IRQ15_ZB_RT); 	//TODO: Sihui, what did HW do for this?
+	plic_interrupt_complete(IRQ15_ZB_RT);
 
 	DBG_CHN10_LOW;
 }
 
 
-_attribute_ram_code_
-void stimer_irq_handler(void)
+_attribute_ram_code_ void stimer_irq_handler(void)
 {
 	DBG_CHN11_HIGH;
 
@@ -69,10 +67,33 @@ void stimer_irq_handler(void)
 
 	DBG_CHN11_LOW;
 }
+#if 0//usb setting
+_attribute_ram_code_ void  usb_endpoints_irq_handler (void)
+{
+
+	/////////////////////////////////////
+	// ISO IN
+	/////////////////////////////////////
+	if (reg_usb_irq & BIT(7)) {
+		reg_usb_irq = BIT(7);	//clear interrupt flag of endpoint 7
+
+		/////// get MIC input data ///////////////////////////////
+
+	}
+
+}
+
+_attribute_ram_code_ void usb_endpoint_irq_handler(void)
+{
+
+	usb_endpoints_irq_handler ();
+
+	plic_interrupt_complete(IRQ11_USB_ENDPOINT);  	//plic_interrupt_complete
 
 
+}
 
-
+#endif
 
 /**
  * @brief		This is main function
@@ -103,8 +124,8 @@ int main (void)   //must on ramcode
 
 	user_init_normal();
 
-	irq_enable();
 
+	irq_enable();
 
 	while (1) {
 		main_loop ();

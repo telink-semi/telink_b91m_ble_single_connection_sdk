@@ -37,22 +37,22 @@
 
 
 /////////////////// MODULE /////////////////////////////////
-#define BLE_HOST_SMP_ENABLE							0  //1 for standard security management,  0 for telink referenced paring&bonding(no security)
-#define BLE_HOST_SIMPLE_SDP_ENABLE					0//1  //simple service discovery
+#define BLE_HOST_SMP_ENABLE							1  //1 for standard security management,  0 for telink referenced paring&bonding(no security)
+#define BLE_HOST_SIMPLE_SDP_ENABLE					1  //1  //simple service discovery
 
 
 #define BLE_MASTER_OTA_ENABLE						0//1  //slave ota test
-#define AUDIO_SDM_ENBALE							0  //if using sdm playback, should better disable USB MIC
+#define AUDIO_SDM_ENBALE							0//if using sdm playback, should better disable USB MIC
 
 #define UI_AUDIO_ENABLE								0//1
-#define UI_BUTTON_ENABLE							0//1
+#define UI_BUTTON_ENABLE							1
 #define UI_UPPER_COMPUTER_ENABLE					0  //work with upper computer
 
 #define BLT_APP_LED_ENABLE							1
 
 
 
-#define APPLICATION_DONGLE							1//1
+#define APPLICATION_DONGLE							1
 #if(APPLICATION_DONGLE)
 	#define PA5_FUNC				AS_USB_DM
 	#define PA6_FUNC				AS_USB_DP
@@ -61,6 +61,9 @@
 
 	#define	USB_PRINTER_ENABLE 		1
 	#define	USB_SPEAKER_ENABLE 		0
+
+	#define AUDIO_HOGP				0
+
 	#define	USB_MIC_ENABLE 			1
 	#define	USB_MOUSE_ENABLE 		1
 	#define	USB_KEYBOARD_ENABLE 	1
@@ -68,6 +71,11 @@
 	#define USB_CUSTOM_HID_REPORT	1
 #endif
 
+#define ID_VENDOR				0x248a			// for report
+#define ID_PRODUCT_BASE			0x880c			//AUDIO_HOGP
+#define STRING_VENDOR			L"Telink"
+#define STRING_PRODUCT			L"BLE Remote KMA Dongle"
+#define STRING_SERIAL			L"TLSR9518"
 
 //////////////////// Audio /////////////////////////////////////
 #define MIC_RESOLUTION_BIT		16
@@ -88,7 +96,7 @@
 
 
 
-#define UART_PRINT_DEBUG_ENABLE				1
+#define UART_PRINT_DEBUG_ENABLE				0
 /////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
 #if (UART_PRINT_DEBUG_ENABLE)
 	//the baud rate should not bigger than 1M(system timer clock is constant 16M)
@@ -104,7 +112,7 @@
 #if BLT_APP_LED_ENABLE
 #define     UI_LED_ENABLE           1
 #else
-#define     UI_LED_ENABLE           0
+#define     UI_LED_ENABLE           1
 #endif
 
 #if UI_LED_ENABLE
@@ -140,14 +148,18 @@
 
 #endif
 
-
-#if (BLT_APP_LED_ENABLE)
-	#define	GPIO_LED				GPIO_LED_WHITE
+//----------------------- GPIO for UI --------------------------------
+#if (UI_BUTTON_ENABLE)
+	//---------------  Button ----------------------------------
+	#define	SW1_GPIO				GPIO_PC6
+	#define	SW2_GPIO				GPIO_PC7
+	#define PC6_FUNC				AS_GPIO
+	#define PC7_FUNC				AS_GPIO
+	#define PC6_INPUT_ENABLE		1
+	#define PC7_INPUT_ENABLE		1
+	#define PULL_WAKEUP_SRC_PC6     PM_PIN_PULLUP_10K
+	#define PULL_WAKEUP_SRC_PC7     PM_PIN_PULLUP_10K
 #endif
-
-
-
-
 
 
 /////////////////// Clock  /////////////////////////////////
@@ -203,10 +215,10 @@ enum{
 	#define GPIO_CHN11							GPIO_PB3
 
 	//PDx bug(baoyi)
-	#define GPIO_CHN12							GPIO_PC7
-	#define GPIO_CHN13							GPIO_PC6
-	#define GPIO_CHN14							GPIO_PC5
-	#define GPIO_CHN15							GPIO_PC4
+	#define GPIO_CHN12							GPIO_PD7
+	#define GPIO_CHN13							GPIO_PD6
+	#define GPIO_CHN14							GPIO_PD5
+	#define GPIO_CHN15							GPIO_PD4
 
 
 	#define PE1_OUTPUT_ENABLE					1
@@ -222,10 +234,10 @@ enum{
 	#define PA1_OUTPUT_ENABLE					1
 	#define PB1_OUTPUT_ENABLE					1
 	#define PB3_OUTPUT_ENABLE					1
-	#define PC7_OUTPUT_ENABLE					1
-	#define PC6_OUTPUT_ENABLE					1
-	#define PC5_OUTPUT_ENABLE					1
-	#define PC4_OUTPUT_ENABLE					1
+	#define PD7_OUTPUT_ENABLE					1
+	#define PD6_OUTPUT_ENABLE					1
+	#define PD5_OUTPUT_ENABLE					1
+	#define PD4_OUTPUT_ENABLE					1
 
 
 	#define DBG_CHN0_LOW		gpio_write(GPIO_CHN0, 0)

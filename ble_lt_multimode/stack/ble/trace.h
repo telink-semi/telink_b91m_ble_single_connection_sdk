@@ -65,6 +65,7 @@
 #define			SL01_sysTimer				2
 #define			SL01_adv     				3
 #define			SL01_brx     				4
+#define			SL01_btx     				5
 
 // 8-bit data: cid0 - cid63
 #define			SL08_test_1B				0

@@ -70,7 +70,7 @@
 #define			LL_ADV_TX_SETTLE				79
 #define 		LL_SCAN_TX_SETTLE				56
 #define 		LL_SLAVE_TX_SETTLE				80
-#define 		LL_MASTER_TX_SETTLE				76
+#define 		LL_MASTER_TX_SETTLE				81
 
 #define			LL_ADV_TX_STL_2M				84
 #define			LL_ADV_TX_STL_CODED				116

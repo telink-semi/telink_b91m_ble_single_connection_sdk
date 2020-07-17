@@ -413,9 +413,9 @@ void	proc_mic_encoder (void)
 		extern u8 mic_start_flag;
 		if(mic_start_flag){
 			mic_start_flag =0;
-			memset(filter_1,0,sizeof(filter_1));
-			memset(filter_2,0,sizeof(filter_2));
-			memset(filter_3,0,sizeof(filter_3));
+			tmemset(filter_1,0,sizeof(filter_1));
+			tmemset(filter_2,0,sizeof(filter_2));
+			tmemset(filter_3,0,sizeof(filter_3));
 		}
 		memcpy(filter_1,c1,sizeof(c1));
 		memcpy(filter_2,c2,sizeof(c2));

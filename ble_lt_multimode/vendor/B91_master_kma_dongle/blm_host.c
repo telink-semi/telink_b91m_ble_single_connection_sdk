@@ -98,8 +98,8 @@ const u8 	telink_adv_trigger_unpair_8258[] = {7, 0xFF, 0x11, 0x02, 0x01, 0x01, 0
 
 		att_db_uuid16_t 	db16[ATT_DB_UUID16_NUM];
 		att_db_uuid128_t 	db128[ATT_DB_UUID128_NUM];
-		memset (db16, 0, ATT_DB_UUID16_NUM * sizeof (att_db_uuid16_t));
-		memset (db128, 0, ATT_DB_UUID128_NUM * sizeof (att_db_uuid128_t));
+		tmemset (db16, 0, ATT_DB_UUID16_NUM * sizeof (att_db_uuid16_t));
+		tmemset (db128, 0, ATT_DB_UUID128_NUM * sizeof (att_db_uuid128_t));
 
 
 		if ( IS_CONNECTION_HANDLE_VALID(cur_conn_device.conn_handle) && \

@@ -128,7 +128,7 @@ static u32 cur_conn_device_hdl; //conn_handle
 	u8 vc_detect_button(int read_key)
 	{
 		u8 btn_changed, i;
-		memset(&vc_event,0,sizeof(vc_data_t));			//clear vc_event
+		tmemset(&vc_event,0,sizeof(vc_data_t));			//clear vc_event
 		//vc_event.btn_press = 0;
 
 		for(i=0; i<MAX_BTN_SIZE; i++){

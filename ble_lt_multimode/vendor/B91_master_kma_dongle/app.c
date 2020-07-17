@@ -50,13 +50,28 @@ _attribute_data_retention_	own_addr_type_t 	app_own_address_type = OWN_ADDRESS_P
 
 int main_idle_loop (void);
 
-
-
 void user_init_normal(void)
 {
 	//random number generator must be initiated here( in the beginning of user_init_nromal)
 	//when deepSleep retention wakeUp, no need initialize again
-//	random_generator_init();  //this is must
+	random_generator_init();  //this is must
+
+#if 0//usb setting
+	//set USB ID
+	REG_ADDR8(0x1401f4) = 0x65;
+	REG_ADDR16(0x1401fe) = 0x08d0;
+	REG_ADDR8(0x1401f4) = 0x00;
+
+	//////////////// config USB ISO IN/OUT interrupt /////////////////
+	reg_usb_mask = BIT(7);			//audio in interrupt enable
+	plic_interrupt_enable(IRQ11_USB_ENDPOINT);
+	reg_usb_ep6_buf_addr = 0x80;
+	reg_usb_ep7_buf_addr = 0x60;
+	reg_usb_ep_max_size = (256 >> 3);
+
+	usb_dp_pullup_en (1);  //open USB enum
+#endif
+
 
 
 
@@ -76,20 +91,15 @@ void user_init_normal(void)
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initMasterRoleSingleConn_module();			//master module: 	 mandatory for BLE master,
 
-
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
 	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
 
-
-
 	////// Host Initialization  //////////
-//	blc_gap_central_init();										//gap initialization
-//	blc_l2cap_register_handler (app_l2cap_handler);  	//l2cap initialization
+	blc_gap_central_init();										//gap initialization
+	blc_l2cap_register_handler (app_l2cap_handler);  	//l2cap initialization
 	blc_hci_registerControllerEventHandler(controller_event_callback); //controller hci event to host all processed in this func
-
-
 
 	//bluetooth event
 	blc_hci_setEventMask_cmd (HCI_EVT_MASK_DISCONNECTION_COMPLETE | HCI_EVT_MASK_ENCRYPTION_CHANGE);
@@ -101,8 +111,6 @@ void user_init_normal(void)
 									|	HCI_LE_EVT_MASK_PHY_UPDATE_COMPLETE			\
 									|   HCI_LE_EVT_MASK_CONNECTION_ESTABLISH );         //connection establish: telink private event
 
-
-#if 0
 	#if (BLE_HOST_SMP_ENABLE)
 		blm_smp_configParingSecurityInfoStorageAddr(FLASH_ADR_PARING);
 		blm_smp_registerSmpFinishCb(app_host_smp_finish);
@@ -117,24 +125,19 @@ void user_init_normal(void)
 		user_master_host_pairing_management_init();
 	#endif
 
-#endif
 
 	extern int host_att_register_idle_func (void *p);
 	host_att_register_idle_func (main_idle_loop);
 
-
-
-
-
 	//set scan parameter and scan enable
-
+#if 1
 	blc_ll_setScanParameter(SCAN_TYPE_PASSIVE, SCAN_INTERVAL_100MS, SCAN_INTERVAL_100MS,	\
 							OWN_ADDRESS_PUBLIC, SCAN_FP_ALLOW_ADV_ANY);
-//	blc_ll_setScanParameter(SCAN_TYPE_ACTIVE, SCAN_INTERVAL_100MS, SCAN_INTERVAL_100MS,	\
-//							OWN_ADDRESS_PUBLIC, SCAN_FP_ALLOW_ADV_ANY);
+#else
+	blc_ll_setScanParameter(SCAN_TYPE_ACTIVE, SCAN_INTERVAL_100MS, SCAN_INTERVAL_100MS,	\
+							OWN_ADDRESS_PUBLIC, SCAN_FP_ALLOW_ADV_ANY);
+#endif
 	blc_ll_setScanEnable (BLC_SCAN_ENABLE, DUP_FILTER_DISABLE);
-
-
 
 	#if (UI_UPPER_COMPUTER_ENABLE)
 		extern void app_upper_com_init(void);
@@ -157,7 +160,7 @@ int main_idle_loop (void)
 
 
 	////////////////////////////////////// BLE entry /////////////////////////////////
-	//blt_sdk_main_loop();
+	blt_sdk_main_loop();
 
 
 	///////////////////////////////////// proc usb cmd from host /////////////////////
@@ -166,16 +169,8 @@ int main_idle_loop (void)
 
 
 	/////////////////////////////////////// HCI ///////////////////////////////////////
-//	blc_hci_proc ();
+	blc_hci_proc ();
 
-	////////////////////////////////////// UI entry /////////////////////////////////
-	static u32 t_sync = 0;
-
-	if(clock_time_exceed(t_sync, 200000))
-	{
-		t_sync = clock_time();
-		gpio_toggle(GPIO_LED_WHITE);// LLJ
-	}
 
 
 	////////////////////////////////////// UI entry /////////////////////////////////
@@ -215,7 +210,7 @@ int main_idle_loop (void)
 #endif
 
 
-//	host_pair_unpair_proc();
+	host_pair_unpair_proc();
 
 
 #if(BLE_MASTER_OTA_ENABLE)
@@ -224,9 +219,9 @@ int main_idle_loop (void)
 
 #if 1
 	//proc master update
-//	if(host_update_conn_param_req){
-//		host_update_conn_proc();
-//	}
+	if(host_update_conn_param_req){
+		host_update_conn_proc();
+	}
 #endif
 
 	return 0;
