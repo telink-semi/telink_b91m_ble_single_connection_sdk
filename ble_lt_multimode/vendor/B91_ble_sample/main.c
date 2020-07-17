@@ -84,7 +84,7 @@ int main (void)   //must on ramcode
 {
 	sys_init(LDO_MODE);
 
-	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV8_TO_CCLK,CCLK_DIV1_TO_HCLK, HCLK_DIV1_TO_PCLK,CCLK_TO_MSPI_CLK);
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV8_TO_CCLK,CCLK_DIV1_TO_HCLK, HCLK_DIV1_TO_PCLK,PLL_DIV4_TO_MSPI_CLK);
 
 	rf_drv_init(RF_MODE_BLE_1M);
 

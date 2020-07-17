@@ -427,7 +427,7 @@ void blt_pm_proc(void)
 				}
 			}
 			else if(sendTerminate_before_enterDeep == 2){  //Terminate OK
-				analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) | CONN_DEEP_FLG);
+				analog_write_reg8(USED_DEEP_ANA_REG, analog_read_reg8(USED_DEEP_ANA_REG) | CONN_DEEP_FLG);
 				cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
 			}
 
