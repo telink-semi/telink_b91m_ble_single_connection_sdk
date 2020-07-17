@@ -293,7 +293,7 @@ void filter_setting()
 		if(pga_post_gain_tmp > 0x0f){//0x0f: PGA_GAIN_VOL_0_0DB
 			return;
 		}
-		analog_write(codec_ana_cfg4,(analog_read(codec_ana_cfg4) & 0x00) | pga_post_gain_tmp);
+		analog_write_reg8(codec_ana_cfg4,(analog_read(codec_ana_cfg4) & 0x00) | pga_post_gain_tmp);
 	}
 #endif
 	return ;

@@ -490,14 +490,14 @@ void deep_wakeup_proc(void)
 	//if deepsleep wakeup is wakeup by GPIO(key press), we must quickly scan this
 	//press, hold this data to the cache, when connection established OK, send to master
 	//deepsleep_wakeup_fast_keyscan
-	if(analog_read(USED_DEEP_ANA_REG) & CONN_DEEP_FLG){
+	if(analog_read_reg8(USED_DEEP_ANA_REG) & CONN_DEEP_FLG){
 		if(kb_scan_key (KB_NUMLOCK_STATUS_POWERON, 1) && kb_event.cnt){
 			deepback_key_state = DEEPBACK_KEY_CACHE;
 			key_not_released = 1;
 			memcpy(&kb_event_cache,&kb_event,sizeof(kb_event));
 		}
 
-		analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) & (~CONN_DEEP_FLG));
+		analog_write_reg8(USED_DEEP_ANA_REG, analog_read_reg8(USED_DEEP_ANA_REG) & (~CONN_DEEP_FLG));
 	}
 #endif
 }
@@ -701,10 +701,10 @@ void key_change_proc_2(void)
 
 			#if (REMOTE_IR_ENABLE)
 				if(user_key_mode == KEY_MODE_BLE){
-					analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG)&(~IR_MODE_DEEP_FLG));
+					analog_write_reg8(USED_DEEP_ANA_REG, analog_read_reg8(USED_DEEP_ANA_REG)&(~IR_MODE_DEEP_FLG));
 				}
 				else{
-					analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG)|IR_MODE_DEEP_FLG);
+					analog_write_reg8(USED_DEEP_ANA_REG, analog_read_reg8(USED_DEEP_ANA_REG)|IR_MODE_DEEP_FLG);
 				}
 			#endif
 
@@ -969,7 +969,7 @@ void app_ui_init_normal(void)
 
 
 #if (REMOTE_IR_ENABLE)
-	user_key_mode = analog_read(USED_DEEP_ANA_REG) & IR_MODE_DEEP_FLG ? KEY_MODE_IR : KEY_MODE_BLE;
+	user_key_mode = analog_read_reg8(USED_DEEP_ANA_REG) & IR_MODE_DEEP_FLG ? KEY_MODE_IR : KEY_MODE_BLE;
 #endif
 
 
@@ -1001,7 +1001,7 @@ void app_ui_init_deepRetn(void)
 #endif
 
 #if (REMOTE_IR_ENABLE)
-	user_key_mode = analog_read(USED_DEEP_ANA_REG) & IR_MODE_DEEP_FLG ? KEY_MODE_IR : KEY_MODE_BLE;
+	user_key_mode = analog_read_reg8(USED_DEEP_ANA_REG) & IR_MODE_DEEP_FLG ? KEY_MODE_IR : KEY_MODE_BLE;
 #endif
 }
 
