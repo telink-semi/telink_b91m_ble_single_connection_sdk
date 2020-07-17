@@ -67,7 +67,7 @@ _attribute_ram_code_ void stimer_irq_handler(void)
 
 	DBG_CHN11_LOW;
 }
-#if 0//usb setting
+
 _attribute_ram_code_ void  usb_endpoints_irq_handler (void)
 {
 
@@ -93,7 +93,7 @@ _attribute_ram_code_ void usb_endpoint_irq_handler(void)
 
 }
 
-#endif
+
 
 /**
  * @brief		This is main function

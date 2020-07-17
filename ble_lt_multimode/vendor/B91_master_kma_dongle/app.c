@@ -56,7 +56,6 @@ void user_init_normal(void)
 	//when deepSleep retention wakeUp, no need initialize again
 	random_generator_init();  //this is must
 
-#if 0//usb setting
 	//set USB ID
 	REG_ADDR8(0x1401f4) = 0x65;
 	REG_ADDR16(0x1401fe) = 0x08d0;
@@ -70,7 +69,7 @@ void user_init_normal(void)
 	reg_usb_ep_max_size = (256 >> 3);
 
 	usb_dp_pullup_en (1);  //open USB enum
-#endif
+
 
 
 
