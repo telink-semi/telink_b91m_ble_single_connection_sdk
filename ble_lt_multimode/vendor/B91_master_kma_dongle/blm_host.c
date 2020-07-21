@@ -30,8 +30,10 @@
 #include "blm_host.h"
 #include "blm_ota.h"
 
-
-
+#include "application/audio/audio_config.h"
+#include "application/audio/tl_audio.h"
+#include "app_audio.h"
+#include "application/print/u_printf.h"
 main_service_t		main_service = 0;
 
 #define SMP_PENDING					1   //security management
@@ -91,7 +93,9 @@ const u8 	telink_adv_trigger_unpair_8258[] = {7, 0xFF, 0x11, 0x02, 0x01, 0x01, 0
 	extern const u8 my_MicUUID[16];
 	extern const u8 my_SpeakerUUID[16];
 	extern const u8 my_OtaUUID[16];
-
+#if(TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_GOOGLE)
+	u8 google_voice_model = 0;
+#endif
 
 	void app_service_discovery ()
 	{
@@ -119,6 +123,13 @@ const u8 	telink_adv_trigger_unpair_8258[] = {7, 0xFF, 0x11, 0x02, 0x01, 0x01, 0
 
 			conn_char_handler[5] = blm_att_findHandleOfUuid16 (db16, CHARACTERISTIC_UUID_HID_REPORT,
 						HID_REPORT_ID_MOUSE_INPUT | (HID_REPORT_TYPE_INPUT<<8));				//mouse report
+
+			conn_char_handler[6] = blm_att_findHandleOfUuid16 (db16, CHARACTERISTIC_UUID_HID_REPORT,
+									HID_REPORT_ID_KEYBOARD_INPUT | (HID_REPORT_TYPE_OUTPUT<<8));				//normal key report out
+
+			conn_char_handler[7] = blm_att_findHandleOfUuid16 (db16, CHARACTERISTIC_UUID_HID_REPORT,
+									HID_REPORT_ID_AUDIO_FIRST_INPUT | (HID_REPORT_TYPE_INPUT<<8));				//Audio first report
+
 
 			//module
 			//conn_char_handler[6] = blm_att_findHandleOfUuid128 (db128, my_SppS2CUUID);			//notify
@@ -148,6 +159,17 @@ const u8 	telink_adv_trigger_unpair_8258[] = {7, 0xFF, 0x11, 0x02, 0x01, 0x01, 0
 	#define			HID_HANDLE_KEYBOARD_REPORT			conn_char_handler[4]
 	#define			HID_HANDLE_MOUSE_REPORT				conn_char_handler[5]
 	#define			AUDIO_HANDLE_MIC					conn_char_handler[0]
+	#define			HID_HANDLE_KEYBOARD_REPORT_OUT		conn_char_handler[6]
+	#define			AUDIO_FIRST_REPORT					conn_char_handler[7]
+
+	#if(TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_GOOGLE)
+
+	#define 		GOOGLE_AUDIO_HANDLE_MIC_CMD			52//80
+	#define 		GOOGLE_AUDIO_HANDLE_MIC_DATA		54//82
+	#define 		GOOGLE_AUDIO_HANDLE_MIC_RSP			57//85
+	#else
+	#endif
+
 #else  //no service discovery
 
 	//need define att handle same with slave
@@ -185,6 +207,22 @@ int app_host_smp_finish (void)  //smp finish callback
 		}
 	#else
 		app_host_smp_sdp_pending = 0;  //no sdp
+	#endif
+
+	#if(TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_GOOGLE)
+		u8 dat[32]={0};
+		u8 caps_data[6]={0};
+		caps_data[0] = 0x0A; //get caps
+		caps_data[1] = 0x01;
+		caps_data[2] = 0x00; // version 0x0100;
+		caps_data[3] = 0x00;
+		caps_data[4] = 0x03; // legacy 0x0003;
+		caps_data[5] = GOOGLE_VOICE_MODE; // model : htt 0x03; ptt:0x01
+
+		att_req_write_cmd(dat, GOOGLE_AUDIO_HANDLE_MIC_CMD, caps_data, 6);/*AUDIO_GOOGLE_TX_DP_H*/
+
+		if(blm_push_fifo(BLM_CONN_HANDLE, dat)){
+		}
 	#endif
 
 	return 0;
@@ -560,7 +598,15 @@ void host_update_conn_proc(void)
 	}
 }
 
-
+#if (TL_AUDIO_MODE & TL_AUDIO_MASK_HID_SERVICE_CHANNEL)
+	u8 audio_start = 0x01;
+	u8 audio_stop  = 0x00;
+	u8 audio_config  = 0x02;
+	extern u8 mic_cnt;
+	extern u8 att_mic_rcvd;
+	u8  host_write_dat[32] = {0};
+	u8		tmp_mic_data[MIC_ADPCM_FRAME_SIZE];
+#endif
 
 
 
@@ -630,9 +676,148 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 			{
 				static u32 app_key;
 				app_key++;
-				#if APPLICATION_DONGLE
+
+			#if (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_HID_DONGLE_TO_STB)
+				static u32 rcu_cmd = 0;
+				rcu_cmd = (pAtt->dat[3]<<24)|(pAtt->dat[2]<<16) | (pAtt->dat[1]<<8)|(pAtt->dat[0]);
+
+				if(rcu_cmd == MIC_OPEN_FROM_RCU){//open mic
+
+					att_req_write_cmd (host_write_dat, HID_HANDLE_KEYBOARD_REPORT_OUT, (u8 *)&audio_start, 1);
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+			//							while(1);
+					}
+					u8 key[20] = {0};
+					u32 mic_open_to_stb = MIC_OPEN_TO_STB;
+					memcpy(key,(u8 *)&mic_open_to_stb,4);
+					mic_packet_reset();
+					usb_report_hid_mic(key, 2);
+				}
+				else if(rcu_cmd == MIC_CLOSE_FROM_RCU){ //close mic
+
+					att_req_write_cmd (host_write_dat, HID_HANDLE_KEYBOARD_REPORT_OUT, (u8 *)&audio_stop, 1);
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+			//							while(1);
+					}
+					u8 key[20] = {0};
+					u32 mic_close_to_stb = MIC_CLOSE_TO_STB;
+					memcpy(key,(u8 *)&mic_close_to_stb,4);
+					usb_report_hid_mic(key, 2);
+				}
+				else
+				{
+					att_keyboard_media (conn_handle, pAtt->dat);
+				}
+
+			#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_HID)
+				static u16 tem_data = 0;
+				tem_data = pAtt->dat[3];
+
+				if(tem_data == 0x21){
+
+					att_req_write_cmd (host_write_dat, HID_HANDLE_KEYBOARD_REPORT_OUT, (u8 *)&audio_start, 1);  //open mic
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+						while(1);
+					}
+					abuf_init ();
+				}
+				else if(tem_data == 0x24){
+					att_req_write_cmd (host_write_dat, HID_HANDLE_KEYBOARD_REPORT_OUT, (u8 *)&audio_stop, 1);   //close mic
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+						while(1);
+					}
+				}
+				else{
+					att_keyboard_media (conn_handle, pAtt->dat);
+				}
+			#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_SBC_HID_DONGLE_TO_STB)
+				static u32 rcu_cmd = 0;
+				rcu_cmd = (pAtt->dat[3]<<24)|(pAtt->dat[2]<<16) | (pAtt->dat[1]<<8)|(pAtt->dat[0]);
+
+				if(rcu_cmd == MIC_OPEN_FROM_RCU){//open mic
+
+					att_req_write_cmd (host_write_dat, HID_HANDLE_KEYBOARD_REPORT_OUT, (u8 *)&audio_start, 1);
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+			//							while(1);
+					}
+					u8 key[20] = {0};
+					u32 mic_open_to_stb = MIC_OPEN_TO_STB;
+					memcpy(key,(u8 *)&mic_open_to_stb,4);
+					mic_packet_reset();
+					usb_report_hid_mic(key, 2);
+				}
+				else if(rcu_cmd == MIC_CLOSE_FROM_RCU){ //close mic
+
+					att_req_write_cmd (host_write_dat, HID_HANDLE_KEYBOARD_REPORT_OUT, (u8 *)&audio_stop, 1);
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+			//							while(1);
+					}
+					u8 key[20] = {0};
+					u32 mic_close_to_stb = MIC_CLOSE_TO_STB;
+					memcpy(key,(u8 *)&mic_close_to_stb,4);
+					usb_report_hid_mic(key, 2);
+				}
+				else
+				{
+					att_keyboard_media (conn_handle, pAtt->dat);
+				}
+
+			#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_SBC_HID)
+				static u16 tem_data = 0;
+				tem_data = pAtt->dat[3];
+
+				if(tem_data == 0x31){
+
+					att_req_write_cmd (host_write_dat, HID_HANDLE_KEYBOARD_REPORT_OUT, (u8 *)&audio_start, 1);  //open mic
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+						while(1);
+					}
+				}
+				else if(tem_data == 0x34){
+					att_req_write_cmd (host_write_dat, HID_HANDLE_KEYBOARD_REPORT_OUT, (u8 *)&audio_stop, 1);   //close mic
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+						while(1);
+					}
+				}
+				else{
+					att_keyboard_media (conn_handle, pAtt->dat);
+				}
+			#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_MSBC_HID)
+				static u16 tem_data = 0;
+				tem_data = pAtt->dat[3];
+
+				if(tem_data == 0x31){
+
+					att_req_write_cmd (host_write_dat, HID_HANDLE_KEYBOARD_REPORT_OUT, (u8 *)&audio_start, 1);  //open mic
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+						while(1);
+					}
+				}
+				else if(tem_data == 0x34){
+					att_req_write_cmd (host_write_dat, HID_HANDLE_KEYBOARD_REPORT_OUT, (u8 *)&audio_stop, 1);   //close mic
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+						while(1);
+					}
+				}
+				else{
+					att_keyboard_media (conn_handle, pAtt->dat);
+				}
+			#else
+
 				att_keyboard_media (conn_handle, pAtt->dat);
-				#endif
+				//printf("att_keyboard_media: \r\n");
+				//array_printf(pAtt->dat, pAtt->l2capLen-3);
+			#endif
 			}
 			else if(attHandle == HID_HANDLE_KEYBOARD_REPORT)
 			{
@@ -647,12 +832,98 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 //				att_mouse(conn_handle,pAtt->dat);
 //			}
 			#if UI_AUDIO_ENABLE
+#if (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_TELINK)
 			else if(attHandle == AUDIO_HANDLE_MIC)
 			{
 				static u32 app_mic;
 				app_mic	++;
 				att_mic (conn_handle, pAtt->dat);
 			}
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_HID_DONGLE_TO_STB)
+			else if(attHandle == AUDIO_FIRST_REPORT || attHandle == (AUDIO_FIRST_REPORT + 4) || attHandle == (AUDIO_FIRST_REPORT + 8))
+			{
+				push_mic_packet(pAtt->dat);
+			}
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_HID)
+			else if(attHandle == AUDIO_FIRST_REPORT || attHandle == (AUDIO_FIRST_REPORT + 4) || attHandle == (AUDIO_FIRST_REPORT + 8))//HID·½°¸£¬dongle½âÂë
+			{
+				att_mic_rcvd = 1;
+
+				static u32 app_mic;
+				app_mic	++;
+
+				mic_cnt++;
+
+				if(mic_cnt <=6 ){
+					memcpy(tmp_mic_data+(mic_cnt-1)*20, pAtt->dat, 20);
+				}
+
+				if(mic_cnt == 6){
+					mic_cnt = 0;
+					att_mic (conn_handle, tmp_mic_data);
+				}
+			}
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_SBC_HID_DONGLE_TO_STB)
+			else if(attHandle == AUDIO_FIRST_REPORT || attHandle == (AUDIO_FIRST_REPORT + 4) || attHandle == (AUDIO_FIRST_REPORT + 8))
+			{
+				push_mic_packet(pAtt->dat);
+			}
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_SBC_HID)
+			else if(attHandle == AUDIO_FIRST_REPORT || attHandle == (AUDIO_FIRST_REPORT + 4) || attHandle == (AUDIO_FIRST_REPORT + 8))
+			{
+				static u32 app_mic;
+				app_mic	++;
+				att_mic (conn_handle, pAtt->dat);
+			}
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_MSBC_HID)
+			else if(attHandle == AUDIO_FIRST_REPORT || attHandle == (AUDIO_FIRST_REPORT + 4) || attHandle == (AUDIO_FIRST_REPORT + 8))
+			{
+				static u32 app_mic;
+				app_mic	++;
+				att_mic (conn_handle, pAtt->dat);
+			}
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_GOOGLE)
+			else if(attHandle == GOOGLE_AUDIO_HANDLE_MIC_DATA)
+			{
+				app_audio_data(pAtt->dat, pAtt->rf_len-7);
+			}
+			else if(attHandle == GOOGLE_AUDIO_HANDLE_MIC_RSP)
+			{
+				extern u8 google_audio_start;
+				if(pAtt->dat[0] == (google_voice_model ? 0x04 : 0x08))
+				{
+					u8 dat[32]={0};
+					#if (MIC_SAMPLE_RATE == 16000)
+					u8 data[10] = {0x0C, 0x00, 0x02, 0x00, 0x03};//16000
+					#else
+					u8 data[10] = {0x0C, 0x00, 0x01, 0x00, 0x01};//8000
+					#endif
+
+					att_req_write(dat, GOOGLE_AUDIO_HANDLE_MIC_CMD, data, 5);
+
+					if(blm_push_fifo(BLM_CONN_HANDLE, dat)){
+
+					}
+					//printf("audio start");
+					google_audio_start = true;//app_audio_start();
+
+				}
+				else if(pAtt->dat[0] == 0x00)
+				{
+					google_audio_start = false;//app_audio_stop();
+				}
+				else if(pAtt->dat[0] == 0x0A)
+				{
+					//printf("AUDIO_HANDLE_MIC_RSP: sync\r\n");
+				}
+				else if(pAtt->dat[0] == 0x0B)
+				{
+					//get caps rsp
+					google_voice_model = pAtt->dat[4];
+
+				}
+			}
+#endif
 			#endif
 			else
 			{

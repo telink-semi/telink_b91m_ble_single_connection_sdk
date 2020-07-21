@@ -24,7 +24,7 @@
  *         
  *******************************************************************************************************/
 #pragma once
-
+#include  "application/audio/audio_common.h"
 
 // Hardware board select
 #define HW_C1T219A20_V1_0_64_EVB		1
@@ -44,7 +44,7 @@
 #define BLE_MASTER_OTA_ENABLE						0//1  //slave ota test
 #define AUDIO_SDM_ENBALE							0//if using sdm playback, should better disable USB MIC
 
-#define UI_AUDIO_ENABLE								0//1
+#define UI_AUDIO_ENABLE								1//1
 #define UI_BUTTON_ENABLE							1
 #define UI_UPPER_COMPUTER_ENABLE					0  //work with upper computer
 
@@ -62,21 +62,35 @@
 	#define	USB_PRINTER_ENABLE 		1
 	#define	USB_SPEAKER_ENABLE 		0
 
-	#define AUDIO_HOGP				0
-
+	#if ((TL_AUDIO_MODE & TL_AUDIO_MASK_HID_SERVICE_CHANNEL) && (TL_AUDIO_MODE & TL_AUDIO_MASK_DONGLE_TO_STB))//HID方案，dongle透传STB解码
+	#define	USB_MIC_ENABLE 			0
+	#define AUDIO_HOGP				1	//Audio HID Over GATT Profile
+	#else
+	#define AUDIO_HOGP				0	//Audio HID Over GATT Profile
 	#define	USB_MIC_ENABLE 			1
+	#endif
+
 	#define	USB_MOUSE_ENABLE 		1
 	#define	USB_KEYBOARD_ENABLE 	1
 	#define	USB_SOMATIC_ENABLE      0   //  when USB_SOMATIC_ENABLE, USB_EDP_PRINTER_OUT disable
 	#define USB_CUSTOM_HID_REPORT	1
 #endif
 
+#if ((TL_AUDIO_MODE & TL_AUDIO_MASK_HID_SERVICE_CHANNEL) && (TL_AUDIO_MODE & TL_AUDIO_MASK_DONGLE_TO_STB))//HID方案，dongle透传STB解码
+//////////// product  Information  //////////////////////////////
+#define ID_VENDOR				0x1d5a//0x248a			// for report
+#define ID_PRODUCT_BASE			0xc080//0x880C//AUDIO_HOGP
+#define STRING_VENDOR			L"Telink"
+#define STRING_PRODUCT			L"BLE Remote KMA Dongle"
+#define STRING_SERIAL			L"TLSR9518"
+#else
+//////////// product  Information  //////////////////////////////
 #define ID_VENDOR				0x248a			// for report
 #define ID_PRODUCT_BASE			0x880c			//AUDIO_HOGP
 #define STRING_VENDOR			L"Telink"
 #define STRING_PRODUCT			L"BLE Remote KMA Dongle"
 #define STRING_SERIAL			L"TLSR9518"
-
+#endif
 //////////////////// Audio /////////////////////////////////////
 #define MIC_RESOLUTION_BIT		16
 #define MIC_SAMPLE_RATE			16000
@@ -86,11 +100,24 @@
 
 
 ////////////////////////// MIC BUFFER /////////////////////////////
-#define BLE_DMIC_ENABLE				0  //0: Amic   1: Dmic
-#define	MIC_ADPCM_FRAME_SIZE		128 //128
-#define	MIC_SHORT_DEC_SIZE			248 //248
-#if (UI_AUDIO_ENABLE)
 
+#if (UI_AUDIO_ENABLE)
+	#define BLE_DMIC_ENABLE					0  //0: Amic   1: Dmic
+
+	/* Dongle Audio MODE:
+	 * TL_AUDIO_DONGLE_ADPCM_GATT_TELINK
+	 * TL_AUDIO_DONGLE_ADPCM_GATT_GOOGLE
+	 * TL_AUDIO_DONGLE_ADPCM_HID
+	 * TL_AUDIO_DONGLE_SBC_HID
+	 * TL_AUDIO_DONGLE_ADPCM_HID_DONGLE_TO_STB
+	 * TL_AUDIO_DONGLE_SBC_HID_DONGLE_TO_STB
+	 * TL_AUDIO_DONGLE_MSBC_HID
+	 */
+	#define TL_AUDIO_MODE  			TL_AUDIO_DONGLE_ADPCM_HID
+
+	#if (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_GOOGLE)
+		#define GOOGLE_VOICE_MODE	0x01	//	0x01:PTT;	0x03:HTT
+	#endif
 #endif
 
 
@@ -163,7 +190,11 @@
 
 
 /////////////////// Clock  /////////////////////////////////
-#define CLOCK_SYS_CLOCK_HZ  	24000000
+#if (TL_AUDIO_MODE & (TL_AUDIO_MASK_SBC_MODE|TL_AUDIO_MASK_MSBC_MODE))
+#define CLOCK_SYS_CLOCK_HZ  	48000000
+#else
+#define CLOCK_SYS_CLOCK_HZ  	48000000
+#endif
 
 enum{
 	CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,
