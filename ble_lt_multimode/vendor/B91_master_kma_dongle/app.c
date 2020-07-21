@@ -39,7 +39,9 @@
 #include "blm_pair.h"
 #include "blm_host.h"
 #include "blm_ota.h"
-
+#include "application/audio/tl_audio.h"
+#include "application/audio/audio_config.h"
+#include "app_audio.h"
 
 #define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
 

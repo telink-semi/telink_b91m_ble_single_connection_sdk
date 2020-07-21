@@ -1,10 +1,10 @@
 /********************************************************************************************************
- * @file     blm_att.h
+ * @file     app_audio.h
  *
  * @brief    for TLSR chips
  *
- * @author	 public@telink-semi.com;
- * @date     Sep. 18, 2018
+ * @author	 BLE Group
+ * @date     2020-5-13
  *
  * @par      Copyright (c) Telink Semiconductor (Shanghai) Co., Ltd.
  *           All rights reserved.
@@ -20,16 +20,18 @@
  *
  *******************************************************************************************************/
 
-#ifndef BLM_ATT_H_
-#define BLM_ATT_H_
+#ifndef APP_AUDIO_H_
+#define APP_AUDIO_H_
 
 
 
+void  	usb_endpoints_irq_handler (void);
+void	att_mic (u16 conn, u8 *p);
+void 	proc_audio (void);
+void 	mic_packet_reset(void);
+void 	push_mic_packet(unsigned char *p);
+void    app_audio_data(u8 * data, u16 length);
 
-void	att_keyboard (u16 conn, u8 *p);
-void	att_keyboard_media (u16 conn, u8 *p);
-void 	att_mouse(u16 conn, u8 *p);
+unsigned char 	usb_report_hid_mic(u8* data, u8 report_id);
 
-void host_att_data_clear(void);
-
-#endif /* BLM_ATT_H_ */
+#endif /* APP_AUDIO_H_ */
