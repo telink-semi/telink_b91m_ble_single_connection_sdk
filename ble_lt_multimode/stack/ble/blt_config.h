@@ -120,7 +120,7 @@
 
 //Link layer feature enable flag default setting
 #ifndef BLE_CORE42_DATA_LENGTH_EXTENSION_ENABLE
-#define BLE_CORE42_DATA_LENGTH_EXTENSION_ENABLE						0
+#define BLE_CORE42_DATA_LENGTH_EXTENSION_ENABLE						1
 #endif
 
 #ifndef LL_FEATURE_SUPPORT_LE_2M_PHY

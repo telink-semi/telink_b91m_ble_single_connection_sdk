@@ -26,12 +26,15 @@
 
 
 #include "flash.h"
-
+#include "nds_intrinsic.h"
 #include "mspi.h"
 #include "plic.h"
 #include "timer.h"
 #include "sys.h"
 
+#define NOP5	asm("nop");asm("nop");asm("nop");asm("nop");asm("nop")
+#define NOP10	NOP5;NOP5
+#define NOP40	NOP10;NOP10;NOP10;NOP10
 
 static inline int flash_is_busy(){
 	return mspi_read() & 0x01;				//  the busy bit, pls check flash spec
@@ -95,13 +98,15 @@ _attribute_ram_code_ static void flash_wait_done(void)
 _attribute_ram_code_ void flash_erase_sector(unsigned long addr){
 
 	unsigned int r= core_disable_interrupt();
-
+	__asm__("csrci 	mmisc_ctl,8");//disable BTB
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
 	flash_send_cmd(FLASH_SECT_ERASE_CMD);
 	flash_send_addr(addr);
 	mspi_high();
 	flash_wait_done();
+	NOP40;
+	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
 	core_restore_interrupt(r);
 }
 
@@ -114,8 +119,9 @@ _attribute_ram_code_ void flash_erase_sector(unsigned long addr){
  */
 _attribute_ram_code_ void flash_write_page(unsigned long addr, unsigned long len, unsigned char *buf){
 
-	unsigned int r= core_disable_interrupt();//???irq_disable();
 
+	unsigned int r= core_disable_interrupt();//???irq_disable();
+	__asm__("csrci 	mmisc_ctl,8");//disable BTB
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
 	flash_send_cmd(FLASH_WRITE_CMD);
@@ -128,8 +134,10 @@ _attribute_ram_code_ void flash_write_page(unsigned long addr, unsigned long len
 	}
 	mspi_high();
 	flash_wait_done();
-
+	NOP40;
+	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
 	core_restore_interrupt(r);//???irq_restore(r);
+
 }
 
 /**
@@ -142,7 +150,7 @@ _attribute_ram_code_ void flash_write_page(unsigned long addr, unsigned long len
 _attribute_ram_code_ void flash_read_page(unsigned long addr, unsigned long len, unsigned char *buf){
 
 	unsigned int r= core_disable_interrupt();//???irq_disable();
-
+	__asm__("csrci 	mmisc_ctl,8");//disable BTB
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_READ_CMD);
 	flash_send_addr(addr);
@@ -158,7 +166,8 @@ _attribute_ram_code_ void flash_read_page(unsigned long addr, unsigned long len,
 	}
 	mspi_fm_rd_dis();			/* off read auto mode */
 	mspi_high();
-
+	NOP40;
+	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
 	core_restore_interrupt(r);//???irq_restore(r);
 }
 
@@ -170,13 +179,14 @@ _attribute_ram_code_ void flash_read_page(unsigned long addr, unsigned long len,
 _attribute_ram_code_ void flash_erase_chip(void)
 {
 	unsigned int r= core_disable_interrupt();
-
+	__asm__("csrci 	mmisc_ctl,8");//disable BTB
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
 	flash_send_cmd(FLASH_CHIP_ERASE_CMD);
 	mspi_high();
 	flash_wait_done();
-
+	NOP40;
+	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
 	core_restore_interrupt(r);
 }
 
@@ -187,13 +197,14 @@ _attribute_ram_code_ void flash_erase_chip(void)
 _attribute_ram_code_ unsigned int flash_get_jedec_id(void)
 {
 	unsigned int r  = core_disable_interrupt();
-
+	__asm__("csrci 	mmisc_ctl,8");//disable BTB
 	flash_send_cmd(FLASH_GET_JEDEC_ID);
 	unsigned char manufacturer = mspi_read();
 	unsigned char mem_type = mspi_read();
 	unsigned char cap_id = mspi_read();
 	mspi_high();
-
+	NOP40;
+	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
 	core_restore_interrupt(r);
 
 	return (unsigned int)((manufacturer << 24 | mem_type << 16 | cap_id));

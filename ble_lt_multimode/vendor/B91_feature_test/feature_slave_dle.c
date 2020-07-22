@@ -20,12 +20,14 @@
  *
  *******************************************************************************************************/
 
-#include "app.h"
-#include <stack/ble/ble.h>
 #include "tl_common.h"
 #include "drivers.h"
-#include "app_config.h"
+#include "stack/ble/ble.h"
+#include "vendor/common/blt_led.h"
 #include "vendor/common/blt_common.h"
+#include "app_config.h"
+#include "app.h"
+#include "app_buffer.h"
 
 
 
@@ -37,49 +39,6 @@
 #define FEATURE_PM_ENABLE								0
 #define FEATURE_DEEPSLEEP_RETENTION_ENABLE				0
 
-
-
-#if (1) // support RF RX/TX MAX data Length: 251byte
-	#define RX_FIFO_SIZE	288  //rx-24   max:251+24 = 275  16 align-> 288
-	#define RX_FIFO_NUM		8
-
-	#define TX_FIFO_SIZE	264  //tx-12   max:251+12 = 263  4 align-> 264
-	#define TX_FIFO_NUM		8
-
-	#define MTU_SIZE_SETTING   			 247
-	#define DLE_TX_SUPPORTED_DATA_LEN    MAX_OCTETS_DATA_LEN_EXTENSION //264-12 = 252 > Tx max:251
-#else
-	#define RX_FIFO_SIZE	224 //rx-24   max:200+24 = 224  16 align-> 224
-	#define RX_FIFO_NUM		8
-
-	#define TX_FIFO_SIZE	212 //tx-12   max:200+12 = 212  4 align-> 212
-	#define TX_FIFO_NUM		8
-
-	#define MTU_SIZE_SETTING   			 196
-	#define DLE_TX_SUPPORTED_DATA_LEN    (TX_FIFO_SIZE-12)
-#endif
-
-
-
-
-
-
-_attribute_data_retention_  u8 		 	blt_rxfifo_b[RX_FIFO_SIZE * RX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_rxfifo = {
-												RX_FIFO_SIZE,
-												RX_FIFO_NUM,
-												0,
-												0,
-												blt_rxfifo_b,};
-
-
-_attribute_data_retention_  u8 		 	blt_txfifo_b[TX_FIFO_SIZE * TX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_txfifo = {
-												TX_FIFO_SIZE,
-												TX_FIFO_NUM,
-												0,
-												0,
-												blt_txfifo_b,};
 
 
 
@@ -94,16 +53,21 @@ _attribute_data_retention_ 	int  mtuExchange_started_flg = 0;
 _attribute_data_retention_	u16  final_MTU_size = 23;
 
 
+#define TEST_DATA_LEN		255
+_attribute_data_retention_	u8	app_test_data[TEST_DATA_LEN];
+_attribute_data_retention_	u32 app_test_data_tick = 0;
+
+
 int module_onReceiveData(rf_packet_att_write_t *p)
 {
 	u8 len = p->l2capLen - 3;
 	if(len > 0)
 	{
 		printf("RF_RX len: %d\nc2s:write data: %d\n", p->rf_len, len);
-		array_printf(&p->value, len);
+//		array_printf(&p->value, len);
 
 		printf("s2c:notify data: %d\n", len);
-		array_printf(&p->value, len);
+//		array_printf(&p->value, len);
 #if 1
 		blc_gatt_pushHandleValueNotify(BLS_CONN_HANDLE, 0x11, &p->value, len);  //this API can auto handle MTU size
 #else
@@ -158,6 +122,7 @@ void	task_dle_exchange (u8 e, u8 *p, int n)
 	printf("connRemoteMaxRxOctets: %d\n", dle_param->connRemoteMaxRxOctets);
 	printf("connRemoteMaxTxOctets: %d\n", dle_param->connRemoteMaxTxOctets);
 
+	app_test_data_tick = clock_time() | 1;
 	dle_started_flg = 1;
 }
 
@@ -248,23 +213,26 @@ void feature_sdle_test_init_normal(void)
 
 	u8  mac_public[6];
 	u8  mac_random_static[6];
-	//for 512K Flash, flash_sector_mac_address equals to 0x76000
 	//for 1M  Flash, flash_sector_mac_address equals to 0xFF000
 	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
+
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+
+
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();   //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
-
-
 	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
 	////// Host Initialization  //////////
 	blc_gap_peripheral_init();    //gap initialization
+	extern void my_att_init ();
 	my_att_init(); 		  //GATT initialization
 
 	//ATT initialization
@@ -305,9 +273,9 @@ void feature_sdle_test_init_normal(void)
 	bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) );
 	bls_ll_setScanRspData( (u8 *)tbl_scanRsp, sizeof(tbl_scanRsp));
 
-	bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_30MS,
+	bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_40MS,
 						ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC,
-						0,  NULL,  BLT_ENABLE_ADV_37, ADV_FP_NONE);
+						0,  NULL,  BLT_ENABLE_ADV_ALL, ADV_FP_NONE);
 
 	bls_ll_setAdvEnable(1);  //adv enable
 
@@ -364,10 +332,7 @@ void feature_sdle_test_mainloop(void)
 			blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
 			printf("After conn 1.5s, S send  MTU size req to the Master.\n");
 		}
-
-
 	}
-
 
 
 	if(mtuExchange_check_tick && clock_time_exceed(mtuExchange_check_tick, 500000 )){  //2 S after connection established
@@ -376,6 +341,16 @@ void feature_sdle_test_mainloop(void)
 		if(!dle_started_flg){ //master do not send data length request in time
 			printf("Master hasn't initiated the DLE yet, S send DLE req to the Master.\n");
 			blc_ll_exchangeDataLength(LL_LENGTH_REQ , DLE_TX_SUPPORTED_DATA_LEN);
+		}
+	}
+
+
+	if(dle_started_flg && clock_time_exceed(app_test_data_tick, 5000000)){
+		if(BLE_SUCCESS == blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, SPP_SERVER_TO_CLIENT_DP_H, &app_test_data[0], MTU_SIZE_SETTING-3))
+		{
+			app_test_data_tick = clock_time() | 1;
+			app_test_data[0]++;
+			printf("ValueNotify:%d\n", MTU_SIZE_SETTING-3);
 		}
 	}
 }

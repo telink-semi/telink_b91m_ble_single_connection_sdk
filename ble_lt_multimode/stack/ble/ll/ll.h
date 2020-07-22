@@ -331,6 +331,8 @@ void 		blc_ll_recoverDeepRetention(void);
 
 bool 		blc_ll_isBrxBusy (void);
 
+bool		blc_ll_isBtxBusy (void);
+
 void 		blc_ll_init_max_md_nums(u8 num);
 
 

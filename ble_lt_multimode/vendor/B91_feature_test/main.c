@@ -28,8 +28,6 @@
 #include "vendor/common/user_config.h"
 
 
-extern my_fifo_t hci_rx_fifo;
-
 extern void user_init_normal();
 extern void user_init_deepRetn();
 
@@ -38,20 +36,25 @@ extern void main_loop (void);
 
 _attribute_ram_code_ void rf_irq_handler(void)
 {
+	DBG_CHN10_HIGH;
 
 	irq_blt_sdk_handler ();
 
 	plic_interrupt_complete(IRQ15_ZB_RT);
+
+	DBG_CHN10_LOW;
 }
 
 
 _attribute_ram_code_ void stimer_irq_handler(void)
 {
+	DBG_CHN11_HIGH;
 
 	irq_blt_sdk_handler ();
 
 	plic_interrupt_complete(IRQ1_SYSTIMER);
 
+	DBG_CHN11_LOW;
 }
 
 
@@ -68,16 +71,25 @@ _attribute_ram_code_ int main(void)
 {
 	sys_init(LDO_MODE);
 
-	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV8_TO_CCLK,CCLK_DIV1_TO_HCLK, HCLK_DIV1_TO_PCLK,PLL_DIV4_TO_MSPI_CLK);
+#if (CLOCK_SYS_CLOCK_HZ == 16000000)
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV12_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV1_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
+#elif (CLOCK_SYS_CLOCK_HZ == 24000000)
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV8_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV1_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
+#elif (CLOCK_SYS_CLOCK_HZ == 32000000)
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV6_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV2_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
+#elif (CLOCK_SYS_CLOCK_HZ == 48000000)
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV4_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV2_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
+#elif (CLOCK_SYS_CLOCK_HZ == 64000000)
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV3_TO_CCLK, CCLK_DIV2_TO_HCLK,  HCLK_DIV2_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
+#endif
 
 	rf_drv_init(RF_MODE_BLE_1M);
 
 	gpio_init(1);
 
-
 	user_init_normal ();
-	irq_enable();
 
+	irq_enable();
 
 	while(1)
 	{

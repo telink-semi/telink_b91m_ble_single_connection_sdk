@@ -72,7 +72,7 @@ extern "C" {
 
 
 
-#define FEATURE_TEST_MODE								TEST_ADVERTISING_ONLY
+#define FEATURE_TEST_MODE								TEST_SDATA_LENGTH_EXTENSION
 
 
 
@@ -236,12 +236,16 @@ extern "C" {
 	#define PA6_INPUT_ENABLE				1
 
 	//Clock
-	#define CLOCK_SYS_CLOCK_HZ  			32000000
+	#define CLOCK_SYS_CLOCK_HZ  			48000000
+#elif (FEATURE_TEST_MODE == TEST_SDATA_LENGTH_EXTENSION)
+	#ifndef UART_PRINT_DEBUG_ENABLE
+	#define UART_PRINT_DEBUG_ENABLE  				1
+	#endif
 #endif
 
 /////////////////// Clock  /////////////////////////////////
 #ifndef CLOCK_SYS_CLOCK_HZ
-#define CLOCK_SYS_CLOCK_HZ  	16000000
+#define CLOCK_SYS_CLOCK_HZ  	24000000
 #endif
 
 enum{
@@ -407,7 +411,7 @@ typedef enum
 }ATT_HANDLE;
 
 
-#define DEBUG_GPIO_ENABLE							1
+#define DEBUG_GPIO_ENABLE							0
 
 #if(DEBUG_GPIO_ENABLE)
 
@@ -415,7 +419,7 @@ typedef enum
 	#define GPIO_CHN0							GPIO_PE1
 	#define GPIO_CHN1							GPIO_PE2
 	#define GPIO_CHN2							GPIO_PA0
-    #define GPIO_CHN3							GPIO_PA4
+	#define GPIO_CHN3							GPIO_PA4
 	#define GPIO_CHN4							GPIO_PA3
 	#define GPIO_CHN5							GPIO_PB0
 	#define GPIO_CHN6							GPIO_PB2
@@ -427,10 +431,10 @@ typedef enum
 	#define GPIO_CHN11							GPIO_PB3
 
 	//PDx bug(baoyi)
-	#define GPIO_CHN12							GPIO_PD7
-	#define GPIO_CHN13							GPIO_PD6
-	#define GPIO_CHN14							GPIO_PD5
-	#define GPIO_CHN15							GPIO_PD4
+	#define GPIO_CHN12							GPIO_PC7
+	#define GPIO_CHN13							GPIO_PC6
+	#define GPIO_CHN14							GPIO_PC5
+	#define GPIO_CHN15							GPIO_PC4
 
 
 	#define PE1_OUTPUT_ENABLE					1
@@ -446,10 +450,10 @@ typedef enum
 	#define PA1_OUTPUT_ENABLE					1
 	#define PB1_OUTPUT_ENABLE					1
 	#define PB3_OUTPUT_ENABLE					1
-	#define PD7_OUTPUT_ENABLE					1
-	#define PD6_OUTPUT_ENABLE					1
-	#define PD5_OUTPUT_ENABLE					1
-	#define PD4_OUTPUT_ENABLE					1
+	#define PC7_OUTPUT_ENABLE					1
+	#define PC6_OUTPUT_ENABLE					1
+	#define PC5_OUTPUT_ENABLE					1
+	#define PC4_OUTPUT_ENABLE					1
 
 
 	#define DBG_CHN0_LOW		gpio_write(GPIO_CHN0, 0)

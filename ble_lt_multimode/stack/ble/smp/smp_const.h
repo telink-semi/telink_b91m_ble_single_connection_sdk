@@ -116,7 +116,10 @@ typedef enum {
 }smp_role_t;
 
 
-
+typedef enum {
+	FLASH_OP_SUCCESS = 0,
+	FLASH_OP_FAIL 	 = 1,
+} flash_op_sts_t;
 
 //See the Core_v5.0(Vol 3/Part C/10.2, Page 2067) for more information.
 typedef enum {
