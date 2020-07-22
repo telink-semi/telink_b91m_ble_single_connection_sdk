@@ -32,7 +32,7 @@
 #include "../common/blt_common.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
-
+#include "app_audio.h"
 extern void user_init_normal();
 extern void main_loop (void);
 extern void usb_init(void) ;
@@ -67,21 +67,6 @@ _attribute_ram_code_ void stimer_irq_handler(void)
 
 	DBG_CHN11_LOW;
 }
-#if 0//usb setting
-_attribute_ram_code_ void  usb_endpoints_irq_handler (void)
-{
-
-	/////////////////////////////////////
-	// ISO IN
-	/////////////////////////////////////
-	if (reg_usb_irq & BIT(7)) {
-		reg_usb_irq = BIT(7);	//clear interrupt flag of endpoint 7
-
-		/////// get MIC input data ///////////////////////////////
-
-	}
-
-}
 
 _attribute_ram_code_ void usb_endpoint_irq_handler(void)
 {
@@ -93,7 +78,7 @@ _attribute_ram_code_ void usb_endpoint_irq_handler(void)
 
 }
 
-#endif
+
 
 /**
  * @brief		This is main function

@@ -720,6 +720,9 @@
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="dsp"/>
 								</option>
+								<option id="nds.c.link.option.userobjs.787067469" superClass="nds.c.link.option.userobjs" valueType="userObjs">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/proj_lib/liblt_9518.a}&quot;"/>
+								</option>
 								<inputType id="tool.nds.c.linker.input.935496152" superClass="tool.nds.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>

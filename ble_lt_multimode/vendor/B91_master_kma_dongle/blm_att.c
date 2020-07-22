@@ -253,7 +253,7 @@ ble_sts_t  host_att_discoveryService (u16 handle, att_db_uuid16_t *p16, int n16,
 
 
 
-#if APPLICATION_DONGLE
+
 rf_packet_mouse_t	pkt_mouse = {
 		sizeof (rf_packet_mouse_t) - 4,	// dma_len
 
@@ -368,78 +368,6 @@ void host_att_data_clear(void)
 		att_keyboard_release();
 	}
 }
-
-#endif
-
-
-
-#if UI_AUDIO_ENABLE
-////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-extern	void abuf_init ();
-extern	void abuf_mic_add (u32 *p);
-extern	void abuf_mic_dec (void);
-extern	void abuf_dec_usb (void);
-
-u8		att_mic_rcvd = 0;
-u32		tick_adpcm;
-u8		buff_mic_adpcm[MIC_ADPCM_FRAME_SIZE];
-
-u32		tick_iso_in;
-int		mode_iso_in;
-_attribute_ram_code_ void  usb_endpoints_irq_handler (void)
-{
-	u32 t = clock_time ();
-	/////////////////////////////////////
-	// ISO IN
-	/////////////////////////////////////
-	if (reg_usb_irq & BIT(7)) {
-		mode_iso_in = 1;
-		tick_iso_in = t;
-		reg_usb_irq = BIT(7);	//clear interrupt flag of endpoint 7
-
-		/////// get MIC input data ///////////////////////////////
-		//usb_iso_in_1k_square ();
-		//usb_iso_in_from_mic ();
-		abuf_dec_usb ();
-	}
-
-}
-
-#if (!AUDIO_SDM_ENBALE)
-void	att_mic (u16 conn, u8 *p)
-{
-	att_mic_rcvd = 1;
-	memcpy (buff_mic_adpcm, p, MIC_ADPCM_FRAME_SIZE);
-	abuf_mic_add ((u32 *)buff_mic_adpcm);
-}
-#else
-s16 temp_buf[248];
-void	att_mic (u16 conn, rf_packet_att_t *p)
-{
-	att_mic_rcvd = 1;
-	memcpy (buff_mic_adpcm, p->dat, MIC_ADPCM_FRAME_SIZE);
-	adpcm_to_pcm((s16 *)(buff_mic_adpcm),temp_buf,248);
-	pcm_to_sdm (temp_buf, 248);
-}
-#endif
-
-
-_attribute_ram_code_ void proc_audio (void)
-{
-	if (att_mic_rcvd)
-	{
-		tick_adpcm = clock_time ();
-		att_mic_rcvd = 0;
-	}
-	if (clock_time_exceed (tick_adpcm, 200000))
-	{
-		tick_adpcm = clock_time ();
-		abuf_init ();
-	}
-	abuf_mic_dec ();
-}
-#endif
 
 
 

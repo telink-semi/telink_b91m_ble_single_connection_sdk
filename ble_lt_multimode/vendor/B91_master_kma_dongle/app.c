@@ -39,7 +39,9 @@
 #include "blm_pair.h"
 #include "blm_host.h"
 #include "blm_ota.h"
-
+#include "application/audio/tl_audio.h"
+#include "application/audio/audio_config.h"
+#include "app_audio.h"
 
 #define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
 
@@ -56,7 +58,6 @@ void user_init_normal(void)
 	//when deepSleep retention wakeUp, no need initialize again
 	random_generator_init();  //this is must
 
-#if 0//usb setting
 	//set USB ID
 	REG_ADDR8(0x1401f4) = 0x65;
 	REG_ADDR16(0x1401fe) = 0x08d0;
@@ -70,7 +71,7 @@ void user_init_normal(void)
 	reg_usb_ep_max_size = (256 >> 3);
 
 	usb_dp_pullup_en (1);  //open USB enum
-#endif
+
 
 
 
