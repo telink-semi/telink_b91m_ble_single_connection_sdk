@@ -106,7 +106,7 @@ void eoc_irq_handler(void) __attribute__((weak, alias("default_irq_handler")));
  * @return none
  */
 
-void trap_entry(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void trap_entry(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void trap_entry(void)
 {}
 
@@ -114,7 +114,7 @@ void trap_entry(void)
  * @brief system timer interrupt handler.
  * @return none
  */
-void  entry_irq1(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq1(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq1(void)
 {
 	stimer_irq_handler();
@@ -124,7 +124,7 @@ void  entry_irq1(void)
  * @brief analog interrupt handler.
  * @return none
  */
-void  entry_irq2(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq2(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq2(void)
 {
 	analog_irq_handler();
@@ -135,7 +135,7 @@ void  entry_irq2(void)
  * @brief timer1 interrupt handler.
  * @return none
  */
-void  entry_irq3(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq3(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq3(void)
 {
 	timer1_irq_handler();
@@ -145,7 +145,7 @@ void  entry_irq3(void)
  * @brief timer0 interrupt handler.
  * @return none
  */
-void  entry_irq4(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq4(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq4(void)
 {
 	timer0_irq_handler();
@@ -156,7 +156,7 @@ void  entry_irq4(void)
  * @brief dma interrupt handler.
  * @return none
  */
-void  entry_irq5(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq5(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq5(void)
 {
 	dma_irq_handler();
@@ -166,7 +166,7 @@ void  entry_irq5(void)
  * @brief bmc interrupt handler.
  * @return none
  */
-void  entry_irq6(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq6(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq6(void)
 {
 	bmc_irq_handler();
@@ -177,7 +177,7 @@ void  entry_irq6(void)
  * @brief usb control endpoint setup interrupt handler.
  * @return none
  */
-void  entry_irq7(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq7(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq7(void)
 {
 	usb_ctrl_ep_setup_irq_handler();
@@ -187,7 +187,7 @@ void  entry_irq7(void)
  * @brief usb control endpoint data interrupt handler.
  * @return none
  */
-void  entry_irq8(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq8(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq8(void)
 {
 	usb_ctrl_ep_data_irq_handler();
@@ -197,7 +197,7 @@ void  entry_irq8(void)
  * @brief usb control endpoint status interrupt handler.
  * @return none
  */
-void  entry_irq9(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq9(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq9(void)
 {
 	usb_ctrl_ep_status_irq_handler();
@@ -208,7 +208,7 @@ void  entry_irq9(void)
  * @brief usb control endpoint setinf interrupt handler.
  * @return none
  */
-void  entry_irq10(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq10(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq10(void)
 {
 	usb_ctrl_ep_setinf_irq_handler();
@@ -218,7 +218,7 @@ void  entry_irq10(void)
  * @brief usb endpoint interrupt handler.
  * @return none
  */
-void  entry_irq11(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq11(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq11(void)
 {
 	usb_endpoint_irq_handler ();
@@ -228,7 +228,7 @@ void  entry_irq11(void)
  * @brief rf dual mode interrupt handler.
  * @return none
  */
-void  entry_irq12(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq12(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq12(void)
 {
 	rf_dm_irq_handler();
@@ -238,7 +238,7 @@ void  entry_irq12(void)
  * @brief rf ble interrupt handler.
  * @return none
  */
-void  entry_irq13(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq13(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq13(void)
 {
 	rf_ble_irq_handler();
@@ -249,7 +249,7 @@ void  entry_irq13(void)
  * @brief rf BT  interrupt handler.
  * @return none
  */
-void  entry_irq14(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq14(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq14(void)
 {
 	rf_bt_irq_handler();
@@ -259,7 +259,7 @@ void  entry_irq14(void)
  * @brief telink rf interrupt handler.
  * @return none
  */
-void  entry_irq15(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq15(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq15(void)
 {
 	rf_irq_handler();
@@ -271,7 +271,7 @@ void  entry_irq15(void)
  * @brief pwm interrupt handler.
  * @return none
  */
-void  entry_irq16(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq16(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq16(void)
 {
 	pwm_irq_handler();
@@ -281,7 +281,7 @@ void  entry_irq16(void)
  * @brief pke interrupt handler.
  * @return none
  */
-void  entry_irq17(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq17(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq17(void)
 {
 	pke_irq_handler();
@@ -293,7 +293,7 @@ void  entry_irq17(void)
  * @brief uart1 interrupt handler.
  * @return none
  */
-void  entry_irq18(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq18(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq18(void)
 {
 	uart1_irq_handler();
@@ -305,7 +305,7 @@ void  entry_irq18(void)
  * @brief uart0 interrupt handler.
  * @return none
  */
-void  entry_irq19(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq19(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq19(void)
 {
 	uart0_irq_handler();
@@ -316,7 +316,7 @@ void  entry_irq19(void)
  * @brief audio interrupt handler.
  * @return none
  */
-void  entry_irq20(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq20(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq20(void)
 {
 	audio_irq_handler();
@@ -326,7 +326,7 @@ void  entry_irq20(void)
  * @brief i2c interrupt handler.
  * @return none
  */
-void  entry_irq21(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq21(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq21(void)
 {
 	i2c_irq_handler();
@@ -337,7 +337,7 @@ void  entry_irq21(void)
  * @brief hspi interrupt handler.
  * @return none
  */
-void  entry_irq22(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq22(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq22(void)
 {
 	hspi_irq_handler();
@@ -348,7 +348,7 @@ void  entry_irq22(void)
  * @brief pspi interrupt handler.
  * @return none
  */
-void  entry_irq23(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq23(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq23(void)
 {
 	pspi_irq_handler();
@@ -359,7 +359,7 @@ void  entry_irq23(void)
  * @brief usb power down interrupt handler.
  * @return none
  */
-void  entry_irq24(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq24(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq24(void)
 {
 	usb_pwdn_irq_handler();
@@ -369,7 +369,7 @@ void  entry_irq24(void)
  * @brief gpio interrupt handler.
  * @return none
  */
-void  entry_irq25(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq25(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq25(void)
 {
 	gpio_irq_handler();
@@ -379,7 +379,7 @@ void  entry_irq25(void)
  * @brief gpio_risc0 interrupt handler.
  * @return none
  */
-void  entry_irq26(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq26(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq26(void)
 {
 	gpio_risc0_irq_handler();
@@ -390,7 +390,7 @@ void  entry_irq26(void)
  * @brief gpio_risc1 interrupt handler.
  * @return none
  */
-void  entry_irq27(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq27(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq27(void)
 {
 	gpio_risc1_irq_handler();
@@ -400,7 +400,7 @@ void  entry_irq27(void)
  * @brief soft interrupt handler.
  * @return none
  */
-void  entry_irq28(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq28(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq28(void)
 {
 	soft_irq_handler();
@@ -411,7 +411,7 @@ void  entry_irq28(void)
  * @return none
  */
 
-void  entry_irq29(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq29(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq29(void)
 {
 	npe_bus0_irq_handler();
@@ -420,7 +420,7 @@ void  entry_irq29(void)
  * @brief npe bus1 interrupt handler.
  * @return none
  */
-void  entry_irq30(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq30(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq30(void)
 {
 	npe_bus1_irq_handler();
@@ -429,7 +429,7 @@ void  entry_irq30(void)
  * @brief npe bus2 interrupt handler.
  * @return none
  */
-void  entry_irq31(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq31(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq31(void)
 {
 	npe_bus2_irq_handler();
@@ -438,7 +438,7 @@ void  entry_irq31(void)
  * @brief npe bus3 interrupt handler.
  * @return none
  */
-void  entry_irq32(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq32(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq32(void)
 {
 	npe_bus3_irq_handler();
@@ -448,7 +448,7 @@ void  entry_irq32(void)
  * @brief npe bus4 interrupt handler.
  * @return none
  */
-void  entry_irq33(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq33(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq33(void)
 {
 	npe_bus4_irq_handler();
@@ -457,7 +457,7 @@ void  entry_irq33(void)
  * @brief usb 250us interrupt handler.
  * @return none
  */
-void  entry_irq34(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq34(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq34(void)
 {
 	usb_250us_irq_handler();
@@ -466,7 +466,7 @@ void  entry_irq34(void)
  * @brief usb reset interrupt handler.
  * @return none
  */
-void  entry_irq35(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq35(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq35(void)
 {
 	usb_reset_irq_handler();
@@ -475,7 +475,7 @@ void  entry_irq35(void)
  * @brief npe bus7 interrupt handler.
  * @return none
  */
-void  entry_irq36(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq36(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq36(void)
 {
 	npe_bus7_irq_handler();
@@ -484,29 +484,29 @@ void  entry_irq36(void)
  * @brief npe bus8 interrupt handler.
  * @return none
  */
-void  entry_irq37(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq37(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq37(void)
 {
 	npe_bus8_irq_handler();
 }
 
 
-void  entry_irq38(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq38(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq38(void)
 {
 
 }
-void  entry_irq39(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq39(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq39(void)
 {
 
 }
-void  entry_irq40(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq40(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq40(void)
 {
 
 }
-void  entry_irq41(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq41(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq41(void)
 {
 
@@ -515,7 +515,7 @@ void  entry_irq41(void)
  * @brief npe bus13 interrupt handler.
  * @return none
  */
-void  entry_irq42(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq42(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq42(void)
 {
 	npe_bus13_irq_handler();
@@ -524,7 +524,7 @@ void  entry_irq42(void)
  * @brief npe bus14 interrupt handler.
  * @return none
  */
-void  entry_irq43(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq43(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq43(void)
 {
 	npe_bus14_irq_handler();
@@ -534,12 +534,12 @@ void  entry_irq43(void)
  * @brief npe bus15 interrupt handler.
  * @return none
  */
-void  entry_irq44(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq44(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq44(void)
 {
 	npe_bus15_irq_handler();
 }
-void  entry_irq45(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq45(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq45(void)
 {
 
@@ -548,26 +548,26 @@ void  entry_irq45(void)
  * @brief npe bus17 interrupt handler.
  * @return none
  */
-void  entry_irq46(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq46(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq46(void)
 {
 	npe_bus17_irq_handler();
 }
 
 
-void  entry_irq47(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq47(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq47(void)
 {
 
 }
 
-void  entry_irq48(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq48(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq48(void)
 {
 
 }
 
-void  entry_irq49(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq49(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq49(void)
 {
 
@@ -576,7 +576,7 @@ void  entry_irq49(void)
  * @brief npe bus21 interrupt handler.
  * @return none
  */
-void  entry_irq50(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq50(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq50(void)
 {
 	npe_bus21_irq_handler();
@@ -585,7 +585,7 @@ void  entry_irq50(void)
  * @brief npe bus22 interrupt handler.
  * @return none
  */
-void  entry_irq51(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq51(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq51(void)
 {
 	npe_bus22_irq_handler();
@@ -594,7 +594,7 @@ void  entry_irq51(void)
  * @brief npe bus23 interrupt handler.
  * @return none
  */
-void  entry_irq52(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq52(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq52(void)
 {
 	npe_bus23_irq_handler();
@@ -603,7 +603,7 @@ void  entry_irq52(void)
  * @brief npe bus24 interrupt handler.
  * @return none
  */
-void  entry_irq53(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq53(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq53(void)
 {
 	npe_bus24_irq_handler();
@@ -612,7 +612,7 @@ void  entry_irq53(void)
  * @brief npe bus25 interrupt handler.
  * @return none
  */
-void  entry_irq54(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq54(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq54(void)
 {
 	npe_bus25_irq_handler();
@@ -621,7 +621,7 @@ void  entry_irq54(void)
  * @brief npe bus26 interrupt handler.
  * @return none
  */
-void  entry_irq55(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq55(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq55(void)
 {
 	npe_bus26_irq_handler();
@@ -630,7 +630,7 @@ void  entry_irq55(void)
  * @brief npe bus27 interrupt handler.
  * @return none
  */
-void  entry_irq56(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq56(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq56(void)
 {
 	npe_bus27_irq_handler();
@@ -639,7 +639,7 @@ void  entry_irq56(void)
  * @brief npe bus28 interrupt handler.
  * @return none
  */
-void  entry_irq57(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq57(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq57(void)
 {
 	npe_bus28_irq_handler();
@@ -648,7 +648,7 @@ void  entry_irq57(void)
  * @brief npe bus29 interrupt handler.
  * @return none
  */
-void  entry_irq58(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq58(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq58(void)
 {
 	npe_bus29_irq_handler();
@@ -657,7 +657,7 @@ void  entry_irq58(void)
  * @brief npe bus30 interrupt handler.
  * @return none
  */
-void  entry_irq59(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq59(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq59(void)
 {
 	npe_bus30_irq_handler();
@@ -666,7 +666,7 @@ void  entry_irq59(void)
  * @brief npe bus31 interrupt handler.
  * @return none
  */
-void  entry_irq60(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq60(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq60(void)
 {
 	npe_bus31_irq_handler();
@@ -675,7 +675,7 @@ void  entry_irq60(void)
  * @brief npe comb interrupt handler.
  * @return none
  */
-void  entry_irq61(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq61(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq61(void)
 {
 	npe_comb_irq_handler();
@@ -684,7 +684,7 @@ void  entry_irq61(void)
  * @brief pm interrupt handler.An interrupt will be generated after wake-up
  * @return none
  */
-void  entry_irq62(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq62(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq62(void)
 {
 	pm_irq_handler();
@@ -693,7 +693,7 @@ void  entry_irq62(void)
  * @brief eoc interrupt handler.
  * @return none
  */
-void  entry_irq63(void) __attribute__ ((interrupt ("machine") , aligned(4)));
+void  entry_irq63(void) __attribute__((section(".ram_code"))) __attribute__((noinline))__attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq63(void)
 {
 	eoc_irq_handler();

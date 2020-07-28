@@ -372,7 +372,8 @@ default_irq_entry:
 
 #define VECTOR_NUMINTRS         63
 
-   	.section .rodata
+
+   	.section .ram_code,	"ax"
 
 	.global __vectors
 	.balign 256

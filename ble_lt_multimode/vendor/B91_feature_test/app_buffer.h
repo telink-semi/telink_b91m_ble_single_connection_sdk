@@ -86,7 +86,7 @@
 	#define LL_RX_FIFO_NUM		8
 
 	#define LL_TX_FIFO_SIZE		272	// tx - 12 = 260, max:251+12 = 264, 16 align-> 272
-	#define LL_TX_FIFO_NUM		17
+	#define LL_TX_FIFO_NUM		9	// Note: the total length(FIFO_SIZE*FIFO_NUM) of FIFO must be less than 0xFFF(4096)
 
 	#define MTU_SIZE_SETTING   			 247
 	#define DLE_TX_SUPPORTED_DATA_LEN    251

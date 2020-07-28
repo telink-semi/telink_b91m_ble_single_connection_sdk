@@ -26,6 +26,12 @@
 extern "C" {
 #endif
 
+// Hardware board select
+#define HW_C1T219A20_V1_0_64_EVB		1
+#define HW_C1T217A20_V1_0_48_EVB		2
+#define HW_C1T213A20_V1_0_80_EVB		3
+#define HARDWARE_BOARD_SELECT			HW_C1T213A20_V1_0_80_EVB
+
 
 /////////////////// TEST FEATURE SELECTION /////////////////////////////////
 
@@ -72,7 +78,7 @@ extern "C" {
 
 
 
-#define FEATURE_TEST_MODE								TEST_SDATA_LENGTH_EXTENSION
+#define FEATURE_TEST_MODE								TEST_MDATA_LENGTH_EXTENSION
 
 
 
@@ -202,44 +208,49 @@ extern "C" {
 	#define UI_LED_ENABLE					1
 
 	//Button gpio cfg
-	#define	SW1_GPIO						GPIO_PD5
-	#define	SW2_GPIO						GPIO_PD6
-	#define PD5_FUNC						AS_GPIO
-	#define PD6_FUNC						AS_GPIO
-	#define PD5_INPUT_ENABLE				1
-	#define PD6_INPUT_ENABLE				1
-	#define PULL_WAKEUP_SRC_PD5     		PM_PIN_PULLUP_10K
-	#define PULL_WAKEUP_SRC_PD6     		PM_PIN_PULLUP_10K
+	#define	SW1_GPIO						GPIO_PC6
+	#define	SW2_GPIO						GPIO_PC7
+	#define PC6_FUNC						AS_GPIO
+	#define PC7_FUNC						AS_GPIO
+	#define PC6_INPUT_ENABLE				1
+	#define PC7_INPUT_ENABLE				1
+	#define PULL_WAKEUP_SRC_PC6				PM_PIN_PULLUP_10K
+	#define PULL_WAKEUP_SRC_PC7				PM_PIN_PULLUP_10K
 
-	//LED gpio cfg
-	#define	GPIO_LED_RED					GPIO_PA3
-	#define	GPIO_LED_WHITE					GPIO_PB1
-	#define	GPIO_LED_GREEN					GPIO_PA2
-	#define	GPIO_LED_BLUE					GPIO_PB0
-    #define	GPIO_LED_YELLOW					GPIO_PA4
-	#define PA3_FUNC						AS_GPIO
-	#define PB1_FUNC						AS_GPIO
-	#define PA2_FUNC						AS_GPIO
-	#define PB0_FUNC						AS_GPIO
-	#define PA4_FUNC						AS_GPIO
-	#define	PA3_OUTPUT_ENABLE				1
-	#define	PB1_OUTPUT_ENABLE				1
-	#define PA2_OUTPUT_ENABLE				1
-	#define	PB0_OUTPUT_ENABLE				1
-	#define	PA4_OUTPUT_ENABLE				1
-	#define LED_ON_LEVAL 					1 //gpio output high voltage to turn on led
-
-	//USB gpio cfg
-	#define PA5_FUNC						AS_USB
-	#define PA6_FUNC						AS_USB
-	#define PA5_INPUT_ENABLE				1
-	#define PA6_INPUT_ENABLE				1
+	// LED GPIO
+	#define GPIO_LED_BLUE		GPIO_PB4
+	#define GPIO_LED_GREEN		GPIO_PB5
+	#define GPIO_LED_WHITE		GPIO_PB6
+	#define PB6_FUNC				AS_GPIO
+	#define PB5_FUNC				AS_GPIO
+	#define PB4_FUNC				AS_GPIO
+	#define	PB6_OUTPUT_ENABLE		1
+	#define PB5_OUTPUT_ENABLE		1
+	#define	PB4_OUTPUT_ENABLE		1
+	#if (HARDWARE_BOARD_SELECT == HW_C1T219A20_V1_0_64_EVB)
+		#define GPIO_LED_RED		GPIO_PB7
+		#define PB7_FUNC			AS_GPIO
+		#define	PB7_OUTPUT_ENABLE		1
+	#elif (HARDWARE_BOARD_SELECT == HW_C1T217A20_V1_0_48_EVB)
+		#define GPIO_LED_RED		GPIO_PB2
+		#define PB2_FUNC			AS_GPIO
+		#define	PB2_OUTPUT_ENABLE		1
+	#elif (HARDWARE_BOARD_SELECT == HW_C1T213A20_V1_0_80_EVB)
+		#define GPIO_LED_RED		GPIO_PB7
+		#define PB7_FUNC			AS_GPIO
+		#define	PB7_OUTPUT_ENABLE		1
+	#endif
+	#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
 
 	//Clock
 	#define CLOCK_SYS_CLOCK_HZ  			48000000
-#elif (FEATURE_TEST_MODE == TEST_SDATA_LENGTH_EXTENSION)
+
 	#ifndef UART_PRINT_DEBUG_ENABLE
 	#define UART_PRINT_DEBUG_ENABLE  				1
+	#endif
+#elif (FEATURE_TEST_MODE == TEST_SDATA_LENGTH_EXTENSION)
+	#ifndef UART_PRINT_DEBUG_ENABLE
+	#define UART_PRINT_DEBUG_ENABLE  				1	//TODO: close cause an exception to establishe connection
 	#endif
 #endif
 
@@ -267,17 +278,29 @@ typedef struct{
     #if(FEATURE_TEST_MODE == TEST_MDATA_LENGTH_EXTENSION)
 		//the baud rate should not bigger than 1M(system timer clock is constant 16M)
 		#define PRINT_BAUD_RATE             					1000000
-		#define DEBUG_INFO_TX_PIN           					GPIO_PA0
-		#define PULL_WAKEUP_SRC_PA0         					PM_PIN_PULLUP_10K
-		#define PA0_OUTPUT_ENABLE         						1
-		#define PA0_DATA_OUT                                    1 //must
+
+//		#define DEBUG_INFO_TX_PIN           					GPIO_PA0
+//		#define PULL_WAKEUP_SRC_PA0         					PM_PIN_PULLUP_10K
+//		#define PA0_OUTPUT_ENABLE         						1
+//		#define PA0_DATA_OUT                                    1 //must
+
+		#define DEBUG_INFO_TX_PIN           					GPIO_PA5
+		#define PULL_WAKEUP_SRC_PA5         					PM_PIN_PULLUP_10K
+		#define PA5_OUTPUT_ENABLE         						1
+		#define PA5_DATA_OUT                                    1 //must
 	#else
 		//the baud rate should not bigger than 1M(system timer clock is constant 16M)
 		#define PRINT_BAUD_RATE             					1000000
-		#define DEBUG_INFO_TX_PIN           					GPIO_PA0
-		#define PULL_WAKEUP_SRC_PA0         					PM_PIN_PULLUP_10K
-		#define PA0_OUTPUT_ENABLE         						1
-		#define PA0_DATA_OUT                                    1 //must
+
+//		#define DEBUG_INFO_TX_PIN           					GPIO_PA0
+//		#define PULL_WAKEUP_SRC_PA0         					PM_PIN_PULLUP_10K
+//		#define PA0_OUTPUT_ENABLE         						1
+//		#define PA0_DATA_OUT                                    1 //must
+
+		#define DEBUG_INFO_TX_PIN           					GPIO_PA5
+		#define PULL_WAKEUP_SRC_PA5         					PM_PIN_PULLUP_10K
+		#define PA5_OUTPUT_ENABLE         						1
+		#define PA5_DATA_OUT                                    1 //must
 	#endif
 	#include "application/print/u_printf.h"
 #endif
@@ -411,7 +434,7 @@ typedef enum
 }ATT_HANDLE;
 
 
-#define DEBUG_GPIO_ENABLE							0
+#define DEBUG_GPIO_ENABLE							1
 
 #if(DEBUG_GPIO_ENABLE)
 
@@ -431,10 +454,10 @@ typedef enum
 	#define GPIO_CHN11							GPIO_PB3
 
 	//PDx bug(baoyi)
-	#define GPIO_CHN12							GPIO_PC7
-	#define GPIO_CHN13							GPIO_PC6
-	#define GPIO_CHN14							GPIO_PC5
-	#define GPIO_CHN15							GPIO_PC4
+	#define GPIO_CHN12							GPIO_PD7
+	#define GPIO_CHN13							GPIO_PD6
+	#define GPIO_CHN14							GPIO_PD5
+	#define GPIO_CHN15							GPIO_PD4
 
 
 	#define PE1_OUTPUT_ENABLE					1
@@ -450,10 +473,10 @@ typedef enum
 	#define PA1_OUTPUT_ENABLE					1
 	#define PB1_OUTPUT_ENABLE					1
 	#define PB3_OUTPUT_ENABLE					1
-	#define PC7_OUTPUT_ENABLE					1
-	#define PC6_OUTPUT_ENABLE					1
-	#define PC5_OUTPUT_ENABLE					1
-	#define PC4_OUTPUT_ENABLE					1
+	#define PD7_OUTPUT_ENABLE					1
+	#define PD6_OUTPUT_ENABLE					1
+	#define PD5_OUTPUT_ENABLE					1
+	#define PD4_OUTPUT_ENABLE					1
 
 
 	#define DBG_CHN0_LOW		gpio_write(GPIO_CHN0, 0)

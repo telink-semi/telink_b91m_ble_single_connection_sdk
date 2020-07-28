@@ -327,7 +327,7 @@ static const u8 my_OtaCharVal[19] = {
 	U16_LO(OTA_CMD_OUT_DP_H), U16_HI(OTA_CMD_OUT_DP_H),
 	TELINK_SPP_DATA_OTA,
 };
-
+#if (BLE_AUDIO_ENABLE)
 //// Audio attribute values
 static const u8 my_MicCharVal[19] = {
 	CHAR_PROP_READ | CHAR_PROP_NOTIFY,
@@ -339,7 +339,7 @@ static const u8 my_SpeakerCharVal[19] = {
 	U16_LO(AUDIO_SPEAKER_OUT_DP_H), U16_HI(AUDIO_SPEAKER_OUT_DP_H),
 	TELINK_SPEAKER_DATA,
 };
-
+#endif
 // TM : to modify
 static const attribute_t my_Attributes[] = {
 

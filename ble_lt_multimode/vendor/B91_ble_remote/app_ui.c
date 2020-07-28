@@ -42,6 +42,7 @@ _attribute_data_retention_	u8 			key_type;
 _attribute_data_retention_	int 		key_not_released;
 _attribute_data_retention_	int 		ir_not_released;
 
+_attribute_data_retention_	u8 		ota_is_working = 0;
 
 
 
@@ -285,6 +286,58 @@ ble_sts_t  app_debug_pushNotifyData (u16 attHandle, u8 *p, int len)
 #endif
 
 
+#if (BLE_REMOTE_OTA_ENABLE)
+	void app_enter_ota_mode(void)
+	{
+		ota_is_working = 1;
+		#if (BLT_APP_LED_ENABLE)
+			device_led_setup(led_cfg[LED_SHINE_OTA]);
+		#endif
+		bls_ota_setTimeout(15 * 1000 * 1000); //set OTA timeout  15 seconds
+	}
+
+
+
+	void app_debug_ota_result(int result)
+	{
+
+		#if(0 && BLT_APP_LED_ENABLE)  //this is only for debug
+
+			gpio_set_output_en(GPIO_LED, 1);
+
+			if(result == OTA_SUCCESS){  //led for debug: OTA success
+				gpio_write(GPIO_LED, 1);
+				sleep_us(500000);
+				gpio_write(GPIO_LED, 0);
+				sleep_us(500000);
+				gpio_write(GPIO_LED, 1);
+				sleep_us(500000);
+				gpio_write(GPIO_LED, 0);
+				sleep_us(500000);
+			}
+			else{  //OTA fail
+
+				#if 0 //this is only for debug,  can not use this in application code
+					irq_disable();
+					WATCHDOG_DISABLE;
+
+					write_reg8(0x40001, result);  //OTA fail reason
+					write_reg8(0x40000, 0x33);
+					while(1){
+						gpio_write(GPIO_LED, 1);
+						sleep_us(200000);
+						gpio_write(GPIO_LED, 0);
+						sleep_us(200000);
+					}
+					write_reg8(0x40000, 0x44);
+				#endif
+
+			}
+
+			gpio_set_output_en(GPIO_LED, 0);
+		#endif
+	}
+#endif
 
 
 
@@ -338,6 +391,7 @@ void key_change_proc(void)
 
 //			app_debug_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
+
 		}
 		else
 		{
@@ -374,11 +428,13 @@ void key_change_proc(void)
 			u16 consumer_key = 0;
 
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
+
 		}
 		else if(key_type == KEYBOARD_KEY)
 		{
 			key_buf[2] = 0;
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
+
 		}
 #if (REMOTE_IR_ENABLE)
 		else if(key_type == IR_KEY)

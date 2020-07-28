@@ -89,6 +89,26 @@ void sys_init(power_mode_e power_mode)
 
 	//add by BLE
 	reg_rf_bb_auto_ctrl = 0; //default 0x04
+#if 0
+	extern unsigned int	ota_program_offset;
+	extern unsigned int	ota_program_bootAddr;
+	extern int	ota_firmware_size_k;
+	//boot flag storage
+	unsigned short boot_flag = read_reg16(0x140104);
+	if (boot_flag)
+	{
+		boot_flag = (boot_flag & 0x0007) | ((ota_firmware_size_k>>2)<<3);
+		REG_ADDR16(0x140104) = boot_flag;
+//		write_reg16(0x80004, 0xA5);   	//mark
+//		write_reg16(0x80005, boot_flag);
+
+		ota_program_offset = 0;
+	}
+	else
+	{
+		ota_program_offset = ota_program_bootAddr;
+	}
+#endif
 
 }
 

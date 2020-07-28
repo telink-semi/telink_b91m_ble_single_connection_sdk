@@ -20,12 +20,14 @@
  *
  *******************************************************************************************************/
 
-#include "app.h"
-#include <stack/ble/ble.h>
 #include "tl_common.h"
 #include "drivers.h"
-#include "app_config.h"
+#include "stack/ble/ble.h"
+#include "vendor/common/blt_led.h"
 #include "vendor/common/blt_common.h"
+#include "app_config.h"
+#include "app.h"
+#include "app_buffer.h"
 
 
 
@@ -38,31 +40,6 @@
 	//need define att handle same with slave(Here: we use 8258 feature_test/slave_dle demo as slave device)
 	#define			SPP_HANDLE_DATA_S2C			0x11
 	#define			SPP_HANDLE_DATA_C2S			0x15
-
-
-#if (1) // support RF RX/TX MAX data Length: 251byte
-	#define RX_FIFO_SIZE						288  //rx-24   max:251+24 = 275  16 align-> 288
-	#define RX_FIFO_NUM							8
-
-	#define TX_FIFO_SIZE						264  //tx-12   max:251+12 = 263  4 align-> 264
-	#define TX_FIFO_NUM							8
-
-	#define MTU_SIZE_SETTING   			 		247
-	#define DLE_TX_SUPPORTED_DATA_LEN    		MAX_OCTETS_DATA_LEN_EXTENSION //264-12 = 252 > Tx max:251
-#else
-	#define RX_FIFO_SIZE						224 //rx-24   max:200+24 = 224  16 align-> 224
-	#define RX_FIFO_NUM							8
-
-	#define TX_FIFO_SIZE						212 //tx-12   max:200+12 = 212  4 align-> 212
-	#define TX_FIFO_NUM							16
-
-	#define MTU_SIZE_SETTING   			 		196
-	#define DLE_TX_SUPPORTED_DATA_LEN    		(BLM_TX_FIFO_SIZE-12)
-#endif
-
-
-MYFIFO_INIT(blt_rxfifo, RX_FIFO_SIZE, RX_FIFO_NUM);
-MYFIFO_INIT(blt_txfifo, TX_FIFO_SIZE, TX_FIFO_NUM);
 
 
 
@@ -401,9 +378,13 @@ void feature_mdle_test_init_normal(void)
 
 	u8  mac_public[6];
 	u8  mac_random_static[6];
-	//for 512K Flash, flash_sector_mac_address equals to 0x76000
 	//for 1M  Flash, flash_sector_mac_address equals to 0xFF000
 	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
+
+
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+
 
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();
@@ -413,11 +394,7 @@ void feature_mdle_test_init_normal(void)
 	blc_ll_initConnection_module();						//connection module  mandatory for BLE slave/master
 	blc_ll_initMasterRoleSingleConn_module();			//master module: 	 mandatory for BLE master,
 
-#if (MCU_CORE_TYPE == MCU_CORE_8278)
-	rf_set_power_level_index (RF_POWER_P3p50dBm);
-#else
 	rf_set_power_level_index (RF_POWER_P3p11dBm);
-#endif
 
 	////// Host Initialization  //////////
 	blc_gap_central_init();										//gap initialization

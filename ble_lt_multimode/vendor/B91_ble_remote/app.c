@@ -368,9 +368,13 @@ void user_init_normal(void)
 //	advertise_begin_tick = clock_time();
 
 
+#if (BLE_REMOTE_OTA_ENABLE)
+	////////////////// OTA relative ////////////////////////
+	bls_ota_clearNewFwDataArea(); //must
+	bls_ota_registerStartCmdCb(app_enter_ota_mode);
+	//bls_ota_registerResultIndicateCb(app_debug_ota_result);  //debug
+#endif
 
-
-	blc_ll_setAdvCustomedChannel( 37, 37, 37);  //debug
 
 }
 
