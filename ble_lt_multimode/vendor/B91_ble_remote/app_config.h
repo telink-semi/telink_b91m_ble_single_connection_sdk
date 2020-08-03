@@ -31,6 +31,7 @@
 #define BLE_REMOTE_SECURITY_ENABLE      	1
 #define REMOTE_IR_ENABLE					1
 #define BLE_AUDIO_ENABLE					1
+#define BLE_REMOTE_OTA_ENABLE				0
 ////////////////////////// AUDIO CONFIG (RCU board) /////////////////////////////
 #if (BLE_AUDIO_ENABLE)
 
@@ -243,7 +244,7 @@ enum{
 
 
 
-#define UART_PRINT_DEBUG_ENABLE			1
+#define UART_PRINT_DEBUG_ENABLE			0
 /////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
 #if (UART_PRINT_DEBUG_ENABLE)
 	//the baud rate should not bigger than 1M(system timer clock is constant 16M)
@@ -258,7 +259,7 @@ enum{
 
 
 
-#define DEBUG_GPIO_ENABLE							1
+#define DEBUG_GPIO_ENABLE							0
 
 #if(DEBUG_GPIO_ENABLE)
 

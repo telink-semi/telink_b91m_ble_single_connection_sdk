@@ -36,35 +36,37 @@ extern void main_loop (void);
 
 _attribute_ram_code_ void rf_irq_handler(void)
 {
+	NESTED_IRQ_ENTER();
 	DBG_CHN10_HIGH;
 
 	irq_blt_sdk_handler ();
-
-	plic_interrupt_complete(IRQ15_ZB_RT);
-
 	DBG_CHN10_LOW;
+	plic_interrupt_complete(IRQ15_ZB_RT);
+	NESTED_IRQ_EXIT();
 }
 
 
 _attribute_ram_code_ void stimer_irq_handler(void)
 {
+	NESTED_IRQ_ENTER();
 	DBG_CHN11_HIGH;
 
 	irq_blt_sdk_handler ();
-
-	plic_interrupt_complete(IRQ1_SYSTIMER);
-
 	DBG_CHN11_LOW;
+	plic_interrupt_complete(IRQ1_SYSTIMER);
+	NESTED_IRQ_EXIT();
 }
 
 
 _attribute_ram_code_ void uart0_irq_handler(void)
 {
+	NESTED_IRQ_ENTER();
 #if(FEATURE_TEST_MODE == TEST_BLE_PHY)
 	app_phytest_irq_proc();
 #endif
 	plic_interrupt_complete(IRQ19_UART0);
 
+	NESTED_IRQ_EXIT();
 }
 
 _attribute_ram_code_ int main(void)

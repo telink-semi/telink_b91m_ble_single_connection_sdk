@@ -1066,4 +1066,8 @@ void ble_rf_set_rx_dma(unsigned char *buff, unsigned char fifo_byte_size);
 
 void ble_rf_set_tx_dma(unsigned char fifo_dep, unsigned char fifo_byte_size);
 
+void ble_tx_dma_config(void);
+
+void ble_rx_dma_config(void);
+
 #endif

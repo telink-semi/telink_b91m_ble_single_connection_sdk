@@ -23,8 +23,9 @@
 #include "string.h"
 #include "../common/assert.h"
 #include "../tl_common.h"
+#include "../drivers/9518/compiler.h"
 
-int tmemcmp(const void * m1, const void *m2, u32 len) {
+_attribute_ram_code_ int tmemcmp(const void * m1, const void *m2, u32 len) {
 	u8 *st1 = (u8 *) m1;
 	u8 *st2 = (u8 *) m2;
 
@@ -40,7 +41,7 @@ int tmemcmp(const void * m1, const void *m2, u32 len) {
 
 
 
-void bbcopy(register char * src, register char * dest, int len) {
+_attribute_ram_code_ void bbcopy(register char * src, register char * dest, int len) {
 	if (dest < src)
 		while (len--)
 			*dest++ = *src++;
@@ -52,24 +53,24 @@ void bbcopy(register char * src, register char * dest, int len) {
 	}
 }
 
-void bcopy(register char * src, register char * dest, int len) {
+_attribute_ram_code_ void bcopy(register char * src, register char * dest, int len) {
 	bbcopy(src, dest, len);
 }
 
-void * tmemset(void * dest, int val, unsigned int len) {
+_attribute_ram_code_ void * tmemset(void * dest, int val, unsigned int len) {
 	register unsigned char *ptr = (unsigned char*) dest;
 	while (len-- > 0)
 		*ptr++ = (unsigned char)val;
 	return dest;
 }
 
-void * tmemcpy(void * out, const void * in, unsigned int length) {
+_attribute_ram_code_ void * tmemcpy(void * out, const void * in, unsigned int length) {
 	bcopy((char *) in, (char *) out, (int) length);
 	return out;
 }
 
 // for performance, assume lenght % 4 == 0,  and no memory overlapped
-void tmemcpy4(void * d, const void * s, unsigned int length){
+_attribute_ram_code_ void tmemcpy4(void * d, const void * s, unsigned int length){
 	int* dst = (int*)d;
 	int* src = (int*)s;
 	assert((((int)dst) >> 2) << 2 == ((int)dst));			// address must alighn to 4

@@ -40,21 +40,22 @@ extern void usb_init(void) ;
 
 _attribute_ram_code_ void rf_irq_handler(void)
 {
+	NESTED_IRQ_ENTER();
 	DBG_CHN10_HIGH;
 
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_rf);
 
 	irq_blt_sdk_handler ();
 
-
-	plic_interrupt_complete(IRQ15_ZB_RT);
-
 	DBG_CHN10_LOW;
+	plic_interrupt_complete(IRQ15_ZB_RT);
+	NESTED_IRQ_EXIT();
 }
 
 
 _attribute_ram_code_ void stimer_irq_handler(void)
 {
+	NESTED_IRQ_ENTER();
 	DBG_CHN11_HIGH;
 
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_sysTimer);
@@ -62,7 +63,10 @@ _attribute_ram_code_ void stimer_irq_handler(void)
 	irq_blt_sdk_handler ();
 
 
+	DBG_CHN11_LOW;
 	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
+	NESTED_IRQ_EXIT();
+}
 
 
 	DBG_CHN11_LOW;
@@ -70,14 +74,13 @@ _attribute_ram_code_ void stimer_irq_handler(void)
 
 _attribute_ram_code_ void usb_endpoint_irq_handler(void)
 {
-
+	NESTED_IRQ_ENTER();
 	usb_endpoints_irq_handler ();
 
 	plic_interrupt_complete(IRQ11_USB_ENDPOINT);  	//plic_interrupt_complete
 
-
+	NESTED_IRQ_EXIT();
 }
-
 
 
 /**
@@ -105,10 +108,11 @@ int main (void)   //must on ramcode
 
 	gpio_init(1);
 
+#if (APPLICATION_DONGLE)
 	usb_init();
+#endif
 
 	user_init_normal();
-
 
 	irq_enable();
 

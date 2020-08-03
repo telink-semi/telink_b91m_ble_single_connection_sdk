@@ -26,6 +26,7 @@
 #include "core.h"
 
 #include "plic.h"
+#include "compiler.h"
 /** @brief Enable interrupts globally in the system.
  * This macro must be used when the initialization phase is over and the interrupts
  * can start being handled by the system.
@@ -46,7 +47,7 @@
   * This function must be used when the system wants to disable all the interrupt
   * it could handle.
   */
- u32 core_disable_interrupt(void){
+_attribute_ram_code_ u32 core_disable_interrupt(void){
 	 u32 r = read_csr (NDS_MIE);
  	clear_csr(NDS_MIE, BIT(3)| BIT(7)| BIT(11));
   return r;
@@ -57,7 +58,7 @@
   * This function must be used when the system wants to restore all the interrupt
   * it could handle.
   */
-u32 core_restore_interrupt(u32 en){
+_attribute_ram_code_ u32 core_restore_interrupt(u32 en){
 
 	set_csr(NDS_MIE, en);
  	if(0 && en)

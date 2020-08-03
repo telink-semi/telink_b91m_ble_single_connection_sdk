@@ -66,6 +66,7 @@ void user_init_normal(void)
 	//////////////// config USB ISO IN/OUT interrupt /////////////////
 	reg_usb_mask = BIT(7);			//audio in interrupt enable
 	plic_interrupt_enable(IRQ11_USB_ENDPOINT);
+	plic_set_priority(IRQ11_USB_ENDPOINT,1);//default is 1
 	reg_usb_ep6_buf_addr = 0x80;
 	reg_usb_ep7_buf_addr = 0x60;
 	reg_usb_ep_max_size = (256 >> 3);
@@ -165,7 +166,9 @@ int main_idle_loop (void)
 
 
 	///////////////////////////////////// proc usb cmd from host /////////////////////
+#if (APPLICATION_DONGLE)
 	usb_handle_irq();
+#endif
 
 
 

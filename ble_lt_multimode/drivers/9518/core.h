@@ -41,7 +41,7 @@
 #define RESTORE_CSR(r)          write_csr(r, __##r);
 
 /* Support PowerBrake (Performance Throttling) feature */
-#define	SUPPORT_PFT_ARCH		0
+#define	SUPPORT_PFT_ARCH		1
 
 #if SUPPORT_PFT_ARCH
 
