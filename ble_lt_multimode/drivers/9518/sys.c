@@ -75,6 +75,8 @@ void sys_init(power_mode_e power_mode)
 	analog_write_reg8(0x8c,0x02);//reg_xo_en_clk_ana_ana=1
 	analog_write_reg8(0x7d,0x80);////power on baseband
 
+	write_reg32(0x160000,0x20000000);
+	
 	analog_write_reg8(0x0a, power_mode);  //set power mode
 
 	analog_write_reg8(0x06,analog_read_reg8(0x06) & (~BIT(0)));////ldo_bbpll_pd = 0
