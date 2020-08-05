@@ -1,10 +1,6 @@
 #ifndef     RF_H
 #define     RF_H
 
-//#include "bsp.h"
-//#include "reg_include/soc.h"
-//#include "register.h"
-
 #include "gpio.h"
 #include "sys.h"
 
@@ -12,28 +8,34 @@
 #define RF_CHN_TABLE 		0x8000
 
 
-//extern  RF_ModeTypeDef g_RFMode;
+//extern  rf_mode_e g_RFMode;
 
+/**
+ *  @brief  select status of rf.
+ */
 typedef enum {
     RF_MODE_TX = 0,
     RF_MODE_RX = 1,
     RF_MODE_AUTO=2
-} RF_StatusTypeDef;
+} rf_status_e;
 
+/**
+ *  @brief  select RX_CYC2LNA and TX_CYC2PA pin;
+ */
 
-//RX_CYC2LNA;
 typedef enum {
-	RFFE_RX_PB2 = GPIO_PB2,
-    RFFE_RX_PC6 = GPIO_PC6,
-    RFFE_RX_PD0 = GPIO_PD0
-} RF_LNARxPinDef;
+	RF_RFFE_RX_PB1 = GPIO_PB1,
+    RF_RFFE_RX_PD6 = GPIO_PD6,
+    RF_RFFE_RX_PE4 = GPIO_PE4
+} rf_lna_rx_pin_e;
 
-//TX_CYC2PA;
+
 typedef enum {
-	RFFE_TX_PB3 = GPIO_PB3,
-    RFFE_TX_PC7 = GPIO_PC7,
-    RFFE_TX_PD1 = GPIO_PD1
-} RF_PATxPinDef;
+	RF_RFFE_TX_PB0 = GPIO_PB0,
+	RF_RFFE_TX_PB6 = GPIO_PB6,
+    RF_RFFE_TX_PD7 = GPIO_PD7,
+    RF_RFFE_TX_PE5 = GPIO_PE5
+} rf_pa_tx_pin_e;
 
 
 /**
@@ -41,112 +43,56 @@ typedef enum {
  */
 typedef enum {
 	 /*VBAT*/
-	 RF_POWER_P9p11dBm = 63, //  11.26 dbm
-	 RF_POWER_P9p05dBm = 61, //  11.09 dbm
-	 RF_POWER_P9p00dBm = 58, //  10.83 dbm
-	 RF_POWER_P8p95dBm  = 56, //  10.62 dbm
-	 RF_POWER_P8p90dBm  = 53, //  10.30 dbm
-	 RF_POWER_P8p80dBm  = 51, // 10.05 dbm
-	 RF_POWER_P8p70dBm  = 49, //   9.79 dbm
-	 RF_POWER_P8p65dBm  = 47, //   9.54 dbm
-	 RF_POWER_P8p57dBm  = 45, //   9.23 dbm
-	 RF_POWER_P8p46dBm  = 43, //   8.92 dbm
-	 RF_POWER_P8p39dBm  = 41, //   8.57 dbm
-	 RF_POWER_P8p30dBm  = 39, //   8.20 dbm
-	 RF_POWER_P8p20dBm  = 37, //   7.80 dbm
-	 RF_POWER_P8p05dBm  = 35, //   7.37 dbm
-	 RF_POWER_P7p91dBm  = 33, //   6.91 dbm
-	 RF_POWER_P7p73dBm  = 31, //   6.45 dbm
-	 RF_POWER_P7p65dBm  = 29, //   5.92 dbm
-	 RF_POWER_P7p45dBm  = 27, //   5.33 dbm
-	 RF_POWER_P7p21dBm  = 25, //   4.69 dbm
-	 RF_POWER_P6p98dBm  = 23, //   3.99 dbm
+	 RF_POWER_P9p11dBm = 63, //  9.1 dbm
+	 RF_POWER_P8p57dBm  = 45, //   8.6 dbm
+	 RF_POWER_P8p05dBm  = 35, //   8.1 dbm
+	 RF_POWER_P7p45dBm  = 27, //   7.5 dbm
+	 RF_POWER_P6p98dBm  = 23, //   7.0 dbm
+	 RF_POWER_P5p68dBm  = 18, //   6.0 dbm
 	 /*VANT*/
-	 RF_POWER_P4p35dBm  = BIT(7) | 63,   //   3.50 dbm
-	 RF_POWER_P4p26dBm  = BIT(7) | 61,   //   3.33 dbm
-	 RF_POWER_P4p21dBm  = BIT(7) | 59,   //   3.13 dbm
-	 RF_POWER_P4p11dBm  = BIT(7) | 57,   //   2.93 dbm
-	 RF_POWER_P4p01dBm  = BIT(7) | 54,   //   2.60 dbm
-	 RF_POWER_P3p93dBm  = BIT(7) | 52,   //   2.36 dbm
-	 RF_POWER_P3p83dBm  = BIT(7) | 50,   //   2.10 dbm
-	 RF_POWER_P3p73dBm  = BIT(7) | 48,   //   1.83 dbm
-	 RF_POWER_P3p54dBm  = BIT(7) | 46,   //   1.56 dbm
-	 RF_POWER_P3p46dBm  = BIT(7) | 44,   //   1.25 dbm
-	 RF_POWER_P3p25dBm  = BIT(7) | 41,   //   0.71 dbm
-	 RF_POWER_P3p11dBm  = BIT(7) | 40,   //   0.52 dbm
-	 RF_POWER_P2p79dBm  = BIT(7) | 36,   //  -0.28 dbm
-	 RF_POWER_P2p66dBm  = BIT(7) | 35,   //  -0.51 dbm
-	 RF_POWER_P2p54dBm  = BIT(7) | 34,   //  -0.74 dbm
-	 RF_POWER_P2p32dBm  = BIT(7) | 32,   //  -1.21 dbm
-	 RF_POWER_P2p28dBm  = BIT(7) | 30,   //  -1.69 dbm
-	 RF_POWER_P2p11dBm  = BIT(7) | 28,   //  -2.23 dbm
-	 RF_POWER_P1p72dBm  = BIT(7) | 26,   //  -2.84 dbm
-	 RF_POWER_P1p29dBm  = BIT(7) | 24,   //  -3.48 dbm
-	 RF_POWER_P0p80dBm  = BIT(7) | 22,   //  -4.18 dbm
-	 RF_POWER_P0p01dBm  = BIT(7) | 20,   //  -4.97 dbm
-	 RF_POWER_N0p53dBm  = BIT(7) | 18,   //  -5.85 dbm
-	 RF_POWER_N1p37dBm  = BIT(7) | 16,   //  -6.83 dbm
-	 RF_POWER_N2p01dBm  = BIT(7) | 14,   //  -7.88 dbm
-	 RF_POWER_N3p37dBm  = BIT(7) | 12,   //  -9.14 dbm
-	 RF_POWER_N4p77dBm  = BIT(7) | 10,   //-10.70 dbm
-	 RF_POWER_N6p54dBm = BIT(7) | 8,   //  -12.57 dbm
-	 RF_POWER_N8p78dBm = BIT(7) | 6,   //  -15.01 dbm
-	 RF_POWER_N12p06dBm = BIT(7) | 4,   //  -18.40 dbm
-	 RF_POWER_N17p83dBm = BIT(7) | 2,   //  -24.28 dbm
-	 RF_POWER_N23p54dBm = BIT(7) | 1,   //  -30.33 dbm
+	 RF_POWER_P4p35dBm  = BIT(7) | 63,   //   4.4 dbm
+	 RF_POWER_P3p83dBm  = BIT(7) | 50,   //   3.8 dbm
+	 RF_POWER_P3p25dBm  = BIT(7) | 41,   //   3.3 dbm
+	 RF_POWER_P2p79dBm  = BIT(7) | 36,   //   2.8 dbm
+	 RF_POWER_P2p32dBm  = BIT(7) | 32,   //   2.3 dbm
+	 RF_POWER_P1p72dBm  = BIT(7) | 26,   //   1.7 dbm
+	 RF_POWER_P0p80dBm  = BIT(7) | 22,   //   0.8 dbm
+	 RF_POWER_P0p01dBm  = BIT(7) | 20,   //   0.0 dbm
+	 RF_POWER_N0p53dBm  = BIT(7) | 18,   //  -0.5 dbm
+	 RF_POWER_N1p37dBm  = BIT(7) | 16,   //  -1.4 dbm
+	 RF_POWER_N2p01dBm  = BIT(7) | 14,   //  -2.0 dbm
+	 RF_POWER_N3p37dBm  = BIT(7) | 12,   //  -3.4 dbm
+	 RF_POWER_N4p77dBm  = BIT(7) | 10,   //  -4.8 dbm
+	 RF_POWER_N6p54dBm = BIT(7) | 8,     //  -6.5 dbm
+	 RF_POWER_N8p78dBm = BIT(7) | 6,     //  -8.8 dbm
+	 RF_POWER_N12p06dBm = BIT(7) | 4,    //  -12.1 dbm
+	 RF_POWER_N17p83dBm = BIT(7) | 2,    //  -17.8 dbm
+	 RF_POWER_N23p54dBm = BIT(7) | 1,    //  -23.5 dbm
 
-	 RF_POWER_N30dBm    = 0xff,         //  -30 dbm
-	 RF_POWER_N50dBm    = BIT(7) | 0,   //  -50 dbm
+	 RF_POWER_N30dBm    = 0xff,          //  -30 dbm
+	 RF_POWER_N50dBm    = BIT(7) | 0,    //  -50 dbm
 
-} RF_PowerTypeDef;
+} rf_power_level_e;
 
-extern const RF_PowerTypeDef rf_power_Level_list[60];
+extern const rf_power_level_e rf_power_Level_list[60];
 /**
  *  @brief  Define power index list of RF
  */
 typedef enum {
 	 /*VBAT*/
 	 RF_POWER_INDEX_P9p11dBm,
-	 RF_POWER_INDEX_P9p05dBm,
-	 RF_POWER_INDEX_P9p00dBm,
-	 RF_POWER_INDEX_P8p95dBm,
-	 RF_POWER_INDEX_P8p90dBm,
-	 RF_POWER_INDEX_P8p80dBm,
-	 RF_POWER_INDEX_P8p70dBm,
-	 RF_POWER_INDEX_P8p65dBm,
 	 RF_POWER_INDEX_P8p57dBm,
-	 RF_POWER_INDEX_P8p16dBm,
-	 RF_POWER_INDEX_P8p39dBm,
-	 RF_POWER_INDEX_P8p30dBm,
-	 RF_POWER_INDEX_P8p20dBm,
 	 RF_POWER_INDEX_P8p05dBm,
-	 RF_POWER_INDEX_P7p91dBm,
-	 RF_POWER_INDEX_P7p73dBm,
-	 RF_POWER_INDEX_P7p65dBm,
 	 RF_POWER_INDEX_P7p45dBm,
-	 RF_POWER_INDEX_P7p21dBm,
 	 RF_POWER_INDEX_P6p98dBm,
+	 RF_POWER_INDEX_P5p68dBm,
 	 /*VANT*/
 	 RF_POWER_INDEX_P4p35dBm,
-	 RF_POWER_INDEX_P4p26dBm,
-	 RF_POWER_INDEX_P4p21dBm,
-	 RF_POWER_INDEX_P4p11dBm,
-	 RF_POWER_INDEX_P4p01dBm,
-	 RF_POWER_INDEX_P3p93dBm,
 	 RF_POWER_INDEX_P3p83dBm,
-	 RF_POWER_INDEX_P3p73dBm,
-	 RF_POWER_INDEX_P3p54dBm,
-	 RF_POWER_INDEX_P3p46dBm,
 	 RF_POWER_INDEX_P3p25dBm,
-	 RF_POWER_INDEX_P3p11dBm,
 	 RF_POWER_INDEX_P2p79dBm,
-	 RF_POWER_INDEX_P2p66dBm,
-	 RF_POWER_INDEX_P2p54dBm,
 	 RF_POWER_INDEX_P2p32dBm,
-	 RF_POWER_INDEX_P2p28dBm,
-	 RF_POWER_INDEX_P2p11dBm,
 	 RF_POWER_INDEX_P1p72dBm,
-	 RF_POWER_INDEX_P1p29dBm,
 	 RF_POWER_INDEX_P0p80dBm,
 	 RF_POWER_INDEX_P0p01dBm,
 	 RF_POWER_INDEX_N0p53dBm,
@@ -159,7 +105,7 @@ typedef enum {
 	 RF_POWER_INDEX_N12p06dBm,
 	 RF_POWER_INDEX_N17p83dBm,
 	 RF_POWER_INDEX_N23p54dBm,
-} RF_PowerIndexTypeDef;
+} rf_power_level_index_e;
 
 
 
@@ -199,11 +145,11 @@ typedef enum {
 /**
  *  command table for special registers
  */
-typedef struct TBLCMDSET {
+typedef struct tbl_cmd_set_st {
 	unsigned int  	ADR;
 	unsigned char	DAT;
 	unsigned char	CMD;
-} TBLCMDSET;
+} tbl_cmd_set_st;
 
 /**
  *  @brief  Define RF mode
@@ -224,7 +170,23 @@ typedef enum {
     RF_MODE_HYBEE_1M   	   =    BIT(12),
     RF_MODE_HYBEE_2M   	   =    BIT(13),
     RF_MODE_HYBEE_500K     =    BIT(14),
-} RF_ModeTypeDef;
+} rf_mode_e;
+
+
+
+/**
+ *  @brief  Define RF channel
+ */
+typedef enum {
+	 RF_CHANNEL_0   =    BIT(0),
+	 RF_CHANNEL_1   =    BIT(1),
+	 RF_CHANNEL_2   =    BIT(2),
+	 RF_CHANNEL_3   =    BIT(3),
+	 RF_CHANNEL_4   =    BIT(4),
+	 RF_CHANNEL_5   =    BIT(5),
+	 RF_CHANNEL_NONE =   0x00,
+	 RF_CHANNEL_ALL =    0x0f,
+} rf_channel_e;
 
 
 /**
@@ -235,7 +197,7 @@ typedef enum {
  * @return     number of commands are carried out
  */
 
-extern int LoadTblCmdSet(const TBLCMDSET * pt, int size);
+extern int rf_loadtbl_cmd_set_st(const tbl_cmd_set_st * pt, int size);
 
 
 /**
@@ -244,7 +206,7 @@ extern int LoadTblCmdSet(const TBLCMDSET * pt, int size);
 *	@return	   none.
 */
 
-extern void rf_drv_init (RF_ModeTypeDef rf_mode);
+extern void rf_drv_init (rf_mode_e rf_mode);
 
 
 
@@ -253,7 +215,7 @@ extern void rf_drv_init (RF_ModeTypeDef rf_mode);
  * @param   none.
  * @return  none.
  */
-static inline unsigned char is_rf_receiving_pkt(void)
+static inline unsigned char rf_is_rf_receiving_pkt(void)
 {
 	//if the value of [2:0] of the reg_0x140840 isn't 0 , it means that the RF is in the receiving packet phase.(confirmed by junwen)
 	return ((read_reg8(0x140840)&0x07) != 0);//todo
@@ -392,7 +354,7 @@ void rf_tx_pkt(void* addr);
 *	@return	 	failed -1,else success.
 */
 
-int rf_trx_state_set(RF_StatusTypeDef rf_status, signed char rf_channel);
+int rf_trx_state_set(rf_status_e rf_status, signed char rf_channel);
 
 /**
  * @brief   This function serves to set RF access command.
@@ -405,8 +367,6 @@ static inline void rf_access_code_comm (unsigned int acc)
 	reg_rf_access_1 = (acc>>8) & 0xff;
 	reg_rf_access_2 = (acc>>16) & 0xff;
 	reg_rf_access_3 = (acc>>24) & 0xff;//notice: This state will be reset after reset baseband
-
-//	reg_rf_acclen |= 0x80;//setting acess code needs to writ 0x405 access code trigger bit 1 to enable in long range mode,,and the mode of  BLE1M and BLE2M need not.
 }
 
 /**
@@ -422,7 +382,6 @@ static inline void rf_longrange_access_code_comm (unsigned int acc)
 	reg_rf_access_3 = (acc>>24) & 0xff;//notice: This state will be reset after reset baseband
 
 	reg_rf_modem_mode_cfg_rx1_0 |= FLD_RF_LR_TRIG_MODE;
-//	reg_rf_acclen |= 0x80;//setting acess code needs to writ 0x405 access code trigger bit 1 to enable in long range mode,,and the mode of  BLE1M and BLE2M need not.
 }
 
 /**
@@ -434,9 +393,9 @@ static inline void rf_longrange_access_code_comm (unsigned int acc)
 *						all access_code channels (0~5) are enabled.
 *	@return	 	none
 */
-static inline void rf_rx_acc_code_enable(unsigned char pipe)
+static inline void rf_rx_acc_code_enable(rf_channel_e pipe)
 {
-    write_reg8(0x407, (read_reg8(0x407)&0xc0) | pipe); //rx_access_code_chn_en
+    write_reg8(0x140c4d, (read_reg8(0x140c4d)&0xc0) | pipe); //rx_access_code_chn_en
 }
 
 /**
@@ -447,9 +406,9 @@ static inline void rf_rx_acc_code_enable(unsigned char pipe)
 *						all access_code channels (0~5) are enabled.
 *	@return	 	none
 */
-static inline void rf_tx_acc_code_select(unsigned char pipe)
+static inline void rf_tx_acc_code_select(rf_channel_e pipe)
 {
-    write_reg8(0xf15, (read_reg8(0xf15)&0xf8) | pipe); //Tx_Channel_man[2:0]
+    write_reg8(0x140a15, (read_reg8(0x140a15)&0xf8) | pipe); //Tx_Channel_man[2:0]
 }
 
 /**
@@ -458,28 +417,28 @@ static inline void rf_tx_acc_code_select(unsigned char pipe)
 *	@return	   none.
 */
 
-extern void rf_drv_init (RF_ModeTypeDef rf_mode);
+extern void rf_drv_init (rf_mode_e rf_mode);
 
 /**
  * @brief   	This function serves to set RF baseband channel.
  * @param[in]   chn - channel numbers.
  * @return  	none.
  */
-void rf_set_ble_chn(signed char chn_num);
+void rf_set_ble_channel(signed char chn_num);
 
 /**
  * @brief   	This function serves to set RF no pn mode baseband channel.
  * @param[in]   chn - freq_num.
  * @return  	none.
  */
-void rf_set_channel(signed char chn_num);
+void rf_set_channel(signed char chn);
 
 /**
  * @brief   	This function serves to set pri sb mode enable.
  * @param[in]   none.
  * @return  	none.
  */
-void private_sb_en(void);
+void rf_private_sb_en(void);
 
 
 /**
@@ -487,7 +446,7 @@ void private_sb_en(void);
  * @param[in]   len-packet length.
  * @return  	none.
  */
-void set_private_sb_len(int len);
+void rf_set_private_sb_len(int len);
 
 /**
  * @brief   	This function serves to set zigbee channel.
@@ -510,15 +469,15 @@ void rf_pn_disable(void);
  * @param[in]   addr-address of rx packet.
  * @return  	the next rx_packet address.
  */
-u8* rx_packet_addr(int fifo_num,int fifo_dep,void* addr);
+u8* rf_rx_packet_addr(int fifo_num,int fifo_dep,void* addr);
 /**
 *	@brief     This function serves to reset RF BaseBand
 *	@param[in] none.
 *	@return	   none.
 */
-static inline void reset_baseband(void)
+static inline void rf_reset_baseband(void)
 {
-	REG_ADDR8(0x801404e3) = BIT(0);		//reset_baseband
+	REG_ADDR8(0x801404e3) = BIT(0);		//rf_reset_baseband
 	REG_ADDR8(0x801404e3) = 0;			//release reset signal
 }
 /**
@@ -531,7 +490,7 @@ static inline void reset_sn_nesn(void)
 	REG_ADDR8(0x80140a01) =  0x01;
 }
 
-#define rf_set_ble_channel		rf_set_ble_chn
+
 
 /**
  * @brief   This function serves to set CRC advantage.
@@ -593,11 +552,12 @@ static inline void rf_set_tx_rx_off_auto_mode(void)
 extern void rf_start_brx  (void* addr, unsigned int tick);
 extern void rf_start_btx (void* addr, unsigned int tick);
 /**
- * @brief   This function serves to set the max length of rx packet.
+ * @brief   This function serves to set the max length of rx packet.Use byte_len to limit what DMA
+ * moves out will not exceed the buffer size we define.And old chip do this through dma size.
  * @param   maxlen:the longest of rx packet.
  * @return  none.
  */
-void rf_set_rx_maxlen(unsigned int maxlen);
+void rf_set_rx_maxlen(unsigned int byte_len);
 /**
  * @brief     This function performs to enable RF Tx.
  * @param[in] none.
@@ -609,6 +569,30 @@ static inline void rf_ble_tx_on ()
 }
 
 /**
+ * @brief   This function serves to set RF power level.
+ * @param   rf_power_level_e - the RF power types.
+ * @return  none.
+ */
+void rf_set_power_level (rf_power_level_e level);
+
+/**
+ * @brief   This function serves to set RF power level index.
+ * @param   rf_power_level_e - the RF power types.
+ * @return  none.
+ */
+void rf_set_power_level_index(rf_power_level_index_e idx);
+
+
+/**
+*	@brief	  	This function serves to set pin for RFFE of RF
+*   @param[in]     tx_pin - select pin to send
+*   @param[in]      rx_pin - select pin to receive
+*	@return	 	none
+*
+*/
+extern void rf_rffe_set_pin(rf_pa_tx_pin_e tx_pin, rf_lna_rx_pin_e rx_pin);
+
+/**
  * @brief     This function performs to done RF Tx.
  * @param[in] none.
  * @return    none.
@@ -617,12 +601,6 @@ static inline void rf_ble_tx_done ()
 {
 	write_reg8  (0x80140a02, 0x45);
 }
-/**
- * @brief   This function serves to set RF power level index.
- * @param   RF_PowerTypeDef - the RF power types.
- * @return  none.
- */
-void rf_set_power_level_index (RF_PowerTypeDef level);
 
 #if 0
 
@@ -689,17 +667,17 @@ void rf_tx_rx_maunal_dis(void);
 */
 static inline void rf_baseband_reset(void)
 {
-	REG_ADDR8(0x61) = BIT(0);		//reset_baseband
+	REG_ADDR8(0x61) = BIT(0);		//rf_reset_baseband
 	REG_ADDR8(0x61) = 0;			//release reset signal
 }
 
 
 /**
  * @brief   This function serves to set RF power level index.
- * @param   RF_PowerTypeDef - the RF power types.
+ * @param   rf_power_level_e - the RF power types.
  * @return  none.
  */
-extern void rf_set_power_level_index (RF_PowerTypeDef level);
+extern void rf_set_power_level_index (rf_power_level_e level);
 
 
 
@@ -713,7 +691,7 @@ extern void rf_set_power_level_index (RF_PowerTypeDef level);
 
 /**
  * @brief   This function serves to set The channel .
- * @param[in]   RF_PowerTypeDef - the RF power types.
+ * @param[in]   rf_power_level_e - the RF power types.
  * @return  none.
  */
 extern void rf_set_channel_500k(signed short chn, unsigned short set);
@@ -819,7 +797,7 @@ static inline void rf_set_rx_on (void)
  * @param[in] none.
  * @return    none.
  */
-static inline void rf_ble_tx_on()
+static inline void rf_ble_tx_on ()
 {
 	write_reg8  (0x80140a02, 0x45 | BIT(4));	// TX enable
 	write_reg32 (0x80140a04, 0x38);
@@ -913,16 +891,6 @@ static inline void rf_ble_set_access_code_adv (void)
 }
 
 
-/**
-*	@brief		this function is to set shock burst for RF.
-*	@param[in]	len - length of shockburst.
-*	@return	 	none.
-*/
-static inline void rf_pri_set_shockburst_len(int len)
-{
-    write_reg8(0x80140804, read_reg8(0x80140804)|0x03); //select shockburst header mode
-    write_reg8(0x80140806, len);
-}
 
 
 /**
@@ -982,7 +950,7 @@ extern void rf_get_acc_code_pipe(unsigned char pipe, unsigned char *addr);
 *	@param[in]	rf_channel - RF channel.
 *	@return	 	failed -1,else success.
 */
-extern int rf_set_trx_state(RF_StatusTypeDef rf_status, signed char rf_channel);
+extern int rf_set_trx_state(rf_status_e rf_status, signed char rf_channel);
 
 
 /**
@@ -990,7 +958,7 @@ extern int rf_set_trx_state(RF_StatusTypeDef rf_status, signed char rf_channel);
 *	@param[in]	none.
 *	@return	 	RF Rx/Tx status.
 */
-extern RF_StatusTypeDef rf_get_trx_state(void);
+extern rf_status_e rf_get_trx_state(void);
 
 
 /**
@@ -1054,7 +1022,7 @@ extern unsigned char rf_154_stop_ed(void);
 *	@return	 	none
 *
 */
-extern void rf_rffe_set_pin(RF_PATxPinDef tx_pin, RF_LNARxPinDef rx_pin);
+extern void rf_rffe_set_pin(rf_pa_tx_pin_e tx_pin, rf_lna_rx_pin_e rx_pin);
 
 
 #endif

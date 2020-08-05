@@ -29,7 +29,7 @@
 #define PM_DEEPSLEEP_RETENTION_ENABLE		0
 #define TEST_CONN_CURRENT_ENABLE            0 //test connection current, disable UI to have a pure power
 #define BLE_REMOTE_SECURITY_ENABLE      	1
-#define REMOTE_IR_ENABLE					1
+#define REMOTE_IR_ENABLE					0
 #define BLE_AUDIO_ENABLE					1
 #define BLE_REMOTE_OTA_ENABLE				0
 ////////////////////////// AUDIO CONFIG (RCU board) /////////////////////////////
@@ -42,15 +42,13 @@
 #define TL_MIC_BUFFER_SIZE				   1984
 
 #define BLE_DMIC_ENABLE						1
-//DMIC 使用时需要跳线：DCLK2--》PB4；  DCLK1--》PB3；   DDAT--》PB2
+//DMIC 使用时需要跳线：DDATA-->PB2；  DCLK1-->PB3
 #if	BLE_DMIC_ENABLE
 	#define PB2_FUNC						AS_DMIC_DI
 	#define PB3_FUNC						AS_DMIC_SCK
-	#define PB4_FUNC						AS_DMIC_SCK
 
 	#define PB2_INPUT_ENABLE				1
 	#define PB3_INPUT_ENABLE				1
-	#define PB4_INPUT_ENABLE				1
 #endif
 
 #endif

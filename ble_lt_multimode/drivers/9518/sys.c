@@ -63,56 +63,6 @@
  *********************************************************************************************************************/
 
 
-/**
- * @brief   	This function serves to initialize system.
- * @param[in]	power_mode - power mode(LDO/DCDC/LDO_DCDC)
- * @return  	none
- */
-void sys_init(power_mode_e power_mode)
-{
-	reg_rst 	= 0xffffffff;   //reset function will be cleared by set "1",which is different from the previous configuration
-	reg_clk_en 	= 0xffffffff;
-	analog_write_reg8(0x8c,0x02);//reg_xo_en_clk_ana_ana=1
-	analog_write_reg8(0x7d,0x80);////power on baseband
-
-	write_reg32(0x160000,0x20000000);
-	
-	analog_write_reg8(0x0a, power_mode);  //set power mode
-
-	analog_write_reg8(0x06,analog_read_reg8(0x06) & (~BIT(0)));////ldo_bbpll_pd = 0
-
-	//stimer
-	analog_write_reg8(0x05,analog_read_reg8(0x05) & (~BIT(3)));        //Power up 24MHz XTL oscillator
-	reg_system_ctrl	|= FLD_SYSTEM_32K_CAL_EN | FLD_SYSTEM_TIMER_EN ;    //enable 32k cal and stimer
-
-	write_csr(NDS_MILMB,0x01);
-	write_csr(NDS_MDLMB,0x80001);
-
-
-	//add by BLE
-	reg_rf_bb_auto_ctrl = 0; //default 0x04
-#if 0
-	extern unsigned int	ota_program_offset;
-	extern unsigned int	ota_program_bootAddr;
-	extern int	ota_firmware_size_k;
-	//boot flag storage
-	unsigned short boot_flag = read_reg16(0x140104);
-	if (boot_flag)
-	{
-		boot_flag = (boot_flag & 0x0007) | ((ota_firmware_size_k>>2)<<3);
-		REG_ADDR16(0x140104) = boot_flag;
-//		write_reg16(0x80004, 0xA5);   	//mark
-//		write_reg16(0x80005, boot_flag);
-
-		ota_program_offset = 0;
-	}
-	else
-	{
-		ota_program_offset = ota_program_bootAddr;
-	}
-#endif
-
-}
 
 
 /**

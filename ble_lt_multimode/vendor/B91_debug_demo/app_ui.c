@@ -248,52 +248,37 @@ u8 key_fifo_add(u8 type, u8*key)
 	volatile u8 amic_enable;
 	void audio_amic_init(void)
 	{
+		audio_set_codec_supply();
+
+		core_enable_interrupt();
+		audio_set_rx_fifo_h_lvl1_th((TL_MIC_BUFFER_SIZE>>2)-2);// set rx fifo high level 1 threshold ,h_level=0x3fe,when max_rx_wptr=0x3ff(full). max_rx_rptr=0,(max_rx_wptr-max_rx_rptr)>h_level ,produce  interrupt
+		audio_set_irq_mask(FLD_AUDIO_IRQ_RXFIFO_H_L1_EN);
 		plic_interrupt_enable(IRQ20_DFIFO);
-		audio_mux_config(CODEC_I2S,BIT_16_MONO,BIT_16_MONO,BIT_16_MONO_FIFO0);
-		audio_i2s_config(I2S_I2S_MODE,I2S_BIT_16_DATA,I2C_RX_TX_SLAVE);
-		audio_set_i2s_clock(AUDIO_44EP1K,AUDIO_RATE_EQUAL);
-		audio_clk_en(1,1);
-		audio_codec_dac_config(CODEC_MASTER,MCU_WREG,AUDIO_16K);
-		audio_codec_adc_config(CODEC_MASTER,AMIC_IN,MCU_WREG,AUDIO_16K);
-		audio_data_path_sel(I2S_DATA_IN_FIFO,I2S_OUT,NO_USE,NO_USE);
-		audio_rx_dma_config(DMA2,(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE, &rx_dma_list_config[0]);
-		audio_rx_dma_add_list_element(&rx_dma_list_config[0],&rx_dma_list_config[1],(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE);
-		audio_rx_dma_add_list_element(&rx_dma_list_config[1],&rx_dma_list_config[0],(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE);
-		audio_rx_dma_en();
-#if 0
-		audio_tx_dma_config(DMA3,(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE,&tx_dma_list_config[0]);
-		audio_tx_dma_add_list_element(&tx_dma_list_config[0],&tx_dma_list_config[1],(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE);
-		audio_tx_dma_add_list_element(&tx_dma_list_config[1],&tx_dma_list_config[0],(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE);
-		audio_tx_dma_en();
-#endif
+
+		audio_init(AMIC_IN_ONLY ,AUDIO_16K,STEREO_BIT_16);
+		audio_rx_dma_chain_init(DMA2,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
+//		audio_tx_dma_chain_init (DMA3,(u16*)&buffer_mic,AUDIO_BUFF_SIZE);
 	}
 	void audio_dmic_init()
 	{
+		audio_set_codec_supply();
+
+		core_enable_interrupt();
+		audio_set_rx_fifo_h_lvl1_th((TL_MIC_BUFFER_SIZE>>2)-2);// set rx fifo high level 1 threshold ,h_level=0x3fe,when max_rx_wptr=0x3ff(full). max_rx_rptr=0,(max_rx_wptr-max_rx_rptr)>h_level ,produce  interrupt
+		audio_set_irq_mask(FLD_AUDIO_IRQ_RXFIFO_H_L1_EN);
 		plic_interrupt_enable(IRQ20_DFIFO);
-	    audio_dmic_set_pin(DMIC_GROUPB_B2_DAT_B3_B4_CLK);
-		audio_mux_config(CODEC_I2S,BIT_16_MONO,BIT_16_MONO,BIT_16_MONO_FIFO0);
-		audio_i2s_config(I2S_I2S_MODE,I2S_BIT_16_DATA,I2C_RX_TX_SLAVE);
-		audio_set_i2s_clock(AUDIO_44EP1K,AUDIO_RATE_EQUAL);
-		audio_clk_en(1,1);
-		audio_codec_dac_config(CODEC_MASTER,MCU_WREG,AUDIO_16K);
-		audio_codec_adc_config(CODEC_MASTER,DMIC_IN,MCU_WREG,AUDIO_16K);
-		audio_data_path_sel(I2S_DATA_IN_FIFO,I2S_OUT,NO_USE,NO_USE);
-		audio_rx_dma_config(DMA2,(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE, &rx_dma_list_config[0]);
-		audio_rx_dma_add_list_element(&rx_dma_list_config[0],&rx_dma_list_config[1],(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE);
-		audio_rx_dma_add_list_element(&rx_dma_list_config[1],&rx_dma_list_config[0],(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE);
-		audio_rx_dma_en();
-#if 0
-		audio_tx_dma_config(DMA3,(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE,&tx_dma_list_config[0]);
-		audio_tx_dma_add_list_element(&tx_dma_list_config[0],&tx_dma_list_config[1],(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE);
-		audio_tx_dma_add_list_element(&tx_dma_list_config[1],&tx_dma_list_config[0],(u16*)(buffer_mic),TL_MIC_BUFFER_SIZE);
-		audio_tx_dma_en();
-#endif
+
+		audio_set_dmic_pin(DMIC_GROUPB_B2_DAT_B3_B4_CLK);
+		audio_init(DMIC_IN_ONLY ,AUDIO_16K,MONO_BIT_16);
+
+		audio_rx_dma_chain_init(DMA2,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
+//		audio_tx_dma_chain_init (DMA3,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
 	}
 	void audio_mic_off()//
 	{
 		audio_clk_en(0,0);
 		audio_rx_dma_dis();
-		audio_tx_dma_dis();
+//		audio_tx_dma_dis();
 	}
 #endif
 

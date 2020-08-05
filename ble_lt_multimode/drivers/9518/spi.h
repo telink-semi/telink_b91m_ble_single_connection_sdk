@@ -25,8 +25,8 @@
  *******************************************************************************************************/
 
 
-#ifndef HSPI_H
-#define HSPI_H
+#ifndef SPI_H
+#define SPI_H
 
 #include "reg_include/register_9518.h"
 #include "gpio.h"
@@ -60,25 +60,29 @@ typedef enum {
     SPI_3LINE =3 ,
 } spi_nomal_3line_mode_e;
 
+typedef enum {
+	PSPI_SINGLE= 0,
+    PSPI_DUAL=1 ,
+} pspi_single_dual_mode_e;
 
 typedef enum {
 	HSPI_SINGLE = 0,
     HSPI_DUAL   =1 ,
     HSPI_QUAD   =2,
-} hpspi_single_dual_quad_mode_e;
+} hspi_single_dual_quad_mode_e;
 
 typedef enum {
-	HSPI_MODE_WRITE_AND_READ=0,//write and read at the same.must enbale CmdEn
-	HSPI_MODE_WRITE_ONLY,//write
-	HSPI_MODE_READ_ONLY,// read must enbale CmdEn
-	HSPI_MODE_WRITE_READ,//write_ read
-	HSPI_MODE_READ_WRITE,//read_write
-	HSPI_MODE_WRITE_DUMMY_READ,//write_dummy_read
-	HSPI_MODE_READ_DUMMY_WRITE,//read_ dummy_write must enbale CmdEn
-	HSPI_MODE_NONE_DATA,//must enbale CmdEn
-	HSPI_MODE_DUMMY_WRITE,//dummy_write
-	HSPI_MODE_DUMMY_READ,//dummy_read
-	HSPI_MODE_RESERVED,
+	SPI_MODE_WRITE_AND_READ=0,//write and read at the same.must enbale CmdEn
+	SPI_MODE_WRITE_ONLY,//write
+	SPI_MODE_READ_ONLY,// read must enbale CmdEn
+	SPI_MODE_WRITE_READ,//write_ read
+	SPI_MODE_READ_WRITE,//read_write
+	SPI_MODE_WRITE_DUMMY_READ,//write_dummy_read
+	SPI_MODE_READ_DUMMY_WRITE,//read_ dummy_write must enbale CmdEn
+	SPI_MODE_NONE_DATA,//must enbale CmdEn
+	SPI_MODE_DUMMY_WRITE,//dummy_write
+	SPI_MODE_DUMMY_READ,//dummy_read
+	SPI_MODE_RESERVED,
 }spi_tans_mode_e;
 
 
@@ -93,8 +97,14 @@ typedef enum {
 }spi_rd_tans_mode_e;
 
 
+typedef enum {
+	SPI_MODE_WR_RD         =3,//must enbale CmdEn
+	SPI_MODE_WR_DUMMY_RD   =5,//write_dummy_read
+}spi_wr_rd_tans_mode_e;
+
+
 typedef struct {
-	hpspi_single_dual_quad_mode_e  hspi_io_mode;//set spi interface mode
+	hspi_single_dual_quad_mode_e  hspi_io_mode;//set spi interface mode
 	u8  hspi_dummy_cnt;//set dummy cnt if tans_mode have dummy .
 	u8  hspi_cmd_en;//enable cmd phase
 	u8  hspi_addr_en;//enable address phase
@@ -103,10 +113,6 @@ typedef struct {
 	u8  hspi_addr_fmt_en;//if addr_en enable addr fmt will follow the interface (dual/quad)
 }hspi_config_st;
 
-typedef enum {
-	PSPI_SINGLE= 0,
-    PSPI_DUAL=1 ,
-} pspi_single_dual_mode_e;
 
 typedef struct {
 	pspi_single_dual_mode_e  pspi_io_mode;//set spi interface mode
@@ -841,6 +847,26 @@ static inline void spi_clr_irq_mask(spi_sel_e spi_sel,u8 mask)
 }
 
 
+/**
+ * @brief This function set xip to sequential mode.
+ * @param[in] none
+ * @return none
+ */
+static inline void hspi_set_xip_seq_mode(u8 en)
+{
+	BM_SET(reg_hspi_xip_ctrl,FLD_HSPI_XIP_MODE);
+}
+
+/**
+ * @brief This function set xip to normal mode.
+ * @param[in] none
+ * @return none
+ */
+static inline void hspi_set_xip_normal_mode(u8 en)
+{
+	BM_CLR(reg_hspi_xip_ctrl,FLD_HSPI_XIP_MODE);
+}
+
 
 /**
  * @brief     This function selects  pin  for hspi master or slave.
@@ -980,7 +1006,7 @@ void spi_master_write(spi_sel_e spi_sel,u8 *data, u32 len);
 
 /**
  * @brief     This function serves to normal write and read data.
- * @param[in] write: the pointer to the data for write.
+ * @param[in] wr_data: the pointer to the data for write.
  * @param[in] wr_len:write length.
  * @param[in] rd_data:the pointer to the data for read.
  * @param[in] rd_len:read length.
@@ -989,6 +1015,18 @@ void spi_master_write(spi_sel_e spi_sel,u8 *data, u32 len);
 void spi_master_write_read(spi_sel_e spi_sel,u8 *wr_data, u32 wr_len,u8 *rd_data, u32 rd_len);
 
 
+
+/**
+ * @brief      This function serves to single/dual/quad  read from the SPI slave
+ * @param[in]  cmd:cmd one byte will first write.
+ * @param[in]  wr_data:the data to be write (include slave address)
+ * @param[in]  wr_len:the length of write data
+ * @param[in]  rd_data: pointer to the data need to read
+ * @param[in]  rd_len: the length of read data
+ * @param[in]  spi_wr_rd_tans_mode_e: write_read mode.dummy or not dummy
+ * @return     none
+ */
+void spi_master_write_read_plus(spi_sel_e spi_sel,u8 cmd, u8 *wr_data, u32 wr_len ,u8 *rd_data, u32 rd_len, spi_wr_rd_tans_mode_e wr_rd_mode);
 /**
  * @brief      This function serves to single/dual/quad write to the SPI slave
  * @param[in]  cmd:cmd one byte will first write.
@@ -1050,18 +1088,6 @@ void pspi_set_rx_dma_config(dma_chn_e chn);
  */
 void spi_master_write_dma(spi_sel_e spi_sel,u8 *src_addr, u32 len);
 
-
-/**
- * @brief     This function serves to normal write and read data by dma.
- * @param[in] write: the pointer to the data for write.
- * @param[in] wr_len:write length.
- * @param[in] rd_data:the pointer to the data for read.
- * @param[in] rd_len:read length.
- * @return    none
- */
-void spi_master_write_read_dma(spi_sel_e spi_sel,u8 *src_addr, u32 wr_len,u8 * dst_addr, u32 rd_len);
-
-
 /**
  * @brief      This function serves to single/dual/quad  write to the SPI slave by dma.
  * @param[in]  cmd:cmd one byte will first write.
@@ -1086,6 +1112,27 @@ void spi_master_write_dma_plus(spi_sel_e spi_sel,u8 cmd,u32 addr,u8 * src_addr, 
 void spi_master_read_dma_plus(spi_sel_e spi_sel,u8 cmd, u32 addr,u8 * dst_addr,u32 data_len,spi_rd_tans_mode_e rd_mode);
 
 
+
+/**
+ * @brief     This function serves to normal write and read data by dma.
+ * @param[in] wr_data: the pointer to the data for write.
+ * @param[in] wr_len:write length.
+ * @param[in] rd_data:the pointer to the data for read.
+ * @param[in] rd_len:read length.
+ * @return    none
+ */
+void spi_master_write_read_dma(spi_sel_e spi_sel,u8 *wr_data, u32 wr_len,u8 * rd_data, u32 rd_len);
+/**
+ * @brief      This function serves to single/dual/quad  read from the SPI slave by dma
+ * @param[in]  cmd:cmd one byte will first write.
+ * @param[in]  wr_data: the pointer to the data for write.
+ * @param[in]  wr_len:write length.
+ * @param[in]  rd_data:the pointer to the data for read.
+ * @param[in]  rd_len:read length.
+ * @param[in]   write and read mode.dummy or not dummy
+ * @return     none
+ */
+void spi_master_write_read_dma_plus(spi_sel_e spi_sel, u8 cmd,u8 *wr_data, u32 wr_len,u8 * rd_data, u32 rd_len, spi_wr_rd_tans_mode_e wr_rd_mode);
 
 /**
  * @brief      This function serves to single/dual (quad) write to the SPI slave by xip

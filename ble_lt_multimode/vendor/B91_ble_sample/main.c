@@ -65,9 +65,8 @@ void stimer_irq_handler(void)
 
 	irq_blt_sdk_handler ();
 
-
-	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
 	DBG_CHN11_LOW;
+	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
 	NESTED_IRQ_EXIT();
 }
 
@@ -82,7 +81,11 @@ void stimer_irq_handler(void)
  */
 int main (void)   //must on ramcode
 {
-	sys_init(LDO_MODE);
+	blc_pm_select_internal_32k_crystal();
+
+	cpu_wakeup_init(LDO_MODE);
+
+	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
 
 	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV8_TO_CCLK,CCLK_DIV1_TO_HCLK, HCLK_DIV1_TO_PCLK,PLL_DIV4_TO_MSPI_CLK);
 

@@ -60,6 +60,33 @@ dma_config_st i2c_rx_dma_config={
 	.auto_en=0,//must 0
 };
 
+
+
+/*
+ * This parameter is 0x20 by default, that is, each write or read API opens the stop command.
+ * if g_i2c_stop_en=0x00,it means every write or read API will disable stop command.
+ */
+u8 g_i2c_stop_en=0x20;
+
+
+/**
+ * @brief      The function of this interface is equivalent to that after the user finishes calling the write or read interface, the stop signal is not sent,
+ * 			   and then the write or read command is executed again. The driver defaults that every write or read API will send a stop command at the end
+ * @param[in]  en - Input parameters.Decide whether to disable the stop function after each write or read interface
+ * @return     none
+ */
+void i2c_master_send_stop(unsigned char en)
+{
+	if(en==1)
+	{
+		g_i2c_stop_en=0x20;
+	}else{
+		g_i2c_stop_en=0x00;
+	}
+
+}
+
+
 /**
  * @brief      This function selects a pin port for I2C interface.
  * @param[in]  sda_pin - the pin port selected as I2C sda pin port.
@@ -201,7 +228,7 @@ void i2c_master_write(unsigned char id, unsigned char *data, unsigned char len)
 			reg_i2c_data_buf(cnt % 4) = data[cnt];	//write data
 			cnt++;
 			if(cnt==1){
-			    reg_i2c_sct1 = ( FLD_I2C_LS_DATAW|FLD_I2C_LS_STOP ); //launch stop cycle
+			    reg_i2c_sct1 = ( FLD_I2C_LS_DATAW|g_i2c_stop_en ); //launch stop cycle
 			 }
 		}
 	}
@@ -226,7 +253,7 @@ void i2c_master_read(unsigned char id, unsigned char *data, unsigned char len)
 	BM_SET(reg_i2c_status,FLD_I2C_RX_CLR);//clear index
 
 	reg_i2c_sct0  |=  FLD_I2C_RNCK_EN;       //i2c rnck enable.
-	reg_i2c_sct1 = ( FLD_I2C_LS_START | FLD_I2C_LS_ID  | FLD_I2C_LS_DATAR | FLD_I2C_LS_ID_R | FLD_I2C_LS_STOP);
+	reg_i2c_sct1 = ( FLD_I2C_LS_START | FLD_I2C_LS_ID  | FLD_I2C_LS_DATAR | FLD_I2C_LS_ID_R | g_i2c_stop_en);
 
 	reg_i2c_len   =  len;   //length why configure this length?? is must?
 
@@ -259,7 +286,7 @@ void i2c_master_write_dma(unsigned char id, unsigned char *data, unsigned char l
 	dma_chn_en(i2c_dma_tx_chn);
 
 	reg_i2c_len   =  len;
-	reg_i2c_sct1 = (FLD_I2C_LS_ID|FLD_I2C_LS_START|FLD_I2C_LS_DATAW |FLD_I2C_LS_STOP);
+	reg_i2c_sct1 = (FLD_I2C_LS_ID|FLD_I2C_LS_START|FLD_I2C_LS_DATAW |g_i2c_stop_en);
 
 }
 
@@ -283,7 +310,7 @@ void i2c_master_read_dma(unsigned char id, unsigned char *rx_data, unsigned char
 	dma_chn_en(i2c_dma_rx_chn);
 
 	reg_i2c_len   =  len;
-	reg_i2c_sct1 = ( FLD_I2C_LS_ID | FLD_I2C_LS_DATAR | FLD_I2C_LS_START | FLD_I2C_LS_ID_R | FLD_I2C_LS_STOP);
+	reg_i2c_sct1 = ( FLD_I2C_LS_ID | FLD_I2C_LS_DATAR | FLD_I2C_LS_START | FLD_I2C_LS_ID_R | g_i2c_stop_en);
 
 }
 

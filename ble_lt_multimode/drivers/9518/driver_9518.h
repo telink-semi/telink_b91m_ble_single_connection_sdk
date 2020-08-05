@@ -39,6 +39,7 @@
 #include "watchdog.h"
 #include "s7816.h"
 #include "nds_intrinsic.h"
+#include "mdec.h"
 
 #include "trng.h"
 #include "npe.h"
@@ -53,3 +54,4 @@
 #include "rf_pa.h"
 #include "lpc.h"
 #include "clock.h"
+#include "emi.h"

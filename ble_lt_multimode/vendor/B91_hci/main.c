@@ -37,7 +37,9 @@ extern void main_loop (void);
  */
 int main (void)   //must on ramcode
 {
-	sys_init(LDO_MODE);
+	blc_pm_select_internal_32k_crystal();
+
+	cpu_wakeup_init(LDO_MODE);
 
 	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV8_TO_CCLK,CCLK_DIV1_TO_HCLK, HCLK_DIV1_TO_PCLK,PLL_DIV4_TO_MSPI_CLK);
 

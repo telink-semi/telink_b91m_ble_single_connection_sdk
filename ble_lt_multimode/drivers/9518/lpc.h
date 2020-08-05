@@ -16,14 +16,14 @@
  * define input IO.
  */
 typedef enum{
-	LPC_INPUT_PB1=1		,
+	LPC_INPUT_PB1=1	  ,
 	LPC_INPUT_PB2=2   ,
 	LPC_INPUT_PB3=3   ,
 	LPC_INPUT_PB4=4   ,
 	LPC_INPUT_PB5=5   ,
 	LPC_INPUT_PB6=6   ,
 	LPC_INPUT_PB7=7   ,
-}LPC_Input_Channel_Typedef;
+}lpc_input_channel_e;
 
 /**
  * define work mode.
@@ -31,7 +31,8 @@ typedef enum{
 typedef enum{
 	LPC_NORMAL=0,
 	LPC_LOWPOWER,
-}LPC_Mode_TypeDef;
+}lpc_mode_e;
+
 
 /**
  * define Reference voltage.
@@ -43,9 +44,7 @@ typedef enum{
 	LPC_REF_820MV  = 4,
 	LPC_REF_PB0    = 5,
 	LPC_REF_PB3    = 6,
-	LPC_AVDD3      = 7,
-}LPC_Reference_TypeDef;
-
+}lpc_reference_e;
 
 /**
  * define scale.
@@ -55,32 +54,30 @@ typedef enum{
 	LPC_SCALING_PER50 =1 ,
 	LPC_SCALING_PER75 =2 ,
 	LPC_SCALING_PER100=3 ,
-}LPC_Scaling_TypeDef;
+}lpc_scaling_e;
+
 
 
 /**
- * select power.
+ * @brief This function powers down low power comparator.
+ * @param[in] none
+ * @return none
  */
-typedef enum{
-	LPC_POWER_ON     =0 ,
-	LPC_POWER_DOWN   =1 ,
-}LPC_Power_TypeDef;
-
-
+extern void lpc_power_down(void);
 
 /**
  * @brief This function servers to power down/up for low power comparator.
- * @param[in] lpc_power
+ * @param[in] none
  * @return none
  */
-extern void lpc_set_power(LPC_Power_TypeDef lpc_power);
+extern void lpc_power_on(void);
 
 /**
  * @brief This function selects input channel for low power comparator .
  * @param[in] pin-selected input channel.Input derived from external PortB(PB<1>~PB<7>).
  * @return none
  */
-extern void lpc_set_input_chn(LPC_Input_Channel_Typedef pin);
+extern void lpc_set_input_chn(lpc_input_channel_e pin);
 
 /**
  * @brief 		This function selects input reference voltage for low power comparator .
@@ -88,7 +85,7 @@ extern void lpc_set_input_chn(LPC_Input_Channel_Typedef pin);
  * @param[in] 	ref	 - selected input reference voltage.
  * @return 		none
  */
-extern void lpc_set_input_ref(LPC_Mode_TypeDef, LPC_Reference_TypeDef ref);
+extern void lpc_set_input_ref(lpc_mode_e mode,lpc_reference_e ref);
 
 
 /**
@@ -96,7 +93,7 @@ extern void lpc_set_input_ref(LPC_Mode_TypeDef, LPC_Reference_TypeDef ref);
  * @param[in] 	divider - selected scaling coefficient.(%25,%50,%75,%100)
  * @return 		none
  */
-extern void lpc_set_scaling_coeff(LPC_Scaling_TypeDef divider);
+extern void lpc_set_scaling_coeff(lpc_scaling_e divider);
 
 
 /**

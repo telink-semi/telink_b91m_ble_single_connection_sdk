@@ -94,22 +94,34 @@ typedef enum{
 	FLD_FEATURE_VECTOR_MODE_EN 			= BIT(1),
 }
 feature_e;
-/** @brief Enable interrupts globally in the system.
- * This macro must be used when the initialization phase is over and the interrupts
- * can start being handled by the system.
+
+
+
+/* Disable the Machine external, timer and software interrupts until setup is done */
+/** @brief Disable interrupts globally in the system.
+ * This function must be used when the system wants to disable all the interrupt
+ * it could handle.
  */
- void core_enable_interrupt(void);
+static inline u32 core_disable_interrupt(void){
+
+	u32 r = read_csr (NDS_MIE);
+	clear_csr(NDS_MIE, BIT(3)| BIT(7)| BIT(11));
+	return r;
+}
 
 
- /* Disable the Machine external, timer and software interrupts until setup is done */
- /** @brief Disable interrupts globally in the system.
-  * This function must be used when the system wants to disable all the interrupt
-  * it could handle.
-  */
- u32 core_disable_interrupt(void);
+/* Enable the Machine External/Timer/Sofware interrupt bit in MIE. */
+/** @brief Disable interrupts globally in the system.
+ * This function must be used when the system wants to restore all the interrupt
+ * it could handle.
+ */
+static inline u32 core_restore_interrupt(u32 en){
 
- u32 core_restore_interrupt(u32 en);
+	set_csr(NDS_MIE, en);
+	return 0;
+}
 
+void core_enable_interrupt(void);
 #define  irq_disable		core_disable_interrupt
 #define	 irq_enable			core_enable_interrupt
 #define  irq_restore(en)	core_restore_interrupt(en)

@@ -60,15 +60,7 @@ enum{
  *                                      global function prototype                                                     *
  *********************************************************************************************************************/
 
-/*
- * @brief     This function performs to enable system timer and 32K calibration.
- * @param[in] none.
- * @return    system timer tick value.
-**/
-static inline  void  sys_clock_time_en(void)
-{
-reg_system_ctrl|=FLD_SYSTEM_TIMER_EN|FLD_SYSTEM_32K_CAL_EN ;
-}
+
 
 
 /*
@@ -94,12 +86,7 @@ static inline _Bool clock_time_exceed(unsigned int ref, unsigned int us)
 	return ((unsigned int)(clock_time() - ref) > us * CLOCK_16M_SYS_TIMER_CLK_1US);
 }
 
-/**
- * @brief   	This function serves to initialize system.
- * @param[in]	power_mode - power mode(LDO/DCDC/LDO_DCDC)
- * @return  	none
- */
-void sys_init(power_mode_e power_mode);
+
 
 
 /**

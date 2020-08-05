@@ -10,21 +10,25 @@
 #include "lpc.h"
 
 
+
+/**
+ * @brief This function powers down low power comparator.
+ * @param[in] none
+ * @return none
+ */
+void lpc_power_down(void)
+{
+	analog_write_reg8(0x07,(analog_read_reg8(0x07))|0x08);
+}
+
 /**
  * @brief This function servers to power down/up for low power comparator.
  * @param[in] lpc_power
  * @return none
  */
-void lpc_set_power(LPC_Power_TypeDef lpc_power)
+void lpc_power_on(void)
 {
-	if(lpc_power == LPC_POWER_ON)
-	{
-		analog_write_reg8(0x06,analog_read_reg8(0x06) & 0xfd);
-	}
-	else if(lpc_power == LPC_POWER_DOWN)
-	{
-		analog_write_reg8(0x06,analog_read_reg8(0x06) | 0x02);
-	}
+	analog_write_reg8(0x06,analog_read_reg8(0x06) & 0xfd);
 }
 
 /**
@@ -32,9 +36,9 @@ void lpc_set_power(LPC_Power_TypeDef lpc_power)
  * @param[in] pin-selected input channel.Input derived from external PortB(PB<1>~PB<7>).
  * @return none
  */
-void lpc_set_input_chn(LPC_Input_Channel_Typedef pin)
+void lpc_set_input_chn(lpc_input_channel_e pin)
 {
-	analog_write_reg8(0x0d,analog_read_reg8(0x0d) & 0xf8 | pin);
+	analog_write_reg8(0x0d,(analog_read_reg8(0x0d) & 0xf8) | pin);
 }
 
 /**
@@ -43,14 +47,14 @@ void lpc_set_input_chn(LPC_Input_Channel_Typedef pin)
  * @param[in] ref- selected input reference voltage.
  * @return none
  */
-void lpc_set_input_ref(LPC_Mode_TypeDef mode,LPC_Reference_TypeDef ref)
+void lpc_set_input_ref(lpc_mode_e mode,lpc_reference_e ref)
 {
-	if(mode == LPC_NORMAL)
+	if(mode == LPC_LOWPOWER)
 	{
 		analog_write_reg8(0x0b,analog_read_reg8(0x0b)&0xf7);
 		analog_write_reg8(0x0d,analog_read_reg8(0x0d)&0x7f);
 	}
-	else if(mode == LPC_LOWPOWER)
+	else if(mode == LPC_NORMAL)
 	{
 		analog_write_reg8(0x0b,analog_read_reg8(0x0b)|0x08);
 		analog_write_reg8(0x0d,analog_read_reg8(0x0d)|0x80);
@@ -63,7 +67,7 @@ void lpc_set_input_ref(LPC_Mode_TypeDef mode,LPC_Reference_TypeDef ref)
  * @param[in] divider-selected scaling coefficient.(%25,%50,%75,%100)
  * @return none
  */
-void lpc_set_scaling_coeff(LPC_Scaling_TypeDef divider)
+void lpc_set_scaling_coeff(lpc_scaling_e divider)
 {
 	analog_write_reg8(0x0b,(analog_read_reg8(0x0b)&0xcf)|(divider<<4));
 }

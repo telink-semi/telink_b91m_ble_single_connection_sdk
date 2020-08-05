@@ -28,42 +28,11 @@
 #include "compiler.h"
 #include "gpio.h"
 
-//when timer wakeup,the DCDC delay time is accurate,but other wake-up sources wake up,
-//this time is ((PM_DCDC_DELAY_CYCLE+1)*2-1)*32us ~ (PM_DCDC_DELAY_CYCLE+1)*2*32us
-#define PM_DCDC_DELAY_DURATION     					187   // delay_time_us = (PM_DCDC_DELAY_CYCLE+1)*2*32us
-												  	  	  // 2 * 1/16k = 125 uS, 3 * 1/16k = 187.5 uS  4*1/16k = 250 uS
-
-#define PM_XTAL_MANUAL_MODE_DELAY		    		200  //150  200
-
-#if(PM_DCDC_DELAY_DURATION == 62)
-#define PM_DCDC_DELAY_CYCLE		0
-#elif(PM_DCDC_DELAY_DURATION == 125)
-#define PM_DCDC_DELAY_CYCLE		1
-#elif(PM_DCDC_DELAY_DURATION == 187)
-#define PM_DCDC_DELAY_CYCLE		2
-#elif(PM_DCDC_DELAY_DURATION == 250)
-#define PM_DCDC_DELAY_CYCLE		3
-#endif
-#define	SOFT_START_DLY  					0x08
-#define EARLYWAKEUP_TIME_US_SUSPEND 		(PM_DCDC_DELAY_DURATION + PM_XTAL_MANUAL_MODE_DELAY + 200)  //100: code running time margin//154  //175
-#define EARLYWAKEUP_TIME_US_DEEP_RET    	(PM_DCDC_DELAY_DURATION + 64)//(PM_DCDC_DELAY_DURATION + 32)
-#define EARLYWAKEUP_TIME_US_DEEP	    	(PM_DCDC_DELAY_DURATION + 32 + ((SOFT_START_DLY)*62))
-#define EMPTYRUN_TIME_US       	    		(EARLYWAKEUP_TIME_US_SUSPEND + 200)
-
-#define EARLYWAKEUP_TIME					19
-
 #define PM_LONG_SUSPEND_EN					0
 
 #ifndef PM_TIM_RECOVER_MODE
-#define PM_TIM_RECOVER_MODE			    	1
+#define PM_TIM_RECOVER_MODE			    	0
 #endif
-
-
-#define XTAL_READY_CHECK_TIMING_OPTIMIZE	1
-
-#define	RAM_CRC_EN							0
-
-
 
 
 #define PM_LONG_SLEEP_WAKEUP_EN			    0 //if user need to make MCU sleep for a long time that is more than 268s, this macro need to be enabled and use "pm_long_sleep_wakeup" function
@@ -93,11 +62,8 @@
 
 #define SYS_NEED_REINIT_EXT32K			    BIT(0)
 
-
 //ana3b system used, user can not use
 #define SYS_DEEP_ANA_REG 					DEEP_ANA_REG1
-#define WAKEUP_STATUS_TIMER_CORE     	    ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_CORE)
-#define WAKEUP_STATUS_TIMER_PAD		        ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_PAD)
 
 #define	ZB_POWER_DOWN						1 //weather to power down the RF before suspend
 #define	AUDIO_POWER_DOWN					1 //weather to power down the AUDIO before suspend
@@ -150,6 +116,30 @@ enum {
 	 STATUS_ENTER_SUSPEND  			= BIT(30),
 };
 
+typedef enum{
+	Level_Low=0,
+	Level_High =1,
+}pm_gpio_wakeup_Level_e;
+
+#define WAKEUP_STATUS_TIMER_CORE     	    ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_CORE)
+#define WAKEUP_STATUS_TIMER_PAD		        ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_PAD)
+
+typedef struct {
+
+	unsigned short  suspend_early_wakeup_time_us;	/**< suspend_early_wakeup_time_us = deep_ret_r_delay_us + xtal_stable_time + early_time*/
+	unsigned short  deep_ret_early_wakeup_time_us;  /**< deep_ret_early_wakeup_time_us = deep_ret_r_delay_us + early_time*/
+	unsigned short  deep_early_wakeup_time_us;		/**< deep_early_wakeup_time_us = suspend_ret_r_delay_us*/
+	unsigned short  sleep_min_time_us;				/**< sleep_min_time_us = suspend_early_wakeup_time_us + 200*/
+}pm_early_wakeup_time_us_s;
+
+typedef struct {
+	unsigned short  deep_r_delay_cycle ;			/**< hardware delay time ,deep_ret_r_delay_us = deep_r_delay_cycle * 1/16k */
+	unsigned short  suspend_ret_r_delay_cycle ;		/**< hardware delay time ,suspend_ret_r_delay_us = suspend_ret_r_delay_cycle * 1/16k */
+
+}g_pm_rx_delay_cycle_s;
+
+
+
 /**
  * @brief   deepsleep wakeup by external xtal
  */
@@ -174,34 +164,29 @@ typedef struct{
 
 extern _attribute_aligned_(4) pm_para_t	pmParam;
 
-typedef enum{
-	WAKEUP_LEVEL_LOW=0,
-	WAKEUP_LEVEL_HIGH=1,
-}pm_gpio_wakeup_Level_e;
+#if (PM_TIM_RECOVER_MODE)
 
+typedef struct{
+	unsigned int   tick_sysClk;
+	unsigned int   tick_32k;
+	unsigned int   recover_flag;
+}pm_tim_recover_t;
+
+extern _attribute_aligned_(4) pm_tim_recover_t			pm_timRecover;
+#endif
 
 typedef int (*suspend_handler_t)(void);
 extern  suspend_handler_t 		 func_before_suspend;
 
-/**
- * @brief      This function configures a GPIO pin as the wakeup pin.
- * @param[in]  pin - the pin needs to be configured as wakeup pin
- * @param[in]  pol - the wakeup polarity of the pad pin(0: low-level wakeup, 1: high-level wakeup)
- * @param[in]  en  - enable or disable the wakeup function for the pan pin(1: enable, 0: disable)
- * @return     none
- */
-void pm_set_gpio_wakeup (gpio_pin_e pin, pm_gpio_wakeup_Level_e pol, int en);
+typedef void (*check_32k_clk_handler_t)(void);
+extern  check_32k_clk_handler_t  pm_check_32k_clk_stable;
 
-#define cpu_set_gpio_wakeup		pm_set_gpio_wakeup
+void pm_set_wakeup_time_param(g_pm_rx_delay_cycle_s param);
 
-/**
- * @brief      This function serves to set the working mode of MCU based on 32k crystal,e.g. suspend mode, deepsleep mode, deepsleep with SRAM retention mode and shutdown mode.
- * @param[in]  sleep_mode - sleep mode type select.
- * @param[in]  wakeup_src - wake up source select.
- * @param[in]  wakeup_tick - the time of short sleep, which means MCU can sleep for less than 5 minutes.
- * @return     indicate whether the cpu is wake up successful.
- */
-_attribute_ram_code_ int pm_sleep_wakeup(SleepMode_TypeDef sleep_mode,  SleepWakeupSrc_TypeDef wakeup_src, unsigned int  wakeup_tick);
+void pm_wait_bbpll_done(void);
+
+void bls_pm_registerFuncBeforeSuspend (suspend_handler_t func );
+
 /**
  * @brief      This function serves to determine whether mcu is waked up from deep retention.
  * @param[in]  none.
@@ -231,6 +216,39 @@ static inline int pm_get_wakeup_src(void)
 {
 	return pmParam.wakeup_src;
 }
+
+/**
+ * @brief      This function configures a GPIO pin as the wakeup pin.
+ * @param[in]  pin - the pin needs to be configured as wakeup pin
+ * @param[in]  pol - the wakeup polarity of the pad pin(0: low-level wakeup, 1: high-level wakeup)
+ * @param[in]  en  - enable or disable the wakeup function for the pan pin(1: Enable, 0: Disable)
+ * @return     none
+ */
+void pm_set_gpio_wakeup (gpio_pin_e pin, pm_gpio_wakeup_Level_e pol, int en);
+#define cpu_set_gpio_wakeup				pm_set_gpio_wakeup
+
+/**
+ * @brief     This function servers to set the match value for MDEC wakeup.
+ * @param[in] value - the MDEC match value for wakeup.
+ * @return    none
+ */
+void cpu_set_mdec_value_wakeup(unsigned char value);
+
+/**
+ * @brief   This function serves to reboot chip.
+ * @param   none.
+ * @return  none.
+ */
+
+void start_reboot(void);
+
+/**
+ * @brief   This function serves to get the 32k tick.
+ * @param   none
+ * @return  tick of 32k .
+ */
+
+extern unsigned int pm_get_32k_tick(void);
 
 /**
  * @brief   This function serves to wake up cpu from stall mode by timer0.
@@ -263,19 +281,42 @@ void cpu_stall_wakeup_by_timer2(unsigned int tick);
 unsigned int cpu_stall(int WakeupSrc, unsigned int IntervalUs,unsigned int sysclktick);
 
 /**
- * @brief   This function serves to reboot chip.
- * @param   none.
- * @return  none.
- */
-void start_reboot(void);
-
-/**
  * @brief   This function serves to initialize MCU
  * @param   power mode- set the power mode(LOD mode, DCDC mode, DCDC_LDO mode)
  * @param   xtal- set this parameter based on external crystal
  * @return  none
  */
-void cpu_wakeup_init(void);
+void cpu_wakeup_init(power_mode_e power_mode) ;
+
+/*
+ * @brief     This function performs to enable system timer and 32K calibration.
+ * @param[in] none.
+ * @return    system timer tick value.
+**/
+static inline  void  sys_clock_time_en(void)
+{
+	reg_system_ctrl		|=(FLD_SYSTEM_TIMER_EN|FLD_SYSTEM_32K_CAL_EN) ;
+}
+
+/**
+ * @brief   This function serves to recover system timer from tick of internal 32k RC.
+ * @param   none.
+ * @return  none.
+ */
+unsigned int pm_tim_recover_32k_rc(unsigned int now_tick_32k);
+
+/**
+ * @brief   This function serves to recover system timer from tick of external 32k crystal.
+ * @param   none.
+ * @return  none.
+ */
+unsigned int pm_tim_recover_32k_xtal(unsigned int now_tick_32k);
+
+
+typedef unsigned int (*pm_tim_recover_handler_t)(unsigned int);
+
+extern  pm_tim_recover_handler_t pm_tim_recover;
+
 
 /**
  * @brief      This function serves to set the working mode of MCU based on 32k crystal,e.g. suspend mode, deepsleep mode, deepsleep with SRAM retention mode and shutdown mode.
@@ -307,9 +348,12 @@ extern 	cpu_pm_handler_t  		 cpu_sleep_wakeup;
 static inline void blc_pm_select_internal_32k_crystal(void)
 {
 	cpu_sleep_wakeup 	 	= cpu_sleep_wakeup_32k_rc;
+	pm_tim_recover  	 	= pm_tim_recover_32k_rc;
 
 	blt_miscParam.pm_enter_en 	= 1; // allow enter pm, 32k rc does not need to wait for 32k clk to be stable
 }
+
+extern void check_32k_clk_stable(void);
 
 /**
  * @brief      This function serves to determine whether wake up source is external 32k RC.
@@ -319,9 +363,12 @@ static inline void blc_pm_select_internal_32k_crystal(void)
 static inline void blc_pm_select_external_32k_crystal(void)
 {
 	cpu_sleep_wakeup 	 	= cpu_sleep_wakeup_32k_xtal;
+	pm_check_32k_clk_stable = check_32k_clk_stable;
+	pm_tim_recover		 	= pm_tim_recover_32k_xtal;
 
 	blt_miscParam.pad32k_en 	= 1; // set '1': 32k clk src use external 32k crystal
 }
+
 /**********************************  Internal APIs (not for user)***************************************************/
 extern  unsigned char 		    tl_24mrc_cal;
 extern 	unsigned int 			tick_32k_calib;
@@ -332,9 +379,11 @@ extern  unsigned int 			tl_multi_addr;
 
 void sleep_start(void);
 
-#define cpu_get_32k_tick	pm_get_32k_tick
+unsigned int  pm_get_info0(void);
 
-#define cpu_set_32k_tick	pm_set_32k_tick
+unsigned int  pm_get_info1(void);
+
+void soft_reboot_dly13ms_use24mRC(void);
 
 #if PM_LONG_SLEEP_WAKEUP_EN
 /**
@@ -346,7 +395,6 @@ void sleep_start(void);
  */
 int pm_long_sleep_wakeup (SleepMode_TypeDef sleep_mode, SleepWakeupSrc_TypeDef wakeup_src, unsigned int  SleepDurationUs);
 #endif
-
 /**
  * @brief      This function servers to wake up the cpu from sleep mode.
  * @param[in]  sleep_mode - sleep mode type select.
@@ -355,4 +403,3 @@ int pm_long_sleep_wakeup (SleepMode_TypeDef sleep_mode, SleepWakeupSrc_TypeDef w
  * @return     indicate whether the cpu is wake up successful.
  */
 int cpu_long_sleep_wakeup_32k_rc(SleepMode_TypeDef sleep_mode,  SleepWakeupSrc_TypeDef wakeup_src, unsigned int  wakeup_tick);
-

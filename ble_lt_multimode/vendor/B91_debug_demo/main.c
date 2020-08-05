@@ -77,7 +77,9 @@ void stimer_irq_handler(void)
  */
 int main (void)   //must on ramcode
 {
-	sys_init(LDO_MODE);
+	blc_pm_select_internal_32k_crystal();
+
+	cpu_wakeup_init(LDO_MODE);
 
 #if (CLOCK_SYS_CLOCK_HZ == 16000000)
 	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV12_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV1_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);

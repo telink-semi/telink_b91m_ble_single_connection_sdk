@@ -30,7 +30,7 @@ int aes_encrypt(unsigned char *Key, unsigned char* plaintext, unsigned char *res
 
     reg_aes_mode = FLD_AES_START;   //cipher mode
 
-    while(FLD_AES_START == (reg_aes_mode & FLD_AES_START));
+    while(FLD_AES_START == (reg_aes_mode & FLD_AES_START)){}
 
     /* read out the result */
 	unsigned char *ptr = (unsigned char *)&aes_data_buff[4];
@@ -64,7 +64,7 @@ int aes_decrypt(unsigned char *Key, unsigned char* decrypttext, unsigned char *r
 
     reg_aes_mode = FLD_AES_START | FLD_AES_MODE;   //cipher mode
 
-    while(FLD_AES_START == (reg_aes_mode & FLD_AES_START));
+    while(FLD_AES_START == (reg_aes_mode & FLD_AES_START)){}
 
     /* read out the result */
 	unsigned char *ptr = (unsigned char *)&aes_data_buff[4];

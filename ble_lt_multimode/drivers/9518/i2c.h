@@ -115,6 +115,14 @@ static inline void i2c_rx_irq_trig_cnt(unsigned char cnt)
 }
 
 /**
+ * @brief      The function of this interface is equivalent to that after the user finishes calling the write or read interface, the stop signal is not sent,
+ * 			   and then the write or read command is executed again. The driver defaults that every write or read API will send a stop command at the end
+ * @param[in]  en - Input parameters.Decide whether to disable the stop function after each write or read interface
+ * @return     none
+ */
+void i2c_master_send_stop(unsigned char en);
+
+/**
  * @brief      This function selects a pin port for I2C interface.
  * @param[in]  sda_pin - the pin port selected as I2C sda pin port.
  * @param[in]  scl_pin - the pin port selected as I2C scl pin port.

@@ -3,6 +3,7 @@
 
 #include "../../common/types.h"
 #include "dma.h"
+#include "compiler.h"
 #include "reg_include/register_9518.h"
 
 /**
@@ -10,7 +11,7 @@
  * @param[in]  addr - address need to be read.
  * @return     the result of read.
  */
-u8 analog_read_reg8(u8 addr);
+_attribute_ram_code_ unsigned char analog_read_reg8(unsigned char addr);
 
 /**
  * @brief      This function serves to analog register write by byte.
@@ -18,14 +19,14 @@ u8 analog_read_reg8(u8 addr);
  * @param[in]  data - the value need to be write.
  * @return     none.
  */
-void analog_write_reg8(u8 addr, u8 data);
+_attribute_ram_code_ void analog_write_reg8(unsigned char addr, unsigned char data);
 
 /**
  * @brief      This function serves to analog register read by halfword.
  * @param[in]  addr - address need to be read.
  * @return     the result of read.
  */
-u16 analog_read_reg16(u8 addr);
+u16 analog_read_reg16(unsigned char addr);
 
 /**
  * @brief      This function serves to analog register write by halfword.
@@ -33,14 +34,14 @@ u16 analog_read_reg16(u8 addr);
  * @param[in]  data - the value need to be write.
  * @return     none.
  */
-void analog_write_reg16(u8 addr, u16 data);
+void analog_write_reg16(unsigned char addr, u16 data);
 
 /**
  * @brief      This function serves to analog register read by word.
  * @param[in]  addr - address need to be read.
  * @return     the result of read.
  */
- u32 analog_read_reg32(u8 addr);
+ unsigned int analog_read_reg32(unsigned char addr);
 
  /**
   * @brief      This function serves to analog register write by word.
@@ -48,7 +49,7 @@ void analog_write_reg16(u8 addr, u16 data);
   * @param[in]  data - the value need to be write.
   * @return     none.
   */
-void analog_write_reg32(u8 addr, u32 data);
+void analog_write_reg32(unsigned char addr, unsigned int data);
 /**
  * @brief      This function serves to analog register read.
  * @param[in]  addr - address need to be read.

@@ -170,7 +170,7 @@ void clock_cal_32k_rc (void)
  * @param  none.
  * @return none.
  */
-void clock_set_32k_tick(unsigned int tick)
+_attribute_ram_code_ void clock_set_32k_tick(unsigned int tick)
 {
 	reg_system_ctrl |= FLD_SYSTEM_32K_WR_EN;//r_32k_wr = 1;
 	while(reg_system_st & FLD_SYSTEM_RD_BUSY);
@@ -191,7 +191,7 @@ void clock_set_32k_tick(unsigned int tick)
  * @param  none.
  * @return none.
  */
-unsigned int clock_get_32k_tick (void)
+_attribute_ram_code_ unsigned int clock_get_32k_tick (void)
 {
 	unsigned int timer_32k_tick;
 	reg_system_st = FLD_SYSTEM_CLR_RD_DONE;//clr rd_done

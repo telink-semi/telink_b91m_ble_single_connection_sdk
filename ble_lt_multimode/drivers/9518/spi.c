@@ -487,7 +487,7 @@ void spi_master_write(spi_sel_e spi_sel,u8 *data, u32 len)
 	  spi_tx_fifo_clr(spi_sel);
 	  spi_rx_fifo_clr(spi_sel);
 	  spi_tx_cnt(spi_sel,len);
-	  spi_set_transmode(spi_sel,HSPI_MODE_WRITE_ONLY);
+	  spi_set_transmode(spi_sel,SPI_MODE_WRITE_ONLY);
 	  spi_set_cmd(spi_sel,0x00);//when  cmd  disable that  will not sent cmd ,just trigger spi send .
 	  spi_write(spi_sel,(u8 *)data, len);
 	  while (spi_is_busy(spi_sel));
@@ -508,7 +508,7 @@ void spi_master_write_read(spi_sel_e spi_sel,u8 *wr_data, u32 wr_len,u8 *rd_data
 	    spi_rx_fifo_clr(spi_sel);
         spi_tx_cnt(spi_sel,wr_len);
         spi_rx_cnt(spi_sel,rd_len);
-        spi_set_transmode(spi_sel,HSPI_MODE_WRITE_READ);
+        spi_set_transmode(spi_sel,SPI_MODE_WRITE_READ);
         spi_set_cmd(spi_sel,0x00);//when  cmd  disable that  will not sent cmd ,just trigger spi send .
         spi_write(spi_sel,(u8 *)wr_data, wr_len);
         spi_read(spi_sel,(u8 *)rd_data, rd_len);
@@ -527,6 +527,7 @@ void spi_master_write_read(spi_sel_e spi_sel,u8 *wr_data, u32 wr_len,u8 *rd_data
  * @param[in]  wr_mode: write mode  dummy or not dummy
  * @return     none
  */
+
 void spi_master_write_plus(spi_sel_e spi_sel,u8 cmd, u32 addr,u8 *data, u32 data_len, spi_wr_tans_mode_e wr_mode)
 {
 	 spi_tx_fifo_clr(spi_sel);
@@ -536,6 +537,7 @@ void spi_master_write_plus(spi_sel_e spi_sel,u8 cmd, u32 addr,u8 *data, u32 data
 		 hspi_set_address(addr);
 	 }
 	 spi_set_transmode(spi_sel,wr_mode);
+
 	 spi_tx_cnt(spi_sel,data_len);
 	 spi_set_cmd(spi_sel,cmd);
 	 spi_write(spi_sel,(u8 *)data, data_len);
@@ -565,6 +567,30 @@ void spi_master_read_plus(spi_sel_e spi_sel,u8 cmd, u32 addr,u8 *data, u32 data_
 	 spi_read(spi_sel,(u8 *)data,data_len);
 	 while (spi_is_busy(spi_sel));
 }
+
+/**
+ * @brief      This function serves to single/dual/quad  read from the SPI slave
+ * @param[in]  cmd:cmd one byte will first write.
+ * @param[in]  wr_data:the data to be write (include slave address)
+ * @param[in]  wr_len:the length of write data
+ * @param[in]  rd_data: pointer to the data need to read
+ * @param[in]  rd_len: the length of read data
+ * @param[in]  spi_wr_rd_tans_mode_e: write_read mode.dummy or not dummy
+ * @return     none
+ */
+void spi_master_write_read_plus(spi_sel_e spi_sel,u8 cmd, u8 *wr_data, u32 wr_len ,u8 *rd_data, u32 rd_len, spi_wr_rd_tans_mode_e wr_rd_mode)
+{
+	 spi_tx_fifo_clr(spi_sel);
+	 spi_rx_fifo_clr(spi_sel);
+     spi_tx_cnt(spi_sel,wr_len);
+	 spi_rx_cnt(spi_sel,rd_len);
+	 spi_set_transmode(spi_sel,wr_rd_mode);
+	 spi_set_cmd(spi_sel,cmd);
+	 spi_write(spi_sel,(u8 *)wr_data, wr_len);
+	 spi_read(spi_sel,(u8 *)rd_data, rd_len);
+	 while (spi_is_busy(spi_sel));
+}
+
 
 /**
  * @brief     This function serves to set tx_dam channel and config dma tx default.
@@ -623,7 +649,7 @@ void spi_master_write_dma(spi_sel_e spi_sel,u8 *src_addr, u32 len)
 	spi_rx_fifo_clr(spi_sel);
 	spi_tx_dma_en(spi_sel);
 	spi_tx_cnt(spi_sel,len);
-	spi_set_transmode(spi_sel,HSPI_MODE_WRITE_ONLY);
+	spi_set_transmode(spi_sel,SPI_MODE_WRITE_ONLY);
 	if(HSPI_MODULE == spi_sel)
 	{
 		tx_dma_chn = hspi_tx_dma_chn;
@@ -641,13 +667,13 @@ void spi_master_write_dma(spi_sel_e spi_sel,u8 *src_addr, u32 len)
 
 /**
  * @brief     This function serves to normal write and read data by dma.
- * @param[in] write: the pointer to the data for write.
+ * @param[in] wr_data: the pointer to the data for write.
  * @param[in] wr_len:write length.
  * @param[in] rd_data:the pointer to the data for read.
  * @param[in] rd_len:read length.
  * @return    none
  */
-void spi_master_write_read_dma(spi_sel_e spi_sel,u8 *src_addr, u32 wr_len,u8 * dst_addr, u32 rd_len)
+void spi_master_write_read_dma(spi_sel_e spi_sel,u8 *wr_data, u32 wr_len,u8 * rd_data, u32 rd_len)
 {
 	u8 tx_dma_chn,rx_dma_chn;
 	spi_tx_fifo_clr(spi_sel);
@@ -656,7 +682,7 @@ void spi_master_write_read_dma(spi_sel_e spi_sel,u8 *src_addr, u32 wr_len,u8 * d
 	spi_rx_dma_en(spi_sel);
 	spi_tx_cnt(spi_sel,wr_len);
 	spi_rx_cnt(spi_sel,rd_len);
-	spi_set_transmode(spi_sel,HSPI_MODE_WRITE_READ);
+	spi_set_transmode(spi_sel,SPI_MODE_WRITE_READ);
 	if(HSPI_MODULE == spi_sel)
 	{
 		tx_dma_chn = hspi_tx_dma_chn;
@@ -667,17 +693,55 @@ void spi_master_write_read_dma(spi_sel_e spi_sel,u8 *src_addr, u32 wr_len,u8 * d
 		tx_dma_chn = pspi_tx_dma_chn;
 		rx_dma_chn = pspi_rx_dma_chn;
 	}
-	dma_set_address(tx_dma_chn,(u32)reg_dma_addr(src_addr),reg_spi_data_buf_adr(spi_sel));
+	dma_set_address(tx_dma_chn,(u32)reg_dma_addr(wr_data),reg_spi_data_buf_adr(spi_sel));
 	dma_set_size(tx_dma_chn,wr_len,DMA_WORD_WIDTH);
 	dma_chn_en(tx_dma_chn);
 
-	dma_set_address(rx_dma_chn,reg_spi_data_buf_adr(spi_sel),(u32)reg_dma_addr(dst_addr));
+	dma_set_address(rx_dma_chn,reg_spi_data_buf_adr(spi_sel),(u32)reg_dma_addr(rd_data));
 	dma_set_size(rx_dma_chn,rd_len,DMA_WORD_WIDTH);
 	dma_chn_en(rx_dma_chn);
 	spi_set_cmd(spi_sel,0x00);//when  cmd  disable that  will not sent cmd ,just trigger spi send .
 }
 
+/**
+ * @brief      This function serves to single/dual/quad  read from the SPI slave by dma
+ * @param[in]  cmd:cmd one byte will first write.
+ * @param[in]  wr_data: the pointer to the data for write.
+ * @param[in]  wr_len:write length.
+ * @param[in]  rd_data:the pointer to the data for read.
+ * @param[in]  rd_len:read length.
+ * @param[in]   write and read mode.dummy or not dummy
+ * @return     none
+ */
+void spi_master_write_read_dma_plus(spi_sel_e spi_sel, u8 cmd,u8 *wr_data, u32 wr_len,u8 * rd_data, u32 rd_len, spi_wr_rd_tans_mode_e wr_rd_mode)
+{
+	u8 tx_dma_chn,rx_dma_chn;
+	spi_tx_fifo_clr(spi_sel);
+	spi_rx_fifo_clr(spi_sel);
+	spi_tx_dma_en(spi_sel);
+	spi_rx_dma_en(spi_sel);
+	spi_tx_cnt(spi_sel,wr_len);
+	spi_rx_cnt(spi_sel,rd_len);
+	spi_set_transmode(spi_sel,wr_rd_mode);
+	if(HSPI_MODULE == spi_sel)
+	{
+		tx_dma_chn = hspi_tx_dma_chn;
+		rx_dma_chn = hspi_rx_dma_chn;
+	}
+	else
+	{
+		tx_dma_chn = pspi_tx_dma_chn;
+		rx_dma_chn = pspi_rx_dma_chn;
+	}
+	dma_set_address(tx_dma_chn,(u32)reg_dma_addr(wr_data),reg_spi_data_buf_adr(spi_sel));
+	dma_set_size(tx_dma_chn,wr_len,DMA_WORD_WIDTH);
+	dma_chn_en(tx_dma_chn);
 
+	dma_set_address(rx_dma_chn,reg_spi_data_buf_adr(spi_sel),(u32)reg_dma_addr(rd_data));
+	dma_set_size(rx_dma_chn,rd_len,DMA_WORD_WIDTH);
+	dma_chn_en(rx_dma_chn);
+	spi_set_cmd(spi_sel,cmd);//when  cmd  disable that  will not sent cmd ,just trigger spi send .
+}
 
 /**
  * @brief      This function serves to single/dual (quad) write to the SPI slave by dma.
@@ -743,7 +807,6 @@ void spi_master_read_dma_plus(spi_sel_e spi_sel,u8 cmd, u32 addr,u8 * dst_addr,u
 	dma_chn_en(rx_dma_chn);
 	spi_set_cmd(spi_sel,cmd);
 }
-
 
 
 /**

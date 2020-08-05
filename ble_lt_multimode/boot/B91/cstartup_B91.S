@@ -176,7 +176,7 @@ _ZERO_BSS_BEGIN:
 
 	/* Fill the remaining section in sram */
 _FILL_STK:
-
+#if 0
     lui    t0, 0x55555
     addi   t0, t0, 0x555
     la     t2, _BSS_VMA_END
@@ -186,7 +186,7 @@ _FILL_STK_BEGIN:
     sw     t0, 0(t2)
     addi   t2, t2, 4
     j      _FILL_STK_BEGIN
-
+#endif
 	/* Jump to the main function */
 _MAIN_FUNC:
     nop
@@ -272,7 +272,43 @@ _ISTART:
     csrw   mcache_ctl,  t0
     fence.i
 
-MULTI_ADDRESS_BEGIN:
+
+/* flash wakeup */
+_WAKEUP_FLASH:
+	lui		t0 , 0x80140
+	li		t1 , 0xff
+	li		t2 , 0x0
+	li		t3 , 0xab
+	sb		t1 , 0x329(t0)			 //mspi ie enable	:0x140329:0x1f
+	sb		t2 , 0x101(t0)			 //cs_low			:0x140101:0x00
+	sb		t3 , 0x100(t0)			 //wakeup_cmd		:0x140100:0xab
+_MSPI_WAIT:
+	lui		t0 , 0x80140
+	lb		t2 , 0x102(t0)			//read reg_mspi_status FLD_MSPI_BUSY(bit0)
+	li		t3 , 0x1
+	li		t4 , 0x10
+	beq 	t3 , t2 ,_MSPI_WAIT
+	sb		t4 , 0x101(t0)			//cs_high			:0x140101:0x10
+#if 0
+	// add debug, PB4 output 1
+	lui		t0,0x80140 			//0x8014030a
+	li		t1, 0x00
+	sb		t1 , 0x30b(t0)		 //0x8014030b  PB output  =  0x00
+#endif
+/*efuse load need delay about 18us */
+	li		t0 , 0
+	li		t1 , 226
+_WAIT_EFUSE_LOAD_FINISH:
+	addi 	t0 , t0 , 1
+	bgeu 	t1 , t0 , _WAIT_EFUSE_LOAD_FINISH
+
+#if 0
+	// add debug, PB4 output 1
+	lui		t0,0x80140 			//0x8014030a
+	li		t1, 0x10
+	sb		t1 , 0x30b(t0)		 //0x8014030b  PB output  =  0x00
+#endif
+_MULTI_ADDRESS_BEGIN:
 	lui		t0 , 0x80140
 	la		t1 , tl_multi_addr
 	lw		t2 , 0(t1)
@@ -323,7 +359,7 @@ _IZERO_BSS_BEGIN:
 
 	/* Fill the remaining section in sram */
 _IFILL_STK:
-
+#if 0
     lui    t0, 0x55555
     addi   t0, t0, 0x555
     la     t2, _BSS_VMA_END
@@ -333,7 +369,7 @@ _IFILL_STK_BEGIN:
     sw     t0, 0(t2)
     addi   t2, t2, 4
     j      _IFILL_STK_BEGIN
-
+#endif
 	/* Jump to the main function */
 _IMAIN_FUNC:
     nop
@@ -372,8 +408,7 @@ default_irq_entry:
 
 #define VECTOR_NUMINTRS         63
 
-
-   	.section .ram_code,	"ax"
+   	 .section .ram_code, "ax"
 
 	.global __vectors
 	.balign 256

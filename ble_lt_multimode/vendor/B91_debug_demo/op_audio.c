@@ -442,7 +442,7 @@ void	proc_mic_encoder (void)
 
 	static u16	buffer_mic_rptr;
 
-	u16 mic_wptr = (audio_get_mic_buffer_write_pointer (DMA2) - (u32)buffer_mic) >> 1;
+	u16 mic_wptr = (audio_get_rx_dma_wptr (DMA2) - (u32)buffer_mic) >> 1;
 
 	u16 l = (mic_wptr >= buffer_mic_rptr) ? (mic_wptr - buffer_mic_rptr) : 0xffff;
 

@@ -47,4 +47,5 @@
 #include "stimer_reg.h"
 #include "fifo_reg.h"
 #include "aes_reg.h"
+#include "mdec_reg.h"
 #endif

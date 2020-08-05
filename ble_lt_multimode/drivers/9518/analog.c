@@ -46,7 +46,7 @@ static inline void analog_wait(){
  * @param[in]  addr - address need to be read.
  * @return     the result of read.
  */
-u8 analog_read_reg8(u8 addr){
+unsigned char analog_read_reg8(unsigned char addr){
 	unsigned int r= core_disable_interrupt();
 	reg_ana_addr = addr;
 	reg_ana_len=0x1;
@@ -64,7 +64,7 @@ u8 analog_read_reg8(u8 addr){
  * @param[in]  data - the value need to be write.
  * @return     none.
  */
-void analog_write_reg8(u8 addr, u8 data){
+void analog_write_reg8(unsigned char addr, unsigned char data){
 	unsigned int r= core_disable_interrupt();
 	reg_ana_addr = addr;
     reg_ana_data(0) = data;
@@ -80,7 +80,7 @@ void analog_write_reg8(u8 addr, u8 data){
  * @param[in]  data - the value need to be write.
  * @return     none.
  */
-void analog_write_reg16(u8 addr, u16 data)
+void analog_write_reg16(unsigned char addr, u16 data)
 {   unsigned int r= core_disable_interrupt();
 	reg_ana_addr = addr;
 	reg_ana_addr_data16	 = data;
@@ -95,7 +95,7 @@ void analog_write_reg16(u8 addr, u16 data)
  * @param[in]  data - the value need to be write.
  * @return     none.
  */
-u16 analog_read_reg16(u8 addr)
+u16 analog_read_reg16(unsigned char addr)
 {
 	unsigned int r= core_disable_interrupt();
 	reg_ana_len=2;
@@ -116,7 +116,7 @@ u16 analog_read_reg16(u8 addr)
  * @return     none.
  */
 
-u32 analog_read_reg32(u8 addr)
+unsigned int analog_read_reg32(unsigned char addr)
 {  unsigned int r= core_disable_interrupt();
 	reg_ana_len=4;
 	reg_ana_addr = addr;
@@ -134,7 +134,7 @@ u32 analog_read_reg32(u8 addr)
  * @param[in]  data - the value need to be write.
  * @return     none.
  */
-void analog_write_reg32(u8 addr, u32 data)
+void analog_write_reg32(unsigned char addr, unsigned int data)
 { unsigned int r= core_disable_interrupt();
 	reg_ana_addr = addr;
 	reg_ana_addr_data32	= data;
@@ -281,7 +281,7 @@ _attribute_ram_code_ void analog_read_buff(unsigned char addr, unsigned char *bu
  * @param[in]  len - the length of read value.2,3,4
  * @return     none.
  */
-void analog_dma_write_buff(dma_chn_e chn, unsigned char addr, unsigned char * pdat, u32 len)
+void analog_dma_write_buff(dma_chn_e chn, unsigned char addr, unsigned char * pdat, unsigned int len)
 {
 	unsigned char r = core_disable_interrupt();
 	reg_ana_addr = addr;
@@ -307,7 +307,7 @@ void analog_dma_write_buff(dma_chn_e chn, unsigned char addr, unsigned char * pd
  * @return     none.
  */
 
-void analog_dma_read_buff(dma_chn_e chn, unsigned char addr,unsigned char * pdat, u32 len)
+void analog_dma_read_buff(dma_chn_e chn, unsigned char addr,unsigned char * pdat, unsigned int len)
 {
 	unsigned char r = core_disable_interrupt();
 	reg_ana_len=len;

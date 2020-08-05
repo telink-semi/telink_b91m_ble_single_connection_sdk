@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     audio.h
+ * @file    aduio.h
  *
- * @brief    This is the Audio driver header file for TLSR8278
+ * @brief    This is the source file for TLSR9518
  *
  * @author	 Driver Group
- * @date     May 8, 2018
+ * @date     September 16, 2019
  *
- * @par      Copyright (c) 2018, Telink Semiconductor (Shanghai) Co., Ltd.
+ * @par      Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd.
  *           All rights reserved.
  *
  *           The information contained herein is confidential property of Telink
@@ -18,7 +18,7 @@
  *           Licensees are granted free, non-transferable use of the information in this
  *           file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
  * @par      History:
- * 			 1.initial release(DEC. 26 2018)
+ * 			 1.initial release(September 16, 2019)
  *
  * @version  A001
  *
@@ -31,9 +31,8 @@
 #include "reg_include/register_9518.h"
 #include "i2c.h"
 #include "audio.h"
-/**
- * @brief  enum variable, represents Selection of PWM pin.
- */
+#include "compiler.h"
+
 typedef enum{
 	I2S_BCK_PC3      = GPIO_PC3,
 	I2S_ADC_LR_PC4   = GPIO_PC4,
@@ -48,6 +47,14 @@ typedef enum{
 	DMIC_GROUPC_C1_DAT_C2_C3_CLK,
 	DMIC_GROUPD_D4_DAT_D5_D6_CLK,
 }dmic_pin_group_e;
+
+
+typedef enum{
+	MIC_MODE,
+	SPK_MODE,
+	LOOP_MODE,
+}audio_loop_mode_e;
+
 
 
 typedef enum{
@@ -77,34 +84,6 @@ typedef enum{
 	CODEC_ITF_PD,
 }codec_interface_select_e;
 
-typedef enum{
-	I2S_BIT_16_DATA,
-	I2S_BIT_20_DATA ,
-	I2S_BIT_24_DATA,
-	I2S_BIT_32_DATA,
-}i2s_data_select_e;
-
-typedef enum{
-	CODEC_BIT_16_DATA,
-	CODEC_BIT_18_DATA ,
-	CODEC_BIT_20_DATA,
-	CODEC_BIT_24_DATA,
-}codec_data_select_e;
-
-
-typedef enum{
-	I2C_RX_TX_SLAVE ,
-	I2C_RX_TX_MASTER,
-}i2s_m_s_select_e;
-typedef enum{
-	CODEC_SLAVE ,
-	CODEC_MASTER,
-}codec_m_s_mode_e;
-
-typedef enum{
-	MCU_WREG,
-	I2C_WREG ,
-}codec_wreg_mode_e;
 
 typedef enum{
 	AMIC_IN,
@@ -113,26 +92,82 @@ typedef enum{
 }audio_input_mode_e;
 
 
-
 typedef enum{
    	BIT_16_MONO,
 	BIT_20_OR_24_MONO ,
-	BIT_16_STEREO ,
+	BIT_16_STEREO,
 	BIT_20_OR_24_STEREO ,
-
 }audio_in_mode_e;
 
 typedef enum{
    	BIT_16_MONO_FIFO0 ,
-	BIT_20_MONO_FIFO0 ,
+	BIT_20_OR_24_MONO_FIFO0 ,
 	BIT_16_STEREO_FIFO0 ,
-	BIT_20_STEREO_FIFO0 ,
+	BIT_20_OR_24_STEREO_FIFO0 ,
 	BIT_16_MONO_FIFO1 ,
-	BIT_20_MONO_FIFO1 ,
+	BIT_20_OR_24_MONO_FIFO1 ,
 	BIT_16_STEREO_FIFO0_AND_FIFO1 ,
-	BIT_20_STEREO_FIFO0_AND_FIFO1 ,
+	BIT_20_OR_24STEREO_FIFO0_AND_FIFO1 ,
 
 }audio_out_mode_e;
+
+typedef enum{
+	I2S_BIT_16_DATA,
+	I2S_BIT_20_DATA ,
+	I2S_BIT_24_DATA,
+}i2s_data_select_e;
+
+typedef enum{
+	CODEC_BIT_16_DATA,
+	CODEC_BIT_20_DATA=2,
+	CODEC_BIT_24_DATA,
+}codec_data_select_e;
+
+
+typedef enum{
+    MONO_BIT_16,
+	MONO_BIT_20,
+	MONO_BIT_24,
+	STEREO_BIT_16,
+	STEREO_BIT_20,
+	STEREO_BIT_24,
+}audio_channel_wl_mode_e;
+
+
+typedef enum{
+	AUDIO_BIT_16_DATA,
+	AUDIO_BIT_20_DATA,
+	AUDIO_BIT_24_DATA,
+}audio_wl_select_e;
+
+typedef enum{
+	AUDIO_MONO,
+	AUDIO_STEREO,
+}audio_channel_select_e;
+
+
+typedef enum{
+	I2S_S_CODEC_M,
+	I2S_M_CODEC_S,
+}i2s_codec_m_s_mode_e;
+
+typedef enum{
+	MCU_WREG,
+	I2C_WREG ,
+}codec_wreg_mode_e;
+
+typedef struct {
+	u8  audio_in_mode;
+	u8  audio_out_mode;
+	u8 	i2s_data_select;
+	u8  codec_data_select;
+	u8  i2s_codec_m_s_mode;
+	u8  in_digital_gain;
+	u8  in_analog_gain;
+	u8  out_digital_gain;
+	u8  out_analog_gain;
+}aduio_i2s_codec_config_st;
+
 
 
 
@@ -159,10 +194,25 @@ typedef enum{
 	AUDIO_48K,
 }audio_sample_rate_e;
 
+
+typedef enum{
+	AMIC_IN_ONLY,
+	DMIC_IN_ONLY,
+	LINE_IN_ONLY,
+	AMIC_IN_OUT,
+	DMIC_IN_OUT,
+	LINE_IN_OUT,
+	OUT_ONLY,
+}audio_flow_mode_e;
+
+
+
 typedef enum{
 	AUDIO_RATE_EQUAL,
-	AUDIO_RATE_GT,
-	AUDIO_RATE_LT,
+	AUDIO_RATE_GT_L0,
+	AUDIO_RATE_GT_L1,
+	AUDIO_RATE_LT_L0,
+	AUDIO_RATE_LT_L1,
 }audio_rate_match_e;
 
 
@@ -175,26 +225,152 @@ typedef struct {
 	unsigned int audio_dma_llp_ptr;
 }dma_llp_config_t;
 
+/*[0,+43], 1 dB steps*/
+typedef enum{
+	CODEC_IN_D_GAIN_0_DB=0,
+	CODEC_IN_D_GAIN_4_DB=4,
+	CODEC_IN_D_GAIN_8_DB=8,
+	CODEC_IN_D_GAIN_12_DB=12,
+	CODEC_IN_D_GAIN_16_DB=16,
+	CODEC_IN_D_GAIN_20_DB=20,
+	CODEC_IN_D_GAIN_43_DB=43,
+}codec_in_path_digital_gain_e;
 
 
-enum{
-	CODEC_AMIC_GAIN_0_DB,
-	CODEC_AMIC_GAIN_4_DB,
-	CODEC_AMIC_GAIN_8_DB,
-	CODEC_AMIC_GAIN_12_DB,
-	CODEC_AMIC_GAIN_16_DB,
-	CODEC_AMIC_GAIN_20_DB,
-};
+typedef enum{
+	CODEC_IN_A_GAIN_0_DB,
+	CODEC_IN_A_GAIN_4_DB,
+	CODEC_IN_A_GAIN_8_DB,
+	CODEC_IN_A_GAIN_12_DB,
+	CODEC_IN_A_GAIN_16_DB,
+	CODEC_IN_A_GAIN_20_DB,
+}codec_in_path_analog_gain_e;
 
 
-enum{
-	CODEC_DMIC_GAIN_0_D=0,
-	CODEC_DMIC_GAIN_4_DB=4,
-	CODEC_DMIC_GAIN_8_DB=8,
-	CODEC_DMIC_GAIN_12_DB=12,
-	CODEC_DMIC_GAIN_16_DB=16,
-	CODEC_DMIC_GAIN_20_DB=20,
-};
+
+typedef enum{
+	CODEC_OUT_D_GAIN_0_DB=0,
+	CODEC_OUT_D_GAIN_m1_DB,
+	CODEC_OUT_D_GAIN_m2_DB,
+	CODEC_OUT_D_GAIN_m3_DB,
+	CODEC_OUT_D_GAIN_m4_DB,
+	CODEC_OUT_D_GAIN_m5_DB,
+	CODEC_OUT_D_GAIN_m6_DB,
+	CODEC_OUT_D_GAIN_m7_DB,
+	CODEC_OUT_D_GAIN_m8_DB,
+	CODEC_OUT_D_GAIN_m9_DB,
+	CODEC_OUT_D_GAIN_m10_DB,
+	CODEC_OUT_D_GAIN_m11_DB,
+	CODEC_OUT_D_GAIN_m12_DB,
+	CODEC_OUT_D_GAIN_m13_DB,
+	CODEC_OUT_D_GAIN_m14_DB,
+	CODEC_OUT_D_GAIN_m15_DB,
+	CODEC_OUT_D_GAIN_m16_DB,
+	CODEC_OUT_D_GAIN_m17_DB,
+	CODEC_OUT_D_GAIN_m18_DB,
+	CODEC_OUT_D_GAIN_m19_DB,
+	CODEC_OUT_D_GAIN_m20_DB,
+	CODEC_OUT_D_GAIN_m21_DB,
+	CODEC_OUT_D_GAIN_m22_DB,
+	CODEC_OUT_D_GAIN_m23_DB,
+	CODEC_OUT_D_GAIN_m24_DB,
+	CODEC_OUT_D_GAIN_m25_DB,
+	CODEC_OUT_D_GAIN_m26_DB,
+	CODEC_OUT_D_GAIN_m27_DB,
+	CODEC_OUT_D_GAIN_m28_DB,
+	CODEC_OUT_D_GAIN_m29_DB,
+	CODEC_OUT_D_GAIN_m30_DB,
+	CODEC_OUT_D_GAIN_m31_DB=31,
+
+	CODEC_OUT_D_GAIN_32_DB,
+	CODEC_OUT_D_GAIN_31_DB,
+	CODEC_OUT_D_GAIN_30_DB,
+	CODEC_OUT_D_GAIN_29_DB,
+	CODEC_OUT_D_GAIN_28_DB,
+	CODEC_OUT_D_GAIN_27_DB,
+	CODEC_OUT_D_GAIN_26_DB,
+	CODEC_OUT_D_GAIN_25_DB,
+	CODEC_OUT_D_GAIN_24_DB,
+	CODEC_OUT_D_GAIN_23_DB,
+	CODEC_OUT_D_GAIN_22_DB,
+	CODEC_OUT_D_GAIN_21_DB,
+	CODEC_OUT_D_GAIN_20_DB,
+	CODEC_OUT_D_GAIN_19_DB,
+	CODEC_OUT_D_GAIN_18_DB,
+	CODEC_OUT_D_GAIN_17_DB,
+	CODEC_OUT_D_GAIN_16_DB,
+	CODEC_OUT_D_GAIN_15_DB,
+	CODEC_OUT_D_GAIN_14_DB,
+	CODEC_OUT_D_GAIN_13_DB,
+	CODEC_OUT_D_GAIN_12_DB,
+	CODEC_OUT_D_GAIN_11_DB,
+	CODEC_OUT_D_GAIN_10_DB,
+	CODEC_OUT_D_GAIN_9_DB,
+	CODEC_OUT_D_GAIN_8_DB,
+	CODEC_OUT_D_GAIN_7_DB,
+	CODEC_OUT_D_GAIN_6_DB,
+	CODEC_OUT_D_GAIN_5_DB,
+	CODEC_OUT_D_GAIN_4_DB,
+	CODEC_OUT_D_GAIN_3_DB,
+	CODEC_OUT_D_GAIN_2_DB,
+	CODEC_OUT_D_GAIN_1_DB,
+}codec_out_path_digital_gain_e;
+
+
+
+typedef enum{
+
+	CODEC_OUT_A_GAIN_12_DB,
+	CODEC_OUT_A_GAIN_11_DB,
+	CODEC_OUT_A_GAIN_10_DB,
+	CODEC_OUT_A_GAIN_9_DB,
+	CODEC_OUT_A_GAIN_8_DB,
+	CODEC_OUT_A_GAIN_7_DB,
+	CODEC_OUT_A_GAIN_6_DB,
+	CODEC_OUT_A_GAIN_5_DB,
+	CODEC_OUT_A_GAIN_4_DB,
+	CODEC_OUT_A_GAIN_3_DB,
+	CODEC_OUT_A_GAIN_2_DB,
+	CODEC_OUT_A_GAIN_1_DB,
+	CODEC_OUT_A_GAIN_0_DB,
+	CODEC_OUT_A_GAIN_m1_DB,
+	CODEC_OUT_A_GAIN_m2_DB,
+	CODEC_OUT_A_GAIN_m3_DB,
+	CODEC_OUT_A_GAIN_m4_DB,
+	CODEC_OUT_A_GAIN_m5_DB,
+	CODEC_OUT_A_GAIN_m6_DB,
+	CODEC_OUT_A_GAIN_m7_DB,
+	CODEC_OUT_A_GAIN_m8_DB,
+	CODEC_OUT_A_GAIN_m9_DB,
+	CODEC_OUT_A_GAIN_m10_DB,
+	CODEC_OUT_A_GAIN_m11_DB,
+	CODEC_OUT_A_GAIN_m12_DB,
+	CODEC_OUT_A_GAIN_m13_DB,
+	CODEC_OUT_A_GAIN_m14_DB,
+	CODEC_OUT_A_GAIN_m15_DB,
+	CODEC_OUT_A_GAIN_m16_DB,
+	CODEC_OUT_A_GAIN_m17_DB,
+	CODEC_OUT_A_GAIN_m18_DB,
+	CODEC_OUT_A_GAIN_m19_DB,
+}codec_out_path_analog_gain_e;
+
+
+
+
+typedef enum
+{
+	INNER_CODEC,
+	EXT_CODEC,//wm8731
+}codec_type_e;
+
+/**
+ * 	@brief      This function serves to set codec supply voltage
+ * 	@return     none
+ */
+static inline void audio_set_codec_supply (void)
+{
+	analog_write_reg8(0x02, 0xc4);//0xc4 LDO 2.8v,0x44 1.8V
+}
 
 
 /**
@@ -266,8 +442,6 @@ static inline void audio_codec_clk_en()
 	BM_SET(reg_dmic_step,FLD_DMIC_SEL);
 }
 
-
-
 /**
  * 	@brief      This function serves to set the bclk
  * 	@param[in]  div bclk=i2s_clk/(div*2),if div=0,  i2s_clk=bclk.
@@ -281,7 +455,7 @@ static inline void audio_set_i2s_bclk(u8 div)
 
 /**
  * 	@brief      This function serves to set the lrclk,
- * 	@param[in]  div=bclk/(div)
+ * 	@param[in]  lrclk=bclk/(div)
  * 	@return     none
  */
 static inline void audio_set_lrclk(u16 div)
@@ -290,106 +464,502 @@ static inline void audio_set_lrclk(u16 div)
 	reg_dec_pcm_num=(div-1);
 }
 
-
-static inline void audio_set_tx_buff_length(u16 len)
+/**
+ * 	@brief      This function serves to set  tx buff length,
+ * 	@param[in]   the length of tx buff
+ * 	@return     none
+ */
+static inline void audio_set_tx_buff_len(u16 len)
 {
 	reg_tx_max=((len)>>2)-1;
 }
 
-
-static inline void audio_set_rx_buff_length(u16 len)
+/**
+ * 	@brief      This function serves to set rx buff length,
+ * 	@param[in]   the length of rx buff
+ * 	@return     none
+ */
+static inline void audio_set_rx_buff_len(u16 len)
 {
    reg_rx_max=((len)>>2)-1;
 }
 
 
-
-static inline void audio_write_codec_register(u8 addr,u8  data)
+/**
+ * 	@brief      This function serves to write codec register by mc.
+ * 	@param[in]  addr :the address of codec register
+ * 	@param[in]  data :Data to be written
+ * 	@return     none
+ */
+static inline void audio_write_codec_reg(u8 addr,u8  data)
 {
 	write_reg8(REG_AUDIO_AHB_BASE+((0x80+addr)<<2), data);
 
 }
 
-static inline u8 audio_read_codec_register(u8 addr)
+/**
+ * 	@brief      This function serves to read codec register by mc.
+ * 	@param[in]  addr :the address of codec register
+ * 	@return     data
+ */
+static inline u8 audio_read_codec_reg(u8 addr)
 {
 	return read_reg8(REG_AUDIO_AHB_BASE+((0x80+addr)<<2));
 
 }
 
 
-
-static inline void audio_set_fifo_tx_tri_num(u8 number)
+/**
+ * 	@brief      This function serves to tx fifo trigger number.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void audio_set_fifo_tx_trig_num(u8 number)
 {
 	reg_fifo_trig0 &=~FLD_AUDIO_FIFO_AOUT0_TRIG_NUM;
 	reg_fifo_trig0 |=(number&FLD_AUDIO_FIFO_AOUT0_TRIG_NUM);
 }
 
-static inline void  audio_set_fifo_rx_tri_num(u8 number)
+/**
+ * 	@brief      This function serves to rx fifo trigger number.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void  audio_set_fifo_rx_trig_num(u8 number)
 {
 	 reg_fifo_trig0 &= ~FLD_AUDIO_FIFO_AIN0_TRIG_NUM;
 	 reg_fifo_trig0 |=((number&0x0f)<<4);
 }
 
 
+/**
+ * 	@brief      This function serves to rx fifo high level 1 threshold.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void  audio_set_rx_fifo_h_lvl1_th(u16 th)
+{
+	reg_th1_h1=th;
+}
+
+
+/**
+ * 	@brief      This function serves to rx fifo low level 1 threshold.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void  audio_set_rx_fifo_l_lvl1_th(u16 th)
+{
+	reg_th1_l1=th;
+}
+
+
+/**
+ * 	@brief      This function serves to rx fifo high level 2 threshold.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void  audio_set_rx_fifo_h_lvl2_th(u16 th)
+{
+	reg_th1_h2=th;
+}
+
+
+/**
+ * 	@brief      This function serves to rx fifo low level 2 threshold.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void  audio_set_rx_fifo_l_lvl2_th(u16 th)
+{
+	reg_th1_l2=th;
+}
+
+
+/**
+ * 	@brief      This function serves to tx fifo high level 1 threshold.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void  audio_set_tx_fifo_h_lvl1_th(u16 th)
+{
+	reg_th0_h1=th;
+}
+
+
+/**
+ * 	@brief      This function serves to tx fifo low level 1 threshold.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void  audio_set_tx_fifo_l_lvl1_th(u16 th)
+{
+	reg_th0_l1=th;
+}
+
+
+/**
+ * 	@brief      This function serves to tx fifo high level 2 threshold.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void  audio_set_tx_fifo_h_lvl2_th(u16 th)
+{
+	reg_th0_h2=th;
+}
+
+
+/**
+ * 	@brief      This function serves to tx fifo low level 2 threshold.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void  audio_set_tx_fifo_l_lvl2_th(u16 th)
+{
+	reg_th0_l2=th;
+}
+
+
+
+
+/**
+ * 	@brief      This function serves to enable i2s clk and codec mc clk .
+ * 	@param[in]  i2s_clk_en:1 enable  i2s_clk
+ * 	@param[in]  mc_clk_en : 1 enable  mc_clk to config codec register.
+ * 	@return     none
+ */
 static inline void  audio_clk_en(u8 i2s_clk_en,u8 mc_clk_en)
 {
-	reg_audio_en=MASK_VAL( FLD_AUDIO_CLK_EN, i2s_clk_en,\
+	reg_audio_en=MASK_VAL( FLD_AUDIO_I2S_CLK_EN, i2s_clk_en,\
 			      FLD_AUDIO_MC_CLK_EN, mc_clk_en);
 }
 
 
-static inline u16 audio_get_rx_wptr(void)
+/**
+ * 	@brief      This function serves to get rx write pointer.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline u16 audio_get_rx_fifo_wptr(void)
 {
 	return reg_rx_wptr;
 }
 
-
-static inline  void audio_set_tx_wptr(u16 ptr)
+/**
+ * 	@brief      This function serves to set tx write pointer.
+* 	@param[in]  none
+ * 	@return     none
+ */
+static inline  void audio_set_tx_fifo_wptr(u16 ptr)
 {
 	 reg_tx_wptr=ptr;
 }
 
-static inline u16 audio_get_tx_rptr(void)
+/**
+ * 	@brief      This function serves to get tx read pointer.
+ * 	@param[in]  none
+ * 	@return     none
+ */
+static inline u16 audio_get_tx_fifo_rptr(void)
 {
 	return reg_tx_rptr;
 }
 
-static inline void audio_set_rx_rptr(u16 ptr)
+/**
+ * 	@brief      This function serves to rx fifo trigger number.
+ * 	@param[in]  number :the number of dma trigger
+ * 	@return     none
+ */
+static inline void audio_set_rx_fifo_rptr(u16 ptr)
 {
 	reg_rx_rptr=ptr;
 }
 
-static inline void audio_codec_set_sample_rate (int rate)
-{
-	audio_write_codec_register (0x0b, rate);
-}
-
-static inline u32 audio_get_mic_buffer_write_pointer (dma_chn_e chn)
+/**
+ * 	@brief      This function serves to get dma rx buff pointer.
+ * 	@param[in]  chn : dma channel
+ * 	@return     none
+ */
+static inline u32 audio_get_rx_dma_wptr (dma_chn_e chn)
 {
 	return   reg_dma_ahp_to_cup_addr(reg_dma_dst_addr(chn));
 }
 
-static inline u32 audio_get_speaker_buffer_read_pointer (dma_chn_e chn)
+/**
+ * 	@brief      This function serves to get dma tx buff pointer.
+ * 	@param[in]  chn : dma channel
+ * 	@return     none
+ */
+static inline u32 audio_get_tx_dma_rptr (dma_chn_e chn)
 {
 	return reg_dma_ahp_to_cup_addr(reg_dma_src_addr(chn));
 }
 
-void audio_dmic_set_pin(dmic_pin_group_e pin_gp);
-void audio_mux_config(audio_flow_e audio_flow, audio_in_mode_e ain0_mode , audio_in_mode_e ain1_mode,audio_out_mode_e i2s_aout_mode);
-void codec_init(void);
-void audio_codec_dac_config(codec_m_s_mode_e mode,codec_wreg_mode_e wreg_mode, audio_sample_rate_e rate);
-void audio_codec_adc_config(codec_m_s_mode_e mode,audio_input_mode_e in_mode,codec_wreg_mode_e wreg_mode, audio_sample_rate_e rate);
-void audio_data_path_sel (audio_mux_ain_e ain0_sel, audio_mux_aout_e aout0_sel, audio_mux_ain_e ain1_sel, audio_mux_aout_e aout1_sel);
-void audio_i2s_config(i2s_mode_select_e i2s_format,i2s_data_select_e wl,i2s_m_s_select_e  i2s_m_s);
-void audio_set_i2s_clock (audio_sample_rate_e audio_rate,audio_rate_match_e  match);
-void audio_rx_dma_config(dma_chn_e chn,u16 * dst_addr,u32 data_len,dma_llp_config_t *head_of_list);
-void audio_rx_dma_add_list_element(dma_llp_config_t * rx_config,dma_llp_config_t *llpoint ,u16 * dst_addr,u32 data_len);
-void audio_tx_dma_config(dma_chn_e chn,u16 * src_addr, u32 data_len,dma_llp_config_t * tx_config);
-void audio_tx_dma_add_list_element(dma_llp_config_t *config_addr,dma_llp_config_t *llponit ,u16 * src_addr,u32 data_len);
-void audio_rx_dma_en(void);
-void audio_tx_dma_en(void);
-void codec_set(u8 codec_master_en);
+/**
+ * @brief      This function serves to clear audio fifo interrupt status.
+ * @param[in]  status - to select Interrupt type.
+ * @return     none
+ */
+static inline void audio_clr_irq_status(audio_fifo_irq_status_type_e  status)
+{
+	reg_irq_fifo_state=status;
+}
 
-void audio_i2s_codec_config (int sample_rate, u32 * speaker_buff, int speaker_size, u32 *mic_buff, int mic_size);
+/**
+ * @brief      This function serves to get audio fifo interrupt status.
+ * @param[in]  status - to select Interrupt type.
+ * @return     none
+ */
+static inline u8 audio_get_irq_status(audio_fifo_irq_status_type_e status)
+{
+	 return reg_irq_fifo_state&status;
+}
+
+/**
+ * @brief      This function serves to disable  interrupt mask.
+ * @param[in]  mask - to select Interrupt type.
+ * @return     none
+ */
+static inline void audio_set_irq_mask(audio_fifo_irq_mask_type_e mask)
+{
+	BM_SET(reg_irq_fifo_mask,mask);
+}
+
+/**
+ * @brief      This function serves to enable  interrupt mask.
+ * @param[in]  mask - to select Interrupt type.
+ * @return     none
+ */
+static inline void audio_clr_irq_mask(audio_fifo_irq_mask_type_e  mask)
+{
+	BM_CLR(reg_irq_fifo_mask,mask);
+}
+
+
+/**
+ * @brief     This function configures dmic pin.
+ * @param[in] pin_gp: the group of dmic pin
+ * @return    none
+ */
+void audio_set_dmic_pin(dmic_pin_group_e pin_gp);
+
+
+/**
+ * @brief     This function serves to set data path.
+ * @param[in] audio_flow :audio flow  select
+ * @param[in] ain0_mode:fifo0 input mode select
+ * @param[in] ain1_mode:fifo1 input mode select
+ * @param[in] i2s_aout_mode:fifo output source select
+ * @return    none
+ */
+void audio_mux_config(audio_flow_e audio_flow, audio_in_mode_e ain0_mode , audio_in_mode_e ain1_mode,audio_out_mode_e i2s_aout_mode);
+
+/**
+ * @brief     This function serves to config codec for dac.
+ * @param[in] mode :select i2s as master or slave
+ * @param[in] wreg_mode:config codec register by mc
+ * @param[in] rate: audio sampling rate
+ * @param[in] wreg_mode: mcu or i2c config codec
+ * @return    none
+ */
+void audio_codec_dac_config(i2s_codec_m_s_mode_e mode,audio_sample_rate_e rate,codec_data_select_e data_select,codec_wreg_mode_e  wreg_mode);
+/**
+ * @brief     This function serves to config codec for adc.
+ * @param[in] mode :select i2s as master or slave
+ * @param[in] in_mode: line_in/amic/dmic input mode select
+ * @param[in] wreg_mode:config codec register by mc
+ * @param[in] rate: audio sampling rate
+ * @param[in] wreg_mode: mcu or i2c config codec
+ * @return    none
+ */
+void audio_codec_adc_config(i2s_codec_m_s_mode_e mode,audio_input_mode_e in_mode,audio_sample_rate_e rate,codec_data_select_e data_select,codec_wreg_mode_e  wreg_mode);
+
+
+
+/**
+ * @brief     This function serves to set data path .
+ * @param[in] ain0_sel :fifo0 input source select
+ * @param[in] aout0_sel:fifo0 output source select
+ * @param[in] ain0_sel :fifo1 input source select
+ * @param[in] aout0_sel:fifo1 output source select
+ * @return    none
+ */
+void audio_data_path_sel (audio_mux_ain_e ain0_sel, audio_mux_aout_e aout0_sel, audio_mux_ain_e ain1_sel, audio_mux_aout_e aout1_sel);
+
+/**
+ * @brief     This function serves to config interface, word length, and m/s .
+ * @param[in] i2s_format :interface protocol
+ * @param[in] wl:audio data word length
+ * @param[in] i2s_m_s:select i2s as master or slave
+ * @return    none
+ */
+void audio_i2s_config(i2s_mode_select_e i2s_format,i2s_data_select_e wl,i2s_codec_m_s_mode_e  i2s_m_s);
+
+/**
+ * @brief     This function serves to set i2s clock and audio sampling rate when i2s as master.
+ * @param[in] audio_rate: audio sampling rate
+ * @param[in] match:the match of audio rate.
+ * @param[in] match_en: initial must 0, then change rate must 1
+ * @return    none
+ */
+_attribute_ram_code_ void  audio_set_i2s_clock (audio_sample_rate_e audio_rate,audio_rate_match_e  match, u8 match_en);
+/**
+ * @brief     This function serves to config  rx_dma channel.
+ * @param[in] dma_chn_e: dma channel
+ * @param[in] dst_addr:the dma address of destination
+ * @param[in] data_len:the length of dma rx size by byte
+ * @param[in] head_of_list:the head address of dma llp.
+ * @return    none
+ */
+void audio_rx_dma_config(dma_chn_e chn,u16 * dst_addr,u32 data_len,dma_llp_config_t *head_of_list);
+/**
+ * @brief     This function serves to set rx dma chain transfer
+ * @param[in] config_addr:the head of list of llp_pointer.
+ * @param[in] llpointer:the next element of llp_pointer.
+ * @param[in] dst_addr:the dma address of destination.
+ * @param[in] data_len:the length of dma size by byte.
+ * @return    none
+ */
+void audio_rx_dma_add_list_element(dma_llp_config_t * rx_config,dma_llp_config_t *llpointer ,u16 * dst_addr,u32 data_len);
+
+/**
+ * @brief     This function serves to config  tx_dma channel.
+ * @param[in] dma_chn_e: dma channel
+ * @param[in] src_addr:the address of source
+ * @param[in] data_len:the length of dma rx size by byte
+ * @param[in] head_of_list:the head address of dma llp.
+ * @return    none
+ */
+void audio_tx_dma_config(dma_chn_e chn,u16 * src_addr, u32 data_len,dma_llp_config_t * tx_config);
+/**
+ * @brief     This function serves to set tx dma chain transfer
+ * @param[in] config_addr:the head of list of llp_pointer.
+ * @param[in] llpointer:the next element of llp_pointer.
+ * @param[in] src_addr:the address of source
+ * @param[in] data_len:the length of dma size by byte.
+ * @return    none
+ */
+void audio_tx_dma_add_list_element(dma_llp_config_t *config_addr,dma_llp_config_t *llpointer ,u16 * src_addr,u32 data_len);
+/**
+ * @brief     This function serves to enable rx_dma channel.
+ * @param[in] none.
+ * @return    none
+ */
+void audio_rx_dma_en(void);
+/**
+ * @brief     This function serves to enable tx_dma channel.
+ * @param[in] none.
+ * @return    none
+ */
+void audio_tx_dma_en(void);
+
+
+/**
+ * @brief     This function serves to set dma rx_buff.
+ * @param[in] chn:  dma channel
+ * @param[in] mic_buff:the pointer of rx_buff.
+ * @param[in] mic_size:the size of rx_buff.
+ * @return    none
+ */
+
+/**
+ * @brief     This function serves to  initialise audio by muc
+ * @param[in] flow_mode:
+ * @param[in] audio_sample_rate_e:audio sampling rate.
+ * @param[in] channel_wl:word length and channel number.
+ * @return    none
+ */
+void audio_init(audio_flow_mode_e flow_mode,audio_sample_rate_e rate,audio_channel_wl_mode_e channel_wl);
+
+
+void audio_init_i2c(audio_flow_mode_e flow_mode,audio_sample_rate_e rate,audio_channel_wl_mode_e channel_wl);
+/**
+ * @brief     This function serves to  initialise audio by muc
+ * @param[in] flow_mode:
+ * @param[in] audio_sample_rate_e:audio sampling rate.
+ * @param[in] channel_wl:word length and channel number.
+ * @return    none
+ */
+
+
+/**
+ * @brief     This function serves to set dma rx_buff.
+ * @param[in] chn: dma_chn_e: dma channel
+ * @param[in] in_buff:the pointer of rx_buff.
+ * @param[in] buff_size:the size of rx_buff.
+ * @return    none
+ */
+void audio_rx_dma_chain_init (dma_chn_e chn,u16 * in_buff,u32 buff_size );
+/**
+ * @brief     This function serves to set dma tx_buff.
+ * @param[in] chn: dma_chn_e: dma channel
+ * @param[in] out_buff:the pointer of tx_buff.
+ * @param[in] buff_size:the size of tx_buff.
+ * @return    none
+ */
+void audio_tx_dma_chain_init (dma_chn_e chn,u16 * out_buff,u32 buff_size);
+
+
+/**
+ * 	@brief      This function serves to set in path digital and analog gain  .
+ * 	@param[in]  d_gain : digital gain value
+ * 	@param[in]  a_gain : analog  gain value
+ * 	@return     none
+ */
+void audio_set_codec_in_path_a_d_gain (codec_in_path_digital_gain_e d_gain,codec_in_path_analog_gain_e a_gain );
+
+/**
+ * 	@brief      This function serves to set out path digital and analog gain  .
+ * 	@param[in]  d_gain : digital gain value
+ * 	@param[in]  a_gain : analog  gain value
+ * 	@return     none
+ */
+ void audio_set_codec_out_path_a_d_gain (codec_out_path_digital_gain_e d_gain,codec_out_path_analog_gain_e a_gain);
+
+ /**
+  * 	@brief      This function serves to choose which is master to provide clock.
+  * 	@param[in]  m_s : I2S_S_CODEC_M: i2s as slave ,codec as master; I2S_M_CODEC_S: i2s as  master, codec  asslave
+  * 	@return     none
+  */
+ void audio_set_i2s_codec_m_s (i2s_codec_m_s_mode_e m_s);
+
+
+ /**
+  * @brief     This function serves to  initialise audio by i2c
+  * @param[in] flow_mode:
+  * @param[in] audio_sample_rate_e:audio sampling rate.
+  * @param[in] channel_wl:word length and channel number.
+  * @return    none
+  */
+ void audio_i2s_init(void);
+
+ /**
+  * @brief     This function configures i2s pin.
+  * @param[in] none
+  * @return    none
+  */
+ void i2s_set_pin(void);
+
+
+ /**
+  * @brief      This function serves to enable i2c master for codec i2c slave .
+  * @param[in]  none.
+  * @return     none.
+  */
+void i2c_init(codec_type_e codec_type);
+
+ /**
+  * @brief     This function serves to read data from codec register.
+  * @param[in] addr: the address of codec register
+  * @return    none
+  */
+ u8 i2c_codec_read(u8 addr);
+
+ /**
+  * @brief     This function serves to write data to  codec register.
+  * @param[in] addr: the address of codec register
+  * @return    none
+  */
+ void i2c_codec_write(u8 addr ,u8 wdat);
 
 #endif

@@ -213,7 +213,7 @@ u32 mainloop_tick = 0;
 void main_loop (void)
 {
 #if 1
-	rf_set_ble_chn(TEST_CHN);
+	rf_set_ble_channel(TEST_CHN);
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();
@@ -486,7 +486,7 @@ void rf_irq_handler(void)
 void ble_manual_tx_test(void){
 
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
-	rf_set_ble_chn(TEST_CHN);
+	rf_set_ble_channel(TEST_CHN);
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();
@@ -563,7 +563,7 @@ void ble_stx_test(void){
 
 		STOP_RF_STATE_MACHINE;
 
-		rf_set_ble_chn(TEST_CHN);
+		rf_set_ble_channel(TEST_CHN);
 
 //		printf("STx packet: %d \n",debug_pkt_adv.data[0]);
 //		array_printf((u8*)&debug_pkt_adv,sizeof (rf_packet_dbg_adv_t));
@@ -602,7 +602,7 @@ void rf_start_btx (void* addr, unsigned int tick)
 void ble_btx_tx_test(void){
 
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
-	rf_set_ble_chn(TEST_CHN);
+	rf_set_ble_channel(TEST_CHN);
 	write_reg8(0x140830,0x36);//disable tx timestamp
 	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();
@@ -628,7 +628,7 @@ void ble_btx_tx_test(void){
 		STOP_RF_STATE_MACHINE;//STOP SM
 		printf("BTX tx wptr: %d\n",wptr);
 		debug_pkt_adv.data[0] ++;
-		rf_set_ble_chn (TEST_CHN);  //2402
+		rf_set_ble_channel (TEST_CHN);  //2402
 
 		tmemcpy((void*)(blt_txbuffer + (blt_tx_wptr + 1)*BLE_LL_BUFF_SIZE),(void *)&debug_pkt_adv,sizeof(rf_packet_dbg_adv_t));
 		blt_tx_wptr = (blt_tx_wptr + 1) & 3;
@@ -653,7 +653,7 @@ void ble_btx_tx_test(void){
 }
 void ble_manual_rx_test(void){
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
-	rf_set_ble_chn(TEST_CHN);
+	rf_set_ble_channel(TEST_CHN);
 	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
@@ -716,7 +716,7 @@ void rf_start_brx  (void* addr, unsigned int tick)
 
 void ble_brx_rx_test(void){
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
-	rf_set_ble_chn(TEST_CHN);
+	rf_set_ble_channel(TEST_CHN);
 	write_reg8(0x140830,0x36);//disable tx timestamp
 	REG_ADDR16(0x80140a04) = 80;
 	rf_set_power_level_index (RF_POWER_P3p11dBm);
@@ -766,7 +766,7 @@ void ble_brx_rx_test(void){
 		bltc_tick_1st_rx = 0;
 		bltParam_conn_rx_num = 0;
 		AA_rx_match_flag = 0;
-		rf_set_ble_chn(TEST_CHN);
+		rf_set_ble_channel(TEST_CHN);
 
 		tmemcpy((void*)(blt_txbuffer + (blt_tx_wptr + 1)*BLE_LL_BUFF_SIZE),(void *)blt_tx_empty_packet,6);
 		blt_tx_wptr = (blt_tx_wptr + 1) & 3;
@@ -798,7 +798,7 @@ void ble_srx_test(void){
 
 //	rf_drv_init(RF_MODE_BLE_1M); //set in main
 
-	rf_set_ble_chn(TEST_CHN);
+	rf_set_ble_channel(TEST_CHN);
 
 	rf_set_power_level_index (RF_POWER_P3p11dBm);
 //	rf_set_ble_crc_adv ();

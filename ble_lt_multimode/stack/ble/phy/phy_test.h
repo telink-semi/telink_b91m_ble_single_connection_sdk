@@ -121,7 +121,7 @@ ble_sts_t blc_phy_setPhyTestEnd(u8 *pkt_num);
 
 ble_sts_t blc_phy_reset(void);
 void blc_phy_preamble_length_set(unsigned char len);
-void phy_test_driver_init(RF_ModeTypeDef rf_mode);
+void phy_test_driver_init(rf_mode_e rf_mode);
 
 
 
