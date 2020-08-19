@@ -213,9 +213,9 @@ u32 mainloop_tick = 0;
 void main_loop (void)
 {
 #if 1
-	rf_set_ble_channel(TEST_CHN);
+	rf_set_ble_chn(TEST_CHN);
 	rf_access_code_comm(BLE_ACCESS_CODE);
-	rf_set_power_level_index (RF_POWER_P3p11dBm);
+	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 //	rf_set_ble_crc_adv ();
 //	rf_set_ble_access_code_value(BLE_ACCESS_CODE);
 
@@ -354,7 +354,11 @@ void rf_irq_handler(void)
 		AA_rx_irq_cnt ++;
 		printf("AA_rx_irq_cnt:%d \n",AA_rx_irq_cnt);
 		write_reg8(0x1004f5,0x40);//dma rx rptr ++
-		if(RF_BLE_PACKET_CRC_OK(raw_pkt) && RF_BLE_PACKET_LENGTH_OK(raw_pkt))
+		#if (FIX_RF_DMA_REWRITE)
+			if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
+		#else
+			if ( RF_BLE_PACKET_LENGTH_OK(raw_pkt) && RF_BLE_PACKET_CRC_OK(raw_pkt) )
+		#endif
 		{
 			DBG_CHN1_TOGGLE;
 			AA_rx_crc_ok_cnt ++;
@@ -363,7 +367,9 @@ void rf_irq_handler(void)
 			printf("Rx success: %d \n",raw_pkt[12]);
 			array_printf(raw_pkt,BLE_LL_BUFF_SIZE);
 		}
-		raw_pkt[0] = 1;
+		#if (!FIX_RF_DMA_REWRITE)//todo by sihui
+			raw_pkt[0] = 1;
+		#endif
 		bltParam_conn_rx_num ++;
 		reg_dma_size(1)=0xffffffff;
 		rf_clr_irq_status(FLD_RF_IRQ_RX);
@@ -387,7 +393,11 @@ void rf_irq_handler(void)
 			}
 		}
 		printf("rx_rptr:%d \n",read_reg8(0x1004f5));
-		if(RF_BLE_PACKET_CRC_OK(raw_pkt) && RF_BLE_PACKET_LENGTH_OK(raw_pkt))
+		#if (FIX_RF_DMA_REWRITE)
+			if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
+		#else
+			if ( RF_BLE_PACKET_LENGTH_OK(raw_pkt) && RF_BLE_PACKET_CRC_OK(raw_pkt) )
+		#endif
 		{
 			DBG_CHN1_TOGGLE;
 			AA_rx_crc_ok_cnt ++;
@@ -408,7 +418,9 @@ void rf_irq_handler(void)
 				}
 			}
 		}
-		raw_pkt[0] = 1;
+		#if (!FIX_RF_DMA_REWRITE)//todo by sihui
+			raw_pkt[0] = 1;
+		#endif
 		bltParam_conn_rx_num ++;
 		reg_dma_size(1)=0xffffffff;
 		rf_clr_irq_status(FLD_RF_IRQ_RX);
@@ -430,7 +442,11 @@ void rf_irq_handler(void)
 		}
 		printf("rx_rptr:%d \n",read_reg8(0x1004f5));
 		array_printf(blt_rxbuffer,320);
-		if(RF_BLE_PACKET_CRC_OK(raw_pkt) && RF_BLE_PACKET_LENGTH_OK(raw_pkt))
+		#if (FIX_RF_DMA_REWRITE)
+			if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
+		#else
+			if ( RF_BLE_PACKET_LENGTH_OK(raw_pkt) && RF_BLE_PACKET_CRC_OK(raw_pkt) )
+		#endif
 		{
 			DBG_CHN1_TOGGLE;
 			AA_rx_crc_ok_cnt ++;
@@ -438,7 +454,9 @@ void rf_irq_handler(void)
 			gpio_toggle(GPIO_LED_WHITE);
 //			array_printf(raw_pkt,BLE_LL_BUFF_SIZE);
 		}
-		raw_pkt[0] = 1;
+		#if (!FIX_RF_DMA_REWRITE)//todo by sihui
+			raw_pkt[0] = 1;
+		#endif
 		reg_dma_size(1)=0xffffffff;
 		rf_clr_irq_status(FLD_RF_IRQ_RX);
 	}
@@ -450,7 +468,11 @@ void rf_irq_handler(void)
 		u8 * raw_pkt = (u8 *) blt_rxbuffer ;
 		AA_rx_irq_cnt ++;
 		printf("AA_rx_irq_cnt:%d \n",AA_rx_irq_cnt);
-		if(RF_BLE_PACKET_CRC_OK(raw_pkt) && RF_BLE_PACKET_LENGTH_OK(raw_pkt))  //CRC OK
+		#if (FIX_RF_DMA_REWRITE)
+			if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
+		#else
+			if ( RF_BLE_PACKET_LENGTH_OK(raw_pkt) && RF_BLE_PACKET_CRC_OK(raw_pkt) )
+		#endif
 		{
 			DBG_CHN1_TOGGLE;
 			AA_rx_crc_ok_cnt ++;
@@ -459,7 +481,9 @@ void rf_irq_handler(void)
 			printf("Rx success: %d \n",raw_pkt[12]);
 			array_printf(raw_pkt,BLE_LL_BUFF_SIZE);
 		}
-		raw_pkt[0] = 1;  //must
+		#if (!FIX_RF_DMA_REWRITE)//todo by sihui
+			raw_pkt[0] = 1;  //must
+		#endif
 		bltParam_conn_rx_num ++;
 		reg_dma_size(1)=0xffffffff;
 		rf_clr_irq_status(FLD_RF_IRQ_RX);
@@ -486,9 +510,9 @@ void rf_irq_handler(void)
 void ble_manual_tx_test(void){
 
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
-	rf_set_ble_channel(TEST_CHN);
+	rf_set_ble_chn(TEST_CHN);
 	rf_access_code_comm(BLE_ACCESS_CODE);
-	rf_set_power_level_index (RF_POWER_P3p11dBm);
+	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 //	rf_set_ble_crc_adv ();
 //	rf_set_ble_access_code_value(BLE_ACCESS_CODE);
 
@@ -525,7 +549,7 @@ void ble_manual_tx_test(void){
 volatile int AA_size;
 void ble_stx_test(void){
 
-		rf_set_power_level_index (RF_POWER_P3p11dBm);
+		rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 
 
 	AA_size = sizeof (rf_packet_dbg_adv_t);
@@ -563,7 +587,7 @@ void ble_stx_test(void){
 
 		STOP_RF_STATE_MACHINE;
 
-		rf_set_ble_channel(TEST_CHN);
+		rf_set_ble_chn(TEST_CHN);
 
 //		printf("STx packet: %d \n",debug_pkt_adv.data[0]);
 //		array_printf((u8*)&debug_pkt_adv,sizeof (rf_packet_dbg_adv_t));
@@ -602,9 +626,10 @@ void rf_start_btx (void* addr, unsigned int tick)
 void ble_btx_tx_test(void){
 
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
-	rf_set_ble_channel(TEST_CHN);
+	rf_set_ble_chn(TEST_CHN);
 	write_reg8(0x140830,0x36);//disable tx timestamp
-	rf_set_power_level_index (RF_POWER_P3p11dBm);
+	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
+	reg_rf_rx_timeout = 600;
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
@@ -628,7 +653,7 @@ void ble_btx_tx_test(void){
 		STOP_RF_STATE_MACHINE;//STOP SM
 		printf("BTX tx wptr: %d\n",wptr);
 		debug_pkt_adv.data[0] ++;
-		rf_set_ble_channel (TEST_CHN);  //2402
+		rf_set_ble_chn (TEST_CHN);  //2402
 
 		tmemcpy((void*)(blt_txbuffer + (blt_tx_wptr + 1)*BLE_LL_BUFF_SIZE),(void *)&debug_pkt_adv,sizeof(rf_packet_dbg_adv_t));
 		blt_tx_wptr = (blt_tx_wptr + 1) & 3;
@@ -653,8 +678,8 @@ void ble_btx_tx_test(void){
 }
 void ble_manual_rx_test(void){
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
-	rf_set_ble_channel(TEST_CHN);
-	rf_set_power_level_index (RF_POWER_P3p11dBm);
+	rf_set_ble_chn(TEST_CHN);
+	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
@@ -681,14 +706,20 @@ void ble_manual_rx_test(void){
 			u8 * raw_pkt = (u8 *) (blt_rxbuffer);
 			printf("Enter Rx irq: \n");
 			AA_rx_irq_cnt ++;
-			if(RF_BLE_PACKET_CRC_OK(raw_pkt) && RF_BLE_PACKET_LENGTH_OK(raw_pkt))
+			#if (FIX_RF_DMA_REWRITE)
+				if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
+			#else
+				if ( RF_BLE_PACKET_LENGTH_OK(raw_pkt) && RF_BLE_PACKET_CRC_OK(raw_pkt) )
+			#endif
 			{
 				AA_rx_crc_ok_cnt ++;
 				gpio_toggle(GPIO_LED_WHITE);
 				printf("Rx success: %d \n",raw_pkt[12]);
 				array_printf(raw_pkt,BLE_LL_BUFF_SIZE);
 			}
-			raw_pkt[0] = 1;
+			#if (!FIX_RF_DMA_REWRITE)//todo by sihui
+				raw_pkt[0] = 1;
+			#endif
 			reg_dma_size(1)=0xffffffff;
 			rf_clr_irq_status(FLD_RF_IRQ_RX);
 		}
@@ -716,10 +747,10 @@ void rf_start_brx  (void* addr, unsigned int tick)
 
 void ble_brx_rx_test(void){
 	rf_drv_init(RF_MODE_BLE_1M_NO_PN);
-	rf_set_ble_channel(TEST_CHN);
+	rf_set_ble_chn(TEST_CHN);
 	write_reg8(0x140830,0x36);//disable tx timestamp
 	REG_ADDR16(0x80140a04) = 80;
-	rf_set_power_level_index (RF_POWER_P3p11dBm);
+	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
@@ -766,7 +797,7 @@ void ble_brx_rx_test(void){
 		bltc_tick_1st_rx = 0;
 		bltParam_conn_rx_num = 0;
 		AA_rx_match_flag = 0;
-		rf_set_ble_channel(TEST_CHN);
+		rf_set_ble_chn(TEST_CHN);
 
 		tmemcpy((void*)(blt_txbuffer + (blt_tx_wptr + 1)*BLE_LL_BUFF_SIZE),(void *)blt_tx_empty_packet,6);
 		blt_tx_wptr = (blt_tx_wptr + 1) & 3;
@@ -798,9 +829,9 @@ void ble_srx_test(void){
 
 //	rf_drv_init(RF_MODE_BLE_1M); //set in main
 
-	rf_set_ble_channel(TEST_CHN);
+	rf_set_ble_chn(TEST_CHN);
 
-	rf_set_power_level_index (RF_POWER_P3p11dBm);
+	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
@@ -829,14 +860,20 @@ void ble_srx_test(void){
 			printf("Enter Rx irq: \n");
 			AA_rx_irq_cnt ++;
 			write_reg8(0x1004f5,0x40);
-			if(RF_BLE_PACKET_CRC_OK(raw_pkt) && RF_BLE_PACKET_LENGTH_OK(raw_pkt))
+			#if (FIX_RF_DMA_REWRITE)
+				if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
+			#else
+				if ( RF_BLE_PACKET_LENGTH_OK(raw_pkt) && RF_BLE_PACKET_CRC_OK(raw_pkt) )
+			#endif
 			{
 				AA_rx_crc_ok_cnt ++;
 				gpio_toggle(GPIO_LED_WHITE);
 				printf("Rx success: %d \n",raw_pkt[12]);
 				array_printf(blt_rxbuffer,320);
 			}
-			raw_pkt[0] = 1;
+			#if (!FIX_RF_DMA_REWRITE)//todo by sihui
+				raw_pkt[0] = 1;
+			#endif
 			reg_dma_size(1)=0xffffffff;
 			rf_clr_irq_status(FLD_RF_IRQ_RX);
 			rf_start_srx(0, 0);

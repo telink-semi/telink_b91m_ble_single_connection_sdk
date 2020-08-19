@@ -394,7 +394,7 @@ void feature_mdle_test_init_normal(void)
 	blc_ll_initConnection_module();						//connection module  mandatory for BLE slave/master
 	blc_ll_initMasterRoleSingleConn_module();			//master module: 	 mandatory for BLE master,
 
-	rf_set_power_level_index (RF_POWER_P3p11dBm);
+	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 
 	////// Host Initialization  //////////
 	blc_gap_central_init();										//gap initialization

@@ -133,7 +133,7 @@ _attribute_ram_code_ void flash_erase_page(unsigned int addr);
  * @param[in]   addr the start address of the sector needs to erase.
  * @return none
  */
-_attribute_ram_code_ void flash_erase_sector(unsigned long addr);
+_attribute_text_code_ void flash_erase_sector(unsigned long addr);
 
 /**
  * @brief This function serves to erase a block(32k).
@@ -154,10 +154,10 @@ _attribute_ram_code_ void flash_erase_64kblock(unsigned int addr);
  * @param[in] addr - the start address of the page needs to erase.
  * @return    none
  */
-_attribute_ram_code_ void flash_erase_chip(void);
+_attribute_text_code_ void flash_erase_chip(void);
 
 
-_attribute_ram_code_ unsigned int flash_get_jedec_id(void);
+_attribute_text_code_ unsigned int flash_get_jedec_id(void);
 /**
  * @brief This function writes the buffer's content to a page.
  * @param[in]   addr the start address of the page
@@ -165,7 +165,7 @@ _attribute_ram_code_ unsigned int flash_get_jedec_id(void);
  * @param[in]   buf the start address of the content needs to write into
  * @return none
  */
-_attribute_ram_code_ void flash_write_page(unsigned long addr, unsigned long len, unsigned char *buf);
+_attribute_text_code_ void flash_write_page(unsigned long addr, unsigned long len, unsigned char *buf);
 
 /**
  * @brief This function reads the content from a page to the buf.
@@ -174,7 +174,7 @@ _attribute_ram_code_ void flash_write_page(unsigned long addr, unsigned long len
  * @param[out]  buf the start address of the buffer
  * @return none
  */
-_attribute_ram_code_ void flash_read_page(unsigned long addr, unsigned long len, unsigned char *buf);
+_attribute_text_code_ void flash_read_page(unsigned long addr, unsigned long len, unsigned char *buf);
 
 /**
  * @brief This function write the status of flash.

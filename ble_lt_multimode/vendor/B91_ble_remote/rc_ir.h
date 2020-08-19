@@ -23,15 +23,19 @@
 #ifndef RC_IR_H_
 #define RC_IR_H_
 
-
-
-#define CLOCK_APB_CLOCK_HZ              24000000
+#define PWM_CLK_SPEED					1000000 //pwm clock 1M.
 #define IR_CARRIER_FREQ					38000  	// 1 frame -> 1/38k -> 1000/38 = 26 us
-#define PWM_CARRIER_CYCLE_TICK			( CLOCK_APB_CLOCK_HZ/IR_CARRIER_FREQ )  //16M: 421 tick, f = 16000000/421 = 38004,T = 421/16=26.3125 us
+#define PWM_CARRIER_CYCLE_TICK			( PWM_CLK_SPEED/IR_CARRIER_FREQ )  //16M: 421 tick, f = 16000000/421 = 38004,T = 421/16=26.3125 us
 #define PWM_CARRIER_HIGH_TICK			( PWM_CARRIER_CYCLE_TICK/3 )   // 1/3 duty
 
 #define PWM_CARRIER_HALF_CYCLE_TICK		(PWM_CARRIER_CYCLE_TICK>>1)
 
+///////////////////PWM Clock  /////////////////////////////////
+enum{
+	CLOCK_PWM_CLOCK_1S  = PWM_CLK_SPEED,
+	CLOCK_PWM_CLOCK_1MS = (CLOCK_PWM_CLOCK_1S / 1000),
+	CLOCK_PWM_CLOCK_1US = (CLOCK_PWM_CLOCK_1S / 1000000),
+};
 
 #define IR_HIGH_CARR_TIME			565			// in us
 #define IR_HIGH_NO_CARR_TIME		1685

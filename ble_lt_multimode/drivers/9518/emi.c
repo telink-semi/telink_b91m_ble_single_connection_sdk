@@ -56,7 +56,7 @@ void rf_set_power_level_index_singletone (rf_power_level_e level)
  */
 void rf_emi_single_tone(rf_power_level_e power_level,signed char rf_chn)
 {
-	rf_set_channel(rf_chn);//set freq
+	rf_set_chn(rf_chn);//set freq
 	rf_set_power_level_index_singletone(power_level);
 	rf_set_txmode();
 }
@@ -105,7 +105,7 @@ void rf_emi_tx_continue_setup(rf_mode_e rf_mode,rf_power_level_e power_level,sig
 {
 	rf_drv_init(rf_mode);     // RF_MODE_BLE_1M
 	rf_pn_disable();
-	rf_set_channel(rf_chn);
+	rf_set_chn(rf_chn);
 	reg_rf_ll_ctrl0 = 0x45;   // tx_en
 	rf_set_power_level_index_singletone (power_level);
 	rf_continue_mode_setup();
@@ -165,7 +165,7 @@ void rf_emi_rx(rf_mode_e mode,signed char rf_chn)
 	rf_drv_init(mode);
 	rf_set_rx_dma(emi_rx_packet,3,64);
 	rf_pn_disable();
-	rf_set_channel(rf_chn);//set freq
+	rf_set_chn(rf_chn);//set freq
 	if(mode != RF_MODE_ZIGBEE_250K)
 		write_reg32(ACCESS_ADDR,ACCESS_CODE); 	//accesscode: 1001-0100 1000-0010 0110-1110 1000-1110   29 41 76 71
 	write_reg8 (ACCLEN_ADDR, read_reg8(ACCLEN_ADDR)|0x80); //trig accesscode
@@ -379,14 +379,14 @@ void rf_emi_tx_burst_setup(rf_mode_e rf_mode,rf_power_level_e power_level,signed
 	unsigned char tx_data = 0;
 	write_reg8(0x10083c,0x10); // print buffer size set
 	rf_set_tx_dma(2,2);
-	rf_set_channel(rf_chn);
+	rf_set_chn(rf_chn);
 	rf_drv_init(rf_mode);
 	if(rf_mode != RF_MODE_ZIGBEE_250K)
 		write_reg32(ACCESS_ADDR,ACCESS_CODE); 	//accesscode: 1001-0100 1000-0010 0110-1110 1000-1110   29 41 76 71
 	write_reg8 (ACCLEN_ADDR, read_reg8(ACCLEN_ADDR)|0x80); //trig accesscode
 
 	rf_pn_disable();
-	rf_set_power_level_index (power_level);
+	rf_set_power_level (power_level);
 	if(pkt_type == 1)
 	{
 		tx_data = 0x0f;

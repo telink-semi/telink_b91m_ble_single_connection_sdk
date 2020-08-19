@@ -243,7 +243,7 @@ extern "C" {
 	#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
 
 	//Clock
-	#define CLOCK_SYS_CLOCK_HZ  			48000000
+	#define CLOCK_SYS_CLOCK_HZ  			16000000
 
 	#ifndef UART_PRINT_DEBUG_ENABLE
 	#define UART_PRINT_DEBUG_ENABLE  				1
@@ -256,7 +256,7 @@ extern "C" {
 
 /////////////////// Clock  /////////////////////////////////
 #ifndef CLOCK_SYS_CLOCK_HZ
-#define CLOCK_SYS_CLOCK_HZ  	24000000
+#define CLOCK_SYS_CLOCK_HZ  	16000000
 #endif
 
 enum{

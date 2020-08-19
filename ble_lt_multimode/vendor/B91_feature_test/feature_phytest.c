@@ -86,7 +86,7 @@ void  func_suspend_enter (u8 e, u8 *p, int n)
 	AA_dbg_suspend ++;
 }
 
-#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
+#define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {

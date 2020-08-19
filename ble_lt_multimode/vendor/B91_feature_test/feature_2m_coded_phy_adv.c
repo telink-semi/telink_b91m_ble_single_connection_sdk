@@ -112,7 +112,7 @@ _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 #if (MCU_CORE_TYPE == MCU_CORE_8278)
 	rf_set_power_level_index (RF_POWER_P3p50dBm);
 #else
-	rf_set_power_level_index (RF_POWER_P3p11dBm);
+	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 #endif
 }
 
@@ -161,7 +161,7 @@ void feature_2m_coded_phy_adv_init_normal(void)
 #if (MCU_CORE_TYPE == MCU_CORE_8278)
 	rf_set_power_level_index (RF_POWER_P3p50dBm);
 #else
-	rf_set_power_level_index (RF_POWER_P3p11dBm);
+	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 #endif
 
 	//blc_ll_setMaxAdvDelay_for_AdvEvent(0);  //no ADV random delay, for debug
@@ -390,7 +390,7 @@ _attribute_ram_code_ void feature_2m_coded_phy_adv_init_deepRetn(void)
 #if (MCU_CORE_TYPE == MCU_CORE_8278)
 	rf_set_power_level_index (RF_POWER_P3p50dBm);
 #else
-	rf_set_power_level_index (RF_POWER_P3p11dBm);
+	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 #endif
 
 	blc_ll_recoverDeepRetention();

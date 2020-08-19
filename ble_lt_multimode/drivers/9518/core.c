@@ -31,15 +31,10 @@
  * This macro must be used when the initialization phase is over and the interrupts
  * can start being handled by the system.
  */
- void core_enable_interrupt(void)
+ _attribute_ram_code_ void core_enable_interrupt(void)
 {
 	set_csr(NDS_MSTATUS,1<<3);
 	set_csr(NDS_MIE,1<<11 | 1 << 7 | 1 << 3);
-#if (SUPPORT_PFT_ARCH)
-	plic_set_feature(FLD_FEATURE_PREEMPT_PRIORITY_INT_EN | FLD_FEATURE_VECTOR_MODE_EN);//enable vectored in PLIC
-#else
-	plic_set_feature(FLD_FEATURE_VECTOR_MODE_EN);//enable vectored in PLIC
-#endif
 }
 
 

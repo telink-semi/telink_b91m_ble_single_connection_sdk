@@ -54,7 +54,7 @@ _attribute_ram_code_ void app_rf_pa_handler(int type)
 void rf_pa_init(void)
 {
 #if(PA_ENABLE)
-    rf_set_power_level_index (RF_POWER_P0p01dBm);
+    rf_set_power_level_index (RF_POWER_INDEX_P0p01dBm);
     gpio_set_func(PA_TXEN_PIN, AS_GPIO);
     gpio_set_output_en(PA_TXEN_PIN, 0);
     gpio_write(PA_TXEN_PIN, 0);

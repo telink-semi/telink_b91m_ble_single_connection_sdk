@@ -44,7 +44,7 @@
 #define 	MY_ADV_INTERVAL_MIN					ADV_INTERVAL_30MS
 #define 	MY_ADV_INTERVAL_MAX					ADV_INTERVAL_35MS
 
-#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
+#define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
 #define		BLE_DEVICE_ADDRESS_TYPE 			BLE_DEVICE_ADDRESS_PUBLIC
 
@@ -141,7 +141,7 @@ void 	ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 {
-	//rf_set_power_level_index (MY_RF_POWER_INDEX);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
 void	task_connect (u8 e, u8 *p, int n)

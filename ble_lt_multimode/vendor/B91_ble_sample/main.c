@@ -34,6 +34,7 @@
 #include "stack/ble/ble.h"
 #include "app_att.h"
 
+extern void user_init_deepRetn();
 extern void user_init_normal();
 extern void main_loop (void);
 
@@ -79,21 +80,37 @@ void stimer_irq_handler(void)
  * @param[in]	none
  * @return      none
  */
-int main (void)   //must on ramcode
+_attribute_ram_code_ int main (void)   //must on ramcode
 {
+	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
 
 	cpu_wakeup_init(LDO_MODE);
 
 	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
 
-	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV8_TO_CCLK,CCLK_DIV1_TO_HCLK, HCLK_DIV1_TO_PCLK,PLL_DIV4_TO_MSPI_CLK);
+#if (CLOCK_SYS_CLOCK_HZ == 16000000)
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV12_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV1_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
+#elif (CLOCK_SYS_CLOCK_HZ == 24000000)
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV8_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV1_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
+#elif (CLOCK_SYS_CLOCK_HZ == 32000000)
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV6_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV2_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
+#elif (CLOCK_SYS_CLOCK_HZ == 48000000)
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV4_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV2_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
+#elif (CLOCK_SYS_CLOCK_HZ == 64000000)
+	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV3_TO_CCLK, CCLK_DIV2_TO_HCLK,  HCLK_DIV2_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
+#endif
 
 	rf_drv_init(RF_MODE_BLE_1M);
 
-	gpio_init(1);
+	gpio_init(!deepRetWakeUp);
 
-	user_init_normal();
+	if( deepRetWakeUp ){
+		user_init_deepRetn ();
+	}
+	else{
+		user_init_normal();
+	}
 
 	irq_enable();
 

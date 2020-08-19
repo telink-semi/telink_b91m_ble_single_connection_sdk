@@ -26,10 +26,13 @@
 
 
 
+#if APPLICATION_DONGLE
 void	att_keyboard (u16 conn, u8 *p);
 void	att_keyboard_media (u16 conn, u8 *p);
+void	att_mic (u16 conn, u8 *p);
 void 	att_mouse(u16 conn, u8 *p);
 
 void host_att_data_clear(void);
+#endif
 
 #endif /* BLM_ATT_H_ */

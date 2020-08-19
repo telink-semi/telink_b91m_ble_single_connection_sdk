@@ -31,7 +31,7 @@
 #define PM_LONG_SUSPEND_EN					0
 
 #ifndef PM_TIM_RECOVER_MODE
-#define PM_TIM_RECOVER_MODE			    	0
+#define PM_TIM_RECOVER_MODE			    	1
 #endif
 
 
@@ -44,25 +44,25 @@
  * 	      Reset these analog registers only by power cycle
  */
 
-#define DEEP_ANA_REG0                       0x3a //initial value =0x00
-#define DEEP_ANA_REG1                       0x3b //initial value =0x00
-#define DEEP_ANA_REG2                       0x3c //initial value =0x0f
+#define DEEP_ANA_REG0                       0x3d //initial value =0x00
+#define DEEP_ANA_REG1                       0x3e //initial value =0x00
+#define DEEP_ANA_REG2                       0x3f //initial value =0x0f
 
 /**
  * @brief these analog register can store data in deepsleep mode or deepsleep with SRAM retention mode.
  * 	      Reset these analog registers by watchdog, chip reset, RESET Pin, power cycle
  */
 
-#define DEEP_ANA_REG6                       0x35 //initial value =0x20
-#define DEEP_ANA_REG7                       0x36 //initial value =0x00
-#define DEEP_ANA_REG8                       0x37 //initial value =0x00
-#define DEEP_ANA_REG9                       0x38 //initial value =0x00
-#define DEEP_ANA_REG10                      0x39 //initial value =0xff
+#define DEEP_ANA_REG6                       0x38 //initial value =0xff
+#define DEEP_ANA_REG7                       0x39 //initial value =0x00
+#define DEEP_ANA_REG8                       0x3a //initial value =0x00
+#define DEEP_ANA_REG9                       0x3b //initial value =0x00
+#define DEEP_ANA_REG10                      0x3c //initial value =0x00
 
 
 #define SYS_NEED_REINIT_EXT32K			    BIT(0)
 
-//ana3b system used, user can not use
+//ana3e system used, user can not use
 #define SYS_DEEP_ANA_REG 					DEEP_ANA_REG1
 
 #define	ZB_POWER_DOWN						1 //weather to power down the RF before suspend
@@ -180,6 +180,8 @@ extern  suspend_handler_t 		 func_before_suspend;
 
 typedef void (*check_32k_clk_handler_t)(void);
 extern  check_32k_clk_handler_t  pm_check_32k_clk_stable;
+typedef unsigned int (*pm_get_32k_clk_handler_t)(void);
+extern  pm_get_32k_clk_handler_t	pm_get_32k_tick;
 
 void pm_set_wakeup_time_param(g_pm_rx_delay_cycle_s param);
 
@@ -241,14 +243,6 @@ void cpu_set_mdec_value_wakeup(unsigned char value);
  */
 
 void start_reboot(void);
-
-/**
- * @brief   This function serves to get the 32k tick.
- * @param   none
- * @return  tick of 32k .
- */
-
-extern unsigned int pm_get_32k_tick(void);
 
 /**
  * @brief   This function serves to wake up cpu from stall mode by timer0.
@@ -317,7 +311,13 @@ typedef unsigned int (*pm_tim_recover_handler_t)(unsigned int);
 
 extern  pm_tim_recover_handler_t pm_tim_recover;
 
+/**
+ * @brief   This function serves to get the 32k tick.
+ * @param   none
+ * @return  tick of 32k .
+ */
 
+extern unsigned int get_32k_tick(void);
 /**
  * @brief      This function serves to set the working mode of MCU based on 32k crystal,e.g. suspend mode, deepsleep mode, deepsleep with SRAM retention mode and shutdown mode.
  * @param[in]  sleep_mode - sleep mode type select.
@@ -365,7 +365,7 @@ static inline void blc_pm_select_external_32k_crystal(void)
 	cpu_sleep_wakeup 	 	= cpu_sleep_wakeup_32k_xtal;
 	pm_check_32k_clk_stable = check_32k_clk_stable;
 	pm_tim_recover		 	= pm_tim_recover_32k_xtal;
-
+	pm_get_32k_tick 		= get_32k_tick;
 	blt_miscParam.pad32k_en 	= 1; // set '1': 32k clk src use external 32k crystal
 }
 
@@ -377,7 +377,7 @@ extern  unsigned int 			tick_32k_cur;
 extern  unsigned char       	pm_long_suspend;
 extern  unsigned int 			tl_multi_addr;
 
-void sleep_start(void);
+void pm_sleep_start(void);
 
 unsigned int  pm_get_info0(void);
 

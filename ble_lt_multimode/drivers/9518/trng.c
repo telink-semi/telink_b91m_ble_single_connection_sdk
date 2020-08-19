@@ -27,8 +27,8 @@
 #include "trng.h"
 #include "compiler.h"
 
-unsigned int g_rnd_m_w = 0;
-unsigned int g_rnd_m_z = 0;
+_attribute_data_retention_ unsigned int g_rnd_m_w = 0;
+_attribute_data_retention_ unsigned int g_rnd_m_z = 0;
 
 /**
  * @brief     This function performs to get one random number.If chip in suspend TRNG module should be close.

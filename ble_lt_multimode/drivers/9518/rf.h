@@ -1,3 +1,29 @@
+/********************************************************************************************************
+ * @file     rf.h
+ *
+ * @brief    This is the header file for B91
+ *
+ * @author	 Driver Group
+ * @date     May 8, 2018
+ *
+ * @par      Copyright (c) 2018, Telink Semiconductor (Shanghai) Co., Ltd.
+ *           All rights reserved.
+ *
+ *           The information contained herein is confidential property of Telink
+ *           Semiconductor (Shanghai) Co., Ltd. and is available under the terms
+ *           of Commercial License Agreement between Telink Semiconductor (Shanghai)
+ *           Co., Ltd. and the licensee or the terms described here-in. This heading
+ *           MUST NOT be removed from this file.
+ *
+ *           Licensees are granted free, non-transferable use of the information in this
+ *           file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
+ * @par      History:
+ * 			 1.initial release(DEC. 26 2018)
+ *
+ * @version  A001
+ *
+ *******************************************************************************************************/
+
 #ifndef     RF_H
 #define     RF_H
 
@@ -37,7 +63,10 @@ typedef enum {
     RF_RFFE_TX_PE5 = GPIO_PE5
 } rf_pa_tx_pin_e;
 
-
+typedef enum {
+      RF_INTERNAL_CAP_DISABLE = 0,
+      RF_INTERNAL_CAP_ENABLE = 1,
+} rf_InternalCap_e;
 /**
  *  @brief  Define power list of RF
  */
@@ -107,7 +136,19 @@ typedef enum {
 	 RF_POWER_INDEX_N23p54dBm,
 } rf_power_level_index_e;
 
+/*
+ * While rf rx dma fifo is moving data,audio dma fifo is also moving data.
+ * The rx fifo dma length may not be updated, instead, write to other ram addresses.
+ * Result in ble disconnection.
+ * Need to write rx dma write_num_en 0,And use the new crc verification method.
+ */
+#ifndef FIX_RF_DMA_REWRITE
+#define FIX_RF_DMA_REWRITE		1
+#endif
 
+#ifndef RF_RX_DLY_EN
+#define RF_RX_DLY_EN			1
+#endif
 
 #define DMA_RFRX_LEN_HW_INFO				0	// 826x: 8
 #define DMA_RFRX_OFFSET_HEADER				4	// 826x: 12
@@ -128,28 +169,15 @@ typedef enum {
 #define     RF_NRF_ESB_PACKET_LENGTH_OK(p)          (p[0] == (p[4] & 0x3f) + 11)
 #define     RF_NRF_ESB_PACKET_CRC_OK(p)             ((p[p[0]+3] & 0x01) == 0x00)
 #define     RF_NRF_SB_PACKET_CRC_OK(p)              ((p[p[0]+3] & 0x01) == 0x00)
-#define 	reg_rf_irq_mask							REG_ADDR16(0x0140a1c)
 
-#define    tx_tl_ctrl									REG_ADDR8(0x140c9a)
+#if		(FIX_RF_DMA_REWRITE)
+#define		RF_BLE_RF_PAYLOAD_LENGTH_OK(p)			(p[5] <= reg_rf_rxtmaxlen)
+#define		RF_BLE_RF_PACKET_CRC_OK(p)				((p[p[5]+5+11] & 0x01) == 0x0)
+#endif
 
-#define TCMD_UNDER_BOTH			0xc0
-#define TCMD_UNDER_RD			0x80
-#define TCMD_UNDER_WR			0x40
 
-#define TCMD_MASK				0x3f
 
-#define TCMD_WRITE				0x3
-#define TCMD_WAIT				0x7
-#define TCMD_WAREG				0x8
 
-/**
- *  command table for special registers
- */
-typedef struct tbl_cmd_set_st {
-	unsigned int  	ADR;
-	unsigned char	DAT;
-	unsigned char	CMD;
-} tbl_cmd_set_st;
 
 /**
  *  @brief  Define RF mode
@@ -197,7 +225,7 @@ typedef enum {
  * @return     number of commands are carried out
  */
 
-extern int rf_loadtbl_cmd_set_st(const tbl_cmd_set_st * pt, int size);
+extern int write_reg_table(const tbl_cmd_set_st * pt, int size);
 
 
 /**
@@ -208,6 +236,38 @@ extern int rf_loadtbl_cmd_set_st(const tbl_cmd_set_st * pt, int size);
 
 extern void rf_drv_init (rf_mode_e rf_mode);
 
+/**
+*	@brief	  	This function serves to start Rx of auto mode. In this mode,
+*				RF module stays in Rx status until a packet is received or it fails to receive packet when timeout expires.
+*				Timeout duration is set by the parameter "tick".
+*				The address to store received data is set by the function ¡°addr¡±.
+*	@param[in]	addr - The address to store received data.
+*	@param[in]	tick - Unit is us. It indicates timeout duration in Rx status.Max value: 0xffffff (16777215)
+*	@return	 	none
+*/
+extern void rf_start_brx  (void* addr, unsigned int tick);
+
+
+/**
+*	@brief	  	This function serves to start tx of auto mode. In this mode,
+*				RF module stays in tx status until a packet is sent or it fails to sent packet when timeout expires.
+*				Timeout duration is set by the parameter "tick".
+*				The address to store send data is set by the function ¡°addr¡±.
+*	@param[in]	addr - The address to store send data.
+*	@param[in]	tick - Unit is us. It indicates timeout duration in Rx status.Max value: 0xffffff (16777215)
+*	@return	 	none
+*/
+extern void rf_start_btx (void* addr, unsigned int tick);
+
+
+/**
+*	@brief	  	This function serves to set pin for RFFE of RF
+*   @param[in]     tx_pin - select pin to send
+*   @param[in]      rx_pin - select pin to receive
+*	@return	 	none
+*
+*/
+extern void rf_rffe_set_pin(rf_pa_tx_pin_e tx_pin, rf_lna_rx_pin_e rx_pin);
 
 
 /**
@@ -215,7 +275,7 @@ extern void rf_drv_init (rf_mode_e rf_mode);
  * @param   none.
  * @return  none.
  */
-static inline unsigned char rf_is_rf_receiving_pkt(void)
+static inline unsigned char rf_is_receiving_pkt(void)
 {
 	//if the value of [2:0] of the reg_0x140840 isn't 0 , it means that the RF is in the receiving packet phase.(confirmed by junwen)
 	return ((read_reg8(0x140840)&0x07) != 0);//todo
@@ -229,10 +289,6 @@ static inline void rf_set_irq_mask(u16 mask)
 {
 	BM_SET(reg_rf_irq_mask,mask);
 }
-
-	#define			RF_FAST_MODE			1
-	#define			RF_TRX_MODE				0x80
-	#define			RF_TRX_OFF				0x45		//f02
 
 
 /**
@@ -268,93 +324,16 @@ static inline void rf_clr_irq_status(u16 mask)
 {
 	 BM_SET(reg_rf_irq_status, mask);
 }
+
 /**
  * @brief   This function serves to settle adjust for RF Tx.
  * @param   txstl_us - adjust TX settle time.
  * @return  none
  */
-static inline void 	tx_settle_adjust(unsigned short txstl_us)
+static inline void 	rf_tx_settle_adjust(unsigned short txstl_us)
 {
 	REG_ADDR16(0x80140a04) = txstl_us;
 }
-/**
-*	@brief     This function serves to set RF tx DMA setting
-*	@param[in] fifo_dep -tx chn deep.
-*	@param[in] fifo_byte_size -tx_idx_addr = {tx_chn_adr*bb_tx_size,4'b0}
-*	@return	   none.
-*/
-void rf_set_tx_dma(unsigned char fifo_depth,unsigned char fifo_byte_size);
-
-/**
-*	@brief     This function serves to srx dma setting
-*	@param[in] buff -DMA rx buffer.
-*	@param[in] fifo_dep -rx chn deep
-*	@param[in] fifo_byte_size -rx_idx_addr = {tx_chn_adr*bb_tx_size,4'b0}
-*	@return	   none.
-*/
-void rf_set_rx_dma(unsigned char *buff,unsigned char wptr_mask,unsigned char fifo_byte_size);
-
-
-/**
-*	@brief     This function serves to RF trigger stx
-*	@param[in] addr -DMA tx buffer.
-*	@param[in] schedule_mode_en -0:trigger stx immediately,1:trigger stx after tick.
-*	@param[in] tick -Send after tick delay.
-*	@return	   none.
-*/
-void rf_start_stx(void* addr,unsigned char schedule_mode,  unsigned int tick);
-
-void rf_start_stx2rx  (void* addr, unsigned int tick);
-
-/**
-*	@brief     This function serves to trigger srx on
-*	@param[in] addr -DMA rx buffer.
-*	@param[in] schedule_mode_en -0:trigger srx immediately,1:trigger srx after tick.
-*	@param[in] tick -Receive after tick delay.
-*	@return	   none.
-*/
-void rf_start_srx(unsigned char schedule_mode,  unsigned int tick);
-
-
-
-/**
-*	@brief	  	This function serves to get rssi
-*   @param[in]      none
-*	@return	 	none
-*/
-signed char rf_rssi_get_154(void);
-
-/**
- * @brief   This function serves to set RF Rx mode.
- * @param   none.
- * @return  none.
- */
-void rf_set_rxmode(void);
-
-
-//void tx_tp_align(void);
-/**
- * @brief   This function serves to set RF Tx mode.
- * @param   none.
- * @return  none.
- */
-void rf_set_txmode(void);
-
-/**
-*	@brief	  	This function serves to set RF Tx packet.
-*	@param[in]	addr - the address RF to send packet.
-*	@return	 	none.
-*/
-void rf_tx_pkt(void* addr);
-
-/**
-*	@brief	  	This function serves to judge RF Tx/Rx state.
-*	@param[in]	rf_status - Tx/Rx status.
-*	@param[in]	rf_channel - RF channel.
-*	@return	 	failed -1,else success.
-*/
-
-int rf_trx_state_set(rf_status_e rf_status, signed char rf_channel);
 
 /**
  * @brief   This function serves to set RF access command.
@@ -370,21 +349,6 @@ static inline void rf_access_code_comm (unsigned int acc)
 }
 
 /**
- * @brief   This function serves to set RF access command.
- * @param[in]   acc - the command.
- * @return  none.
- */
-static inline void rf_longrange_access_code_comm (unsigned int acc)
-{
-	reg_rf_access_0 = acc & 0xff;
-	reg_rf_access_1 = (acc>>8) & 0xff;
-	reg_rf_access_2 = (acc>>16) & 0xff;
-	reg_rf_access_3 = (acc>>24) & 0xff;//notice: This state will be reset after reset baseband
-
-	reg_rf_modem_mode_cfg_rx1_0 |= FLD_RF_LR_TRIG_MODE;
-}
-
-/**
 *	@brief		this function is to enable/disable each access_code channel for
 *				RF Rx terminal.
 *	@param[in]	pipe  	Bit0~bit5 correspond to channel 0~5, respectively.
@@ -393,83 +357,25 @@ static inline void rf_longrange_access_code_comm (unsigned int acc)
 *						all access_code channels (0~5) are enabled.
 *	@return	 	none
 */
-static inline void rf_rx_acc_code_enable(rf_channel_e pipe)
+static inline void rf_rx_acc_code_pipe_en(rf_channel_e pipe)
 {
     write_reg8(0x140c4d, (read_reg8(0x140c4d)&0xc0) | pipe); //rx_access_code_chn_en
 }
 
 /**
-*	@brief		this function is to select access_code channel for RF Rx terminal.
-*	@param[in]	pipe  	Bit0~bit5 correspond to channel 0~5, respectively.
+*	@brief		this function is to select access_code channel for RF tx terminal.
+*	@param[in]	pipe  	Bit0~bit2 the value correspond to channel 0~5, respectively.
+*						if value > 5 enable channel 5.And only 1 channel can be selected everytime.
 *						0£ºDisable 1£ºEnable
-*						If ¡°enable¡± is set as 0x3f (i.e. 00111111),
-*						all access_code channels (0~5) are enabled.
+*						If ¡°enable¡± is set as 0x7 (i.e. 0111),
+*						the access_code channels (5) are enabled.
 *	@return	 	none
 */
-static inline void rf_tx_acc_code_select(rf_channel_e pipe)
+static inline void rf_tx_acc_code_pipe_en(rf_channel_e pipe)
 {
     write_reg8(0x140a15, (read_reg8(0x140a15)&0xf8) | pipe); //Tx_Channel_man[2:0]
 }
 
-/**
-*	@brief     This function serves to initiate the mode of RF
-*	@param[in] rf_mode  -  mode of RF
-*	@return	   none.
-*/
-
-extern void rf_drv_init (rf_mode_e rf_mode);
-
-/**
- * @brief   	This function serves to set RF baseband channel.
- * @param[in]   chn - channel numbers.
- * @return  	none.
- */
-void rf_set_ble_channel(signed char chn_num);
-
-/**
- * @brief   	This function serves to set RF no pn mode baseband channel.
- * @param[in]   chn - freq_num.
- * @return  	none.
- */
-void rf_set_channel(signed char chn);
-
-/**
- * @brief   	This function serves to set pri sb mode enable.
- * @param[in]   none.
- * @return  	none.
- */
-void rf_private_sb_en(void);
-
-
-/**
- * @brief   	This function serves to set pri sb mode enable.
- * @param[in]   len-packet length.
- * @return  	none.
- */
-void rf_set_private_sb_len(int len);
-
-/**
- * @brief   	This function serves to set zigbee channel.
- * @param[in]   freq-zigbee freq.
- * @return  	none.
- */
-void rf_set_zigbee_chn(unsigned int chn);
-
-/**
- * @brief   	This function serves to disable pn of ble mode.
- * @param[in]   none.
- * @return  	none.
- */
-void rf_pn_disable(void);
-
-/**
- * @brief   	This function serves to get the right fifo packet.
- * @param[in]   fifo_num-the number of fifo set in dma.
- * @param[in]   fifo_dep-deepth of each fifo set in dma.
- * @param[in]   addr-address of rx packet.
- * @return  	the next rx_packet address.
- */
-u8* rf_rx_packet_addr(int fifo_num,int fifo_dep,void* addr);
 /**
 *	@brief     This function serves to reset RF BaseBand
 *	@param[in] none.
@@ -480,16 +386,16 @@ static inline void rf_reset_baseband(void)
 	REG_ADDR8(0x801404e3) = BIT(0);		//rf_reset_baseband
 	REG_ADDR8(0x801404e3) = 0;			//release reset signal
 }
+
 /**
  * @brief   This function serves to reset function for RF.
  * @param   none
  * @return  none
  */
-static inline void reset_sn_nesn(void)
+static inline void rf_reset_sn_nesn(void)
 {
 	REG_ADDR8(0x80140a01) =  0x01;
 }
-
 
 
 /**
@@ -519,6 +425,7 @@ static inline void rf_set_ble_access_code_value (unsigned int ac)
 {
 	write_reg32 (0x80140808, ac);
 }
+
 /**
  * @brief   This function serves to reset RF Tx/Rx mode.
  * @param   none.
@@ -528,8 +435,8 @@ static inline void rf_set_ble_access_code_value (unsigned int ac)
 static inline void rf_set_tx_rx_off(void)
 {
 	write_reg8 (0x80140a16, 0x29);
-	write_reg8 (0x80140828, RF_TRX_MODE);	// rx disable
-	write_reg8 (0x80140a02, RF_TRX_OFF);	// reset tx/rx state machine
+	write_reg8 (0x80140828, 0x80);	// rx disable
+	write_reg8 (0x80140a02, 0x45);	// reset tx/rx state machine
 }
 /**
  * @brief   This function serves to turn off RF auto mode.
@@ -540,24 +447,7 @@ static inline void rf_set_tx_rx_off_auto_mode(void)
 {
 	write_reg8 (0x80140a00, 0x80);
 }
-/**
-*	@brief	  	This function serves to start Rx of auto mode. In this mode,
-*				RF module stays in Rx status until a packet is received or it fails to receive packet when timeout expires.
-*				Timeout duration is set by the parameter "tick".
-*				The address to store received data is set by the function ¡°addr¡±.
-*	@param[in]	addr - The address to store received data.
-*	@param[in]	tick - Unit is us. It indicates timeout duration in Rx status.Max value: 0xffffff (16777215)
-*	@return	 	none
-*/
-extern void rf_start_brx  (void* addr, unsigned int tick);
-extern void rf_start_btx (void* addr, unsigned int tick);
-/**
- * @brief   This function serves to set the max length of rx packet.Use byte_len to limit what DMA
- * moves out will not exceed the buffer size we define.And old chip do this through dma size.
- * @param   maxlen:the longest of rx packet.
- * @return  none.
- */
-void rf_set_rx_maxlen(unsigned int byte_len);
+
 /**
  * @brief     This function performs to enable RF Tx.
  * @param[in] none.
@@ -567,6 +457,269 @@ static inline void rf_ble_tx_on ()
 {
 	write_reg8  (0x80140a02, 0x45 | BIT(4));	// TX enable
 }
+
+/**
+ * @brief     This function performs to done RF Tx.
+ * @param[in] none.
+ * @return    none.
+ */
+static inline void rf_ble_tx_done ()
+{
+	write_reg8  (0x80140a02, 0x45);
+}
+
+/**
+*	@brief     This function serves to initiate information of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_mode_init(void);
+
+/**
+*	@brief     This function serves to  set ble_1M  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_ble_1M_mode(void);
+
+/**
+*	@brief     This function serves to  set ble_1M_NO_PN  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_ble_1M_NO_PN_mode(void);
+
+/**
+*	@brief     This function serves to  set ble_2M  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_ble_2M_mode(void);
+/**
+*	@brief     This function serves to  set ble_2M_NO_PN  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_ble_2M_NO_PN_mode(void);
+
+/**
+*	@brief     This function serves to  set ble_500K  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_ble_500K_mode(void);
+
+/**
+*	@brief     This function serves to  set zigbee_125K  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_ble_125K_mode(void);
+
+/**
+*	@brief     This function serves to  set zigbee_250K  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_zigbee_250K_mode(void);
+
+/**
+*	@brief     This function serves to  set pri_250K  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_pri_250K_mode(void);
+
+/**
+*	@brief     This function serves to  set pri_500K  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_pri_500K_mode(void);
+
+/**
+*	@brief     This function serves to  set pri_1M  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_pri_1M_mode(void);
+
+/**
+*	@brief     This function serves to  set pri_2M  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_pri_2M_mode(void);
+
+/**
+*	@brief     This function serves to  set hybee_500K  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_hybee_500K_mode(void);
+
+/**
+*	@brief     This function serves to  set hybee_2M  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_aet_hybee_2M_mode(void);
+
+/**
+*	@brief     This function serves to  set hybee_1M  mode of RF
+*	@param[in] none.
+*	@return	   none.
+*/
+void rf_set_hybee_1M_mode(void);
+
+/**
+*	@brief     This function serves to set RF tx DMA setting
+*	@param[in] fifo_dep -tx chn deep.
+*	@param[in] fifo_byte_size -tx_idx_addr = {tx_chn_adr*bb_tx_size,4'b0}
+*	@return	   none.
+*/
+void rf_set_tx_dma(unsigned char fifo_depth,unsigned char fifo_byte_size);
+
+/**
+*	@brief     This function serves to srx dma setting
+*	@param[in] buff -DMA rx buffer.
+*	@param[in] wptr_mask -DMA fifo mask value (0~fif0_num-1)
+*	@param[in] fifo_byte_size -in this setting the max data in one dma buffer
+*	@return	   none.
+*/
+void rf_set_rx_dma(unsigned char *buff,unsigned char wptr_mask,unsigned char fifo_byte_size);
+
+
+
+/**
+*	@brief     This function serves to RF trigger stx
+*	@param[in] addr -DMA tx buffer.
+*	@param[in] schedule_mode_en -0:trigger stx immediately,1:trigger stx after tick.
+*	@param[in] tick -Send after tick delay.
+*	@return	   none.
+*/
+void rf_start_stx(void* addr,unsigned char schedule_mode,  unsigned int tick);
+
+/**
+*	@brief     This function serves to RF trigger stx2rx
+*	@param[in] addr -DMA tx buffer.
+*	@param[in] tick -Send after tick delay.
+*	@return	   none.
+*/
+void rf_start_stx2rx  (void* addr, unsigned int tick);
+
+/**
+*	@brief     This function serves to trigger srx on
+*	@param[in] addr -DMA rx buffer.
+*	@param[in] schedule_mode_en -0:trigger srx immediately,1:trigger srx after tick.
+*	@param[in] tick -Receive after tick delay.
+*	@return	   none.
+*/
+void rf_start_srx(unsigned char schedule_mode,  unsigned int tick);
+
+
+
+/**
+*	@brief	  	This function serves to get rssi
+*   @param[in]      none
+*	@return	 	rssi value
+*/
+signed char rf_get_rssi(void);
+
+/**
+ * @brief   This function serves to set RF Rx mode.
+ * @param   none.
+ * @return  none.
+ */
+void rf_set_rxmode(void);
+
+
+//void tx_tp_align(void);
+/**
+ * @brief   This function serves to set RF Tx mode.
+ * @param   none.
+ * @return  none.
+ */
+void rf_set_txmode(void);
+
+/**
+*	@brief	  	This function serves to set RF Tx packet address to DMA src_addr.
+*	@param[in]	addr - the address of RF to send packet.
+*	@return	 	none.
+*/
+void rf_tx_pkt(void* addr);
+
+/**
+*	@brief	  	This function serves to judge RF Tx/Rx state.
+*	@param[in]	rf_status - Tx/Rx status.
+*	@param[in]	rf_channel - RF channel.
+*	@return	 	failed -1,else success.
+*/
+
+int rf_trx_state_set(rf_status_e rf_status, signed char rf_channel);
+
+
+
+/**
+ * @brief   	This function serves to set RF baseband channel.
+ * @param[in]   chn - channel numbers.
+ * @return  	none.
+ */
+void rf_set_ble_chn(signed char chn_num);
+
+/**
+ * @brief   	This function serves to set RF no pn mode baseband channel.
+ * @param[in]   chn - freq_num.
+ * @return  	none.
+ */
+void rf_set_chn(signed char chn);
+
+/**
+ * @brief   	This function serves to set pri sb mode enable.
+ * @param[in]   none.
+ * @return  	none.
+ */
+void rf_private_sb_en(void);
+
+
+/**
+ * @brief   	This function serves to set pri sb mode enable.
+ * @param[in]   pay_len-packet payload length.
+ * @return  	none.
+ */
+void rf_set_private_sb_len(int pay_len);
+
+/**
+ * @brief   	This function serves to set zigbee channel.
+ * @param[in]   freq-zigbee freq.
+ * @return  	none.
+ */
+void rf_set_zigbee_chn(unsigned int chn);
+
+/**
+ * @brief   	This function serves to disable pn of ble mode.
+ * @param[in]   none.
+ * @return  	none.
+ */
+void rf_pn_disable(void);
+
+/**
+ * @brief   	This function serves to get the right fifo packet.
+ * @param[in]   fifo_num-the number of fifo set in dma.
+ * @param[in]   fifo_dep-deepth of each fifo set in dma.
+ * @param[in]   addr-address of rx packet.
+ * @return  	the next rx_packet address.
+ */
+u8* rf_rx_packet_addr(int fifo_num,int fifo_dep,void* addr);
+
+
+/**
+ * @brief   This function serves to set the max length of rx packet.Use byte_len to limit what DMA
+ * moves out will not exceed the buffer size we define.And old chip do this through dma size.
+ * @param   maxlen:the longest of rx packet.
+ * @return  none.
+ */
+void rf_set_rx_maxlen(unsigned int byte_len);
 
 /**
  * @brief   This function serves to set RF power level.
@@ -582,25 +735,16 @@ void rf_set_power_level (rf_power_level_e level);
  */
 void rf_set_power_level_index(rf_power_level_index_e idx);
 
-
 /**
-*	@brief	  	This function serves to set pin for RFFE of RF
-*   @param[in]     tx_pin - select pin to send
-*   @param[in]      rx_pin - select pin to receive
+*	@brief	  	This function serves to select internal or external cap. if select internal cap
+*	 we can set the internal cap value.
+*   @param[in]  internal_cap_flag - select internal cap or not (0:disable internal cap,1:enable internal cap)
+*   @param[in]  value - set the internal cap value
 *	@return	 	none
 *
 */
-extern void rf_rffe_set_pin(rf_pa_tx_pin_e tx_pin, rf_lna_rx_pin_e rx_pin);
+void rf_internal_cap_select (rf_InternalCap_e internal_cap_flag,unsigned char value);
 
-/**
- * @brief     This function performs to done RF Tx.
- * @param[in] none.
- * @return    none.
- */
-static inline void rf_ble_tx_done ()
-{
-	write_reg8  (0x80140a02, 0x45);
-}
 
 #if 0
 
@@ -687,7 +831,7 @@ extern void rf_set_power_level_index (rf_power_level_e level);
  * @param   set - the value to set.
  * @return  none.
  */
-//extern void rf_set_channel (signed char chn, unsigned short set);
+//extern void rf_set_chn (signed char chn, unsigned short set);
 
 /**
  * @brief   This function serves to set The channel .

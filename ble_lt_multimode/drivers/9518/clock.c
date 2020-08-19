@@ -26,7 +26,7 @@
 
 #include "sys.h"
 #include "clock.h"
-//#include "compiler.h"
+#include "compiler.h"
 //#include "analog.h"
 //#include "gpio.h"
 #include "mspi.h"
@@ -214,7 +214,7 @@ _attribute_ram_code_ unsigned int clock_get_32k_tick (void)
  * @param[in]	mspi_clk_div - mspi_clk has two source. pll div and hclk.mspi max is 64M.
  * @return      none
  */
-void clock_init(sys_pll_clk_e pll,
+_attribute_ram_code_ void clock_init(sys_pll_clk_e pll,
 		sys_clock_src_e src,
 		sys_pll_div_to_cclk_e cclk_div,
 		sys_cclk_div_to_hclk_e hclk_div,
@@ -300,7 +300,6 @@ void clock_init(sys_pll_clk_e pll,
 	if(CCLK_TO_MSPI_CLK == mspi_clk_div){
 		sys_clk.mspi_clk = sys_clk.cclk;
 	}
-
 
 }
 

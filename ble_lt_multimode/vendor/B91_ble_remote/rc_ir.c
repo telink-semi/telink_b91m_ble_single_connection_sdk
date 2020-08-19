@@ -24,7 +24,7 @@
 #include "drivers.h"
 
 #include "rc_ir.h"
-
+#include "app_config.h"
 
 
 #if (REMOTE_IR_ENABLE)
@@ -50,16 +50,13 @@
 #define IR_LOW_NO_CARR_TIME_NEC         560
 
 
-
-#define     PWM_CLK_SPEED				12000000 //pwm clock 12M.
-
 #define     PWM_IR_MAX_NUM              80     //user can define this max number according to application
 
 #define		PWM0_PULSE_NORMAL   		0
 
 #define     PWM_DMA_CHN                 DMA3
 
-#define     PWM_ID						(GET_PWMID(PWM_PWM0_PE3))
+#define     PWM_ID						(GET_PWMID(PWM_PWM0_PC0))
 typedef struct{
     unsigned short data[PWM_IR_MAX_NUM];
     unsigned int   data_num;
@@ -152,6 +149,13 @@ void ir_nec_send(u8 addr1, u8 addr2, u8 cmd)
 	}
 }
 
+void pwm_stop_dma_ir_sending(void)
+{
+	reg_rst0 &= ~FLD_RST0_PWM;
+	sleep_us(20);  //1us <-> 4 byte
+	reg_rst0 |= FLD_RST0_PWM;
+}
+
 int ir_is_sending()
 {
 	if(ir_send_ctrl.is_sending && clock_time_exceed(ir_send_ctrl.sending_start_time, 300*1000))
@@ -166,7 +170,7 @@ int ir_is_sending()
 
 int ir_sending_check(void)
 {
-	u8 r = irq_disable();
+	u32 r = irq_disable();
 	if(ir_is_sending()){
 		irq_restore(r);
 		return 1;
@@ -174,16 +178,10 @@ int ir_sending_check(void)
 	irq_restore(r);
 	return 0;
 }
-void pwm_stop_dma_ir_sending(void)
-{
-	reg_rst0 &= ~FLD_RST0_PWM;
-	sleep_us(20);  //1us <-> 4 byte
-	reg_rst0 |= FLD_RST0_PWM;
-}
 
 void ir_send_release(void)
 {
-	u8 r = irq_disable();
+	u32 r = irq_disable();
 
 	ir_send_ctrl.last_cmd = 0xff;
 
@@ -286,7 +284,7 @@ void rc_ir_irq_prc(void)
 				T_dmaData_buf.data_num = 0;
 
 				u32 tick_2_repeat_sysClockTimer16M = 110*CLOCK_16M_SYS_TIMER_CLK_1MS - (clock_time() - ir_send_ctrl.sending_start_time);
-				u32 tick_2_repeat_sysTimer = (tick_2_repeat_sysClockTimer16M*CLOCK_SYS_CLOCK_1US>>4);
+				u32 tick_2_repeat_sysTimer = (tick_2_repeat_sysClockTimer16M*CLOCK_PWM_CLOCK_1US>>4);
 
 
 				waveform_wait_to_repeat = pwm_cal_pwm0_ir_fifo_cfg_data(tick_2_repeat_sysTimer/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
@@ -339,7 +337,9 @@ void rc_ir_init(void)
 //pwm set
 	pwm_n_invert_en(PWM0_ID);
 
-	pwm_set_pin(PWM_PWM0_PE3);
+	pwm_set_clk(SCLOCK_APB, SCLOCK_32K_PWM0|SCLOCK_32K_PWM2,(unsigned char) (sys_clk.pclk*1000*1000/PWM_CLK_SPEED-1) );
+
+	pwm_set_pin(PWM_PWM0_PC0);
 
     pwm_set_pwm0_mode(PWM_IR_DMA_FIFO_MODE);
 
@@ -348,32 +348,32 @@ void rc_ir_init(void)
     pwm_set_tmax(PWM_ID, PWM_CARRIER_CYCLE_TICK);
 
 //logic_0, 560 us carrier,  560 us low
-	waveform_logic_0_1st = pwm_cal_pwm0_ir_fifo_cfg_data(560 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
-	waveform_logic_0_2nd = pwm_cal_pwm0_ir_fifo_cfg_data(560 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
+	waveform_logic_0_1st = pwm_cal_pwm0_ir_fifo_cfg_data(560 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
+	waveform_logic_0_2nd = pwm_cal_pwm0_ir_fifo_cfg_data(560 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
 
 //logic_1, 560 us carrier,  1690 us low
-	waveform_logic_1_1st = pwm_cal_pwm0_ir_fifo_cfg_data(560 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
-	waveform_logic_1_2nd = pwm_cal_pwm0_ir_fifo_cfg_data(1690 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
+	waveform_logic_1_1st = pwm_cal_pwm0_ir_fifo_cfg_data(560 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
+	waveform_logic_1_2nd = pwm_cal_pwm0_ir_fifo_cfg_data(1690 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
 
 
 //start bit, 9000 us carrier,  4500 us low
-	waveform_start_bit_1st = pwm_cal_pwm0_ir_fifo_cfg_data(9000 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
-	waveform_start_bit_2nd = pwm_cal_pwm0_ir_fifo_cfg_data(4500 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
+	waveform_start_bit_1st = pwm_cal_pwm0_ir_fifo_cfg_data(9000 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
+	waveform_start_bit_2nd = pwm_cal_pwm0_ir_fifo_cfg_data(4500 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
 
 
 //stop bit,  560 us carrier, 500 us low
-	waveform_stop_bit_1st = pwm_cal_pwm0_ir_fifo_cfg_data(560 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
-	waveform_stop_bit_2nd = pwm_cal_pwm0_ir_fifo_cfg_data(500 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
+	waveform_stop_bit_1st = pwm_cal_pwm0_ir_fifo_cfg_data(560 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
+	waveform_stop_bit_2nd = pwm_cal_pwm0_ir_fifo_cfg_data(500 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
 
 
 
 //repeat signal  first part,  9000 us carrier, 2250 us low
-	waveform_repeat_1st = pwm_cal_pwm0_ir_fifo_cfg_data(9000 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
-	waveform_repeat_2nd = pwm_cal_pwm0_ir_fifo_cfg_data(2250 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
+	waveform_repeat_1st = pwm_cal_pwm0_ir_fifo_cfg_data(9000 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
+	waveform_repeat_2nd = pwm_cal_pwm0_ir_fifo_cfg_data(2250 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
 
 //repeat signal  second part,  560 us carrier, 99190 us low(110 ms - 9000us - 2250us - 560us = 99190 us)
-	waveform_repeat_3rd = pwm_cal_pwm0_ir_fifo_cfg_data(560 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
-	waveform_repeat_4th = pwm_cal_pwm0_ir_fifo_cfg_data(99190 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
+	waveform_repeat_3rd = pwm_cal_pwm0_ir_fifo_cfg_data(560 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 1);
+	waveform_repeat_4th = pwm_cal_pwm0_ir_fifo_cfg_data(99190 * CLOCK_PWM_CLOCK_1US/PWM_CARRIER_CYCLE_TICK, PWM0_PULSE_NORMAL, 0);
 
 	ir_send_ctrl.last_cmd = 0xff; //must
 }

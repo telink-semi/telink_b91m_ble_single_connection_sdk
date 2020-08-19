@@ -472,7 +472,7 @@
 
 
 /////////////////// Clock  /////////////////////////////////
-#define CLOCK_SYS_CLOCK_HZ					48000000
+#define CLOCK_SYS_CLOCK_HZ					16000000
 
 
 

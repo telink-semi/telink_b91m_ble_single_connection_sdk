@@ -96,7 +96,7 @@ _attribute_data_retention_	u16 cur_conn_handle;
 
 
 
-#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
+#define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
 
 

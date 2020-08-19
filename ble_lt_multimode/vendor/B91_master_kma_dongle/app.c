@@ -39,11 +39,9 @@
 #include "blm_pair.h"
 #include "blm_host.h"
 #include "blm_ota.h"
-#include "application/audio/tl_audio.h"
-#include "application/audio/audio_config.h"
-#include "app_audio.h"
 
-#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
+
+#define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
 
 #define		BLE_DEVICE_ADDRESS_TYPE 			BLE_DEVICE_ADDRESS_PUBLIC
@@ -66,15 +64,12 @@ void user_init_normal(void)
 	//////////////// config USB ISO IN/OUT interrupt /////////////////
 	reg_usb_mask = BIT(7);			//audio in interrupt enable
 	plic_interrupt_enable(IRQ11_USB_ENDPOINT);
-	plic_set_priority(IRQ11_USB_ENDPOINT,1);//default is 1
+	plic_set_priority(IRQ11_USB_ENDPOINT,1);
 	reg_usb_ep6_buf_addr = 0x80;
 	reg_usb_ep7_buf_addr = 0x60;
 	reg_usb_ep_max_size = (256 >> 3);
 
 	usb_dp_pullup_en (1);  //open USB enum
-
-
-
 
 
 ////////////////// BLE stack initialization ////////////////////////////////////

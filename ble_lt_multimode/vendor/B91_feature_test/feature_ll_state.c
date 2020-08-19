@@ -28,6 +28,7 @@
 #include "application/keyboard/keyboard.h"
 #include "vendor/common/blt_soft_timer.h"
 #include "vendor/common/blt_common.h"
+#include "app_buffer.h"
 
 #if (   FEATURE_TEST_MODE == TEST_ADVERTISING_ONLY || FEATURE_TEST_MODE == TEST_SCANNING_ONLY \
 	 || FEATURE_TEST_MODE == TEST_ADVERTISING_IN_CONN_SLAVE_ROLE \
@@ -37,37 +38,6 @@
 
 #define FEATURE_PM_ENABLE								0
 #define FEATURE_DEEPSLEEP_RETENTION_ENABLE				0
-
-
-#define RX_FIFO_SIZE	64
-#define RX_FIFO_NUM		8
-
-#define TX_FIFO_SIZE	48
-#define TX_FIFO_NUM		16
-
-
-	MYFIFO_INIT(hci_rx_fifo, 72, 2);
-	MYFIFO_INIT(hci_tx_fifo, 72, 8);
-
-
-
-_attribute_data_retention_  u8 		 	blt_rxfifo_b[RX_FIFO_SIZE * RX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_rxfifo = {
-												RX_FIFO_SIZE,
-												RX_FIFO_NUM,
-												0,
-												0,
-												blt_rxfifo_b,};
-
-
-_attribute_data_retention_  u8 		 	blt_txfifo_b[TX_FIFO_SIZE * TX_FIFO_NUM + 1] = {0};
-_attribute_data_retention_	my_fifo_t	blt_txfifo = {
-												TX_FIFO_SIZE,
-												TX_FIFO_NUM,
-												0,
-												0,
-												blt_txfifo_b,};
-
 
 
 
@@ -94,7 +64,7 @@ void  func_suspend_enter (u8 e, u8 *p, int n)
 
 }
 
-#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
+#define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
 
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
@@ -176,11 +146,15 @@ void feature_linklayer_state_test_init_normal(void)
 
 	u8  mac_public[6];
 	u8  mac_random_static[6];
-	//for 512K Flash, flash_sector_mac_address equals to 0x76000
 	//for 1M  Flash, flash_sector_mac_address equals to 0xFF000
-//	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
+	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
+
+
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+
 
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();   //mandatory

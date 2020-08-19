@@ -48,24 +48,24 @@
 
 /////////////////////////////////////////////////////////////////////////////
 
-#if (MCU_CORE_TYPE == MCU_CORE_8278)
+#if RF_RX_DLY_EN//open rx dly
 //TX settle time
 
-#define			LL_ADV_TX_SETTLE				81
-#define 		LL_SCAN_TX_SETTLE				62
-#define 		LL_SLAVE_TX_SETTLE				82
-#define 		LL_MASTER_TX_SETTLE				83
+#define			LL_ADV_TX_SETTLE				84
+#define 		LL_SCAN_TX_SETTLE				63
+#define 		LL_SLAVE_TX_SETTLE				86
+#define 		LL_MASTER_TX_SETTLE				87
 
-#define			LL_ADV_TX_STL_2M				87
-#define			LL_ADV_TX_STL_CODED				119
+#define			LL_ADV_TX_STL_2M				84
+#define			LL_ADV_TX_STL_CODED				116
 
-#define 		LL_SLAVE_TX_STL_2M				89
-#define 		LL_SLAVE_TX_STL_CODED			121
+#define 		LL_SLAVE_TX_STL_2M				86
+#define 		LL_SLAVE_TX_STL_CODED			118
 
-#define			LL_MASTER_TX_STL_2M				90
-#define			LL_MASTER_TX_STL_CODED			122
+#define			LL_MASTER_TX_STL_2M				86
+#define			LL_MASTER_TX_STL_CODED			119
 
-#else
+#else// close rx dly
 //TX settle time
 #define			LL_ADV_TX_SETTLE				79
 #define 		LL_SCAN_TX_SETTLE				56
@@ -288,10 +288,6 @@ extern u32			 blc_tlkEvent_pending;
 
 
 
-
-#define write_sram8(addr,v)				(*(volatile unsigned char*)(0 | (addr)) = (unsigned char)(v))
-#define write_sram16(addr,v)			(*(volatile unsigned short*)(0 | (addr)) = (unsigned short)(v))
-#define write_sram32(addr,v)			(*(volatile unsigned long*)(0 | (addr)) = (unsigned long)(v))
 
 
 

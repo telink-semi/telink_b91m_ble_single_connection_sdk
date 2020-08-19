@@ -160,7 +160,8 @@ enum{
 #define    reg_rf_access_11		    REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x19)
 #define    reg_rf_access_12		    REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x1a)
 #define    reg_rf_access_13		    REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x1b)
-
+#define    access_code_base_pipe0   REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x08)
+#define    access_code_base_pipe2   REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x18)
 
 #define    reg_rf_txfifo		    REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x1c)
 enum{
@@ -573,7 +574,7 @@ enum{
 #define    reg_rf_ll_cmd_schedule3  REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1b)
 #define    reg_rf_ll_irq_mask_l     REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1c)
 #define    reg_rf_ll_irq_mask_h     REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1d)
-
+#define 	reg_rf_irq_mask			REG_ADDR16(REG_BB_LL_BASE_ADDR+0x1c)
 
 #define    reg_rf_ll_tx_id          REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1e)
 enum{

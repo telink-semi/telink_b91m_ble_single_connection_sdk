@@ -55,6 +55,8 @@
 #define _attribute_ram_code_      __attribute__((section(".ram_code"))) __attribute__((noinline))
 #define _attribute_ram_code_without_oninline      __attribute__((section(".ram_code")))
 
+#define _attribute_text_code_      __attribute__((section(".text")))
+
 /// define the static keyword for this compiler
 #define __STATIC static
 

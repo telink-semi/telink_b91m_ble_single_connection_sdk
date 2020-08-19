@@ -127,7 +127,7 @@ void	task_dle_exchange (u8 e, u8 *p, int n)
 }
 
 
-#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
+#define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
 
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
@@ -345,7 +345,7 @@ void feature_sdle_test_mainloop(void)
 	}
 
 
-	if(dle_started_flg && clock_time_exceed(app_test_data_tick, 5000000)){
+	if(dle_started_flg && clock_time_exceed(app_test_data_tick, 3330000)){
 		if(BLE_SUCCESS == blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, SPP_SERVER_TO_CLIENT_DP_H, &app_test_data[0], MTU_SIZE_SETTING-3))
 		{
 			app_test_data_tick = clock_time() | 1;

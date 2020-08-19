@@ -97,6 +97,19 @@ _START:
 
     /* Enable vectored external plic interrupt */
     csrsi  mmisc_ctl, 2
+/*
+*#if (SUPPORT_PFT_ARCH)
+*	plic_set_feature(FLD_FEATURE_PREEMPT_PRIORITY_INT_EN | FLD_FEATURE_VECTOR_MODE_EN);//enable vectored in PLIC
+*   =(0xe4000000))= 0x03
+*#else
+*	plic_set_feature(FLD_FEATURE_VECTOR_MODE_EN);//enable vectored in PLIC
+*	=(0xe4000000))= 0x02
+*#endif
+*/
+	/*vector mode enable bit (VECTORED) of the Feature Enable Register */
+    lui		t0, 0xe4000
+	li		t1, 0x03
+	sw		t1, 0x0(t0)		 //(*(volatile unsigned long*)(0xe4000000))= 0x02
 
     /* Enable I/D-Cache */
     csrr   t0,  mcache_ctl
@@ -264,6 +277,20 @@ _ISTART:
 
     /* Enable vectored external plic interrupt */
     csrsi  mmisc_ctl, 2
+
+/*
+*#if (SUPPORT_PFT_ARCH)
+*	plic_set_feature(FLD_FEATURE_PREEMPT_PRIORITY_INT_EN | FLD_FEATURE_VECTOR_MODE_EN);//enable vectored in PLIC
+*   =(0xe4000000))= 0x03
+*#else
+*	plic_set_feature(FLD_FEATURE_VECTOR_MODE_EN);//enable vectored in PLIC
+*	=(0xe4000000))= 0x02
+*#endif
+*/
+	/*vector mode enable bit (VECTORED) of the Feature Enable Register */
+    lui		t0, 0xe4000
+	li		t1, 0x03
+	sw		t1, 0x0(t0)		 //(*(volatile unsigned long*)(0xe4000000))= 0x03
 
     /* Enable I/D-Cache */
     csrr   t0,  mcache_ctl

@@ -39,7 +39,7 @@
 
 
 
-#define		MY_RF_POWER_INDEX					RF_POWER_P4p35dBm
+#define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
 
 #define		BLE_DEVICE_ADDRESS_TYPE 			BLE_DEVICE_ADDRESS_PUBLIC
@@ -100,7 +100,8 @@ _attribute_data_retention_	u32	latest_user_event_tick;
 
 
 #if (UI_KEYBOARD_ENABLE)
-
+extern u32	scan_pin_need;
+extern int 	key_not_released;
 
 	void proc_keyboard (u8 e, u8 *p, int n);
 
@@ -234,8 +235,9 @@ void blt_pm_proc(void)
 
 #if(BLE_APP_PM_ENABLE)
 
-
-	#if (PM_DEEPSLEEP_RETENTION_ENABLE)
+	#if PM_NO_SUSPEND_ENABLE
+		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
+	#elif (PM_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 	#else
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
@@ -244,7 +246,7 @@ void blt_pm_proc(void)
 
 
 	//do not care about keyScan/button_detect power here, if you care about this, please refer to "8258_ble_remote" demo
-	#if (UI_KEYBOARD_ENABLE)
+	#if (!TEST_CONN_CURRENT_ENABLE && UI_KEYBOARD_ENABLE)
 		if(scan_pin_need || key_not_released)
 		{
 			bls_pm_setSuspendMask (SUSPEND_DISABLE);
@@ -255,7 +257,7 @@ void blt_pm_proc(void)
 
 
 
-	#if (!TEST_CONN_CURRENT_ENABLE)   //test connection power, should disable deepSleep
+	#if 0//(!TEST_CONN_CURRENT_ENABLE)   //test connection power, should disable deepSleep
 			if(sendTerminate_before_enterDeep == 2){  //Terminate OK
 				analog_write_reg8(USED_DEEP_ANA_REG, analog_read_reg8(USED_DEEP_ANA_REG) | CONN_DEEP_FLG);
 				cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepSleep
@@ -295,7 +297,7 @@ void user_init_normal(void)
 {
 	//random number generator must be initiated here( in the beginning of user_init_nromal)
 	//when deepSleep retention wakeUp, no need initialize again
-//	random_generator_init();  //this is must
+	random_generator_init();  //this is must
 
 
 
@@ -402,17 +404,39 @@ void user_init_normal(void)
 	bls_app_registerEventCallback (BLT_EV_FLAG_TERMINATE, &task_terminate);
 	bls_app_registerEventCallback (BLT_EV_FLAG_SUSPEND_EXIT, &user_set_rf_power);
 
+	///////////////////// Power Management initialization///////////////////
+#if(BLE_APP_PM_ENABLE)
+	blc_ll_initPowerManagement_module();
+
+	#if PM_NO_SUSPEND_ENABLE
+		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
+		blc_pm_setDeepsleepRetentionThreshold(3, 3);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 420 : 440);
+	#elif (PM_DEEPSLEEP_RETENTION_ENABLE)
+		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
+		blc_pm_setDeepsleepRetentionThreshold(95, 95);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 220 : 240);
+		//blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW32K); //default use 16k deep retention
+	#else
+		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
+	#endif
+
+	bls_app_registerEventCallback (BLT_EV_FLAG_SUSPEND_ENTER, &ble_remote_set_sleep_wakeup);
+#else
+	bls_pm_setSuspendMask (SUSPEND_DISABLE);
+#endif
+
 
 
 #if (UI_KEYBOARD_ENABLE)
 	/////////// keyboard gpio wakeup init ////////
-//	u32 pin[] = KB_DRIVE_PINS;
-//	for (int i=0; i<(sizeof (pin)/sizeof(*pin)); i++)
-//	{
-//		cpu_set_gpio_wakeup (pin[i], Level_High,1);  //drive pin pad high wakeup deepsleep
-//	}
-//
-//	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboard);
+	u32 pin[] = KB_DRIVE_PINS;
+	for (int i=0; i<(sizeof (pin)/sizeof(*pin)); i++)
+	{
+		cpu_set_gpio_wakeup (pin[i], Level_High,1);  //drive pin pad high wakeup deepsleep
+	}
+
+	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboard);
 #elif (UI_BUTTON_ENABLE)
 
 	cpu_set_gpio_wakeup (SW1_GPIO, Level_Low,1);  //button pin pad low wakeUp suspend/deepSleep
@@ -425,9 +449,6 @@ void user_init_normal(void)
 //	advertise_begin_tick = clock_time();
 
 
-
-
-//	blc_ll_setAdvCustomedChannel( 37, 37, 37);  //debug
 
 
 #if (UDB_DEBUG_EN)
@@ -446,13 +467,10 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 
 	blc_ll_initBasicMCU();   //mandatory
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
-
 	blc_ll_recoverDeepRetention();
 
 	DBG_CHN0_HIGH;    //debug
-
 	irq_enable();
-
 	#if (UI_KEYBOARD_ENABLE)
 		/////////// keyboard gpio wakeup init ////////
 		u32 pin[] = KB_DRIVE_PINS;
@@ -476,7 +494,6 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 
 void main_loop (void)
 {
-
 	////////////////////////////////////// BLE entry /////////////////////////////////
 	blt_sdk_main_loop();
 
@@ -495,7 +512,6 @@ void main_loop (void)
 				proc_button(0, 0, 0);  //button triggers pair & unpair  and OTA
 			}
 	#endif
-
 
 	////////////////////////////////////// PM Process /////////////////////////////////
 	#if (UI_KEYBOARD_ENABLE)

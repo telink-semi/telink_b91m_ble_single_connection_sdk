@@ -89,7 +89,7 @@ static inline void blc_app_setExternalCrystalCapEnable(u8  en)
 {
 	blt_miscParam.ext_cap_en = en;
 
-	WriteAnalogReg(0x8a,ReadAnalogReg(0x8a)|0x80);//close internal cap
+	analog_write_reg8(0x8a,analog_read_reg8(0x8a)|0x80);//close internal cap
 
 }
 

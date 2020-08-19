@@ -216,7 +216,7 @@ static inline void	blt_restore_snnesn()
 
 /////////////////////// DMA Tx fifo rptr /////////////////////////////////////////////
 extern 	u8 blt_dma_tx_rptr;
-
+extern 	u8 blt_dma_tx_wptr;
 static inline void	blt_save_dma_tx_rptr()
 {
 	//TX Fifo: 0x100501[0:4] means rptr, 0 ~ 31
@@ -227,6 +227,28 @@ static inline void	blt_restore_dma_tx_rptr()
 {
 	//pay attention: FLD_DMA_RPTR_SET
 	reg_dma_tx_rptr = (FLD_DMA_RPTR_SET | blt_dma_tx_rptr);//restore tx_rptr
+}
+static inline void	blt_save_dma_tx_wptr()
+{
+	//TX Fifo: 0x100501[0:4] means rptr, 0 ~ 31
+	blt_dma_tx_wptr = reg_dma_tx_wptr & 0x1f;  //
+}
+
+static inline void	blt_restore_dma_tx_wptr()
+{
+	reg_dma_tx_wptr = blt_dma_tx_wptr & 0x1f;//restore tx_wptr
+}
+static inline void	blt_save_dma_tx_ptr()
+{
+	//TX Fifo: 0x100501[0:4] means rptr, 0 ~ 31
+	blt_dma_tx_rptr = reg_dma_tx_rptr & 0x1f;  //
+	blt_dma_tx_wptr = reg_dma_tx_wptr & 0x1f;  //
+}
+static inline void	blt_restore_dma_tx_ptr()
+{
+	//pay attention: FLD_DMA_RPTR_SET
+	reg_dma_tx_rptr = (FLD_DMA_RPTR_SET | blt_dma_tx_rptr);//restore tx_rptr
+	reg_dma_tx_wptr = blt_dma_tx_wptr & 0x1f;//restore tx_wptr
 }
 
 #endif /* LL_SLAVE_H_ */

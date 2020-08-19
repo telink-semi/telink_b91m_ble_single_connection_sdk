@@ -63,7 +63,40 @@
  *********************************************************************************************************************/
 
 
+/**
+ * @brief      This function performs a series of operations of writing digital or analog registers
+ *             according to a command table
+ * @param[in]  pt - pointer to a command table containing several writing commands
+ * @param[in]  size  - number of commands in the table
+ * @return     number of commands are carried out
+ */
 
+int write_reg_table(const tbl_cmd_set_st * pt, int size)
+{
+	int l=0;
+
+	while (l<size) {
+		unsigned int  cadr = ((unsigned int)0x80000000) | pt[l].ADR;
+		unsigned char cdat = pt[l].DAT;
+		unsigned char ccmd = pt[l].CMD;
+		unsigned char cvld =(ccmd & TCMD_UNDER_WR);
+		ccmd &= TCMD_MASK;
+		if (cvld) {
+			if (ccmd == TCMD_WRITE) {
+				write_reg8 (cadr, cdat);
+			}
+			else if (ccmd == TCMD_WAREG) {
+				analog_write_reg8 (cadr, cdat);
+			}
+			else if (ccmd == TCMD_WAIT) {
+				delay_us(pt[l].ADR*256 + cdat);
+			}
+		}
+		l++;
+	}
+	return size;
+
+}
 
 /**
  * @brief     This function performs to set delay time by us.
