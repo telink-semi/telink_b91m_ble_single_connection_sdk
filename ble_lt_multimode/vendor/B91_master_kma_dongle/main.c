@@ -24,14 +24,11 @@
  *
  *******************************************************************************************************/
 #include "app_config.h"
-#include "../../drivers.h"
-
-
-
 #include "tl_common.h"
 #include "../common/blt_common.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
+#include "app_audio.h"
 
 extern void user_init_normal();
 extern void main_loop (void);
@@ -48,8 +45,9 @@ _attribute_ram_code_ void rf_irq_handler(void)
 	irq_blt_sdk_handler ();
 
 	DBG_CHN10_LOW;
-	plic_interrupt_complete(IRQ15_ZB_RT);
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ15_ZB_RT);
+	NDS_FENCE_IORW;
 }
 
 
@@ -64,21 +62,9 @@ _attribute_ram_code_ void stimer_irq_handler(void)
 
 
 	DBG_CHN11_LOW;
-	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
 	NESTED_IRQ_EXIT();
-}
-
-_attribute_ram_code_ void  usb_endpoints_irq_handler (void)
-{
-	/////////////////////////////////////
-	// ISO IN
-	/////////////////////////////////////
-	if (reg_usb_irq & BIT(7)) {
-		reg_usb_irq = BIT(7);	//clear interrupt flag of endpoint 7
-
-		/////// get MIC input data ///////////////////////////////
-
-	}
+	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
+	NDS_FENCE_IORW;
 }
 
 _attribute_ram_code_ void usb_endpoint_irq_handler(void)

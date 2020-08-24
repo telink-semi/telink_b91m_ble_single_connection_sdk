@@ -1,5 +1,5 @@
 /********************************************************************************************************
- * @file	 button.c
+ * @file	 app_ui.c
  *
  * @brief    for TLSR chips
  *
@@ -26,6 +26,7 @@
 #include "application/keyboard/keyboard.h"
 #include "application/usbstd/usbkeycode.h"
 #include "app_att.h"
+#include "app_ui.h"
 
 #if (UI_KEYBOARD_ENABLE)
 
@@ -43,42 +44,11 @@ _attribute_data_retention_	u8 		key_type;
 
 
 
-ble_sts_t  app_debug_pushNotifyData (u16 attHandle, u8 *p, int len)
-{
-
-	DBG_CHN4_TOGGLE;
-
-	int n;
-							 //llid rfLen   l2capLen     cid    opcode   handle      data[0..19]   mic[0..3]
-	u8 pkt_notify_short[36] = {0x02,0x09, 0x05,0x00,  0x04,0x00, 0x1b,  0x0e,0x00,  0x00, 0x00, 0x00, 0x00};    //mic[0..3] on  blt_txfifo
-
-
-	n = len < 20 ? len : 20;
-	pkt_notify_short[0] = 2;				//first data packet
-	pkt_notify_short[1] = n + 7;
-
-	*(u16*)(pkt_notify_short + 2) = len + 3;	//l2cap
-	*(u16*)(pkt_notify_short + 4) = 0x04;	//chanid
-
-	pkt_notify_short[6] = ATT_OP_HANDLE_VALUE_NOTI;
-	pkt_notify_short[7] = U16_LO(attHandle);
-	pkt_notify_short[8] = U16_HI(attHandle);
-
-	tmemcpy (pkt_notify_short + 9, p, n);
-
-
-	bls_ll_pushTxFifo (BLS_CONN_HANDLE, pkt_notify_short);
-
-
-	return BLE_SUCCESS;
-}
-
-
-
-
-
-
-
+/**
+ * @brief		this function is used to process keyboard matrix status change.
+ * @param[in]	none
+ * @return      none
+ */
 void key_change_proc(void)
 {
 
@@ -108,7 +78,6 @@ void key_change_proc(void)
 				gpio_write(GPIO_LED_GREEN,1);
 			}
 
-			//app_debug_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 		}
 		else
@@ -124,7 +93,6 @@ void key_change_proc(void)
 				gpio_write(GPIO_LED_BLUE,1);
 			}
 
-			//app_debug_pushNotifyData(HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
 		}
 
@@ -138,7 +106,6 @@ void key_change_proc(void)
 		{
 			u16 consumer_key = 0;
 
-			//app_debug_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 		}
 		else if(key_type == KEYBOARD_KEY)
@@ -147,7 +114,6 @@ void key_change_proc(void)
 			gpio_write(GPIO_LED_BLUE,0);
 			key_buf[2] = 0;
 
-			//app_debug_pushNotifyData(HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
 		}
 	}
@@ -159,6 +125,15 @@ void key_change_proc(void)
 
 _attribute_data_retention_		static u32 keyScanTick = 0;
 
+
+
+/**
+ * @brief      this function is used to detect if key pressed or released.
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_
 void proc_keyboard (u8 e, u8 *p, int n)
 {
@@ -273,6 +248,14 @@ extern u32	scan_pin_need;
 		return 0;
 	}
 
+
+	/**
+	 * @brief		this function is used to detect if button pressed or released.
+	 * @param[in]	e - event type when this function is triggered by LinkLayer event
+	 * @param[in]	p - event callback data pointer for when this function is triggered by LinkLayer event
+	 * @param[in]	n - event callback data length when this function is triggered by LinkLayer event
+	 * @return      none
+	 */
 	void proc_button (u8 e, u8 *p, int n)
 	{
 		int det_key = vc_detect_button (1);

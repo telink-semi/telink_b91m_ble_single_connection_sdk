@@ -44,6 +44,9 @@ _RESET_ENTRY:
 	bnez t0, nmi_handler
     j 		 _START
 
+    .org 0x18
+    .word (BIN_SIZE)
+
     .org 0x20
     .word ('T'<<24 | 'L'<<16 | 'N'<<8 | 'K')
 

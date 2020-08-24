@@ -62,10 +62,6 @@ ble_sts_t 	blc_gatt_pushReadByGroupTypeRequest (u8 *dat, u16 start_attHandle, u1
 
 
 
-/****************************** Stack Interface, user can not use!!! ***************************/
-u8 blc_gatt_requestServiceAccess(u16 connHandle, int gatt_perm);
-
-
 
 
 

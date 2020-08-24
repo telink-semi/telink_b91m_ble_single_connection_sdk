@@ -119,6 +119,8 @@ extern u8 blt_tx_empty_packet[6];
 
 
 
+typedef int (*blt_LTK_req_callback_t)(u16 handle, u8* rand, u16 ediv);
+
 
 
 

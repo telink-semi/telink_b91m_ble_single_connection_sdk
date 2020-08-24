@@ -23,7 +23,7 @@
  * @version  A001
  *         
  *******************************************************************************************************/
-#include "../../drivers.h"
+#include "drivers.h"
 
 // Hardware board select
 #define HW_C1T217A20_V1_0_48_EVB		1

@@ -21,9 +21,6 @@
  *******************************************************************************************************/
 #pragma once
 
-#include "tl_common.h"
-
-
 
 
 #define GAP_ADTYPE_FLAGS                        0x01 //!< Discovery Mode: @ref GAP_ADTYPE_FLAGS_MODES
@@ -76,22 +73,6 @@
 
 
 
-typedef enum {
-	Gap_Role_Broadcaster  = 0,
-	Gap_Role_Observer     = 1,
-	Gap_Role_Peripheral   = 2,
-	Gap_Role_Central      = 3,
-}gap_role_t;
-
-
-
-
-
-
-
-
-
-/******************************* User Interface  *****************************************/
 void 		blc_gap_peripheral_init(void);
 
 void 		blc_gap_central_init(void);
@@ -101,10 +82,6 @@ void 		blc_gap_central_init(void);
 
 
 
-
-
-
-/************************* Stack Interface, user can not use!!! ***************************/
 
 
 

@@ -51,6 +51,8 @@ _attribute_ram_code_ void  usb_endpoints_irq_handler (void)
 		/////// get MIC input data ///////////////////////////////
 		//usb_iso_in_1k_square ();
 		//usb_iso_in_from_mic ();
+		DBG_CHN6_TOGGLE;
+
 		abuf_dec_usb ();
 	}
 
@@ -75,6 +77,8 @@ _attribute_ram_code_ void proc_audio (void)
 		tick_adpcm = clock_time ();
 		abuf_init ();
 	}
+
+	//DBG_CHN5_TOGGLE;
 	abuf_mic_dec ();
 }
 
@@ -446,5 +450,61 @@ _attribute_ram_code_ void proc_audio (void)
 	}
 	abuf_mic_dec ();
 }
+#elif(TL_AUDIO_MODE == TL_AUDIO_DONGLE_OPUS_GATT_AMAZON)			//HID Service,SBC,Dongle decode
+
+u8		att_mic_rcvd = 0;
+u32		tick_adpcm;
+u8		buff_mic_adpcm[MIC_ADPCM_FRAME_SIZE];
+
+u32		tick_iso_in;
+int		mode_iso_in;
+
+
+
+_attribute_ram_code_ void  usb_endpoints_irq_handler (void)
+{
+	u32 t = clock_time ();
+	/////////////////////////////////////
+	// ISO IN
+	/////////////////////////////////////
+	if (reg_usb_irq & BIT(7)) {
+		mode_iso_in = 1;
+		tick_iso_in = t;
+		reg_usb_irq = BIT(7);	//clear interrupt flag of endpoint 7
+
+		/////// get MIC input data ///////////////////////////////
+		//usb_iso_in_1k_square ();
+		//usb_iso_in_from_mic ();
+		DBG_CHN6_TOGGLE;
+
+		abuf_dec_usb ();
+	}
+
+}
+
+void	att_mic (u16 conn, u8 *p)
+{
+	att_mic_rcvd = 1;
+	tmemcpy (buff_mic_adpcm, p, MIC_ADPCM_FRAME_SIZE);
+	abuf_mic_add ((u32 *)buff_mic_adpcm);
+}
+
+_attribute_ram_code_ void proc_audio (void)
+{
+	if (att_mic_rcvd)
+	{
+		tick_adpcm = clock_time ();
+		att_mic_rcvd = 0;
+	}
+	if (clock_time_exceed (tick_adpcm, 200000))
+	{
+		tick_adpcm = clock_time ();
+		abuf_init ();
+	}
+
+	//DBG_CHN5_TOGGLE;
+	abuf_mic_dec ();
+}
+
 #endif
 

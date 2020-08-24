@@ -24,7 +24,7 @@
  *
  *******************************************************************************************************/
 #include "app_config.h"
-#include "../../drivers.h"
+#include "drivers.h"
 
 extern void user_init();
 extern void main_loop (void);

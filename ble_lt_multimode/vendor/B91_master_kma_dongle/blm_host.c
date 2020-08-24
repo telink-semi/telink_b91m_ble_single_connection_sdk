@@ -30,7 +30,9 @@
 #include "blm_host.h"
 #include "blm_ota.h"
 
-
+#include "application/audio/audio_config.h"
+#include "application/audio/tl_audio.h"
+#include "app_audio.h"
 
 main_service_t		main_service = 0;
 
@@ -632,6 +634,39 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 				#if APPLICATION_DONGLE
 				att_keyboard_media (conn_handle, pAtt->dat);
 				#endif
+#if(UI_AUDIO_ENABLE)
+				#if(TL_AUDIO_MODE == TL_AUDIO_DONGLE_OPUS_GATT_AMAZON)
+				volatile static u16 tem_data = 0;
+				volatile static u8 audio_flag;
+				tem_data = pAtt->dat[0] | pAtt->dat[1]<<8;
+
+				if(tem_data == 0x0221){   //open mic
+					u8 host_write_dat[32] = {0};
+					u8 audio_start = 1;
+					audio_flag = 1;
+
+					extern void opus_init();
+					opus_init();
+
+					att_req_write_cmd (host_write_dat, 63, (u8 *)&audio_start, 1);  //open mic
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+						while(1);
+					}
+				}
+				else if((tem_data == 0) && (audio_flag ==1) ) //close mic
+				{
+					u8 host_write_dat[32] = {0};
+					u8 audio_stop = 0;
+					att_req_write_cmd (host_write_dat, 63, (u8 *)&audio_stop, 1);  //open mic
+					if( !blm_push_fifo (BLM_CONN_HANDLE, host_write_dat) ){
+						//fail
+						while(1);
+					}
+					audio_flag = 0;
+				}
+				#endif
+#endif
 			}
 			else if(attHandle == HID_HANDLE_KEYBOARD_REPORT)
 			{
@@ -646,12 +681,21 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 //				att_mouse(conn_handle,pAtt->dat);
 //			}
 			#if UI_AUDIO_ENABLE
+#if(TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_TELINK)
 			else if(attHandle == AUDIO_HANDLE_MIC)
 			{
 				static u32 app_mic;
 				app_mic	++;
 				att_mic (conn_handle, pAtt->dat);
 			}
+#elif(TL_AUDIO_MODE == TL_AUDIO_DONGLE_OPUS_GATT_AMAZON)
+			else if(attHandle == 55)
+			{
+				static u32 app_mic;
+				app_mic	++;
+				att_mic (conn_handle, pAtt->dat);
+			}
+#endif
 			#endif
 			else
 			{

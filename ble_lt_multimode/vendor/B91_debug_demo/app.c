@@ -109,7 +109,12 @@ void main_loop (void)
 typedef struct{
 	u32 dma_len;            //won't be a fixed number as previous, should adjust with the mouse package number
 
-	rf_adv_head_t  header;
+	u8 type   :4;
+	u8 rfu1   :1;
+	u8 chan_sel:1;
+	u8 txAddr :1;
+	u8 rxAddr :1;
+
 	u8  rf_len;				//LEN(6)_RFU(2)
 
 	u8	advA[6];			//address
@@ -118,7 +123,11 @@ typedef struct{
 
 rf_packet_dbg_adv_t	debug_pkt_adv = {
 		sizeof (rf_packet_dbg_adv_t) - 4,		// dma_len
-		{LL_TYPE_ADV_NONCONN_IND, 0, 0, 0},					// type
+		LL_TYPE_ADV_NONCONN_IND,
+		0,
+		0,
+		0,
+		0,
 		sizeof (rf_packet_dbg_adv_t) - 6,		// rf_len
 		{TEST_MAC, TEST_MAC, TEST_MAC, TEST_MAC, TEST_MAC, TEST_MAC},	// advA
 };
@@ -136,8 +145,9 @@ void rf_irq_handler(void)
 	{
 		rf_clr_irq_status(0xffff);
 	}
-	plic_interrupt_complete(IRQ15_ZB_RT);
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ15_ZB_RT);
+	NDS_FENCE_IORW;
 }
 
 void stimer_irq_handler(void)
@@ -150,8 +160,9 @@ void stimer_irq_handler(void)
 		sleep_us(500);
 		DBG_CHN0_LOW;
 	}
-	plic_interrupt_complete(IRQ1_SYSTIMER);
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
+	NDS_FENCE_IORW;
 }
 void timer0_irq_handler(void)
 {
@@ -165,8 +176,9 @@ void timer0_irq_handler(void)
 		sleep_us(200);
 	}
 	DBG_CHN3_LOW;
-	plic_interrupt_complete(IRQ4_TIMER0);
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ4_TIMER0);
+	NDS_FENCE_IORW;
 }
 void user_init()
 {
@@ -294,7 +306,12 @@ void ble_brx_rx_test(void);
 typedef struct{
 	u32 dma_len;            //won't be a fixed number as previous, should adjust with the mouse package number
 
-	rf_adv_head_t  header;
+	u8 type   :4;
+	u8 rfu1   :1;
+	u8 chan_sel:1;
+	u8 txAddr :1;
+	u8 rxAddr :1;
+
 	u8  rf_len;				//LEN(6)_RFU(2)
 
 	u8	advA[6];			//address
@@ -303,7 +320,11 @@ typedef struct{
 
 rf_packet_dbg_adv_t	debug_pkt_adv = {
 		sizeof (rf_packet_dbg_adv_t) - 4,		// dma_len
-		{LL_TYPE_ADV_NONCONN_IND, 0, 0, 0},					// type
+		LL_TYPE_ADV_NONCONN_IND,
+		0,
+		0,
+		0,
+		0,										// type
 		sizeof (rf_packet_dbg_adv_t) - 6,		// rf_len
 		{TEST_MAC, TEST_MAC, TEST_MAC, TEST_MAC, TEST_MAC, TEST_MAC},	// advA
 };

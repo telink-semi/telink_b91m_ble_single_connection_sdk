@@ -24,11 +24,10 @@
 #include "drivers.h"
 #include "stack/ble/ble.h"
 
-
-
 #include "vendor/common/blt_led.h"
 #include "vendor/common/blt_common.h"
 #include "app_config.h"
+#include "app_ui.h"
 #include "app_att.h"
 #include "app_buffer.h"
 
@@ -54,26 +53,6 @@ _attribute_data_retention_	own_addr_type_t 	app_own_address_type = OWN_ADDRESS_P
 //////////////////////////////////////////////////////////////////////////////
 //	 Adv Packet, Response Packet
 //////////////////////////////////////////////////////////////////////////////
-
-#if(0)
-
-
-	const u8	tbl_advData[] = {
-		 17,   0x09, 'E','a','g','l','e',' ', 's','a','m', 'p','l','e', 'T','e','s', 't',
-		 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
-		 0x03, 0x19, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
-		 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
-	};
-
-	const u8	tbl_scanRsp [] = {
-		 17,   0x09, 'E','a','g','l','e',' ', 's','a','m', 'p','l','e', 'T','e','s', 't',
-		 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
-		 0x03, 0x19, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
-		 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
-	};
-
-#else
-
 const u8	tbl_advData[] = {
 	 0x05, 0x09, 'e', 'H', 'I', 'D',
 	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
@@ -85,7 +64,7 @@ const u8	tbl_scanRsp [] = {
 		 0x08, 0x09, 'e', 'S', 'a', 'm', 'p', 'l', 'e',
 	};
 
-#endif
+
 
 
 _attribute_data_retention_	int device_in_connection_state;
@@ -99,18 +78,8 @@ _attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
 _attribute_data_retention_	u32	latest_user_event_tick;
 
 
-#if (UI_KEYBOARD_ENABLE)
-extern u32	scan_pin_need;
-extern int 	key_not_released;
 
-	void proc_keyboard (u8 e, u8 *p, int n);
 
-#elif (UI_BUTTON_ENABLE)
-
-	extern int button_not_released;
-	extern void proc_button (u8 e, u8 *p, int n);
-
-#endif
 
 
 
@@ -146,7 +115,13 @@ void 	app_switch_to_indirect_adv(u8 e, u8 *p, int n)
 
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_CONNECT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_connect (u8 e, u8 *p, int n)
 {
 //	bls_l2cap_requestConnParamUpdate (8, 8, 19, 200);  // 200mS
@@ -170,7 +145,13 @@ void	task_connect (u8 e, u8 *p, int n)
 
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_TERMINATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
 	device_in_connection_state = 0;
@@ -209,7 +190,13 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
@@ -218,17 +205,12 @@ _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 
 
 
-void	task_conn_update_req (u8 e, u8 *p, int n)
-{
 
-}
-
-void	task_conn_update_done (u8 e, u8 *p, int n)
-{
-
-}
-
-
+/**
+ * @brief      power management code for application
+ * @param	   none
+ * @return     none
+ */
 _attribute_ram_code_
 void blt_pm_proc(void)
 {
@@ -292,20 +274,24 @@ void blt_pm_proc(void)
 
 
 
-
+/**
+ * @brief		user initialization when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void user_init_normal(void)
 {
-	//random number generator must be initiated here( in the beginning of user_init_nromal)
-	//when deepSleep retention wakeUp, no need initialize again
+	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
 
 
-////////////////// BLE stack initialization ////////////////////////////////////
+//////////////////////////// BLE stack Initialization  Begin //////////////////////////////////
+	/* for 1M   Flash, flash_sector_mac_address equals to 0xFF000
+	 * for 2M   Flash, flash_sector_mac_address equals to 0x1FF000*/
 	u8  mac_public[6];
 	u8  mac_random_static[6];
-
-	//for 1M   Flash, flash_sector_mac_address equals to 0xFF000
 	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
 
@@ -316,9 +302,10 @@ void user_init_normal(void)
 		blc_ll_setRandomAddr(mac_random_static);
 	#endif
 
-	////// Controller Initialization  //////////
+
+	//////////// Controller Initialization  Begin /////////////////////////
 	blc_ll_initBasicMCU();                      //mandatory
-	blc_ll_initStandby_module(mac_public);				//mandatory
+	blc_ll_initStandby_module(mac_public);		//mandatory
 	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
@@ -327,25 +314,36 @@ void user_init_normal(void)
 
 	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
 	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+	//////////// Controller Initialization  End /////////////////////////
 
 
-#if 1
-	////// Host Initialization  //////////
+
+	//////////// HCI Initialization  Begin /////////////////////////
+
+	//////////// HCI Initialization  End   /////////////////////////
+
+
+	//////////// Host Initialization  Begin /////////////////////////
+	/* Host Initialization */
+	/* GAP initialization must be done before any other host feature initialization !!! */
 	blc_gap_peripheral_init();    //gap initialization
 	extern void my_att_init ();
 	my_att_init (); //gatt initialization
-	blc_l2cap_register_handler (blc_l2cap_packet_receive);  	//l2cap initialization
 
-	//Smp Initialization may involve flash write/erase(when one sector stores too much information,
-	//   is about to exceed the sector threshold, this sector must be erased, and all useful information
-	//   should re_stored) , so it must be done after battery check
+	/* L2CAP Initialization */
+	blc_l2cap_register_handler (blc_l2cap_packet_receive);
+
+	/* SMP Initialization may involve flash write/erase(when one sector stores too much information,
+	 *   is about to exceed the sector threshold, this sector must be erased, and all useful information
+	 *   should re_stored) , so it must be done after battery check */
 	#if (APP_SECURITY_ENABLE)
 		blc_smp_peripheral_init();
 	#else
 		blc_smp_setSecurityLevel(No_Security);
 	#endif
+	//////////// Host Initialization  End /////////////////////////
 
-
+//////////////////////////// BLE stack Initialization  End //////////////////////////////////
 
 
 	////////////////// config adv packet /////////////////////
@@ -383,7 +381,7 @@ void user_init_normal(void)
 											 ADV_FP_NONE);
 			if(status != BLE_SUCCESS) { while(1); }  //debug: adv setting err
 		}
-	#endif
+
 
 
 
@@ -460,7 +458,11 @@ void user_init_normal(void)
 
 
 
-
+/**
+ * @brief		user initialization when MCU wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void user_init_deepRetn(void)
 {
 #if (PM_DEEPSLEEP_RETENTION_ENABLE)
@@ -484,14 +486,18 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 }
 
 
-/////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////s
 // main loop flow
 /////////////////////////////////////////////////////////////////////
 
 
 
 
-
+/**
+ * @brief		This is main_loop function
+ * @param[in]	none
+ * @return      none
+ */
 void main_loop (void)
 {
 	////////////////////////////////////// BLE entry /////////////////////////////////

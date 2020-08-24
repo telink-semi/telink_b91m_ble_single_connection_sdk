@@ -24,10 +24,6 @@
  *
  *******************************************************************************************************/
 #include "app_config.h"
-#include "../../drivers.h"
-
-
-
 #include "tl_common.h"
 #include "../common/blt_common.h"
 #include "drivers.h"
@@ -36,6 +32,7 @@
 #include "rc_ir.h"
 
 
+extern void user_init_deepRetn();
 extern void user_init_normal();
 extern void main_loop (void);
 
@@ -45,14 +42,15 @@ _attribute_ram_code_
 void rf_irq_handler(void)
 {
 	NESTED_IRQ_ENTER();
-	DBG_CHN9_HIGH;
+	DBG_CHN10_HIGH;
 
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_rf);
 
 	irq_blt_sdk_handler ();
-	DBG_CHN9_LOW;
-	plic_interrupt_complete(IRQ15_ZB_RT); 	//TODO: Sihui, what did HW do for this?
+	DBG_CHN10_LOW;
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ15_ZB_RT);
+	NDS_FENCE_IORW;
 }
 
 
@@ -60,14 +58,15 @@ _attribute_ram_code_
 void stimer_irq_handler(void)
 {
 	NESTED_IRQ_ENTER();
-//	DBG_CHN11_HIGH;//for dmic use
+	DBG_CHN9_HIGH;
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_sysTimer);
 
 	irq_blt_sdk_handler ();
 
-//	DBG_CHN11_LOW;//for dmic use
-	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
+	DBG_CHN9_LOW;
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
+	NDS_FENCE_IORW;
 }
 
 _attribute_ram_code_
@@ -94,9 +93,12 @@ void pwm_irq_handler(void)
  */
 int main (void)   //must on ramcode
 {
+	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
 
 	cpu_wakeup_init(LDO_MODE);
+
+	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
 
 #if (CLOCK_SYS_CLOCK_HZ == 16000000)
 	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV12_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV1_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);
@@ -114,7 +116,12 @@ int main (void)   //must on ramcode
 
 	gpio_init(1);
 
-	user_init_normal();
+	if( deepRetWakeUp ){
+		user_init_deepRetn();
+	}
+	else{
+		user_init_normal();
+	}
 
 	irq_enable();
 

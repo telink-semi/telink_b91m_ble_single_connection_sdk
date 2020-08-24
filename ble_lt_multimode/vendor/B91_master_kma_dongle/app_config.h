@@ -44,7 +44,7 @@
 #define BLE_MASTER_OTA_ENABLE						0//1  //slave ota test
 #define AUDIO_SDM_ENBALE							0//if using sdm playback, should better disable USB MIC
 
-#define UI_AUDIO_ENABLE								0//1
+#define UI_AUDIO_ENABLE								1//1
 #define UI_BUTTON_ENABLE							1
 #define UI_UPPER_COMPUTER_ENABLE					0  //work with upper computer
 
@@ -84,16 +84,25 @@
 #define	MIC_ENOCDER_ENABLE		0
 
 
-
-////////////////////////// MIC BUFFER /////////////////////////////
-#define BLE_DMIC_ENABLE				0  //0: Amic   1: Dmic
-#define	MIC_ADPCM_FRAME_SIZE		128 //128
-#define	MIC_SHORT_DEC_SIZE			248 //248
 #if (UI_AUDIO_ENABLE)
+	#define BLE_DMIC_ENABLE					0  //0: Amic   1: Dmic
 
+	/* Dongle Audio MODE:
+	 * TL_AUDIO_DONGLE_ADPCM_GATT_TELINK
+	 * TL_AUDIO_DONGLE_ADPCM_GATT_GOOGLE
+	 * TL_AUDIO_DONGLE_ADPCM_HID
+	 * TL_AUDIO_DONGLE_SBC_HID
+	 * TL_AUDIO_DONGLE_ADPCM_HID_DONGLE_TO_STB
+	 * TL_AUDIO_DONGLE_SBC_HID_DONGLE_TO_STB
+	 * TL_AUDIO_DONGLE_MSBC_HID
+	 * TL_AUDIO_DONGLE_OPUS_GATT_AMAZON
+	 */
+	#define TL_AUDIO_MODE  			TL_AUDIO_DONGLE_OPUS_GATT_AMAZON
+
+	#if (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_GOOGLE)
+		#define GOOGLE_VOICE_MODE	0x01	//	0x01:PTT;	0x03:HTT
+	#endif
 #endif
-
-
 
 
 #define UART_PRINT_DEBUG_ENABLE				0

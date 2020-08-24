@@ -81,6 +81,7 @@
 	 RESTORE_CSR(NDS_MSTATUS)                        \
 	 RESTORE_CSR(NDS_MEPC)                           \
 	 RESTORE_MXSTATUS()
+#define NDS_FENCE_IORW			__nds__fence(FENCE_IORW,FENCE_IORW)
 #else
 #define SAVE_MXSTATUS()
 #define RESTORE_MXSTATUS()

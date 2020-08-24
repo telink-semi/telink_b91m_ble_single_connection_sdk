@@ -23,15 +23,11 @@
  * @version  A001
  *
  *******************************************************************************************************/
-#include "app_config.h"
-#include "../../drivers.h"
-
-
-
 #include "tl_common.h"
 #include "../common/blt_common.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
+#include "app_config.h"
 #include "app_att.h"
 
 extern void user_init_deepRetn();
@@ -40,6 +36,11 @@ extern void main_loop (void);
 
 
 
+/**
+ * @brief		BLE SDK RF interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_
 void rf_irq_handler(void)
 {
@@ -51,11 +52,20 @@ void rf_irq_handler(void)
 	irq_blt_sdk_handler ();
 
 	DBG_CHN10_LOW;
-	plic_interrupt_complete(IRQ15_ZB_RT); 	//TODO: Sihui, what did HW do for this?
+	/*Must ensure the order of execution of complete and
+	 * subsequent mret instructions(insert fence instruction)*/
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ15_ZB_RT);
+	NDS_FENCE_IORW;
 }
 
 
+
+/**
+ * @brief		BLE SDK System timer interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_
 void stimer_irq_handler(void)
 {
@@ -67,8 +77,10 @@ void stimer_irq_handler(void)
 	irq_blt_sdk_handler ();
 
 	DBG_CHN11_LOW;
-	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
+
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
+	NDS_FENCE_IORW;
 }
 
 
@@ -87,6 +99,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 
 	cpu_wakeup_init(LDO_MODE);
 
+	/* detect if MCU is wake_up from deep retention mode */
 	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
 
 #if (CLOCK_SYS_CLOCK_HZ == 16000000)
@@ -105,10 +118,15 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 
 	gpio_init(!deepRetWakeUp);
 
-	if( deepRetWakeUp ){
+	/* load customized freq_offset cap value. */
+	//blc_app_loadCustomizedParameters();  //note: to be tested
+
+	if( deepRetWakeUp ){ //MCU wake_up from deepSleep retention mode
 		user_init_deepRetn ();
 	}
-	else{
+	else{ //MCU power_on or wake_up from deepSleep mode
+		/* read flash size only in power_on or deepSleep */
+		//blc_readFlashSize_autoConfigCustomFlashSector();
 		user_init_normal();
 	}
 

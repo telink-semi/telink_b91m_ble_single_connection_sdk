@@ -390,7 +390,7 @@
 
 
 
-#if 0
+#if 1
 #define UART_PRINT_DEBUG_ENABLE			0
 /////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
 #if (UART_PRINT_DEBUG_ENABLE)

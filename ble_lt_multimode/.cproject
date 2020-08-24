@@ -440,6 +440,7 @@
 								</option>
 								<option id="nds.c.compiler.option.preprocessor.def.symbols.552956577" name="Defined symbols (-D)" superClass="nds.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__PROJECT_B91_BLE_REMOTE__=1"/>
+									<listOptionValue builtIn="false" value="DISABLE_SILK"/>
 									<listOptionValue builtIn="false" value="DISABLE_FLOAT_API"/>
 									<listOptionValue builtIn="false" value="FIXED_POINT"/>
 									<listOptionValue builtIn="false" value="ANDES_INTRINSIC"/>
@@ -462,7 +463,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="application/audio/opus|vendor/B91_debug_demo|div_mod.S|vendor/B91_feature_test|vendor/B91_hci|vendor/B91_internal_test|vendor/B91_module|vendor/B91_ble_sample|vendor/B91_ble_remote|vendor/9518_ble_sample|vendor/9518_feature_test|vendor/9518_hci|vendor/9518_internal_test|vendor/9518_module|vendor/9518_master_kma_dongle|vendor/9518_ble_remote|vendor/STimer_Demo|vendor/USB_Demo|vendor/USB_Speaker_Demo|vendor/9518_SPI_Demo|src/boot.c|vendor/PKE_Demo|vendor/RF_DEMO|vendor/SPI_Demo|vendor/TRNG_Demo|vendor/Base_Test_Demo|vendor/8258_USB_Speaker_Demo|vendor/Flash_Demo|vendor/UART1_DEMO|vendor/UART0_DEMO|vendor/8258_USB_MIC_Demo|vendor/UART_DEMO|vendor/ALG_REG_Demo|vendor/HSPI_Demo|vendor/9518_USB_Speaker_Demo|usbstd|vendor/s7816_Demo|vendor/NPE_Demo|vendor/IIC_DEMO|vendor/I2C_Demo|vendor/9518_HSPI_Demo|vendor/Debug_Demo|vendor/USB_MIC_Demo|9518_Flash_Demo|vendor/9518_Debug_Demo|vendor/PSPI_Demo|vendor/9518_USB_MIC_Demo|vendor/src|vendor/USB_Mouse_Demo|vendor/9518_USB_Mouse_Demo|vendor/PWM_DEMO|vendor/PSRAM_Demo|vendor/GPIO_DEMO|alg_test_demo|vendor/9518_PSPI_Demo|vendor/GPIO_Demo" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="vendor/B91_debug_demo|div_mod.S|vendor/B91_feature_test|vendor/B91_hci|vendor/B91_internal_test|vendor/B91_module|vendor/B91_ble_sample|vendor/B91_ble_remote|vendor/9518_ble_sample|vendor/9518_feature_test|vendor/9518_hci|vendor/9518_internal_test|vendor/9518_module|vendor/9518_master_kma_dongle|vendor/9518_ble_remote|vendor/STimer_Demo|vendor/USB_Demo|vendor/USB_Speaker_Demo|vendor/9518_SPI_Demo|src/boot.c|vendor/PKE_Demo|vendor/RF_DEMO|vendor/SPI_Demo|vendor/TRNG_Demo|vendor/Base_Test_Demo|vendor/8258_USB_Speaker_Demo|vendor/Flash_Demo|vendor/UART1_DEMO|vendor/UART0_DEMO|vendor/8258_USB_MIC_Demo|vendor/UART_DEMO|vendor/ALG_REG_Demo|vendor/HSPI_Demo|vendor/9518_USB_Speaker_Demo|usbstd|vendor/s7816_Demo|vendor/NPE_Demo|vendor/IIC_DEMO|vendor/I2C_Demo|vendor/9518_HSPI_Demo|vendor/Debug_Demo|vendor/USB_MIC_Demo|9518_Flash_Demo|vendor/9518_Debug_Demo|vendor/PSPI_Demo|vendor/9518_USB_MIC_Demo|vendor/src|vendor/USB_Mouse_Demo|vendor/9518_USB_Mouse_Demo|vendor/PWM_DEMO|vendor/PSRAM_Demo|vendor/GPIO_DEMO|alg_test_demo|vendor/9518_PSPI_Demo|vendor/GPIO_Demo" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -720,7 +721,7 @@
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="dsp"/>
 								</option>
-								<option id="nds.c.link.option.userobjs.787067469" superClass="nds.c.link.option.userobjs" valueType="userObjs">
+								<option id="nds.c.link.option.userobjs.787067469" name="Other objects" superClass="nds.c.link.option.userobjs" valueType="userObjs">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/proj_lib/liblt_9518.a}&quot;"/>
 								</option>
 								<inputType id="tool.nds.c.linker.input.935496152" superClass="tool.nds.c.linker.input">
@@ -799,7 +800,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="application/audio/opus|vendor/B91_debug_demo|div_mod.S|vendor/B91_feature_test|vendor/B91_hci|vendor/B91_internal_test|vendor/B91_master_kma_dongle|vendor/B91_module|vendor/B91_ble_sample|vendor/9518_ble_sample|vendor/9518_feature_test|vendor/9518_hci|vendor/9518_internal_test|vendor/9518_module|vendor/9518_master_kma_dongle|vendor/STimer_Demo|vendor/USB_Demo|vendor/USB_Speaker_Demo|vendor/Timer_Demo|vendor/9518_SPI_Demo|src/boot.c|vendor/PKE_Demo|vendor/RF_DEMO|vendor/SPI_Demo|vendor/TRNG_Demo|vendor/Base_Test_Demo|vendor/8258_USB_Speaker_Demo|vendor/Flash_Demo|vendor/UART1_DEMO|vendor/UART0_DEMO|vendor/8258_USB_MIC_Demo|vendor/UART_DEMO|vendor/HSPI_Demo|vendor/9518_USB_Speaker_Demo|usbstd|vendor/s7816_Demo|vendor/NPE_Demo|vendor/IIC_DEMO|vendor/I2C_Demo|vendor/9518_HSPI_Demo|vendor/Debug_Demo|vendor/USB_MIC_Demo|9518_Flash_Demo|vendor/9518_Debug_Demo|vendor/PSPI_Demo|vendor/9518_USB_MIC_Demo|vendor/src|vendor/USB_Mouse_Demo|vendor/9518_USB_Mouse_Demo|vendor/PWM_DEMO|vendor/PSRAM_Demo|alg_test_demo|vendor/9518_PSPI_Demo|vendor/GPIO_Demo" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="vendor/B91_debug_demo|div_mod.S|vendor/B91_feature_test|vendor/B91_hci|vendor/B91_internal_test|vendor/B91_master_kma_dongle|vendor/B91_module|vendor/B91_ble_sample|vendor/9518_ble_sample|vendor/9518_feature_test|vendor/9518_hci|vendor/9518_internal_test|vendor/9518_module|vendor/9518_master_kma_dongle|vendor/STimer_Demo|vendor/USB_Demo|vendor/USB_Speaker_Demo|vendor/Timer_Demo|vendor/9518_SPI_Demo|src/boot.c|vendor/PKE_Demo|vendor/RF_DEMO|vendor/SPI_Demo|vendor/TRNG_Demo|vendor/Base_Test_Demo|vendor/8258_USB_Speaker_Demo|vendor/Flash_Demo|vendor/UART1_DEMO|vendor/UART0_DEMO|vendor/8258_USB_MIC_Demo|vendor/UART_DEMO|vendor/HSPI_Demo|vendor/9518_USB_Speaker_Demo|usbstd|vendor/s7816_Demo|vendor/NPE_Demo|vendor/IIC_DEMO|vendor/I2C_Demo|vendor/9518_HSPI_Demo|vendor/Debug_Demo|vendor/USB_MIC_Demo|9518_Flash_Demo|vendor/9518_Debug_Demo|vendor/PSPI_Demo|vendor/9518_USB_MIC_Demo|vendor/src|vendor/USB_Mouse_Demo|vendor/9518_USB_Mouse_Demo|vendor/PWM_DEMO|vendor/PSRAM_Demo|alg_test_demo|vendor/9518_PSPI_Demo|vendor/GPIO_Demo" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

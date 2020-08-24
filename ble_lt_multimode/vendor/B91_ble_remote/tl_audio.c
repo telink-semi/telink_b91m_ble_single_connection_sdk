@@ -1,407 +1,328 @@
 /********************************************************************************************************
- * @file     tl_audio.c 
+ * @file     tl_audio.c
  *
  * @brief    for TLSR chips
  *
- * @author	 public@telink-semi.com;
- * @date     Sep. 18, 2015
+ * @author	 BLE Group
+ * @date     2020-5-13
  *
  * @par      Copyright (c) Telink Semiconductor (Shanghai) Co., Ltd.
  *           All rights reserved.
- *           
- *			 The information contained herein is confidential and proprietary property of Telink 
- * 		     Semiconductor (Shanghai) Co., Ltd. and is available under the terms 
- *			 of Commercial License Agreement between Telink Semiconductor (Shanghai) 
- *			 Co., Ltd. and the licensee in separate contract or the terms described here-in. 
+ *
+ *			 The information contained herein is confidential and proprietary property of Telink
+ * 		     Semiconductor (Shanghai) Co., Ltd. and is available under the terms
+ *			 of Commercial License Agreement between Telink Semiconductor (Shanghai)
+ *			 Co., Ltd. and the licensee in separate contract or the terms described here-in.
  *           This heading MUST NOT be removed from this file.
  *
- * 			 Licensees are granted free, non-transferable use of the information in this 
- *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided. 
- *           
+ * 			 Licensees are granted free, non-transferable use of the information in this
+ *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
+ *
  *******************************************************************************************************/
-#include "drivers.h"
-#include "tl_audio.h"
-//#include "drivers.h"
-#include <stack/ble/trace.h>
+
+#include 	"../../tl_common.h"
+#include 	"../../drivers.h"
+#include	"tl_audio.h"
+#include	"audio_config.h"
+#include	"adpcm.h"
+#include    "sbc.h"
 
 
 
-int md_long =0;
-int md_short =0;
-int md_im =0;
-int md_noise = 0;
-int md_gain = 256;
 
-static const signed char idxtbl[] = { -1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8};
-static const unsigned short steptbl[] = {
- 7,  8,  9,  10,  11,  12,  13,  14,  16,  17,
- 19,  21,  23,  25,  28,  31,  34,  37,  41,  45,
- 50,  55,  60,  66,  73,  80,  88,  97,  107, 118,
- 130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
- 337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
- 876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
- 2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
- 5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
-    15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767   };
+#if (TL_AUDIO_MODE & RCU_PROJECT)				//RCU
 
-//////////////////////////////////////////////////////////
-//	for 8266: input 128-word, output 80-byte
-//////////////////////////////////////////////////////////
-void pcm_to_adpcm (signed short *ps, int len, signed short *pd)
-{
-	int i, j;
-	unsigned short code=0;
-	unsigned short code16=0;
-	int predict_idx = 1;
-	code = 0;
+#if (TL_AUDIO_MODE & (TL_AUDIO_MASK_SBC_MODE | TL_AUDIO_MASK_MSBC_MODE))
 
-	for (i=0; i<8; i++) {
-		*pd++ = ps[i];   //copy first 8 samples
-	}
-	int predict = ps[0];
-	for (i=1; i<len; i++) {
+	u8	buffer_mic_enc[(ADPCM_PACKET_LEN+3)*TL_MIC_PACKET_BUFFER_NUM];
 
-		s16 di = ps[i];
-		int step = steptbl[predict_idx];
-		int diff = di - predict;
+#else
+	#define	BUFFER_PACKET_SIZE		((ADPCM_PACKET_LEN >> 2) * TL_MIC_PACKET_BUFFER_NUM)
 
-		if (diff >=0 ) {
-			code = 0;
-		}
-		else {
-			diff = -diff;
-			code = 8;
-		}
-
-		int diffq = step >> 3;
-
-		for (j=4; j>0; j=j>>1) {
-			if( diff >= step) {
-				diff = diff - step;
-				diffq = diffq + step;
-				code = code + j;
-			}
-			step = step >> 1;
-		}
-
-		code16 = (code16 >> 4) | (code << 12);
-		if ( (i&3) == 3) {
-			*pd++ = code16;
-		}
-
-		if(code >= 8) {
-			predict = predict - diffq;
-		}
-		else {
-			predict = predict + diffq;
-		}
-
-		if (predict > 32767) {
-			predict = 32767;
-		}
-		else if (predict < -32767) {
-			predict = -32767;
-		}
-
-		predict_idx = predict_idx + idxtbl[code];
-		if(predict_idx < 0) {
-			predict_idx = 0;
-		}
-		else if(predict_idx > 88) {
-			predict_idx = 88;
-		}
-	}
-}
-
-#define				NUM_OF_ORIG_SAMPLE				2
-
-void mic_to_adpcm (signed short *ps, int len, signed short *pd)
-{
-	int i, j;
-	unsigned short code=0;
-	unsigned short code16=0;
-	int predict_idx = 1;
-	code = 0;
-
-	for (i=0; i<NUM_OF_ORIG_SAMPLE; i++) {
-		*pd++ = ps[i];   //copy first 5 samples
-	}
-	int predict = ps[0];
-	for (i=1; i<len; i++) {
-
-		s16 di = ps[i];
-		int step = steptbl[predict_idx];
-		int diff = di - predict;
-
-		if (diff >=0 ) {
-			code = 0;
-		}
-		else {
-			diff = -diff;
-			code = 8;
-		}
-
-		int diffq = step >> 3;
-
-		for (j=4; j>0; j=j>>1) {
-			if( diff >= step) {
-				diff = diff - step;
-				diffq = diffq + step;
-				code = code + j;
-			}
-			step = step >> 1;
-		}
-
-		code16 = (code16 >> 4) | (code << 12);
-		if ( (i&3) == 3) {
-			*pd++ = code16;
-		}
-
-		if(code >= 8) {
-			predict = predict - diffq;
-		}
-		else {
-			predict = predict + diffq;
-		}
-
-		if (predict > 32767) {
-			predict = 32767;
-		}
-		else if (predict < -32767) {
-			predict = -32767;
-		}
-
-		predict_idx = predict_idx + idxtbl[code];
-		if(predict_idx < 0) {
-			predict_idx = 0;
-		}
-		else if(predict_idx > 88) {
-			predict_idx = 88;
-		}
-	}
-}
-
-
-/////////////////////////////////////////////////////////////////////////////////
-//	256-samples split into 2
-/////////////////////////////////////////////////////////////////////////////////
-void mic_to_adpcm_split (signed short *ps, int len, signed short *pds, int start)
-{
-	int i, j;
-	unsigned short code=0;
-	unsigned short code16=0;
-	static int predict_idx = 1;
-	code = 0;
-	static signed short *pd;
-	static int predict;
-
-	//byte2,byte1: predict;  byte3: predict_idx; byte4:adpcm data len
-	if (start)
-	{
-		pd = pds;
-		*pd++ = predict;
-		* (((signed char *)pds) + 2)= predict_idx;
-		* (((unsigned char *)pds) + 3)= (ADPCM_PACKET_LEN - 4);
-		pd++;
-	}
-
-	//byte5- byte128: 124 byte(62 sample) adpcm data
-	for (i=0; i<len; i++) {
-
-		s16 di = ps[i];
-		int step = steptbl[predict_idx];
-		int diff = di - predict;
-
-		if (diff >=0 ) {
-			code = 0;
-		}
-		else {
-			diff = -diff;
-			code = 8;
-		}
-
-		int diffq = step >> 3;
-
-		for (j=4; j>0; j=j>>1) {
-			if( diff >= step) {
-				diff = diff - step;
-				diffq = diffq + step;
-				code = code + j;
-			}
-			step = step >> 1;
-		}
-
-		code16 = (code16 >> 4) | (code << 12);
-		if ( (i&3) == 3) {
-			*pd++ = code16;
-		}
-
-		if(code >= 8) {
-			predict = predict - diffq;
-		}
-		else {
-			predict = predict + diffq;
-		}
-
-		if (predict > 32767) {
-			predict = 32767;
-		}
-		else if (predict < -32767) {
-			predict = -32767;
-		}
-
-		predict_idx = predict_idx + idxtbl[code];
-		if(predict_idx < 0) {
-			predict_idx = 0;
-		}
-		else if(predict_idx > 88) {
-			predict_idx = 88;
-		}
-	}
-}
-
-////////////////////////////////////////////////////////////////////
-/*  name ADPCM to pcm
-    signed short *ps -> pointer to the adpcm source buffer
-    signed short *pd -> pointer to the pcm destination buffer
-    int len          -> decorded size
-*/
-
-#if (UI_AUDIO_ENABLE && CLOCK_SYS_CLOCK_HZ == 24000000)  //only for ble master 24m system clock
-_attribute_ram_code_
-#endif
-void adpcm_to_pcm (signed short *ps, signed short *pd, int len){
-	int i;
-
-	//byte2,byte1: predict;  byte3: predict_idx; byte4:adpcm data len
-	int predict = ps[0];
-	int predict_idx = ps[1] & 0xff;
-//	int adpcm_len = (ps[1]>>8) & 0xff;
-
-	unsigned char *pcode = (unsigned char *) (ps + NUM_OF_ORIG_SAMPLE);
-
-	unsigned char code;
-	code = *pcode ++;
-
-	//byte5- byte128: 124 byte(62 sample) adpcm data
-	for (i=0; i<len; i++) {
-
-		if (1) {
-			int step = steptbl[predict_idx];
-
-			int diffq = step >> 3;
-
-			if (code & 4) {
-				diffq = diffq + step;
-			}
-			step = step >> 1;
-			if (code & 2) {
-				diffq = diffq + step;
-			}
-			step = step >> 1;
-			if (code & 1) {
-				diffq = diffq + step;
-			}
-
-			if (code & 8) {
-				predict = predict - diffq;
-			}
-			else {
-				predict = predict + diffq;
-			}
-
-			if (predict > 32767) {
-				predict = 32767;
-			}
-			else if (predict < -32767) {
-				predict = -32767;
-			}
-
-			predict_idx = predict_idx + idxtbl[code & 15];
-
-			if(predict_idx < 0) {
-				predict_idx = 0;
-			}
-			else if(predict_idx > 88) {
-				predict_idx = 88;
-			}
-
-			if (i&1) {
-				code = *pcode ++;
-			}
-			else {
-				code = code >> 4;
-			}
-		}
-
-		if (0 && i < NUM_OF_ORIG_SAMPLE) {
-			*pd++ = ps[i];
-		}
-		else {
-			*pd++ = predict;
-		}
-	}
-}
-
-#ifndef		ADPCM_PACKET_LEN
-#define		ADPCM_PACKET_LEN					128
+	#if BUFFER_PACKET_SIZE
+	int		buffer_mic_enc[BUFFER_PACKET_SIZE];
+	#endif
 #endif
 
-#if		TL_MIC_BUFFER_SIZE
-
-#define	BUFFER_PACKET_SIZE		((ADPCM_PACKET_LEN >> 2) * TL_MIC_PACKET_BUFFER_NUM)
-
-int		buffer_mic_enc[BUFFER_PACKET_SIZE];
 u8		buffer_mic_pkt_wptr;
 u8		buffer_mic_pkt_rptr;
 
-u32		adb_t2;
+
+#if  TL_NOISE_SUPRESSION_ENABLE
+
+	int md_long =0;
+	int md_short =0;
+	int md_im =0;
+	int md_noise = 0;
+	int md_gain = 256;
+
+#endif
+
+#if (IIR_FILTER_ENABLE)
+
+//inner band EQ default parameter. user need to set according to actual situation.
+//int filter_1[10] = {16630, -22724, 15507, 22724, -15753};
+//int filter_2[10] = {15380, 0, 14450, 0, -13446};
+//int filter_3[10] = {14961, 14869, 0, -13446, 0};
+
+int filter_1[10] = {995*4, 1990*4, 995*4, 849*4, 734*4};
+int filter_2[10] = {3691*4, -5564*4, 2915*4, 5564*4, -2510*4};
+int filter_3[10] = {2534*4, -1482*4, 955*4,  3956*4, -1866*4};
+
+u8  filter1_shift = 0;
+u8  filter2_shift = 0;
+u8  filter3_shift = 0;
+
+//used for OOB processing. i.e LPF. user need to set according to actual situation
+int LPF_FILTER_1[10] = {739,87,739,2419,-1401};
+int LPF_FILTER_2[10] = {4301,5262,4299,889,-3601};
+
+u8  lpf_filter1_shift = 0;
+u8  lpf_filter2_shift = 0;
 
 
-#define TL_NOISE_SUPRESSION_ENABLE 0 // TODO : too much calculation can have packet drop
-#if 	IIR_FILTER_ENABLE
-int c1[5] = {5751, 895, 1010, 253, -187};//filter all 
-int c2[5] = {4294, -6695, 3220, 1674, -855};//filter 1.2khz 
-int c3[5] = {4739, -2293, 1254, 573, -474};//filter 4khz
-int filter_1[10];
-int filter_2[10];
-int filter_3[10];
-u8  filter1_shift;
-u8  filter2_shift;
-u8  filter3_shift;
-
-void voice_iir (signed short * ps, signed short *pd, int* coef, int nsample,u8 shift)
+//voice data out of band need to be processed using 12 bits.
+_attribute_ram_code_ void voice_iir_OOB(signed short * ps, signed short *pd, int* coef, int nsample,u8 shift)
 {
-      int i = 0;
-      int s = 0;
-      for (i=0; i<nsample; i++)
-      {
-            s = (*ps * coef[0])>>shift;                  //input 16-bit
-            s += coef[5] * coef[1];
-            s += coef[6] * coef[2];       //coef 0,1,2: 12-bit
-            s += coef[7] * coef[3];
-            s += coef[8] * coef[4];      //coef 4 & 5: 10-bit; coef 7 & 8: 18-bit
-            s = s >> 10;                        //18-bit
-            if (s >= (1<<18))
-                  s = (1<<18) - 1;
-            else if (s < -(1<<18))
-                  s = - (1<<18);
-            coef[6] = coef[5];                  //16-bit
-            coef[5] = *ps++;              //16-bit
-            coef[8] = coef[7];                  //18-bit
-            coef[7] = s;
-            *pd++ = s >> 2;
-      }
+	int i = 0;
+	long int s = 0;
+	for (i=0; i<nsample; i++)
+	{
+		 //s = (*ps * coef[0])>>shift;
+		s = (*ps * coef[0])>>0;          		//input 16-bit
+		s += coef[5] * coef[1];
+		s += coef[6] * coef[2];       		//coef 0,1,2: 12-bit
+		s += coef[7] * coef[3];
+		s += coef[8] * coef[4];      		//coef 4 & 5: 10-bit; coef 7 & 8: 18-bit
+		//s = s >> 10;                        //18-bit
+		//s = s >> 12;                        //18-bit
+
+		s = ((s + (1 << 11)) >> 12); /////this line code indicate that process sample data with 12 bits
+
+#if 0
+		if (s >= (1<<18))
+			  s = (1<<18) - 1;
+		else if (s < -(1<<18))
+			  s = - (1<<18);
+#endif
+		coef[6] = coef[5];                  //16-bit
+		coef[5] = *ps++;              		//16-bit
+		coef[8] = coef[7];                  //18-bit
+		coef[7] = s;
+		//*pd++ = s >> 3;
+		//*pd++ = s >> 1;
+
+		//limit
+		if(s > 32767){
+			s = 32767;
+		}
+		else if(s < -32767){
+			s = -32767;
+		}
+
+		*pd++ = s >> shift;
+	}
 }
-#endif 
-void	proc_mic_encoder (void)
+
+
+_attribute_ram_code_ static inline void audio_getHalfsample_func(s16*ps, u16 len)
+{
+	for(u16 i = 0;i < (len >> 1);i++)
+	{
+		ps[i] = ps[2 * i];
+	}
+}
+
+//voice data inner band need to be processed using 14 bits.
+_attribute_ram_code_ void voice_iir(signed short * ps, signed short *pd, int* coef, int nsample,u8 shift)
+{
+	int i = 0;
+	long int s = 0;
+	for (i=0; i<nsample; i++)
+	{
+		 //s = (*ps * coef[0])>>shift;
+		s = (*ps * coef[0])>>0;          		//input 16-bit
+		s += coef[5] * coef[1];
+		s += coef[6] * coef[2];       		//coef 0,1,2: 12-bit
+		s += coef[7] * coef[3];
+		s += coef[8] * coef[4];      		//coef 4 & 5: 10-bit; coef 7 & 8: 18-bit
+		//s = s >> 10;                        //18-bit
+		//s = s >> 12;                        //18-bit
+
+		s = ((s + (1 << 13)) >> 14);   /////this line code indicate that process sample data with 14 bits
+//		s = ((s + (1 << 11)) >> 12);
+#if 0
+		if (s >= (1<<18))
+			  s = (1<<18) - 1;
+		else if (s < -(1<<18))
+			  s = - (1<<18);
+#endif
+		coef[6] = coef[5];                  //16-bit
+		coef[5] = *ps++;              		//16-bit
+		coef[8] = coef[7];                  //18-bit
+		coef[7] = s;
+		//*pd++ = s >> 3;
+		//*pd++ = s >> 1;
+
+		//limit
+		if(s > 32767){
+			s = 32767;
+		}
+		else if(s < -32767){
+			s = -32767;
+		}
+
+		*pd++ = s >> shift;
+	}
+}
+
+void Audio_VolumeSet(unsigned char input_output_select,unsigned char volume_set_value)
+{
+#if (BLE_DMIC_ENABLE)
+	reg_mic_ctrl =    MASK_VAL( FLD_AUD_MIC_VOL_CONTROL,      	(volume_set_value & 0x3f),\
+			                    FLD_AUD_MIC_MONO_EN, 	        1, \
+			                    FLD_AUD_AMIC_DMIC_SELECT,    	1 );
+#else
+	reg_mic_ctrl =    MASK_VAL( FLD_AUD_MIC_VOL_CONTROL,      	(volume_set_value & 0x3f),\
+			                    FLD_AUD_MIC_MONO_EN, 	        1, \
+			                    FLD_AUD_AMIC_DMIC_SELECT,    	0 );
+#endif
+
+}
+#define  IIR_FILTER_ADR  0x71000
+#define  CBUFFER_SIZE    20
+u8 filter_step_enable = 0;
+u8 vol_gain_tmp       = 0xff;
+u8 pga_post_gain_tmp  = 0xff;
+u8 filter_cmp[20];
+/*
+ FLASH 0x71000
+ +----------------0x71000
+  | c1(20B) first inner band EQ
+ +----------------0x71013
+  | c2(20B) second inner band EQ
+ +----------------0x71027
+  | c3(20B) three inner band EQ
+ +----------------0x7103B
+  | c4(20B) first out of band EQ
+ +----------------0x7104F
+  | c5(20B) second out of band EQ
+ +----------------0x71063
+  | f1_sft(1B) | f2_sft(1B) |f3_sft(1B) |f4_sft(1B) | f5_sft(1B)	five shift
+ +----------------0x7109F
+
+ +----------------0x710A0
+  | vol_gain(1B)volume gain setting
+ +----------------0x710A1
+  | PGA_POST_GAIN(1B)(0~49): 0x710A1
+ +----------------0x710A2
+*/
+#define MANUAL_VOLUMN_SETTINGS			0x1C
+void filter_setting()
+{
+	//get the configuration data in the flash
+	u32 *pfilter     = (u32*)IIR_FILTER_ADR;
+	u8  *p_start_iir = (u8 *)(pfilter);
+
+	tmemset(filter_cmp, 0xff,sizeof(filter_cmp));
+
+	if(tmemcmp(p_start_iir,filter_cmp,sizeof(filter_cmp)))//step 1 disaptch
+	{
+		tmemcpy((u8 *)filter_1,p_start_iir,CBUFFER_SIZE);
+		filter_step_enable |= BIT(1);
+		tmemset(filter_cmp, 0xff,sizeof(filter_cmp));
+	}
+	if(tmemcmp(p_start_iir+CBUFFER_SIZE,filter_cmp,sizeof(filter_cmp)))//step 2 disaptch
+	{
+		tmemcpy((u8 *)filter_2,p_start_iir+CBUFFER_SIZE,CBUFFER_SIZE);
+		filter_step_enable |= BIT(2);
+		tmemset(filter_cmp, 0xff,sizeof(filter_cmp));
+	}
+	if(tmemcmp(p_start_iir+(CBUFFER_SIZE*2),filter_cmp,sizeof(filter_cmp)))//step 3 dispatch
+	{
+		tmemcpy((u8 *)filter_3,p_start_iir+(CBUFFER_SIZE*2),CBUFFER_SIZE);
+		filter_step_enable |= BIT(3);
+		tmemset(filter_cmp, 0xff,sizeof(filter_cmp));
+	}
+
+	if(tmemcmp(p_start_iir+(CBUFFER_SIZE*3),filter_cmp,sizeof(filter_cmp)))//step 4 dispatch
+	{
+		tmemcpy((u8 *)LPF_FILTER_1,p_start_iir+(CBUFFER_SIZE*3),CBUFFER_SIZE);
+		filter_step_enable |= BIT(4);
+		tmemset(filter_cmp, 0xff,sizeof(filter_cmp));
+	}
+	if(tmemcmp(p_start_iir+(CBUFFER_SIZE*4),filter_cmp,sizeof(filter_cmp)))//step 5 dispatch
+	{
+		tmemcpy((u8 *)LPF_FILTER_2,p_start_iir+(CBUFFER_SIZE*4),CBUFFER_SIZE);
+		filter_step_enable |= BIT(5);
+		tmemset(filter_cmp, 0xff,sizeof(filter_cmp));
+	}
+
+	int i;
+	i = CBUFFER_SIZE*5;
+
+	filter1_shift = (p_start_iir[i] == 0xff)	?	0:p_start_iir[i];
+    filter2_shift = (p_start_iir[i+1] == 0xff)	?	0:p_start_iir[i+1];
+	filter3_shift = (p_start_iir[i+2] == 0xff)	?  	0:p_start_iir[i+2];
+
+	lpf_filter1_shift = (p_start_iir[i+3] == 0xff)?	0:p_start_iir[i+3];
+	lpf_filter2_shift = (p_start_iir[i+4] == 0xff)?	0:p_start_iir[i+4];
+
+	//volume gain setting .position 0x710A0
+	vol_gain_tmp = p_start_iir[0xA0];
+	if(vol_gain_tmp!=0xff){
+		if(vol_gain_tmp&0x80){
+			if(MANUAL_VOLUMN_SETTINGS<(vol_gain_tmp&0x7f)){
+				return;
+			}
+			Audio_VolumeSet(1,MANUAL_VOLUMN_SETTINGS-(vol_gain_tmp&0x7f));
+		}else{
+			if(MANUAL_VOLUMN_SETTINGS+vol_gain_tmp>0x3f){
+				return;
+			}
+			Audio_VolumeSet(1,MANUAL_VOLUMN_SETTINGS+vol_gain_tmp);
+		}
+	}else{
+		Audio_VolumeSet(1,MANUAL_VOLUMN_SETTINGS);
+	}
+
+	//PGA_POST_GAIN setting .position 0x710A1
+#if (!BLE_DMIC_ENABLE)
+	pga_post_gain_tmp = p_start_iir[0xA1];
+	if(pga_post_gain_tmp != 0xff){
+		if(pga_post_gain_tmp > 0x0f){//0x0f: PGA_GAIN_VOL_0_0DB
+			return;
+		}
+		analog_write_reg8(codec_ana_cfg4,(analog_read(codec_ana_cfg4) & 0x00) | pga_post_gain_tmp);
+	}
+#endif
+	return ;
+}
+
+#endif
+
+
+#if ((TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_HID) || (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_HID_DONGLE_TO_STB))//RCU,HID Service,ADPCM
+extern int predict;
+extern int predict_idx;
+
+void 	audio_mic_param_init(void)
+{
+	predict = 0;
+	predict_idx = 0;
+
+	buffer_mic_pkt_wptr = 0;
+	buffer_mic_pkt_rptr = 0;
+}
+
+_attribute_ram_code_ void	proc_mic_encoder (void)
 {
 	static u16	buffer_mic_rptr;
-	u16 mic_wptr = (audio_get_rx_dma_wptr (DMA2) - (u32)buffer_mic) >> 1;
-
+	u16 mic_wptr = get_mic_wr_ptr();
 	u16 l = (mic_wptr >= buffer_mic_rptr) ? (mic_wptr - buffer_mic_rptr) : 0xffff;
 
-	if (l >=(TL_MIC_BUFFER_SIZE>>3)) {
+	if ((l >=(TL_MIC_BUFFER_SIZE>>2)) && (((u8)(buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & (TL_MIC_PACKET_BUFFER_NUM * 2 - 1)) < TL_MIC_PACKET_BUFFER_NUM)) {
+
 		s16 *ps = buffer_mic + buffer_mic_rptr;
 #if 	TL_NOISE_SUPRESSION_ENABLE
         // for FIR adc sample data, only half part data are effective
@@ -409,41 +330,68 @@ void	proc_mic_encoder (void)
 			ps[i] = noise_supression (ps[i]);
         }
 #endif
-#if 	IIR_FILTER_ENABLE
-		extern u8 mic_start_flag;
-		if(mic_start_flag){
-			mic_start_flag =0;
-			tmemset(filter_1,0,sizeof(filter_1));
-			tmemset(filter_2,0,sizeof(filter_2));
-			tmemset(filter_3,0,sizeof(filter_3));
-		}
-		memcpy(filter_1,c1,sizeof(c1));
-		memcpy(filter_2,c2,sizeof(c2));
-		memcpy(filter_3,c3,sizeof(c3));
-		#if 1
-		voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>2),filter2_shift);
-		voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>2),filter3_shift);
-		voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>2),filter1_shift);
+
+#if (IIR_FILTER_ENABLE)
+		#if 0
+			//step1: out of band voice 12bits EQ filter process
+			voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
+			voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
+
+			//step2: 32K->16K
+			audio_getHalfsample_func(ps, TL_MIC_BUFFER_SIZE>>2); //496B/2=> 248B
+
+			//step3: inner band voice 14bits EQ filter process
+			voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>3),filter1_shift);//14 bits
+			voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>3),filter2_shift);//14 bits
+			voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>3),filter3_shift);//14 bits
 		#endif
-#endif 
+
+		#if 0
+			//step1: out of band voice 12bits EQ filter process
+			if((filter_step_enable & 0x30) != 0)
+			{
+				if(filter_step_enable & BIT(4))
+				{
+					voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
+				}
+				if(filter_step_enable & BIT(5))
+				{
+					voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
+				}
+			}
+			//step2: 32K->16K
+			audio_getHalfsample_func(ps, TL_MIC_BUFFER_SIZE>>2); //496B/2=> 248B
+		#endif
+
+		//step3: inner band voice 14bits EQ filter process
+		if((filter_step_enable & 0x0e) != 0)
+		{
+			if(filter_step_enable & BIT(1))
+			{
+				voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>2),filter1_shift);//14 bits
+			}
+			if(filter_step_enable & BIT(2))
+			{
+				voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>2),filter2_shift);//14 bits
+			}
+			if(filter_step_enable & BIT(3))
+			{
+				voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>2),filter3_shift);//14 bits
+			}
+		}
+
+		// step4: Soft HPF, NONE need
+#endif
 		mic_to_adpcm_split (	ps,	TL_MIC_ADPCM_UNIT_SIZE,
 						(s16 *)(buffer_mic_enc + (ADPCM_PACKET_LEN>>2) *
 						(buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1))), 1);
 
-//		buffer_mic_rptr = buffer_mic_rptr ? 0 : (TL_MIC_BUFFER_SIZE>>2);
-		buffer_mic_rptr = buffer_mic_rptr+(TL_MIC_BUFFER_SIZE>>3);
-		if(buffer_mic_rptr>=(TL_MIC_BUFFER_SIZE>>1))
-		{
-			buffer_mic_rptr=0;
-		}
+		buffer_mic_rptr = buffer_mic_rptr ? 0 : (TL_MIC_BUFFER_SIZE>>2);
 		buffer_mic_pkt_wptr++;
-		int pkts = (buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & (TL_MIC_PACKET_BUFFER_NUM*2-1);
-		if (pkts > TL_MIC_PACKET_BUFFER_NUM) {
-			buffer_mic_pkt_rptr++;
-//			log_event (TR_T_adpcm_enc_overflow);
-		}
-
-//		log_task_end (TR_T_adpcm);
+//		int pkts = (buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & (TL_MIC_PACKET_BUFFER_NUM*2-1);
+//		if (pkts > TL_MIC_PACKET_BUFFER_NUM) {
+//			buffer_mic_pkt_rptr++;
+//		}
 	}
 }
 
@@ -466,191 +414,1333 @@ void mic_encoder_data_read_ok (void)
 }
 
 
-#if 0
-void	proc_mic_encoder (void)
+#elif ((TL_AUDIO_MODE == TL_AUDIO_RCU_SBC_HID) || (TL_AUDIO_MODE == TL_AUDIO_RCU_SBC_HID_DONGLE_TO_STB))//RCU,HID Service,SBC
+void 	audio_mic_param_init(void)
 {
-	u32 t = clock_time ();
+	sbcenc_reset();
+}
+_attribute_ram_code_ void	proc_mic_encoder (void)
+{
 	static u16	buffer_mic_rptr;
-	u16 mic_wptr = reg_audio_wr_ptr;
-	u16 l = ((mic_wptr<<1) - buffer_mic_rptr) & ((TL_MIC_BUFFER_SIZE>>1) - 1);
-	if (l >= 128) {
-		log_task_begin (TR_T_adpcm);
+	u16 mic_wptr = get_mic_wr_ptr();
+	u16 l = (mic_wptr >= buffer_mic_rptr) ? (mic_wptr - buffer_mic_rptr) : 0xffff;
+
+	if (l >= MIC_SHORT_DEC_SIZE) {
+		u32 Temp_out_len = 0;
 		s16 *ps = buffer_mic + buffer_mic_rptr;
+		u8 *out = (u8 *)(buffer_mic_enc + (ADPCM_PACKET_LEN+3) * (buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1)));
 
 #if 	TL_NOISE_SUPRESSION_ENABLE
-		for (int i=0; i<128; i++) {
-			ps[i] = noise_supression (ps[i] >> 16) << 16;
-		}
+        // for FIR adc sample data, only half part data are effective
+		for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
+			ps[i] = noise_supression (ps[i]);
+        }
 #endif
-		mic_to_adpcm_split (	ps,	128,
-						(s16 *)(buffer_mic_enc + (ADPCM_PACKET_LEN>>2) *
-						((buffer_mic_pkt_wptr>>1) & (TL_MIC_PACKET_BUFFER_NUM - 1))), !(buffer_mic_pkt_wptr&1));
 
-		buffer_mic_rptr = (buffer_mic_rptr + 128) & ((TL_MIC_BUFFER_SIZE>>1) - 1);
-		buffer_mic_pkt_wptr++;
-		int pkts = ((buffer_mic_pkt_wptr>>1) - buffer_mic_pkt_rptr) & (TL_MIC_PACKET_BUFFER_NUM*2-1);
-		if (pkts > TL_MIC_PACKET_BUFFER_NUM) {
-			buffer_mic_pkt_rptr++;
-//			log_event (TR_T_adpcm_enc_overflow);
+#if (IIR_FILTER_ENABLE)
+		#if 0
+			//step1: out of band voice 12bits EQ filter process
+			voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
+			voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
+
+			//step2: 32K->16K
+			audio_getHalfsample_func(ps, TL_MIC_BUFFER_SIZE>>2); //496B/2=> 248B
+
+			//step3: inner band voice 14bits EQ filter process
+			voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>3),filter1_shift);//14 bits
+			voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>3),filter2_shift);//14 bits
+			voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>3),filter3_shift);//14 bits
+		#endif
+
+		#if 0
+			//step1: out of band voice 12bits EQ filter process
+			if((filter_step_enable & 0x30) != 0)
+			{
+				if(filter_step_enable & BIT(4))
+				{
+					voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
+				}
+				if(filter_step_enable & BIT(5))
+				{
+					voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
+				}
+			}
+			//step2: 32K->16K
+			audio_getHalfsample_func(ps, TL_MIC_BUFFER_SIZE>>2); //496B/2=> 248B
+		#endif
+
+		//step3: inner band voice 14bits EQ filter process
+		if((filter_step_enable & 0x0e) != 0)
+		{
+			if(filter_step_enable & BIT(1))
+			{
+				voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>2),filter1_shift);//14 bits
+			}
+			if(filter_step_enable & BIT(2))
+			{
+				voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>2),filter2_shift);//14 bits
+			}
+			if(filter_step_enable & BIT(3))
+			{
+				voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>2),filter3_shift);//14 bits
+			}
 		}
-		adb_t2 = clock_time() - t;
-		log_task_end (TR_T_adpcm);
+
+		// step4: Soft HPF, NONE need
+#endif
+		sbc_enc((u8 *)ps, MIC_SHORT_DEC_SIZE << 1, out, (ADPCM_PACKET_LEN+3), Temp_out_len);
+
+		buffer_mic_rptr = buffer_mic_rptr ? 0 : (TL_MIC_BUFFER_SIZE>>2);
+		buffer_mic_pkt_wptr ++;
+
+		int pkts = (buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & ((TL_MIC_PACKET_BUFFER_NUM << 1) - 1);
+		if (pkts > TL_MIC_PACKET_BUFFER_NUM) {  // overflow of encode
+			buffer_mic_pkt_rptr++;
+		}
 	}
 }
 
+int	*	mic_encoder_data_buffer ()
+{
+	u8 tx_frame_cnt = 1;//TL_MIC_MSBC_TX_FRAME_CNT;
+	int pkts = (buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & ((TL_MIC_PACKET_BUFFER_NUM << 1) - 1);
+
+    if (pkts < tx_frame_cnt)
+        return 0;
+
+    int *ps = (int *)(buffer_mic_enc + (ADPCM_PACKET_LEN+3) *
+                (buffer_mic_pkt_rptr & (TL_MIC_PACKET_BUFFER_NUM - 1)));
+
+
+    return ps;
+}
+void mic_encoder_data_read_ok (void)
+{
+	buffer_mic_pkt_rptr++;
+}
+
+#elif (TL_AUDIO_MODE == TL_AUDIO_RCU_MSBC_HID)						//RCU,HID Service,MSBC
+
+void 	audio_mic_param_init(void)
+{
+	sbcenc_reset();
+}
+void	proc_mic_encoder (void)
+{
+	static u16	buffer_mic_rptr;
+	u16 mic_wptr = get_mic_wr_ptr();
+	u16 l = (mic_wptr >= buffer_mic_rptr) ? (mic_wptr - buffer_mic_rptr) : 0xffff;
+
+	if (l >= MIC_SHORT_DEC_SIZE) {
+		u32 Temp_out_len = 0;
+		s16 *ps = buffer_mic + buffer_mic_rptr;
+		s16 *out = (s16 *)(buffer_mic_enc + (ADPCM_PACKET_LEN+3) * (buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1)));
+
+#if 	TL_NOISE_SUPRESSION_ENABLE
+        // for FIR adc sample data, only half part data are effective
+		for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
+			ps[i] = noise_supression (ps[i]);
+        }
+#endif
+
+#if (IIR_FILTER_ENABLE)
+		#if 0
+			//step1: out of band voice 12bits EQ filter process
+			voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
+			voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
+
+			//step2: 32K->16K
+			audio_getHalfsample_func(ps, TL_MIC_BUFFER_SIZE>>2); //496B/2=> 248B
+
+			//step3: inner band voice 14bits EQ filter process
+			voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>3),filter1_shift);//14 bits
+			voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>3),filter2_shift);//14 bits
+			voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>3),filter3_shift);//14 bits
+		#endif
+
+		#if 0
+			//step1: out of band voice 12bits EQ filter process
+			if((filter_step_enable & 0x30) != 0)
+			{
+				if(filter_step_enable & BIT(4))
+				{
+					voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
+				}
+				if(filter_step_enable & BIT(5))
+				{
+					voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
+				}
+			}
+			//step2: 32K->16K
+			audio_getHalfsample_func(ps, TL_MIC_BUFFER_SIZE>>2); //496B/2=> 248B
+		#endif
+
+		//step3: inner band voice 14bits EQ filter process
+		if((filter_step_enable & 0x0e) != 0)
+		{
+			if(filter_step_enable & BIT(1))
+			{
+				voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>2),filter1_shift);//14 bits
+			}
+			if(filter_step_enable & BIT(2))
+			{
+				voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>2),filter2_shift);//14 bits
+			}
+			if(filter_step_enable & BIT(3))
+			{
+				voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>2),filter3_shift);//14 bits
+			}
+		}
+
+		// step4: Soft HPF, NONE need
+#endif
+		sbc_enc((u8 *)ps, MIC_SHORT_DEC_SIZE << 1, out, ADPCM_PACKET_LEN, Temp_out_len);
+
+		buffer_mic_rptr = buffer_mic_rptr ? 0 : (TL_MIC_BUFFER_SIZE>>2);
+		buffer_mic_pkt_wptr ++;
+
+		int pkts = (buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & ((TL_MIC_PACKET_BUFFER_NUM << 1) - 1);
+		if (pkts > TL_MIC_PACKET_BUFFER_NUM) {  // overflow of encode
+			buffer_mic_pkt_rptr++;
+		}
+	}
+}
 
 int	*	mic_encoder_data_buffer ()
 {
-	if ((buffer_mic_pkt_rptr & 0x7f) == (buffer_mic_pkt_wptr >> 1)) {
+	if (buffer_mic_pkt_rptr == buffer_mic_pkt_wptr) {
+			return 0;
+	}
+    int *ps = (int *)(buffer_mic_enc + (ADPCM_PACKET_LEN+3) *
+                (buffer_mic_pkt_rptr & (TL_MIC_PACKET_BUFFER_NUM - 1)));
+
+
+    return ps;
+}
+void mic_encoder_data_read_ok (void)
+{
+	buffer_mic_pkt_rptr++;
+}
+
+#elif (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)						//RCU,GATT Telink
+void	proc_mic_encoder (void)
+{
+	static u16	buffer_mic_rptr;
+	u16 mic_wptr = get_mic_wr_ptr();
+	u16 l = (mic_wptr >= buffer_mic_rptr) ? (mic_wptr - buffer_mic_rptr) : 0xffff;
+
+	if (l >=(TL_MIC_BUFFER_SIZE>>2)) {
+
+		s16 *ps = buffer_mic + buffer_mic_rptr;
+#if 	TL_NOISE_SUPRESSION_ENABLE
+        // for FIR adc sample data, only half part data are effective
+		for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
+			ps[i] = noise_supression (ps[i]);
+        }
+#endif
+
+#if (IIR_FILTER_ENABLE)
+		#if 0
+			//step1: out of band voice 12bits EQ filter process
+			voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
+			voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
+
+			//step2: 32K->16K
+			audio_getHalfsample_func(ps, TL_MIC_BUFFER_SIZE>>2); //496B/2=> 248B
+
+			//step3: inner band voice 14bits EQ filter process
+			voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>3),filter1_shift);//14 bits
+			voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>3),filter2_shift);//14 bits
+			voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>3),filter3_shift);//14 bits
+		#endif
+
+		#if 0
+			//step1: out of band voice 12bits EQ filter process
+			if((filter_step_enable & 0x30) != 0)
+			{
+				if(filter_step_enable & BIT(4))
+				{
+					voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
+				}
+				if(filter_step_enable & BIT(5))
+				{
+					voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
+				}
+			}
+			//step2: 32K->16K
+			audio_getHalfsample_func(ps, TL_MIC_BUFFER_SIZE>>2); //496B/2=> 248B
+		#endif
+
+		//step3: inner band voice 14bits EQ filter process
+		if((filter_step_enable & 0x0e) != 0)
+		{
+			if(filter_step_enable & BIT(1))
+			{
+				voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>2),filter1_shift);//14 bits
+			}
+			if(filter_step_enable & BIT(2))
+			{
+				voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>2),filter2_shift);//14 bits
+			}
+			if(filter_step_enable & BIT(3))
+			{
+				voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>2),filter3_shift);//14 bits
+			}
+		}
+
+		// step4: Soft HPF, NONE need
+#endif
+		mic_to_adpcm_split (	ps,	TL_MIC_ADPCM_UNIT_SIZE,
+						(s16 *)(buffer_mic_enc + (ADPCM_PACKET_LEN>>2) *
+						(buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1))), 1);
+
+		buffer_mic_rptr = buffer_mic_rptr ? 0 : (TL_MIC_BUFFER_SIZE>>2);
+		buffer_mic_pkt_wptr++;
+		int pkts = (buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & (TL_MIC_PACKET_BUFFER_NUM*2-1);
+		if (pkts > TL_MIC_PACKET_BUFFER_NUM) {
+			buffer_mic_pkt_rptr++;
+		}
+	}
+}
+
+int	*	mic_encoder_data_buffer ()
+{
+	if (buffer_mic_pkt_rptr == buffer_mic_pkt_wptr) {
 			return 0;
 	}
 
 	int *ps = buffer_mic_enc + (ADPCM_PACKET_LEN>>2) *
 			(buffer_mic_pkt_rptr & (TL_MIC_PACKET_BUFFER_NUM - 1));
 
-	buffer_mic_pkt_rptr++;
 
 	return ps;
 }
+
+void mic_encoder_data_read_ok (void)
+{
+	buffer_mic_pkt_rptr++;
+}
+
+#elif (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_GOOGLE)						//RCU,GATT GOOGLE
+void	proc_mic_encoder (void)
+{
+	static u16	buffer_mic_rptr;
+	u16 mic_wptr = get_mic_wr_ptr();
+	u16 l = (mic_wptr >= buffer_mic_rptr) ? (mic_wptr - buffer_mic_rptr) : 0xffff;
+
+	if (l >=(TL_MIC_BUFFER_SIZE>>2)) {
+
+		s16 *ps = buffer_mic + buffer_mic_rptr;
+#if 	TL_NOISE_SUPRESSION_ENABLE
+        // for FIR adc sample data, only half part data are effective
+		for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
+			ps[i] = noise_supression (ps[i]);
+        }
 #endif
 
+#if (IIR_FILTER_ENABLE)
+		#if 0
+			//step1: out of band voice 12bits EQ filter process
+			voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
+			voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
+
+			//step2: 32K->16K
+			audio_getHalfsample_func(ps, TL_MIC_BUFFER_SIZE>>2); //496B/2=> 248B
+
+			//step3: inner band voice 14bits EQ filter process
+			voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>3),filter1_shift);//14 bits
+			voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>3),filter2_shift);//14 bits
+			voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>3),filter3_shift);//14 bits
+		#endif
+
+		#if 0
+			//step1: out of band voice 12bits EQ filter process
+			if((filter_step_enable & 0x30) != 0)
+			{
+				if(filter_step_enable & BIT(4))
+				{
+					voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
+				}
+				if(filter_step_enable & BIT(5))
+				{
+					voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
+				}
+			}
+			//step2: 32K->16K
+			audio_getHalfsample_func(ps, TL_MIC_BUFFER_SIZE>>2); //496B/2=> 248B
+		#endif
+
+		//step3: inner band voice 14bits EQ filter process
+		if((filter_step_enable & 0x0e) != 0)
+		{
+			if(filter_step_enable & BIT(1))
+			{
+				voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>2),filter1_shift);//14 bits
+			}
+			if(filter_step_enable & BIT(2))
+			{
+				voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>2),filter2_shift);//14 bits
+			}
+			if(filter_step_enable & BIT(3))
+			{
+				voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>2),filter3_shift);//14 bits
+			}
+		}
+
+		// step4: Soft HPF, NONE need
 #endif
+		mic_to_adpcm_split (	ps,	TL_MIC_ADPCM_UNIT_SIZE,
+						(s16 *)(buffer_mic_enc + (ADPCM_PACKET_LEN>>2) *
+						(buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1))), 1);
 
-/////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////
-//	hardware dependent
-/////////////////////////////////////////////////////////////
-#if TL_SDM_BUFFER_SIZE
-
-int		buffer_sdm_wptr;
-int		buffer_sdm_dec[ADPCM_PACKET_LEN];
-
-void adpcm_to_sdm (signed short *ps, int len){
-	int i;
-	int predict_idx = 1;
-	int predict=0;
-
-	unsigned char *pcode = (unsigned char *) (ps + 12);
-	unsigned char code=0;
-
-	for (i=0; i<len; i++) {
-
-		if (i) {
-			int step = steptbl[predict_idx];
-
-			int diffq = step >> 3;
-
-			if (code & 4) {
-				diffq = diffq + step;
-			}
-			step = step >> 1;
-			if (code & 2) {
-				diffq = diffq + step;
-			}
-			step = step >> 1;
-			if (code & 1) {
-				diffq = diffq + step;
-			}
-
-			if (code & 8) {
-				predict = predict - diffq;
-			}
-			else {
-				predict = predict + diffq;
-			}
-
-			if (predict > 32767) {
-				predict = 32767;
-			}
-			else if (predict < -32767) {
-				predict = -32767;
-			}
-
-			predict_idx = predict_idx + idxtbl[code & 15];
-
-			if(predict_idx < 0) {
-				predict_idx = 0;
-			}
-			else if(predict_idx > 88) {
-				predict_idx = 88;
-			}
-
-			if (i&1) {
-				code = *pcode ++;
-			}
-			else {
-				code = code >> 4;
-			}
-		}
-		else {
-			code = *pcode++ >> 4;
-			predict = ps[0];
+		buffer_mic_rptr = buffer_mic_rptr ? 0 : (TL_MIC_BUFFER_SIZE>>2);
+		buffer_mic_pkt_wptr++;
+		int pkts = (buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & (TL_MIC_PACKET_BUFFER_NUM*2-1);
+		if (pkts > TL_MIC_PACKET_BUFFER_NUM) {
+			buffer_mic_pkt_rptr++;
 		}
 
-		int t2;
-		if (i < 8) {
-			t2 = ps[i];
-		}
-		else {
-			t2 = predict;
-		}
-		//* ((s16 *) (buffer_sdm + buffer_sdm_wptr)) = t2;
-		buffer_sdm[buffer_sdm_wptr] = (t2<<0);
-		buffer_sdm_wptr = (buffer_sdm_wptr + 1) & ((TL_SDM_BUFFER_SIZE>>1) - 1);
 	}
 }
 
-void pcm_to_sdm (signed short *ps, int len){
-	for (int i=0; i<len; i++) {
-		buffer_sdm[buffer_sdm_wptr] = ps[i];
-		buffer_sdm_wptr = (buffer_sdm_wptr + 1) & ((TL_SDM_BUFFER_SIZE>>1) - 1);
+int	*	mic_encoder_data_buffer ()
+{
+	if (buffer_mic_pkt_rptr == buffer_mic_pkt_wptr) {
+			return 0;
 	}
+
+	int *ps = buffer_mic_enc + (ADPCM_PACKET_LEN>>2) *
+			(buffer_mic_pkt_rptr & (TL_MIC_PACKET_BUFFER_NUM - 1));
+
+
+	return ps;
 }
 
-void silence_to_sdm (void){
-	for (int i=0; i<TL_SDM_BUFFER_SIZE>>1; i++) {
-		* ((s16 *) (buffer_sdm + i)) = 0;
-	}
-}
-
-int  sdm_decode_ready (int nbyte_to_decode)
+void mic_encoder_data_read_ok (void)
 {
-	u16 sdm_rptr = reg_aud_rptr; //get_sdm_rd_ptr ();
-	u16 num = ((buffer_sdm_wptr>>1) - sdm_rptr) & ((TL_SDM_BUFFER_SIZE>>2) - 1);
-	return ((nbyte_to_decode>>2) + num) < (TL_SDM_BUFFER_SIZE >> 2);
+	buffer_mic_pkt_rptr++;
 }
-
-int   sdm_word_in_buffer ()
-{
-	u16 num = ((buffer_sdm_wptr>>1) - reg_aud_rptr) & ((TL_SDM_BUFFER_SIZE>>2) - 1);
-	return num;
-}
-
-void  sdm_decode_rate (int step, int adj)
-{
-	u16 sdm_rptr = reg_aud_rptr; //get_sdm_rd_ptr ();
-	u16 num = ((buffer_sdm_wptr>>1) - sdm_rptr) & ((TL_SDM_BUFFER_SIZE>>2) - 1);
-
-	if (num > (TL_SDM_BUFFER_SIZE*3>>5)) {
-		reg_ascl_step = step + adj;
-	}
-	else if (num < (TL_SDM_BUFFER_SIZE>>4)) {
-		reg_ascl_step = step - adj;
-	}
-}
-
-
-void proc_sdm_decoder (void)
-{
-
-}
-
-int  sdm_decode_data (int *ps, int nbyte)
-{
-	return 0;
-}
+#else
 
 #endif
 
+#elif (TL_AUDIO_MODE & DONGLE_PROJECT)								//Dongle
+
+#if (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_TELINK)			//Dongle, GATT Telink
+u8		abuf_mic_wptr, abuf_dec_wptr;
+u16		abuf_dec_rptr;
+
+#define DEC_BUFFER_SIZE		(MIC_SHORT_DEC_SIZE<<2)
+#define	PACK_POINTER		(abuf_dec_rptr/248) | (abuf_dec_wptr<<8) | (abuf_mic_wptr<<16)
+#define	USB_ISO_IN_SIZE		(MIC_SAMPLE_RATE / 1000)
+
+u8		abuf_mic[MIC_ADPCM_FRAME_SIZE * 4];
+s16		abuf_dec[DEC_BUFFER_SIZE];
+
+int		abuf_reset = 0;
+
+void abuf_init ()
+{
+	abuf_mic_wptr = abuf_dec_wptr = 0;
+	abuf_reset = 16;
+}
+
+void abuf_mic_add (u32 *p)
+{
+	u32 *pd = (u32 *) (abuf_mic + (abuf_mic_wptr & 3) * MIC_ADPCM_FRAME_SIZE);
+	for (int i=0; i<(MIC_ADPCM_FRAME_SIZE>>2); i++)
+	{
+		*pd ++ = *p++;
+	}
+	abuf_mic_wptr ++;
+}
+
+void abuf_mic_dec ()
+{
+	static int start = 1;
+	static int abuf_reset_no;
+	if (abuf_reset)
+	{
+		abuf_dec_wptr = abuf_mic_wptr;
+	}
+	else
+	{
+		u8 num_mic = abuf_mic_wptr - abuf_dec_wptr;
+		u8 num_dec = abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE);
+
+		if (num_mic > 4) 			// in case of overflow
+		{
+			abuf_dec_wptr ++;
+		}
+
+		if (num_dec > 4)
+		{
+			abuf_reset = 16;
+			start = 1;
+			abuf_reset_no++;
+		}
+		else if ( ((!start && num_mic>=1) || (start && num_mic>=2)) && (num_dec <= 3) )
+		{
+			adpcm_to_pcm (
+					(s16 *) (abuf_mic + (abuf_dec_wptr & 3) * MIC_ADPCM_FRAME_SIZE),
+					abuf_dec + (abuf_dec_wptr & 3) * MIC_SHORT_DEC_SIZE,
+					MIC_SHORT_DEC_SIZE );
+
+			abuf_dec_wptr ++;			// 256-byte = 128-s16
+			start = 0;
+		}
+	}
+}
+
+
+_attribute_ram_code_ void abuf_dec_usb ()
+{
+	static u32 tick_usb_iso_in;
+	static u8  buffer_empty = 1;
+	static u8  n_usb_iso = 0;
+
+	n_usb_iso++;
+
+	if (clock_time_exceed (tick_usb_iso_in, 4000))
+	{
+		abuf_reset = 16;
+	}
+
+	tick_usb_iso_in = clock_time ();
+	if (abuf_reset)
+	{
+		abuf_dec_rptr = abuf_dec_wptr*MIC_SHORT_DEC_SIZE;
+		abuf_reset--;
+	}
+	/////////////////// copy data to usb iso in buffer ///////////////
+	reg_usb_ep7_ptr = 0;
+	u8 num = abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE);
+	if (num)
+	{
+		if ( (buffer_empty && num >= 3) || (!buffer_empty && (num >= 1 || (n_usb_iso & 3))) )
+		{
+			buffer_empty = 0;
+
+			u16 offset = abuf_dec_rptr%DEC_BUFFER_SIZE;
+			s16 *ps = abuf_dec + offset;
+
+
+			if(offset == DEC_BUFFER_SIZE - (USB_ISO_IN_SIZE/2)){
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+				ps = abuf_dec;
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+			else{
+				for (int i=0; i<USB_ISO_IN_SIZE; i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+
+
+			abuf_dec_rptr += USB_ISO_IN_SIZE;
+			if(abuf_dec_rptr >= (MIC_SHORT_DEC_SIZE<<8) ){
+				abuf_dec_rptr = 0;
+			}
+		}
+		else
+		{
+			for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+			{
+				reg_usb_ep7_dat = 0;
+			}
+		}
+	}
+	else
+	{
+		for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+		{
+			reg_usb_ep7_dat = 0;
+		}
+		buffer_empty = 1;
+	}
+	reg_usb_ep7_ctrl = BIT(0);			//ACK iso in
+}
+
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_GOOGLE)				//Dongle, GATT GOOGLE
+
+u8		abuf_mic_wptr, abuf_dec_wptr;
+u16		abuf_dec_rptr;
+
+#define DEC_BUFFER_SIZE			(MIC_SHORT_DEC_SIZE<<2)
+#define	PACK_POINTER			(abuf_dec_rptr/248) | (abuf_dec_wptr<<8) | (abuf_mic_wptr<<16)
+#define	USB_ISO_IN_SIZE			(MIC_SAMPLE_RATE / 1000)
+#define MIC_ADPCM_FRAME_NUM		4
+
+u8		abuf_mic[MIC_ADPCM_FRAME_SIZE * 4];
+s16		abuf_dec[DEC_BUFFER_SIZE];
+
+int		abuf_reset = 0;
+
+void abuf_init ()
+{
+	abuf_mic_wptr = abuf_dec_wptr = 0;
+	abuf_reset = 16;
+}
+
+void abuf_mic_add (u32 *p)
+{
+	u8 *src;
+	src = (u8*)p;
+	u8 *pd = (u8 *) (abuf_mic + (abuf_mic_wptr & (MIC_ADPCM_FRAME_NUM - 1)) * MIC_ADPCM_FRAME_SIZE);
+	for (int i=0; i<(MIC_ADPCM_FRAME_SIZE); i++)
+	{
+		*pd ++ = *src++;
+	}
+	abuf_mic_wptr ++;
+}
+
+void abuf_mic_dec ()
+{
+	static int start = 1;
+	static int abuf_reset_no;
+	static u32 smbc_decode_len = 0;
+	if (abuf_reset)
+	{
+		abuf_dec_wptr = abuf_mic_wptr;
+	}
+	else
+	{
+		u8 num_mic = abuf_mic_wptr - abuf_dec_wptr;
+		u8 num_dec = abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE);
+
+		if (num_mic > MIC_ADPCM_FRAME_NUM) 			// in case of overflow
+		{
+			abuf_dec_wptr ++;
+		}
+
+		if (num_dec > MIC_ADPCM_FRAME_NUM)
+		{
+
+
+			abuf_reset = 16;
+			start = 1;
+			abuf_reset_no++;
+		}
+		else if ( ((!start && num_mic>=1) || (start && num_mic>=2)) && (num_dec <= (MIC_ADPCM_FRAME_NUM - 1)) )
+		{
+			adpcm_to_pcm (
+					(s16 *) (abuf_mic + (abuf_dec_wptr & 3) * MIC_ADPCM_FRAME_SIZE),
+					abuf_dec + (abuf_dec_wptr & 3) * MIC_SHORT_DEC_SIZE,
+					MIC_SHORT_DEC_SIZE );
+
+			abuf_dec_wptr ++;			// 256-byte = 128-s16
+			start = 0;
+		}
+	}
+}
+
+
+_attribute_ram_code_ void abuf_dec_usb ()
+{
+	static u32 tick_usb_iso_in;
+	static u8  buffer_empty = 1;
+	static u8  n_usb_iso = 0;
+
+	n_usb_iso++;
+
+	if (clock_time_exceed (tick_usb_iso_in, 4000))
+	{
+		abuf_reset = 16;
+	}
+
+	tick_usb_iso_in = clock_time ();
+	if (abuf_reset)
+	{
+		abuf_dec_rptr = abuf_dec_wptr*MIC_SHORT_DEC_SIZE;
+		abuf_reset--;
+	}
+	/////////////////// copy data to usb iso in buffer ///////////////
+	reg_usb_ep7_ptr = 0;
+	u8 num = abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE);
+	if (num)
+	{
+		if ( (buffer_empty && num >= 3) || (!buffer_empty && (num >= 1 || (n_usb_iso & 3))) )
+		{
+			buffer_empty = 0;
+
+			u16 offset = abuf_dec_rptr%DEC_BUFFER_SIZE;
+			s16 *ps = abuf_dec + offset;
+
+
+			if(offset == DEC_BUFFER_SIZE - (USB_ISO_IN_SIZE/2)){
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+				ps = abuf_dec;
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+			else{
+				for (int i=0; i<USB_ISO_IN_SIZE; i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+
+
+			abuf_dec_rptr += USB_ISO_IN_SIZE;
+			if(abuf_dec_rptr >= (MIC_SHORT_DEC_SIZE<<8) ){
+				abuf_dec_rptr = 0;
+			}
+		}
+		else
+		{
+//			for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+//			{
+//				reg_usb_ep7_dat = 0;
+//			}
+		}
+	}
+	else
+	{
+//		for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+//		{
+//			reg_usb_ep7_dat = 0;
+//		}
+		buffer_empty = 1;
+	}
+	reg_usb_ep7_ctrl = BIT(0);			//ACK iso in
+}
+
+
+
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_HID_DONGLE_TO_STB)			//Dongle, HID Service,ADPCM,DONGLE TO STB, STB decode
+
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_HID)							//Dongle, HID Service,ADPCM,DONGLE decode
+u8		abuf_mic_wptr, abuf_dec_wptr;
+u16		abuf_dec_rptr;
+
+#define DEC_BUFFER_SIZE		(MIC_SHORT_DEC_SIZE<<2)
+#define	PACK_POINTER		(abuf_dec_rptr/248) | (abuf_dec_wptr<<8) | (abuf_mic_wptr<<16)
+#define	USB_ISO_IN_SIZE		(MIC_SAMPLE_RATE / 1000)
+
+u8		abuf_mic[MIC_ADPCM_FRAME_SIZE * 8];
+s16		abuf_dec[DEC_BUFFER_SIZE];
+
+int		abuf_reset = 0;
+
+extern int predict;
+extern int predict_idx;
+
+u8 mic_cnt = 0;
+void abuf_init ()
+{
+	abuf_mic_wptr = abuf_dec_wptr = 0;
+	abuf_reset = 16;
+
+	mic_cnt = 0;
+	predict  = 0;
+	predict_idx = 0;
+
+}
+void abuf_mic_add (u32 *p)
+{
+	u32 *pd = (u32 *) (abuf_mic + (abuf_mic_wptr & 0x07) * MIC_ADPCM_FRAME_SIZE);
+	for (int i=0; i<(MIC_ADPCM_FRAME_SIZE>>2); i++)
+	{
+		*pd ++ = *p++;
+	}
+	abuf_mic_wptr ++;
+}
+
+void abuf_mic_dec ()
+{
+	static int start = 1;
+	static int abuf_reset_no;
+
+		u8 num_mic = (u8)(abuf_mic_wptr - abuf_dec_wptr);
+		u8 num_dec = (u8)(abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE));
+
+		if (num_mic > 8) 			// in case of overflow
+		{
+//			abuf_dec_wptr ++;
+		}
+
+		if (num_dec > 4)
+		{
+			abuf_dec_rptr = abuf_dec_wptr*MIC_SHORT_DEC_SIZE;
+			num_dec = 0;
+//			abuf_reset = 16;
+//			start = 1;
+			abuf_reset_no++;
+		}
+
+		if ( ((!start && num_mic>=1) || (start && num_mic>=2)) )
+		{
+			adpcm_to_pcm (
+					(s16 *) (abuf_mic + (abuf_dec_wptr & 7) * MIC_ADPCM_FRAME_SIZE),
+					abuf_dec + (abuf_dec_wptr & 3) * MIC_SHORT_DEC_SIZE,
+					MIC_SHORT_DEC_SIZE );
+
+			abuf_dec_wptr ++;			// 256-byte = 128-s16
+			start = 0;
+		}
+
+}
+
+
+_attribute_ram_code_ void abuf_dec_usb ()
+{
+	static u32 tick_usb_iso_in;
+	static u8  buffer_empty = 1;
+	static u8  n_usb_iso = 0;
+
+	n_usb_iso++;
+
+	if (clock_time_exceed (tick_usb_iso_in, 4000))
+	{
+		abuf_reset = 16;
+	}
+
+	tick_usb_iso_in = clock_time ();
+	if (abuf_reset)
+	{
+		abuf_dec_rptr = abuf_dec_wptr*MIC_SHORT_DEC_SIZE;
+		abuf_reset--;
+	}
+	/////////////////// copy data to usb iso in buffer ///////////////
+	reg_usb_ep7_ptr = 0;
+	u8 num = abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE);
+	if (num)
+	{
+		if ( (buffer_empty && num >= 3) || (!buffer_empty && (num >= 1 || (n_usb_iso & 3))) )
+		{
+			buffer_empty = 0;
+
+			u16 offset = abuf_dec_rptr%DEC_BUFFER_SIZE;
+			s16 *ps = abuf_dec + offset;
+
+
+			if(offset == DEC_BUFFER_SIZE - (USB_ISO_IN_SIZE/2)){
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+				ps = abuf_dec;
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+			else{
+				for (int i=0; i<USB_ISO_IN_SIZE; i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+
+
+			abuf_dec_rptr += USB_ISO_IN_SIZE;
+			if(abuf_dec_rptr >= (MIC_SHORT_DEC_SIZE<<8) ){
+				abuf_dec_rptr = 0;
+			}
+		}
+		else
+		{
+//			for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+//			{
+//				reg_usb_ep7_dat = 0;
+//			}
+		}
+	}
+	else
+	{
+//		for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+//		{
+//			reg_usb_ep7_dat = 0;
+//		}
+		buffer_empty = 1;
+	}
+	reg_usb_ep7_ctrl = BIT(0);			//ACK iso in
+}
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_SBC_HID_DONGLE_TO_STB)					//Dongle,HID Service,SBC,DONGLE TO STB, STB decode
+
+
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_SBC_HID)								//Dongle,HID Service,SBC,DONGLE decode
+
+u8		abuf_mic_wptr, abuf_dec_wptr;
+u16		abuf_dec_rptr;
+#define	MIC_ADPCM_FRAME_NUM		8
+#define DEC_BUFFER_SIZE		(MIC_SHORT_DEC_SIZE* MIC_ADPCM_FRAME_NUM)
+#define	PACK_POINTER		(abuf_dec_rptr/248) | (abuf_dec_wptr<<8) | (abuf_mic_wptr<<16)
+#define	USB_ISO_IN_SIZE		(MIC_SAMPLE_RATE / 1000)
+
+u8		abuf_mic[MIC_ADPCM_FRAME_SIZE * MIC_ADPCM_FRAME_NUM];
+s16		abuf_dec[DEC_BUFFER_SIZE];
+
+int		abuf_reset = 0;
+
+void abuf_init ()
+{
+	abuf_mic_wptr = abuf_dec_wptr = 0;
+	abuf_reset = 16;
+}
+void abuf_mic_add (u32 *p)
+{
+	u8 *src;
+	src = (u8*)p;
+	u8 *pd = (u8 *) (abuf_mic + (abuf_mic_wptr & (MIC_ADPCM_FRAME_NUM-1)) * MIC_ADPCM_FRAME_SIZE);
+	for (int i=0; i<(MIC_ADPCM_FRAME_SIZE); i++)
+	{
+		*pd ++ = *src++;
+	}
+//	*pd = 0;
+	abuf_mic_wptr ++;
+}
+
+_attribute_ram_code_ void abuf_mic_dec ()
+{
+	static int start = 1;
+	static int abuf_reset_no;
+	static u32 smbc_decode_len = 0;
+	if (abuf_reset)
+	{
+		abuf_dec_wptr = abuf_mic_wptr;
+	}
+	else
+	{
+		u8 num_mic = (u8)(abuf_mic_wptr - abuf_dec_wptr);
+//		u8 num_dec = (u8)(abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE));
+
+		if (num_mic > MIC_ADPCM_FRAME_NUM) 			// in case of overflow
+		{
+			abuf_dec_wptr ++;
+		}
+
+//		if (num_dec > MIC_ADPCM_FRAME_NUM)
+//		{
+//			abuf_dec_rptr = abuf_dec_wptr*MIC_SHORT_DEC_SIZE;
+//			abuf_reset = 16;
+//			start = 1;
+//			abuf_reset_no++;
+//		}
+
+//		if ( ((!start && num_mic>=1) || (start && num_mic>=2))&& (num_dec <= (MIC_ADPCM_FRAME_NUM-1)))
+		if ( ((!start && num_mic>=1) || (start && num_mic>=2)))
+		{
+			sbc_decode(abuf_mic + (abuf_dec_wptr & (MIC_ADPCM_FRAME_NUM - 1)) * MIC_ADPCM_FRAME_SIZE, MIC_ADPCM_FRAME_SIZE,
+								abuf_dec + (abuf_dec_wptr & (MIC_ADPCM_FRAME_NUM - 1)) * MIC_SHORT_DEC_SIZE, MIC_SHORT_DEC_SIZE * 2, &smbc_decode_len);
+
+			abuf_dec_wptr ++;			// 256-byte = 128-s16
+			start = 0;
+		}
+
+	}
+}
+
+_attribute_ram_code_ void abuf_dec_usb ()
+{
+	static u32 tick_usb_iso_in;
+	static u8  buffer_empty = 1;
+	static u8  n_usb_iso = 0;
+
+	n_usb_iso++;
+
+	if (clock_time_exceed (tick_usb_iso_in, 4000))
+	{
+		abuf_reset = 16;
+	}
+
+	tick_usb_iso_in = clock_time ();
+	if (abuf_reset)
+	{
+		abuf_dec_rptr = abuf_dec_wptr*MIC_SHORT_DEC_SIZE;
+		abuf_reset--;
+	}
+	/////////////////// copy data to usb iso in buffer ///////////////
+	reg_usb_ep7_ptr = 0;
+	u8 num = abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE);
+	if (num)
+	{
+		if ( (buffer_empty && num >= (MIC_ADPCM_FRAME_NUM - 1)) || (!buffer_empty && (num >= 1 || (n_usb_iso & (MIC_ADPCM_FRAME_NUM - 1)))) )
+		{
+			buffer_empty = 0;
+
+			u16 offset = abuf_dec_rptr%DEC_BUFFER_SIZE;
+			s16 *ps = abuf_dec + offset;
+
+
+			if(offset == DEC_BUFFER_SIZE - (USB_ISO_IN_SIZE/2)){
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+				ps = abuf_dec;
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+			else{
+				for (int i=0; i<USB_ISO_IN_SIZE; i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+
+
+			abuf_dec_rptr += USB_ISO_IN_SIZE;
+			if(abuf_dec_rptr >= (MIC_SHORT_DEC_SIZE<<8) ){
+				abuf_dec_rptr = 0;
+			}
+		}
+		else
+		{
+//			for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+//			{
+//				reg_usb_ep7_dat = 0;
+//			}
+		}
+	}
+	else
+	{
+//		for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+//		{
+//			reg_usb_ep7_dat = 0;
+//		}
+		buffer_empty = 1;
+	}
+	reg_usb_ep7_ctrl = BIT(0);			//ACK iso in
+}
+
+#elif (TL_AUDIO_MODE == TL_AUDIO_DONGLE_MSBC_HID)						//Dongle,HID Service,MSBC,DONGLE decode
+
+u8		abuf_mic_wptr, abuf_dec_wptr;
+u16		abuf_dec_rptr;
+#define	MIC_ADPCM_FRAME_NUM		8
+#define DEC_BUFFER_SIZE		(MIC_SHORT_DEC_SIZE* MIC_ADPCM_FRAME_NUM)
+#define	PACK_POINTER		(abuf_dec_rptr/248) | (abuf_dec_wptr<<8) | (abuf_mic_wptr<<16)
+#define	USB_ISO_IN_SIZE		(MIC_SAMPLE_RATE / 1000)
+
+u8		abuf_mic[MIC_ADPCM_FRAME_SIZE * MIC_ADPCM_FRAME_NUM];
+s16		abuf_dec[DEC_BUFFER_SIZE];
+
+int		abuf_reset = 0;
+
+void abuf_init ()
+{
+	abuf_mic_wptr = abuf_dec_wptr = 0;
+	abuf_reset = 16;
+}
+void abuf_mic_add (u32 *p)
+{
+	u8 *src;
+	src = (u8*)p;
+	u8 *pd = (u8 *) (abuf_mic + (abuf_mic_wptr & (MIC_ADPCM_FRAME_NUM-1)) * MIC_ADPCM_FRAME_SIZE);
+	for (int i=0; i<(MIC_ADPCM_FRAME_SIZE); i++)
+	{
+		*pd ++ = *src++;
+	}
+//	*pd = 0;
+	abuf_mic_wptr ++;
+}
+
+_attribute_ram_code_ void abuf_mic_dec ()
+{
+	static int start = 1;
+	static int abuf_reset_no;
+	static u32 smbc_decode_len = 0;
+	if (abuf_reset)
+	{
+		abuf_dec_wptr = abuf_mic_wptr;
+	}
+	else
+	{
+		u8 num_mic = (u8)(abuf_mic_wptr - abuf_dec_wptr);
+//		u8 num_dec = (u8)(abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE));
+
+		if (num_mic > MIC_ADPCM_FRAME_NUM) 			// in case of overflow
+		{
+			abuf_dec_wptr ++;
+		}
+
+//		if (num_dec > MIC_ADPCM_FRAME_NUM)
+//		{
+//			abuf_dec_rptr = abuf_dec_wptr*MIC_SHORT_DEC_SIZE;
+//			abuf_reset = 16;
+//			start = 1;
+//			abuf_reset_no++;
+//		}
+
+//		if ( ((!start && num_mic>=1) || (start && num_mic>=2))&& (num_dec <= (MIC_ADPCM_FRAME_NUM-1)))
+		if ( ((!start && num_mic>=1) || (start && num_mic>=2)))
+		{
+			sbc_decode(abuf_mic + (abuf_dec_wptr & (MIC_ADPCM_FRAME_NUM - 1)) * MIC_ADPCM_FRAME_SIZE, MIC_ADPCM_FRAME_SIZE,
+								abuf_dec + (abuf_dec_wptr & (MIC_ADPCM_FRAME_NUM - 1)) * MIC_SHORT_DEC_SIZE, MIC_SHORT_DEC_SIZE * 2, &smbc_decode_len);
+
+			abuf_dec_wptr ++;			// 256-byte = 128-s16
+			start = 0;
+		}
+
+	}
+}
+
+_attribute_ram_code_ void abuf_dec_usb ()
+{
+	static u32 tick_usb_iso_in;
+	static u8  buffer_empty = 1;
+	static u8  n_usb_iso = 0;
+
+	n_usb_iso++;
+
+	if (clock_time_exceed (tick_usb_iso_in, 4000))
+	{
+		abuf_reset = 16;
+	}
+
+	tick_usb_iso_in = clock_time ();
+	if (abuf_reset)
+	{
+		abuf_dec_rptr = abuf_dec_wptr*MIC_SHORT_DEC_SIZE;
+		abuf_reset--;
+	}
+	/////////////////// copy data to usb iso in buffer ///////////////
+	reg_usb_ep7_ptr = 0;
+	u8 num = abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE);
+	if (num)
+	{
+		if ( (buffer_empty && num >= (MIC_ADPCM_FRAME_NUM - 1)) || (!buffer_empty && (num >= 1 || (n_usb_iso & (MIC_ADPCM_FRAME_NUM - 1)))) )
+		{
+			buffer_empty = 0;
+
+			u16 offset = abuf_dec_rptr%DEC_BUFFER_SIZE;
+			s16 *ps = abuf_dec + offset;
+
+
+			if(offset == DEC_BUFFER_SIZE - (USB_ISO_IN_SIZE/2)){
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+				ps = abuf_dec;
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+			else{
+				for (int i=0; i<USB_ISO_IN_SIZE; i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+
+
+			abuf_dec_rptr += USB_ISO_IN_SIZE;
+			if(abuf_dec_rptr >= (MIC_SHORT_DEC_SIZE<<8) ){
+				abuf_dec_rptr = 0;
+			}
+		}
+		else
+		{
+//			for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+//			{
+//				reg_usb_ep7_dat = 0;
+//			}
+		}
+	}
+	else
+	{
+//		for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+//		{
+//			reg_usb_ep7_dat = 0;
+//		}
+		buffer_empty = 1;
+	}
+	reg_usb_ep7_ctrl = BIT(0);			//ACK iso in
+}
+#elif(TL_AUDIO_MODE == TL_AUDIO_DONGLE_OPUS_GATT_AMAZON)
+#include "opus//include/opus.h"
+
+
+u8		abuf_mic_wptr, abuf_dec_wptr;
+u16		abuf_dec_rptr;
+
+volatile int debug_len;
+
+#define DEC_BUFFER_SIZE		(MIC_SHORT_DEC_SIZE<<2)
+#define	PACK_POINTER		(abuf_dec_rptr/248) | (abuf_dec_wptr<<8) | (abuf_mic_wptr<<16)
+#define	USB_ISO_IN_SIZE		(MIC_SAMPLE_RATE / 1000)
+
+u8		abuf_mic[MIC_ADPCM_FRAME_SIZE * 4];
+s16		abuf_dec[DEC_BUFFER_SIZE];
+
+int		abuf_reset = 0;
+
+void abuf_init ()
+{
+	abuf_mic_wptr = abuf_dec_wptr = 0;
+	abuf_reset = 16;
+}
+
+OpusDecoder *opus_dec;
+
+void opus_init()
+{
+	int err;
+	opus_dec = opus_decoder_create(16000,1,&err);
+}
+
+void abuf_mic_add (u32 *p)
+{
+	u32 *pd = (u32 *) (abuf_mic + (abuf_mic_wptr & 3) * MIC_ADPCM_FRAME_SIZE);
+	for (int i=0; i<(MIC_ADPCM_FRAME_SIZE>>2); i++)
+	{
+		*pd ++ = *p++;
+	}
+	abuf_mic_wptr ++;
+}
+
+void abuf_mic_dec ()
+{
+	static int start = 1;
+	static int abuf_reset_no;
+	if (abuf_reset)
+	{
+		abuf_dec_wptr = abuf_mic_wptr;
+	}
+	else
+	{
+		u8 num_mic = abuf_mic_wptr - abuf_dec_wptr;
+		u8 num_dec = abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE);
+
+		if (num_mic > 4) 			// in case of overflow
+		{
+			abuf_dec_wptr ++;
+		}
+
+		if (num_dec > 4)
+		{
+			abuf_reset = 16;
+			start = 1;
+			abuf_reset_no++;
+		}
+		else if ( ((!start && num_mic>=1) || (start && num_mic>=2)) && (num_dec <= 3) )
+		{
+			DBG_CHN0_HIGH;
+			debug_len = opus_decode(opus_dec, abuf_mic + (abuf_dec_wptr & 3) * MIC_ADPCM_FRAME_SIZE, MIC_ADPCM_FRAME_SIZE,
+					            abuf_dec + (abuf_dec_wptr & 3) * MIC_SHORT_DEC_SIZE, MIC_SHORT_DEC_SIZE,0);
+			DBG_CHN0_LOW;
+			abuf_dec_wptr ++;			// 256-byte = 128-s16
+			start = 0;
+
+		}
+	}
+}
+
+
+_attribute_ram_code_ void abuf_dec_usb ()
+{
+	static u32 tick_usb_iso_in;
+	static u8  buffer_empty = 1;
+	static u8  n_usb_iso = 0;
+
+	n_usb_iso++;
+
+	if (clock_time_exceed (tick_usb_iso_in, 4000))
+	{
+		abuf_reset = 16;
+	}
+
+	tick_usb_iso_in = clock_time ();
+	if (abuf_reset)
+	{
+		abuf_dec_rptr = abuf_dec_wptr*MIC_SHORT_DEC_SIZE;
+		abuf_reset--;
+	}
+	/////////////////// copy data to usb iso in buffer ///////////////
+	reg_usb_ep7_ptr = 0;
+	u8 num = abuf_dec_wptr - (abuf_dec_rptr/MIC_SHORT_DEC_SIZE);
+	if (num)
+	{
+		if ( (buffer_empty && num >= 3) || (!buffer_empty && (num >= 1 || (n_usb_iso & 3))) )
+		{
+			buffer_empty = 0;
+
+			u16 offset = abuf_dec_rptr%DEC_BUFFER_SIZE;
+			s16 *ps = abuf_dec + offset;
+
+
+			if(offset == DEC_BUFFER_SIZE - (USB_ISO_IN_SIZE/2)){
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+				ps = abuf_dec;
+				for (int i=0; i<(USB_ISO_IN_SIZE/2); i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+			else{
+				for (int i=0; i<USB_ISO_IN_SIZE; i++)
+				{
+					reg_usb_ep7_dat = *ps;
+					reg_usb_ep7_dat = *ps++ >> 8;
+				}
+			}
+
+
+			abuf_dec_rptr += USB_ISO_IN_SIZE;
+			if(abuf_dec_rptr >= (MIC_SHORT_DEC_SIZE<<8) ){
+				abuf_dec_rptr = 0;
+			}
+		}
+		else
+		{
+			for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+			{
+				reg_usb_ep7_dat = 0;
+			}
+		}
+	}
+	else
+	{
+		for (int i=0; i<USB_ISO_IN_SIZE * 2; i++)
+		{
+			reg_usb_ep7_dat = 0;
+		}
+		buffer_empty = 1;
+	}
+	reg_usb_ep7_ctrl = BIT(0);			//ACK iso in
+}
+
+
+
+#else
+
+#endif
+
+#endif

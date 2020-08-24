@@ -24,7 +24,6 @@
  *
  *******************************************************************************************************/
 #include "app_config.h"
-#include "../../drivers.h"
 
 #if (TEST_MODE == AMAZON_RCU_TEST)
 
@@ -50,8 +49,9 @@ void rf_irq_handler(void)
 	irq_blt_sdk_handler ();
 
 	DBG_CHN9_LOW;
-	plic_interrupt_complete(IRQ15_ZB_RT); 	//TODO: Sihui, what did HW do for this?
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ15_ZB_RT);
+	NDS_FENCE_IORW;
 }
 
 
@@ -66,8 +66,9 @@ void stimer_irq_handler(void)
 	irq_blt_sdk_handler ();
 
 	DBG_CHN11_LOW;
-	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
+	NDS_FENCE_IORW;
 }
 
 /**
@@ -124,7 +125,9 @@ extern void main_loop (void);
 int main (void)   //must on ramcode
 {
 
-	sys_init(LDO_MODE);
+	blc_pm_select_internal_32k_crystal();
+
+	cpu_wakeup_init(LDO_MODE);
 
 
 	rf_drv_init(RF_MODE_BLE_1M);

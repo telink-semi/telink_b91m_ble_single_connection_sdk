@@ -21,6 +21,7 @@
  *******************************************************************************************************/
 
 #include "app.h"
+#include "app_buffer.h"
 #include "stack/ble/ble.h"
 #include "tl_common.h"
 #include "drivers.h"
@@ -53,29 +54,6 @@
 
 #define TX_FIFO_SIZE	40
 #define TX_FIFO_NUM		16
-
-
-
-_attribute_data_retention_  u8 		 	blt_rxfifo_b[RX_FIFO_SIZE * RX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_rxfifo = {
-												RX_FIFO_SIZE,
-												RX_FIFO_NUM,
-												0,
-												0,
-												blt_rxfifo_b,};
-
-
-
-
-_attribute_data_retention_  u8 		 	blt_txfifo_b[TX_FIFO_SIZE * TX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_txfifo = {
-												TX_FIFO_SIZE,
-												TX_FIFO_NUM,
-												0,
-												0,
-												blt_txfifo_b,};
-
-
 
 
 
@@ -212,6 +190,10 @@ void feature_ext_adv_init_normal(void)
 	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
 #endif
 
+
+
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
 
 
 	blc_ll_setMaxAdvDelay_for_AdvEvent(0);  //no ADV random delay, for debug

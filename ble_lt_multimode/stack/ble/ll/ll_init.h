@@ -19,91 +19,58 @@
  *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided. 
  *           
  *******************************************************************************************************/
-/*
- * ll_init.h
- *
- *  Created on: 2017-3-9
- *      Author: Administrator
- */
 
 #ifndef LL_INIT_H_
 #define LL_INIT_H_
 
 
-
-typedef struct {
-	u8		init_en;
-	u8		conn_policy;
-	u8		conn_advType;
-	u8		conn_established;
-
-	u32		create_conn_startTick;
-
-	u16     rsvd;
-	u8		conn_mac[6];
-
-}st_ll_init_t;
-
-//st_ll_init_t  blti;
-
-extern u32 blm_timeout_connectDevice;
-
-
-
-extern rf_packet_ll_init_t	pkt_init;
-
-
-
-
-typedef int  (*ll_module_init_callback_t)(u8 *, u32);
-
-
-
-
-
-static inline u32 rf_get_ble_access_code_16to32 (u16 code)
-{
-	u32 r = 0;
-	int i;
-	for (i=0; i<4; i++) {
-		r = r << 2;
-		r |= code & BIT(i) ? 1 : 2;
-	}
-
-	for (i=4; i<8; i++) {  //no more 24 transitions
-		r = r << 4;
-		r |= code & BIT(i) ? 0x0c : 0x03;
-	}
-
-	for (i=12; i<16; i++) {
-		r = r << 2;
-		r |= code & BIT(i) ? 1 : 2;
-	}
-
-	return r;
-}
-
-u32 blt_ll_conn_calc_access_addr_v2(void);
-
-
-
-/******************************* User Interface  ************************************/
+/**
+ * @brief      for user to initialize initiating module
+ * 			   notice that only one module can be selected between legacy initiating module and extended initiating module
+ * @param	   none
+ * @return     none
+ */
 void	 	blc_ll_initInitiating_module(void);
 
 
-ble_sts_t 	blc_ll_createConnection (u16 scan_interval, u16 scan_window, init_fp_type_t initiator_filter_policy,
-							  u8 adr_type, u8 *mac, u8 own_adr_type,
-							  u16 conn_min, u16 conn_max, u16 conn_latency, u16 timeout,
-							  u16 ce_min, u16 ce_max );
 
+
+/**
+ * @brief      This function is used to create an ACL connection to a connectable advertiser.
+ * @param[in]  scan_interval
+ * @param[in]  scan_window
+ * @param[in]  initiator_filter_policy
+ * @param[in]  adr_type
+ * @param[in]  *mac
+ * @param[in]  own_adr_type
+ * @param[in]  conn_min
+ * @param[in]  conn_max
+ * @param[in]  conn_latency
+ * @param[in]  timeout
+ * @param[in]  ce_min
+ * @param[in]  ce_max
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
+ble_sts_t 	blc_ll_createConnection ( 	u16 scan_interval, u16 scan_window, init_fp_t initiator_filter_policy,
+										u8 adr_type, 	   u8 *mac, 		u8 own_adr_type,
+										u16 conn_min, 	   u16 conn_max, 	u16 conn_latency, 					u16 timeout,
+										u16 ce_min, 	   u16 ce_max );
+
+
+/**
+ * @brief      This function is is used to cancel the HCI_LE_Create_Connection or HCI_LE_Extended_Create_Connection commands.
+ * @param	   none
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
 ble_sts_t 	blc_ll_createConnectionCancel (void);
+
+
+
+
 
 
 ble_sts_t   blc_ll_setCreateConnectionTimeout (u32 timeout_ms);
 
-
-/************************* Stack Interface, user can not use!!! ***************************/
-ble_sts_t 	blc_ll_setInitEnable (u8 en);
 
 
 #endif /* LL_INIT_H_ */

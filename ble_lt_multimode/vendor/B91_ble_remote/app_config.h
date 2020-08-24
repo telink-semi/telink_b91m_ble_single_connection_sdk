@@ -25,13 +25,14 @@
 
 
 /////////////////// FEATURE SELECT /////////////////////////////////
-#define BLE_APP_PM_ENABLE					0
-#define PM_DEEPSLEEP_RETENTION_ENABLE		0
+#define BLE_APP_PM_ENABLE					1
+#define PM_NO_SUSPEND_ENABLE				1
+#define PM_DEEPSLEEP_RETENTION_ENABLE		1
 #define TEST_CONN_CURRENT_ENABLE            0 //test connection current, disable UI to have a pure power
 #define BLE_REMOTE_SECURITY_ENABLE      	1
 #define REMOTE_IR_ENABLE					0
 #define BLE_AUDIO_ENABLE					1
-#define BLE_REMOTE_OTA_ENABLE				0
+#define BLE_REMOTE_OTA_ENABLE				1
 ////////////////////////// AUDIO CONFIG (RCU board) /////////////////////////////
 #if (BLE_AUDIO_ENABLE)
 
@@ -42,7 +43,7 @@
 #define TL_MIC_BUFFER_SIZE				   1984
 
 #define BLE_DMIC_ENABLE						1
-//DMIC Ê¹ÓÃÊ±ÐèÒªÌøÏß£ºDDATA-->PB2£»  DCLK1-->PB3
+//DMIC ä½¿ç”¨æ—¶éœ€è¦è·³çº¿ï¼šDDATA-->PB2ï¼›  DCLK1-->PB3
 #if	BLE_DMIC_ENABLE
 	#define PB2_FUNC						AS_DMIC_DI
 	#define PB3_FUNC						AS_DMIC_SCK
@@ -139,6 +140,7 @@
 #if UI_LED_ENABLE
 	#define	GPIO_LED_WHITE			GPIO_PB6
 	#define	GPIO_LED_GREEN			GPIO_PB5
+	#define	GPIO_LED_BLUE			GPIO_PB4
 #if (HARDWARE_BOARD_SELECT == HW_C1T219A20_V1_0_64_EVB)
 	#define GPIO_LED_RED			GPIO_PB7
 #elif (HARDWARE_BOARD_SELECT == HW_C1T217A20_V1_0_48_EVB)
@@ -151,10 +153,12 @@
 	#define PB7_FUNC				AS_GPIO
 	#define PB6_FUNC				AS_GPIO
 	#define PB5_FUNC				AS_GPIO
+	#define PB4_FUNC				AS_GPIO
 
 	#define	PB7_OUTPUT_ENABLE		1
 	#define	PB6_OUTPUT_ENABLE		1
 	#define PB5_OUTPUT_ENABLE		1
+	#define	PB4_OUTPUT_ENABLE		1
 #endif
 #elif (SAMPLE_BOARD_SELECT == DONGLE_C1T139A3_V2P0A)
 	#undef  PM_DEEPSLEEP_RETENTION_ENABLE

@@ -23,9 +23,8 @@
 #ifndef BLT_COMMON_H_
 #define BLT_COMMON_H_
 
+#include "drivers.h"
 
-#define			BLMS_STATE_SCAN									BIT(2)
-#define			BLMS_STATE_SCAN_POST							BIT(3)
 
 
 

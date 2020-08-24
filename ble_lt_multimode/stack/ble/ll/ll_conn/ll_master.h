@@ -19,12 +19,8 @@
  *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided. 
  *           
  *******************************************************************************************************/
-/*
- * ll_master.h
- *
- *  Created on: 2017-3-8
- *      Author: Administrator
- */
+
+#include "conn_stack.h"
 
 #ifndef LL_MASTER_H_
 #define LL_MASTER_H_

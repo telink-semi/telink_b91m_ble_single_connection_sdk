@@ -24,7 +24,7 @@
 #define BLE_CONTROLLER_H_
 
 
-#include "blt_config.h"
+#include "ble_config.h"
 #include "ble_common.h"
 #include "ble_format.h"
 
@@ -40,26 +40,22 @@
 
 
 #include "ll/ll.h"
+#include "ll/ll_stack.h"
 #include "ll/ll_adv.h"
-#include "ll/ll_encrypt.h"
 #include "ll/ll_init.h"
 #include "ll/ll_pm.h"
 #include "ll/ll_scan.h"
 #include "ll/ll_whitelist.h"
 #include "ll/ll_conn/ll_conn.h"
+#include "ll/ll_conn/conn_stack.h"
 #include "ll/ll_conn/ll_slave.h"
 #include "ll/ll_conn/ll_master.h"
 #include "ll/ll_conn/ll_conn_phy.h"
 #include "ll/ll_conn/ll_conn_csa.h"
 
-#include "ll/ll_ext.h"
 #include "ll/ll_ext_adv.h"
-#include "ll/ll_ext_scan.h"
 
 
 
-
-
-#include "bqb/bqb_ll.h"
 
 #endif /* BLE_H_ */

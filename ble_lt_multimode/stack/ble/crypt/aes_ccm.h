@@ -22,6 +22,7 @@
 #pragma  once
 
 #include <stack/ble/ll/ll.h>
+#include "stack/ble/ll/ll_conn/conn_stack.h"
 
 #define AES_BLOCK_SIZE     16
 

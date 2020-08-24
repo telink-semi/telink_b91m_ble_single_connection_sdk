@@ -121,39 +121,6 @@ extern u8	tx_settle_slave[4];
 extern u8	tx_settle_master[4];
 
 
-/******************************* Macro & Enumeration variables for User ************************************/
-
-typedef enum {
-	BLE_PHY_1M 			= 0x01,
-	BLE_PHY_2M 			= 0x02,
-	BLE_PHY_CODED	 	= 0x03,
-} le_phy_type_t;
-
-typedef enum {
-	PHY_PREFER_1M 		= BIT(0),
-	PHY_PREFER_2M		= BIT(1),
-	PHY_PREFER_CODED 	= BIT(2),
-} le_phy_prefer_type_t;
-
-
-
-typedef enum {
-    PHY_TRX_PREFER		= 0,					//has 	 preference among TX & RX PHYs
-	PHY_TX_NO_PREFER 	= BIT(0),   			//has no preference among TX PHYs
-	PHY_RX_NO_PREFER 	= BIT(1),				//has no preference among RX PHYs
-	PHY_TRX_NO_PREFER 	= (BIT(0) | BIT(1)),	//has no preference among TX & RX PHYs
-} le_phy_prefer_mask_t;
-
-
-
-
-
-
-typedef enum {
-	CODED_PHY_PREFER_NONE 	= 0,
-	CODED_PHY_PREFER_S2		= 1,
-	CODED_PHY_PREFER_S8 	= 2,
-} le_ci_prefer_t;   //le coding indication prefer
 
 
 

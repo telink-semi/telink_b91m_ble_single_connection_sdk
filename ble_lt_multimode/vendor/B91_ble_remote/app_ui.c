@@ -47,35 +47,6 @@ _attribute_data_retention_	u8 		ota_is_working = 0;
 
 
 
-ble_sts_t  app_debug_pushNotifyData (u16 attHandle, u8 *p, int len)
-{
-
-	DBG_CHN4_TOGGLE;
-
-	int n;
-							 //llid rfLen   l2capLen     cid    opcode   handle      data[0..19]   mic[0..3]
-	u8 pkt_notify_short[36] = {0x02,0x09, 0x05,0x00,  0x04,0x00, 0x1b,  0x0e,0x00,  0x00, 0x00, 0x00, 0x00};    //mic[0..3] on  blt_txfifo
-
-
-	n = len < 20 ? len : 20;
-	pkt_notify_short[0] = 2;				//first data packet
-	pkt_notify_short[1] = n + 7;
-
-	*(u16*)(pkt_notify_short + 2) = len + 3;	//l2cap
-	*(u16*)(pkt_notify_short + 4) = 0x04;	//chanid
-
-	pkt_notify_short[6] = ATT_OP_HANDLE_VALUE_NOTI;
-	pkt_notify_short[7] = U16_LO(attHandle);
-	pkt_notify_short[8] = U16_HI(attHandle);
-
-	tmemcpy (pkt_notify_short + 9, p, n);
-
-
-	bls_ll_pushTxFifo (BLS_CONN_HANDLE, pkt_notify_short);
-
-
-	return BLE_SUCCESS;
-}
 #if (REMOTE_IR_ENABLE)
 	//ir key
 	#define TYPE_IR_SEND			1
@@ -285,41 +256,32 @@ ble_sts_t  app_debug_pushNotifyData (u16 attHandle, u8 *p, int len)
 
 	void app_debug_ota_result(int result)
 	{
-
-		#if(0 && BLT_APP_LED_ENABLE)  //this is only for debug
-
-			gpio_set_output_en(GPIO_LED, 1);
-
+		#if(1 && UI_LED_ENABLE)  //this is only for debug
 			if(result == OTA_SUCCESS){  //led for debug: OTA success
-				gpio_write(GPIO_LED, 1);
-				sleep_us(500000);
-				gpio_write(GPIO_LED, 0);
-				sleep_us(500000);
-				gpio_write(GPIO_LED, 1);
-				sleep_us(500000);
-				gpio_write(GPIO_LED, 0);
-				sleep_us(500000);
+				gpio_write(GPIO_LED_BLUE, 1);
+				sleep_ms(500);
+				gpio_write(GPIO_LED_BLUE, 0);
+				sleep_ms(500);
+				gpio_write(GPIO_LED_BLUE, 1);
+				sleep_ms(500);
+				gpio_write(GPIO_LED_BLUE, 0);
+				sleep_ms(500);
 			}
 			else{  //OTA fail
+
+				gpio_write(GPIO_LED_BLUE, 1);
+				sleep_ms(200);
+				gpio_write(GPIO_LED_BLUE, 0);
 
 				#if 0 //this is only for debug,  can not use this in application code
 					irq_disable();
 					WATCHDOG_DISABLE;
 
-					write_reg8(0x40001, result);  //OTA fail reason
-					write_reg8(0x40000, 0x33);
 					while(1){
-						gpio_write(GPIO_LED, 1);
-						sleep_us(200000);
-						gpio_write(GPIO_LED, 0);
-						sleep_us(200000);
 					}
-					write_reg8(0x40000, 0x44);
 				#endif
 
 			}
-
-			gpio_set_output_en(GPIO_LED, 0);
 		#endif
 	}
 #endif
@@ -374,7 +336,6 @@ void key_change_proc(void)
 				gpio_write(GPIO_LED_GREEN,1);
 			}
 
-//			app_debug_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 
 		}
@@ -398,7 +359,6 @@ void key_change_proc(void)
 #endif
 			}
 
-//			app_debug_pushNotifyData(HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
 		}
 #endif

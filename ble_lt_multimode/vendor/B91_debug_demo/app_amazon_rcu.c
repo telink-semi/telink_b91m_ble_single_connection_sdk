@@ -23,7 +23,6 @@
  * @version  A001
  *         
  *******************************************************************************************************/
-//#include "../../drivers.h"
 #include "drivers.h"
 #include "tl_common.h"
 #include "stack/ble/ble.h"

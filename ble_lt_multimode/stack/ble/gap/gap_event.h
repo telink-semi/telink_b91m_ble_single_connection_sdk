@@ -19,21 +19,9 @@
  *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided. 
  *           
  *******************************************************************************************************/
-/*
- * gap_event.h
- *
- *  Created on: 2018-12-5
- *      Author: Administrator
- */
 
 #ifndef GAP_EVENT_H_
 #define GAP_EVENT_H_
-
-
-
-
-
-
 
 
 
@@ -138,7 +126,9 @@ Situation 2:   SMP Fast Connect																		|
  *****************************************************************************************************************************/
 
 
-
+/**
+ * @brief      GAP event type
+ */
 #define GAP_EVT_SMP_PARING_BEAGIN		                             0	// Refer to SMP message sequence and event chart above
 #define GAP_EVT_SMP_PARING_SUCCESS			                         1	// Refer to SMP message sequence and event chart above
 #define GAP_EVT_SMP_PARING_FAIL			                             2
@@ -156,7 +146,9 @@ Situation 2:   SMP Fast Connect																		|
 
 
 
-
+/**
+ * @brief      GAP event mask
+ */
 #define GAP_EVT_MASK_NONE                                        	 0x00000000
 #define GAP_EVT_MASK_SMP_PARING_BEAGIN                          	 (1<<GAP_EVT_SMP_PARING_BEAGIN)
 #define GAP_EVT_MASK_SMP_PARING_SUCCESS                           	 (1<<GAP_EVT_SMP_PARING_SUCCESS)
@@ -181,7 +173,9 @@ Situation 2:   SMP Fast Connect																		|
 
 
 
-
+/**
+ * @brief      data structure of GAP event callback data
+ */
 typedef struct {
 	u16	connHandle;
 	u8	secure_conn;
@@ -230,16 +224,31 @@ typedef struct {
 
 
 
-extern u32		gap_eventMask;
 
 
-
+/**
+ * @brief     GAP event callback function declaration
+ */
 typedef int (*gap_event_handler_t) (u32 h, u8 *para, int n);
 
 
-/******************************* User Interface  ******************************************/
+
+
+
+
+/**
+ * @brief      set event mask for specific gap event
+ * @param[in]  evtMask - event mask
+ * @return     none
+ */
 void 	blc_gap_setEventMask(u32 evtMask);
 
+
+/**
+ * @brief      register public enter for all gap event callback
+ * @param[in]  handler - public enter function
+ * @return     none
+ */
 void 	blc_gap_registerHostEventHandler (gap_event_handler_t  handler);
 
 
@@ -249,7 +258,10 @@ void 	blc_gap_registerHostEventHandler (gap_event_handler_t  handler);
 
 
 /************************* Stack Interface, user can not use!!! ***************************/
+extern u32		gap_eventMask;
+
 int blc_gap_send_event (u32 h, u8 *para, int n);
+/************************* Stack Interface, user can not use!!! ***************************/
 
 
 #endif /* GAP_EVENT_H_ */

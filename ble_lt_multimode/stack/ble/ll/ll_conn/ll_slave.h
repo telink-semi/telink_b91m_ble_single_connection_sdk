@@ -19,12 +19,8 @@
  *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided. 
  *           
  *******************************************************************************************************/
-/*
- * ll_slave.h
- *
- *  Created on: 2017-3-9
- *      Author: Administrator
- */
+
+#include "conn_stack.h"
 
 #ifndef LL_SLAVE_H_
 #define LL_SLAVE_H_

@@ -29,80 +29,67 @@
 #ifndef LL_ADV_H_
 #define LL_ADV_H_
 
-#include "drivers.h"
 #include "stack/ble/ble_format.h"
-#include "ll_whitelist.h"
-
-/* Advertising Maximum data length */
-#define 		ADV_MAX_DATA_LEN                    31
-
-
-#define			BLS_FLAG_ADV_IN_SLAVE_MODE			BIT(6)
-
-#define 		BLC_FLAG_STK_ADV					BIT(24)
 
 
 
 
+/**
+ * @brief      for user to initialize advertising module
+ * @param[in]  *public_adr -  public address pointer
+ * @return     none
+ */
+void 		blc_ll_initAdvertising_module(u8 *public_adr);
 
 
-
-
-
-typedef struct {
-	u8		adv_chn_mask;
-	u8		adv_duraton_en;
-	u8		adv_type;
-	u8 		adv_filterPolicy;
-
-	u8		T_SCAN_RSP_INTVL;
-	u8      own_addr_type;     //own_addr_type
-	u8		rsvd;
-	u8		advInt_rand;
-
-	u16		advInt_min;
-	u16 	advInt_max;
-
-	u32		adv_interval;     // system tick
-	u32		adv_duration_us;
-	u32		adv_begin_tick;
-
-}st_ll_adv_t;
-
-
-
-extern _attribute_aligned_(4) st_ll_adv_t  blta;
-
-
-extern  rf_packet_adv_t	pkt_adv;
-
-
-typedef int (*ll_adv2conn_callback_t)(u8 *, bool);   //rcvd conn_req, adv state to conn state
-extern 	ll_adv2conn_callback_t ll_adv2conn_cb;
-
-
-typedef int  (*ll_module_adv_callback_t)(void);
-
-
-
-typedef int (*advertise_prepare_handler_t) (rf_packet_adv_t * p);
-
-
-extern u32  blc_rcvd_connReq_tick;
-
-
-
-/******************************* User Interface  ************************************/
-void 		blc_ll_initAdvertising_module(u8 *public_adr);;
-
-
+/**
+ * @brief	   set the data used in advertising packets that have a data field.
+ * @param[in]  *data -  advertising data buffer
+ * @param[in]  len - The number of significant octets in the Advertising_Data.
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
 ble_sts_t	bls_ll_setAdvData(u8 *data, u8 len);
+
+
+/**
+ * @brief	   This function is used to provide data used in Scanning Packets that have a data field.
+ * @param[in]  *data -  Scan_Response_Data buffer
+ * @param[in]  len - The number of significant octets in the Scan_Response_Data.
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
 ble_sts_t 	bls_ll_setScanRspData(u8 *data, u8 len);
-ble_sts_t   bls_ll_setAdvEnable(int adv_enable);
 
 
+
+/**
+ * @brief      This function is used to set the advertising parameters.
+ * @param[in]  intervalMin - Minimum advertising interval(Time = N * 0.625 ms, Range: 0x0020 to 0x4000)
+ * @param[in]  intervalMin - Maximum advertising interval(Time = N * 0.625 ms, Range: 0x0020 to 0x4000)
+ * @param[in]  advType - Advertising_Type
+ * @param[in]  ownAddrType - Own_Address_Type
+ * @param[in]  peerAddrType - Peer_Address_Type
+ * @param[in]  *peerAddr - Peer_Address
+ * @param[in]  adv_channelMap - Advertising_Channel_Map
+ * @param[in]  advFilterPolicy - Advertising_Filter_Policy
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
 ble_sts_t   bls_ll_setAdvParam( u16 intervalMin,  u16 intervalMax,  adv_type_t advType,  		 	  own_addr_type_t ownAddrType,  \
 							     u8 peerAddrType, u8  *peerAddr,    adv_chn_map_t 	adv_channelMap,   adv_fp_type_t   advFilterPolicy);
+
+
+
+
+/**
+ * @brief      This function is used to request the Controller to start or stop advertising.
+ * @param	   adv_enable - Advertising_Enable
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
+ble_sts_t   bls_ll_setAdvEnable(adv_en_t adv_enable);
+
+
+
+
+
 
 ble_sts_t 	bls_ll_setAdvInterval(u16 intervalMin, u16 intervalMax);
 ble_sts_t 	bls_ll_setAdvChannelMap(adv_chn_map_t adv_channelMap);
@@ -111,7 +98,7 @@ ble_sts_t 	bls_ll_setAdvFilterPolicy(adv_fp_type_t advFilterPolicy);
 ble_sts_t   bls_ll_setAdvDuration (u32 duration_us, u8 duration_en);
 
 
-void 		blc_ll_setAdvCustomedChannel (u8 chn0, u8 chn1, u8 chn2);
+
 
 
 
@@ -122,21 +109,20 @@ ble_sts_t 	blc_ll_setAdvParamInConnSlaveRole( u8 		  *adv_data,  u8             
 											   adv_type_t  advType,   own_addr_type_t ownAddrType, adv_chn_map_t adv_channelMap, adv_fp_type_t advFilterPolicy);
 
 
-static inline u32 	bls_ll_getConnectionCreateTime(void)
-{
-	return blc_rcvd_connReq_tick;
-}
-
-/************************* Stack Interface, user can not use!!! ***************************/
-ble_sts_t 	bls_hci_le_setAdvParam(adv_para_t *para);
-ble_sts_t 	bls_hci_le_readChannelMap(u16 connHandle, u8 *returnChannelMap);
 
 
 
-static inline u8 	blt_ll_getOwnAddrType(void)
-{
-	return blta.own_addr_type;
-}
+
+/**
+ * @brief      This function is used to set some other channel to replace advertising chn37/38/39.
+ * @param[in]  chn0 - channel to replace channel 37
+ * @param[in]  chn1 - channel to replace channel 38
+ * @param[in]  chn2 - channel to replace channel 39
+ * @return     none
+ */
+void 		blc_ll_setAdvCustomedChannel (u8 chn0, u8 chn1, u8 chn2);
+
+
 
 
 #endif /* LL_ADV_H_ */

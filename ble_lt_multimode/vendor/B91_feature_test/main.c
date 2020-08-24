@@ -41,8 +41,9 @@ _attribute_ram_code_ void rf_irq_handler(void)
 
 	irq_blt_sdk_handler ();
 	DBG_CHN10_LOW;
-	plic_interrupt_complete(IRQ15_ZB_RT);
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ15_ZB_RT);
+	NDS_FENCE_IORW;
 }
 
 
@@ -53,8 +54,9 @@ _attribute_ram_code_ void stimer_irq_handler(void)
 
 	irq_blt_sdk_handler ();
 	DBG_CHN11_LOW;
-	plic_interrupt_complete(IRQ1_SYSTIMER);
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
+	NDS_FENCE_IORW;
 }
 
 

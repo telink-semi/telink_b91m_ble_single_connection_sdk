@@ -1,5 +1,5 @@
 /********************************************************************************************************
- * @file     blt_config.h 
+ * @file     ble_config.h
  *
  * @brief    for TLSR chips
  *
@@ -21,39 +21,20 @@
  *******************************************************************************************************/
 #pragma once
 
-//////////////////////////////////////////////////////////////////////////////
-/**
- *  @brief  Definition for Device info
- */
+
 #include "drivers.h"
 #include "tl_common.h"
 
-#define  MAX_DEV_NAME_LEN 				18
 
-#ifndef DEV_NAME
-#define DEV_NAME                        "tModule"
+
+#ifndef			BIS_IN_BIG_NUM_MAX
+#define			BIS_IN_BIG_NUM_MAX								4
 #endif
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#ifndef			LL_CIS_IN_CIG_NUM_MAX
+#define 		LL_CIS_IN_CIG_NUM_MAX              				4
+#endif
 
 ///////////////////  Feature ////////////////////////////
 
@@ -132,7 +113,7 @@
 #endif
 
 #ifndef LL_FEATURE_SUPPORT_LE_EXTENDED_ADVERTISING
-#define LL_FEATURE_SUPPORT_LE_EXTENDED_ADVERTISING					0
+#define LL_FEATURE_SUPPORT_LE_EXTENDED_ADVERTISING					1
 #endif
 
 #ifndef LL_FEATURE_SUPPORT_LE_PERIODIC_ADVERTISING
@@ -143,12 +124,6 @@
 #define LL_FEATURE_SUPPORT_CHANNEL_SELECTION_ALGORITHM2				0
 #endif
 
-
-
-
-#ifndef BQB_LOWER_TESTER_ENABLE
-#define BQB_LOWER_TESTER_ENABLE										0
-#endif
 
 
 
