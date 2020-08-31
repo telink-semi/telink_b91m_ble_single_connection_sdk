@@ -91,7 +91,7 @@ int main (void)   //must on ramcode
 	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
 
-	cpu_wakeup_init(LDO_MODE);
+	sys_init(LDO_MODE);
 
 	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
 

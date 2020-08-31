@@ -173,6 +173,7 @@ void trap_entry(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq1(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq1(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	stimer_irq_handler();
 	/* Must ensure the order of execution of complete and
@@ -180,6 +181,9 @@ void  entry_irq1(void)
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ1_SYSTIMER);
 	NDS_FENCE_IORW;
+#else
+	stimer_irq_handler();
+#endif
 }
 
 /**
@@ -189,11 +193,15 @@ void  entry_irq1(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq2(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq2(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	analog_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ2_ALG);
 	NDS_FENCE_IORW;
+#else
+	analog_irq_handler();
+#endif
 }
 
 
@@ -204,11 +212,15 @@ void  entry_irq2(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq3(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq3(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	timer1_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ3_TIMER1);
 	NDS_FENCE_IORW;
+#else
+	timer1_irq_handler();
+#endif
 }
 
 /**
@@ -218,11 +230,15 @@ void  entry_irq3(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq4(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq4(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	timer0_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ4_TIMER0);
 	NDS_FENCE_IORW;
+#else
+	timer0_irq_handler();
+#endif
 }
 
 
@@ -233,11 +249,15 @@ void  entry_irq4(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq5(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq5(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	dma_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ5_DMA);
 	NDS_FENCE_IORW;
+#else
+	dma_irq_handler();
+#endif
 }
 
 /**
@@ -247,11 +267,15 @@ void  entry_irq5(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq6(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq6(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	bmc_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ6_BMC);
 	NDS_FENCE_IORW;
+#else
+	bmc_irq_handler();
+#endif
 }
 
 
@@ -262,11 +286,15 @@ void  entry_irq6(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq7(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq7(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	usb_ctrl_ep_setup_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ7_USB_CTRL_EP_SETUP);
 	NDS_FENCE_IORW;
+#else
+	usb_ctrl_ep_setup_irq_handler();
+#endif
 }
 
 /**
@@ -276,11 +304,15 @@ void  entry_irq7(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq8(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq8(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	usb_ctrl_ep_data_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ8_USB_CTRL_EP_DATA);
 	NDS_FENCE_IORW;
+#else
+	usb_ctrl_ep_data_irq_handler();
+#endif
 }
 
 /**
@@ -290,11 +322,15 @@ void  entry_irq8(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq9(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq9(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	usb_ctrl_ep_status_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ9_USB_CTRL_EP_STATUS);
 	NDS_FENCE_IORW;
+#else
+	usb_ctrl_ep_status_irq_handler();
+#endif
 }
 
 
@@ -305,11 +341,15 @@ void  entry_irq9(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq10(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq10(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	usb_ctrl_ep_setinf_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ10_USB_CTRL_EP_SETINF);
 	NDS_FENCE_IORW;
+#else
+	usb_ctrl_ep_setinf_irq_handler();
+#endif
 }
 
 /**
@@ -319,11 +359,15 @@ void  entry_irq10(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq11(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq11(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	usb_endpoint_irq_handler ();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ11_USB_ENDPOINT);
 	NDS_FENCE_IORW;
+#else
+	usb_endpoint_irq_handler ();
+#endif
 }
 
 /**
@@ -333,11 +377,15 @@ void  entry_irq11(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq12(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq12(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	rf_dm_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ12_ZB_DM);
 	NDS_FENCE_IORW;
+#else
+	rf_dm_irq_handler();
+#endif
 }
 
 /**
@@ -347,11 +395,15 @@ void  entry_irq12(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq13(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq13(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	rf_ble_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ13_ZB_BLE);
 	NDS_FENCE_IORW;
+#else
+	rf_ble_irq_handler();
+#endif
 }
 
 
@@ -362,11 +414,15 @@ void  entry_irq13(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq14(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq14(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	rf_bt_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ14_ZB_BT);
 	NDS_FENCE_IORW;
+#else
+	rf_bt_irq_handler();
+#endif
 }
 
 /**
@@ -376,11 +432,15 @@ void  entry_irq14(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq15(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq15(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	rf_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ15_ZB_RT);
 	NDS_FENCE_IORW;
+#else
+	rf_irq_handler();
+#endif
 }
 
 
@@ -392,11 +452,15 @@ void  entry_irq15(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq16(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq16(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	pwm_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ16_PWM);
 	NDS_FENCE_IORW;
+#else
+	pwm_irq_handler();
+#endif
 }
 
 /**
@@ -406,11 +470,15 @@ void  entry_irq16(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq17(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq17(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	pke_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ17_PKE);
 	NDS_FENCE_IORW;
+#else
+	pke_irq_handler();
+#endif
 }
 
 
@@ -422,11 +490,15 @@ void  entry_irq17(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq18(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq18(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	uart1_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ18_UART1);
 	NDS_FENCE_IORW;
+#else
+	uart1_irq_handler();
+#endif
 }
 
 
@@ -438,11 +510,15 @@ void  entry_irq18(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq19(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq19(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	uart0_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ19_UART0);
 	NDS_FENCE_IORW;
+#else
+	uart0_irq_handler();
+#endif
 }
 
 
@@ -453,11 +529,15 @@ void  entry_irq19(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq20(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq20(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	audio_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ20_DFIFO);
 	NDS_FENCE_IORW;
+#else
+	audio_irq_handler();
+#endif
 }
 
 /**
@@ -467,11 +547,15 @@ void  entry_irq20(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq21(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq21(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	i2c_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ21_I2C);
 	NDS_FENCE_IORW;
+#else
+	i2c_irq_handler();
+#endif
 }
 
 
@@ -482,11 +566,15 @@ void  entry_irq21(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq22(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq22(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	hspi_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ22_SPI_AHB);
 	NDS_FENCE_IORW;
+#else
+	hspi_irq_handler();
+#endif
 }
 
 
@@ -497,11 +585,15 @@ void  entry_irq22(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq23(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq23(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	pspi_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ23_SPI_APB);
 	NDS_FENCE_IORW;
+#else
+	pspi_irq_handler();
+#endif
 }
 
 
@@ -512,11 +604,15 @@ void  entry_irq23(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq24(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq24(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	usb_pwdn_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ24_USB_PWDN);
 	NDS_FENCE_IORW;
+#else
+	usb_pwdn_irq_handler();
+#endif
 }
 
 /**
@@ -526,11 +622,15 @@ void  entry_irq24(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq25(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq25(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	gpio_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ25_GPIO);
 	NDS_FENCE_IORW;
+#else
+	gpio_irq_handler();
+#endif
 }
 
 /**
@@ -540,11 +640,15 @@ void  entry_irq25(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq26(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq26(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	gpio_risc0_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ26_GPIO2RISC0);
 	NDS_FENCE_IORW;
+#else
+	gpio_risc0_irq_handler();
+#endif
 }
 
 
@@ -555,11 +659,15 @@ void  entry_irq26(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq27(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq27(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	gpio_risc1_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ27_GPIO2RISC1);
 	NDS_FENCE_IORW;
+#else
+	gpio_risc1_irq_handler();
+#endif
 }
 
 /**
@@ -569,11 +677,15 @@ void  entry_irq27(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq28(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq28(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	soft_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ28_SOFT);
 	NDS_FENCE_IORW;
+#else
+	soft_irq_handler();
+#endif
 }
 
 /**
@@ -584,11 +696,15 @@ void  entry_irq28(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq29(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq29(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus0_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ29_NPE_BUS0);
 	NDS_FENCE_IORW;
+#else
+	npe_bus0_irq_handler();
+#endif
 }
 /**
  * @brief npe bus1 interrupt handler.
@@ -597,11 +713,15 @@ void  entry_irq29(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq30(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq30(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus1_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ30_NPE_BUS1);
 	NDS_FENCE_IORW;
+#else
+	npe_bus1_irq_handler();
+#endif
 }
 /**
  * @brief npe bus2 interrupt handler.
@@ -610,11 +730,15 @@ void  entry_irq30(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq31(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq31(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus2_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ31_NPE_BUS2);
 	NDS_FENCE_IORW;
+#else
+	npe_bus2_irq_handler();
+#endif
 }
 /**
  * @brief npe bus3 interrupt handler.
@@ -623,11 +747,15 @@ void  entry_irq31(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq32(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq32(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus3_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ32_NPE_BUS3);
 	NDS_FENCE_IORW;
+#else
+	npe_bus3_irq_handler();
+#endif
 }
 
 /**
@@ -637,11 +765,15 @@ void  entry_irq32(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq33(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq33(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus4_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ33_NPE_BUS4);
 	NDS_FENCE_IORW;
+#else
+	npe_bus4_irq_handler();
+#endif
 }
 /**
  * @brief usb 250us interrupt handler.
@@ -650,11 +782,15 @@ void  entry_irq33(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq34(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq34(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	usb_250us_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ34_USB_250US);
 	NDS_FENCE_IORW;
+#else
+	usb_250us_irq_handler();
+#endif
 }
 /**
  * @brief usb reset interrupt handler.
@@ -663,11 +799,15 @@ void  entry_irq34(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq35(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq35(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	usb_reset_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ35_USB_RESET);
 	NDS_FENCE_IORW;
+#else
+	usb_reset_irq_handler();
+#endif
 }
 /**
  * @brief npe bus7 interrupt handler.
@@ -676,11 +816,15 @@ void  entry_irq35(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq36(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq36(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus7_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ36_NPE_BUS7);
 	NDS_FENCE_IORW;
+#else
+	npe_bus7_irq_handler();
+#endif
 }
 /**
  * @brief npe bus8 interrupt handler.
@@ -689,11 +833,15 @@ void  entry_irq36(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq37(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq37(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus8_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ37_NPE_BUS8);
 	NDS_FENCE_IORW;
+#else
+	npe_bus8_irq_handler();
+#endif
 }
 
 
@@ -724,11 +872,15 @@ void  entry_irq41(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq42(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq42(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus13_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ42_NPE_BUS13);
 	NDS_FENCE_IORW;
+#else
+	npe_bus13_irq_handler();
+#endif
 }
 /**
  * @brief npe bus14 interrupt handler.
@@ -737,11 +889,15 @@ void  entry_irq42(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq43(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq43(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus14_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ43_NPE_BUS14);
 	NDS_FENCE_IORW;
+#else
+	npe_bus14_irq_handler();
+#endif
 }
 
 /**
@@ -751,11 +907,15 @@ void  entry_irq43(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq44(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq44(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus15_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ44_NPE_BUS15);
 	NDS_FENCE_IORW;
+#else
+	npe_bus15_irq_handler();
+#endif
 }
 _attribute_ram_code_sec_noinline_ void  entry_irq45(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq45(void)
@@ -769,11 +929,15 @@ void  entry_irq45(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq46(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq46(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus17_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ46_NPE_BUS17);
 	NDS_FENCE_IORW;
+#else
+	npe_bus17_irq_handler();
+#endif
 }
 
 
@@ -801,11 +965,15 @@ void  entry_irq49(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq50(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq50(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus21_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ50_NPE_BUS21);
 	NDS_FENCE_IORW;
+#else
+	npe_bus21_irq_handler();
+#endif
 }
 /**
  * @brief npe bus22 interrupt handler.
@@ -814,11 +982,15 @@ void  entry_irq50(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq51(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq51(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus22_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ51_NPE_BUS22);
 	NDS_FENCE_IORW;
+#else
+	npe_bus22_irq_handler();
+#endif
 }
 /**
  * @brief npe bus23 interrupt handler.
@@ -827,11 +999,15 @@ void  entry_irq51(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq52(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq52(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus23_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ52_NPE_BUS23);
 	NDS_FENCE_IORW;
+#else
+	npe_bus23_irq_handler();
+#endif
 }
 /**
  * @brief npe bus24 interrupt handler.
@@ -840,11 +1016,15 @@ void  entry_irq52(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq53(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq53(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus24_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ53_NPE_BUS24);
 	NDS_FENCE_IORW;
+#else
+	npe_bus24_irq_handler();
+#endif
 }
 /**
  * @brief npe bus25 interrupt handler.
@@ -853,11 +1033,15 @@ void  entry_irq53(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq54(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq54(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus25_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ54_NPE_BUS25);
 	NDS_FENCE_IORW;
+#else
+	npe_bus25_irq_handler();
+#endif
 }
 /**
  * @brief npe bus26 interrupt handler.
@@ -866,11 +1050,15 @@ void  entry_irq54(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq55(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq55(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus26_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ55_NPE_BUS26);
 	NDS_FENCE_IORW;
+#else
+	npe_bus26_irq_handler();
+#endif
 }
 /**
  * @brief npe bus27 interrupt handler.
@@ -879,11 +1067,15 @@ void  entry_irq55(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq56(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq56(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus27_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ56_NPE_BUS27);
 	NDS_FENCE_IORW;
+#else
+	npe_bus27_irq_handler();
+#endif
 }
 /**
  * @brief npe bus28 interrupt handler.
@@ -892,11 +1084,15 @@ void  entry_irq56(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq57(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq57(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus28_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ57_NPE_BUS28);
 	NDS_FENCE_IORW;
+#else
+	npe_bus28_irq_handler();
+#endif
 }
 /**
  * @brief npe bus29 interrupt handler.
@@ -905,11 +1101,15 @@ void  entry_irq57(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq58(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq58(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus29_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ58_NPE_BUS29);
 	NDS_FENCE_IORW;
+#else
+	npe_bus29_irq_handler();
+#endif
 }
 /**
  * @brief npe bus30 interrupt handler.
@@ -918,11 +1118,15 @@ void  entry_irq58(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq59(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq59(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus30_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ59_NPE_BUS30);
 	NDS_FENCE_IORW;
+#else
+	npe_bus30_irq_handler();
+#endif
 }
 /**
  * @brief npe bus31 interrupt handler.
@@ -931,11 +1135,15 @@ void  entry_irq59(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq60(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq60(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_bus31_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ60_NPE_BUS31);
 	NDS_FENCE_IORW;
+#else
+	npe_bus31_irq_handler();
+#endif
 }
 /**
  * @brief npe comb interrupt handler.
@@ -944,11 +1152,15 @@ void  entry_irq60(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq61(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq61(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	npe_comb_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ61_NPE_COMB);
 	NDS_FENCE_IORW;
+#else
+	npe_comb_irq_handler();
+#endif
 }
 /**
  * @brief pm interrupt handler.An interrupt will be generated after wake-up
@@ -957,11 +1169,15 @@ void  entry_irq61(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq62(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq62(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	pm_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ62_PM_TM);
 	NDS_FENCE_IORW;
+#else
+	pm_irq_handler();
+#endif
 }
 /**
  * @brief eoc interrupt handler.
@@ -970,11 +1186,15 @@ void  entry_irq62(void)
 _attribute_ram_code_sec_noinline_ void  entry_irq63(void) __attribute__ ((interrupt ("machine") , aligned(4)));
 void  entry_irq63(void)
 {
+#if SUPPORT_PFT_ARCH
 	core_save_nested_context();
 	eoc_irq_handler();
 	core_restore_nested_context();
 	plic_interrupt_complete(IRQ63_EOC);
 	NDS_FENCE_IORW;
+#else
+	eoc_irq_handler();
+#endif
 }
 
 

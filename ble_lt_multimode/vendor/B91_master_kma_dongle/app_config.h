@@ -40,7 +40,7 @@
 #define BLE_MASTER_OTA_ENABLE						1  //slave ota test
 #define AUDIO_SDM_ENBALE							0//if using sdm playback, should better disable USB MIC
 
-#define UI_AUDIO_ENABLE								1//1
+#define UI_AUDIO_ENABLE								1
 #define UI_BUTTON_ENABLE							1
 #define UI_UPPER_COMPUTER_ENABLE					0  //work with upper computer
 
@@ -168,7 +168,7 @@
 
 
 /////////////////// Clock  /////////////////////////////////
-#define CLOCK_SYS_CLOCK_HZ  	48000000
+#define CLOCK_SYS_CLOCK_HZ  	32000000
 
 enum{
 	CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,

@@ -48,20 +48,6 @@
 #define NULL  0
 #endif
 
-//typedef enum{
-//	SYS_CLK_12M_Crystal = 0x44,
-//	SYS_CLK_16M_Crystal = 0x43,
-//	SYS_CLK_24M_Crystal = 0x42,
-//	SYS_CLK_32M_Crystal = 0x60,
-//	SYS_CLK_48M_Crystal = 0x20,
-//
-//	SYS_CLK_RC_THRES = 0x10,
-//
-////	SYS_CLK_24M_RC 	 = 0x00,
-////	SYS_CLK_32M_RC 	 = 0x01,
-////	SYS_CLK_48M_RC 	 = 0x02,
-//}SYS_CLK_TypeDef;
-
 /********* eccp curve struct *********/
 typedef struct
 {

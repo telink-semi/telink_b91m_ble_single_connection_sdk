@@ -303,7 +303,7 @@ unsigned int cpu_stall(int WakeupSrc, unsigned int IntervalUs,unsigned int syscl
  * @param   xtal- set this parameter based on external crystal
  * @return  none
  */
-void cpu_wakeup_init(power_mode_e power_mode) ;
+void sys_init(power_mode_e power_mode) ;
 
 /*
  * @brief     This function performs to enable system timer and 32K calibration.

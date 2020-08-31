@@ -88,7 +88,7 @@ _attribute_ram_code_ int main(void)
 {
 	blc_pm_select_internal_32k_crystal();
 
-	cpu_wakeup_init(LDO_MODE);
+	sys_init(LDO_MODE);
 
 	/* detect if MCU is wake_up from deep retention mode */
 	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
