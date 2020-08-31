@@ -11,7 +11,7 @@
 #include "rf.h"
 
 #define ACCESS_ADDR                      0x140808
-#define ACCESS_CODE                      0x29417671
+#define ACCESS_CODE_EMI                  0x29417671
 #define ACCLEN_ADDR                      0x140805
 
 /**

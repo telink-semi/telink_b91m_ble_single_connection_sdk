@@ -60,11 +60,10 @@
 //////////////////////////////////////////////////////////////////////////////
 //	 Adv Packet, Response Packet
 //////////////////////////////////////////////////////////////////////////////
-//const u8	tbl_advData[] = {
-//	 0x05, 0x09, 'x', 'H', 'I', 'D',
-//};
 
-
+/**
+ * @brief	Adv Packet data
+ */
 const u8	tbl_advData[] = {
 	 0x05, 0x09, 'x', 'H', 'i', 'd',
 	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
@@ -72,6 +71,9 @@ const u8	tbl_advData[] = {
 	 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
 };
 
+/**
+ * @brief	Scan Response Packet data
+ */
 const u8	tbl_scanRsp [] = {
 		 0x08, 0x09, 'x', 'R', 'e', 'm', 'o', 't', 'e',
 	};
@@ -113,13 +115,26 @@ _attribute_data_retention_	u8 	app_scanRspData[APP_MAX_LENGTH_SCAN_RESPONSE_DATA
 
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_CONNECT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_connect (u8 e, u8 *p, int n)
 {
 //	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
 }
 
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_TERMINATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
 
@@ -128,7 +143,13 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 {
 #if (MCU_CORE_TYPE == MCU_CORE_8278)
@@ -145,7 +166,11 @@ _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 
 
 
-
+/**
+ * @brief		user initialization for extended adv test timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_ext_adv_init_normal(void)
 {
 
@@ -178,7 +203,7 @@ void feature_ext_adv_init_normal(void)
 	blc_ll_initExtAdvDataBuffer(app_advData, APP_MAX_LENGTH_ADV_DATA);
 	blc_ll_initExtScanRspDataBuffer(app_scanRspData, APP_MAX_LENGTH_SCAN_RESPONSE_DATA);
 #else
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 #endif
 
 
@@ -399,7 +424,7 @@ void feature_ext_adv_init_normal(void)
 
 
 
-
+	blc_ll_init2MPhyCodedPhy_feature();
 	//ble event call back
 	bls_app_registerEventCallback (BLT_EV_FLAG_CONNECT, &task_connect);
 	bls_app_registerEventCallback (BLT_EV_FLAG_TERMINATE, &task_terminate);
@@ -435,7 +460,11 @@ void feature_ext_adv_init_normal(void)
 
 
 
-
+/**
+ * @brief		user initialization for extended adv test timer test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void feature_ext_adv_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)

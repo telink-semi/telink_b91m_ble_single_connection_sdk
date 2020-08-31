@@ -41,13 +41,25 @@
 
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_CONNECT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_connect (u8 e, u8 *p, int n)
 {
 
 }
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_TERMINATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_terminate (u8 e, u8 *p, int n)
 {
 
@@ -58,7 +70,13 @@ void	task_terminate (u8 e, u8 *p, int n)
 
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void  func_suspend_enter (u8 e, u8 *p, int n)
 {
 
@@ -66,7 +84,13 @@ void  func_suspend_enter (u8 e, u8 *p, int n)
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
@@ -96,6 +120,13 @@ _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 	u8 AA_advRpt_index = 0;
 #endif
 
+/**
+ * @brief      callback function of HCI Controller Event
+ * @param[in]  h - HCI Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 int controller_event_callback (u32 h, u8 *p, int n)
 {
 	if (h &HCI_FLAG_EVENT_BT_STD)		//ble controller hci event
@@ -135,7 +166,11 @@ int controller_event_callback (u32 h, u8 *p, int n)
 
 
 
-
+/**
+ * @brief		user initialization for link layer state test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_linklayer_state_test_init_normal(void)
 {
 
@@ -165,13 +200,19 @@ void feature_linklayer_state_test_init_normal(void)
 #if (FEATURE_TEST_MODE == TEST_ADVERTISING_ONLY)
 
 	printf("\n\rtst adv only\n");
-	blc_ll_initAdvertising_module(mac_public);
+	blc_ll_initAdvertising_module();
 
-
+	/**
+	 * @brief	Adv Packet data
+	 */
 	u8 tbl_advData[] = {
 		 0x08, 0x09, 't', 'e', 's', 't', 'a', 'd', 'v',
 		 0x02, 0x01, 0x05,
 		};
+
+	/**
+	 * @brief	Scan Response Packet data
+	 */
 	u8	tbl_scanRsp [] = {
 			 0x08, 0x09, 'T', 'E', 'S', 'T', 'A', 'D', 'V',	//scan name
 		};
@@ -193,7 +234,7 @@ void feature_linklayer_state_test_init_normal(void)
 
 #elif (FEATURE_TEST_MODE == TEST_SCANNING_ONLY)
 	printf("\n\rtst scan only\n");
-	blc_ll_initScanning_module(mac_public);
+	blc_ll_initScanning_module();
 	blc_hci_le_setEventMask_cmd(HCI_LE_EVT_MASK_ADVERTISING_REPORT);
 	blc_hci_registerControllerEventHandler(controller_event_callback);
 
@@ -214,7 +255,7 @@ void feature_linklayer_state_test_init_normal(void)
 
 #elif (FEATURE_TEST_MODE == TEST_ADVERTISING_IN_CONN_SLAVE_ROLE)
 	printf("\n\rtst adv in conn slave role\n");
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
 
@@ -226,10 +267,17 @@ void feature_linklayer_state_test_init_normal(void)
 	blc_smp_peripheral_init();									//smp initialization
 
 ///////////////////// USER application initialization ///////////////////
+	/**
+	 * @brief	Adv Packet data
+	 */
 	u8 tbl_advData[] = {
 		 0x09, 0x09, 's', 'l', 'a', 'v', 'e', 'a', 'd', 'v',
 		 0x02, 0x01, 0x05,
 		};
+
+	/**
+	 * @brief	Scan Response Packet data
+	 */
 	u8	tbl_scanRsp [] = {
 			 0x09, 0x09, 'S', 'L', 'A', 'V', 'E', 'A', 'D', 'V',
 		};
@@ -249,10 +297,17 @@ void feature_linklayer_state_test_init_normal(void)
 
 
 	//add advertising in connection slave role
+	/**
+	 * @brief	Adv test Packet data
+	 */
 	u8 tbl_advData_test[] = {
 		 0x09, 0x09, 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
 		 0x02, 0x01, 0x05,
 		};
+
+	/**
+	 * @brief	Scan Response test Packet data
+	 */
 	u8	tbl_scanRsp_test [] = {
 			 0x09, 0x09, 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
 		};
@@ -267,7 +322,7 @@ void feature_linklayer_state_test_init_normal(void)
 
 #elif (FEATURE_TEST_MODE == TEST_SCANNING_IN_ADV_AND_CONN_SLAVE_ROLE)
 	printf("\n\rtst scan in adv and conn slave role\n");
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
 
@@ -279,10 +334,17 @@ void feature_linklayer_state_test_init_normal(void)
 	blc_smp_peripheral_init();									//smp initialization
 
 ///////////////////// USER application initialization ///////////////////
+	/**
+	 * @brief	Adv Packet data
+	 */
 	u8 tbl_advData[] = {
 		 0x0A, 0x09, 's', 'l', 'a', 'v', 'e', 's', 'c', 'a', 'n',
 		 0x02, 0x01, 0x05,
 		};
+
+	/**
+	 * @brief	Scan Response Packet data
+	 */
 	u8	tbl_scanRsp [] = {
 			 0x0A, 0x09, 'S', 'L', 'A', 'V', 'E', 'S', 'C', 'A','N'
 		};
@@ -303,7 +365,7 @@ void feature_linklayer_state_test_init_normal(void)
 
 
 	//scan setting
-	blc_ll_initScanning_module(mac_public);
+	blc_ll_initScanning_module();
 	blc_hci_le_setEventMask_cmd(HCI_LE_EVT_MASK_ADVERTISING_REPORT);
 	blc_hci_registerControllerEventHandler(controller_event_callback);
 
@@ -331,7 +393,7 @@ void feature_linklayer_state_test_init_normal(void)
 
 
 #elif (FEATURE_TEST_MODE == TEST_ADVERTISING_SCANNING_IN_CONN_SLAVE_ROLE)
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
 
@@ -343,6 +405,9 @@ void feature_linklayer_state_test_init_normal(void)
 	blc_smp_peripheral_init();									//smp initialization
 
 ///////////////////// USER application initialization ///////////////////
+	/**
+	 * @brief	Adv Packet data
+	 */
 	u8	tbl_advData[] = {
 		 0x05, 0x09, 'f', 'h', 'i', 'd',
 		 0x02, 0x01, 0x05,
@@ -350,6 +415,9 @@ void feature_linklayer_state_test_init_normal(void)
 		 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,
 	};
 
+	/**
+	 * @brief	Scan Response Packet data
+	 */
 	u8	tbl_scanRsp [] = {
 			 0x08, 0x09, 'f', 'e', 'a', 't', 'u', 'r', 'e',
 		};
@@ -371,22 +439,29 @@ void feature_linklayer_state_test_init_normal(void)
 
 
 	//add advertising in connection slave role
+	/**
+	 * @brief	Adv test Packet data
+	 */
 	u8 tbl_advData_test[] = {
 			 0x09, 0x09, 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A',
 			 0x02, 0x01, 0x05,
 			};
-		u8	tbl_scanRsp_test [] = {
-				 0x09, 0x09, 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
-			};
-		blc_ll_addAdvertisingInConnSlaveRole();  //adv in conn slave role
-		blc_ll_setAdvParamInConnSlaveRole(  (u8 *)tbl_advData_test, sizeof(tbl_advData_test), \
-											(u8 *)tbl_scanRsp_test, sizeof(tbl_scanRsp_test), \
-											ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC, BLT_ENABLE_ADV_ALL, ADV_FP_NONE);
+
+	/**
+	 * @brief	Scan Response Packet data
+	 */
+	u8	tbl_scanRsp_test [] = {
+			 0x09, 0x09, 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
+		};
+	blc_ll_addAdvertisingInConnSlaveRole();  //adv in conn slave role
+	blc_ll_setAdvParamInConnSlaveRole(  (u8 *)tbl_advData_test, sizeof(tbl_advData_test), \
+										(u8 *)tbl_scanRsp_test, sizeof(tbl_scanRsp_test), \
+										ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC, BLT_ENABLE_ADV_ALL, ADV_FP_NONE);
 
 
 
 	//scan setting
-	blc_ll_initScanning_module(mac_public);
+	blc_ll_initScanning_module();
 	blc_hci_le_setEventMask_cmd(HCI_LE_EVT_MASK_ADVERTISING_REPORT);
 	blc_hci_registerControllerEventHandler(controller_event_callback);
 
@@ -434,7 +509,11 @@ void feature_linklayer_state_test_init_normal(void)
 }
 
 
-
+/**
+ * @brief		user initialization for link layer state test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void feature_linklayer_state_test_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)

@@ -29,124 +29,32 @@
 
 
 
-
-
-
-/********************* Macro & Enumeration variables for Stack, user can not use!!!!  **********************/
-#define PHY_USED_AUXPTR_LE_1M									0
-#define PHY_USED_AUXPTR_LE_2M									1
-#define PHY_USED_AUXPTR_LE_CODED								2
-
-
-
-typedef struct{
-	u8	llid;
-	u8  rf_len;
-	u8	opcode;
-	u8	tx_phys;
-	u8	rx_phys;
-}rf_pkt_ll_phy_req_rsp_t;   //phy_req, phy_rsp
-
-
-typedef struct{
-	u8	llid;
-	u8  rf_len;
-	u8	opcode;
-	u8	m_to_s_phy;
-	u8	s_to_m_phy;
-	u8 	instant0;
-	u8 	instant1;
-}rf_pkt_ll_phy_update_ind_t;   //phy_req, phy_rsp
-
-
-
-typedef enum{
-	LE_CODED_S2 = 2,
-	LE_CODED_S8 = 8,
-}le_coding_ind_t;
-
-
-
-typedef struct {
-	u8	dft_tx_prefer_phys;
-	u8 	dft_rx_prefer_phys;
-	u8	dft_prefer_phy;
-	u8	dft_CI;
-
-	//for Extended ADV
-	u8	cur_llPhy;
-	u8	cur_CI;  //cur_coding_ind
-	u16 rsvd;
-}ll_phy_t;
-extern _attribute_aligned_(4) ll_phy_t		bltPHYs;
-
-
-
-//do not support Asymmetric PHYs, conn_phys = tx_phys & rx_phys
-typedef struct {
-	u8	conn_prefer_phys;  // conn_prefer_phys = tx_prefer_phys & rx_prefer_phys
-	u8	conn_cur_phy;	   //
-	u8	conn_next_phy;	   //
-	u8	conn_cur_CI;	   // CI: coding_ind
-
-	u8	conn_next_CI;
-	u8	phy_req_trigger;  // 1: means current device triggers phy_req, due to API "blc_ll_setPhy" called by Host or Application
-	u8	phy_req_pending;
-	u8	phy_update_pending;
-
-	u32	conn_update_phy;
-
-	#if 0
-		u8	tx_prefer_phys;		//phy set
-		u8 	rx_prefer_phys;
-		u8  tx_next_phys;
-		u8 	rx_next_phys;
-
-		u8	cur_tx_phy;		//phy using
-		u8	cur_rx_phy;
-		u16 rsvd;
-	#endif
-
-}ll_conn_phy_t;
-
-
-
-
-typedef ll_conn_phy_t* (*ll_get_conn_phy_ptr_callback_t)(u16);
-extern ll_get_conn_phy_ptr_callback_t  ll_get_conn_phy_ptr_cb;
-
-
-extern u8   tx_settle_adv[4];
-extern u8	tx_settle_slave[4];
-extern u8	tx_settle_master[4];
-
-
-
-
-
-/************************************ User Interface  ******************************************************/
+/**
+ * @brief      this function is used to initialize 2M/Coded PHY  feature
+ * @param	   none
+ * @return     none
+ */
 void		blc_ll_init2MPhyCodedPhy_feature(void);
 
-ble_sts_t 	blc_ll_setDefaultPhy(le_phy_prefer_mask_t all_phys, le_phy_prefer_type_t tx_phys, le_phy_prefer_type_t rx_phys);
 
-ble_sts_t	blc_ll_readPhy(u16 connHandle, hci_le_readPhyCmd_retParam_t *);
 
+
+
+
+
+/**
+ * @brief       this function is used to set PHY type for connection
+ * @param[in]	connHandle -
+ * @param[in]	all_phys - preference PHY for TX & RX
+ * @param[in]	tx_phys - preference PHY for TX
+ * @param[in]	rx_phys - preference PHY for RX
+ * @param[in]	phy_options - LE coding indication prefer
+ * @return      none
+ */
 ble_sts_t  	blc_ll_setPhy(	u16 connHandle,					le_phy_prefer_mask_t all_phys,
 							le_phy_prefer_type_t tx_phys, 	le_phy_prefer_type_t rx_phys,
 							le_ci_prefer_t phy_options);
 
-
-
-ble_sts_t	blc_ll_setDefaultConnCodingIndication(le_ci_prefer_t prefer_CI);
-
-
-
-/*********************************** Stack Interface, user can not use!!! **********************************/
-int 	blt_reset_conn_phy_param(ll_conn_phy_t* pconn_phy);
-void 	rf_ble_switch_phy(le_phy_type_t phy, le_coding_ind_t coding_ind);
-
-typedef void (*ll_phy_switch_callback_t)(le_phy_type_t, le_coding_ind_t);
-extern ll_phy_switch_callback_t		ll_phy_switch_cb;
 
 
 

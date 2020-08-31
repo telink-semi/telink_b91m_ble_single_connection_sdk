@@ -29,4 +29,13 @@ int aes_encrypt(unsigned char *Key, unsigned char* plaintext, unsigned char *res
  */
 int aes_decrypt(unsigned char *Key, unsigned char* decrypttext, unsigned char *result);
 
+/**
+ * @brief     This function refer to set the base addr of data which use in CEVA module
+ * @param[in] addr - the base addr of CEVA data.
+ * @return    none
+ */
+void aes_set_em_base_addr(unsigned int addr);
+
+
+
 #endif /* _AES_H_ */

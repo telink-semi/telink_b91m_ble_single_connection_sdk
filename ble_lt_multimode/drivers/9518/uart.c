@@ -86,7 +86,7 @@ dma_config_st uart_rx_dma_config[2]={
 		.src_burst_size 	= 0,
 		.read_num_en 		= 0,
 		.priority 			= 0,
-		.write_num_en 		= 1,
+		.write_num_en 		= 0,
 		.auto_en 			= 0,//must 0
 	},
 	{ 	.dst_req_sel 		= 0,//tx req
@@ -100,7 +100,7 @@ dma_config_st uart_rx_dma_config[2]={
 		.src_burst_size 	= 0,
 		.read_num_en 		= 0,
 		.priority 			= 0,
-		.write_num_en 		= 1,
+		.write_num_en 		= 0,
 		.auto_en 			= 0,//must 0
 	}
 };
@@ -118,7 +118,7 @@ dma_config_st uart_rx_dma_config[2]={
   * @param[in] none
   * @return    none
   */
- static unsigned char uart_IsPrime(unsigned int n);
+ static unsigned char uart_is_prime(unsigned int n);
 
  /**
   *	@brief	This function serves to set pin for UART0 fuction .
@@ -206,13 +206,13 @@ void uart_cal_div_and_bwpc(unsigned int baudrate, unsigned int sysclk, unsigned 
 	primeInt = sysclk/baudrate;
 	primeDec = 10*sysclk/baudrate - 10*primeInt;
 
-	if(uart_IsPrime(primeInt)){ // primeInt is prime
+	if(uart_is_prime(primeInt)){ // primeInt is prime
 		primeInt += 1;  //+1 must be not prime. and primeInt must be larger than 2.
 	}
 	else{
 		if(primeDec > 5){ // >5
 			primeInt += 1;
-			if(uart_IsPrime(primeInt)){
+			if(uart_is_prime(primeInt)){
 				primeInt -= 1;
 			}
 		}
@@ -303,16 +303,21 @@ unsigned char uart_read_byte(uart_num_e uart_num)
 {
 
 	static unsigned char uart_rx_byte_index[2]={0};
-
-	//while(uart0_get_rxfifo_num()<1);
-
 	unsigned char rx_data = reg_uart_data_buf(uart_num, uart_rx_byte_index[uart_num]) ;
 	uart_rx_byte_index[uart_num]++;
 	uart_rx_byte_index[uart_num] &= 0x03 ;
 	return rx_data;
 }
 
-
+/**
+ * @brief     This function serves to judge if the transmission of uart is done.
+ * @param[in] uart_num - UART0 or UART1.
+ * @return    0:tx is done     1:tx isn't done
+ */
+unsigned char uart_tx_is_busy(uart_num_e uart_num)
+{
+     return ( (reg_uart_status2(uart_num) & FLD_UART_TX_DONE) ? 0 : 1) ;
+}
 
 /**
  * @brief     This function serves to send uart0 data by halfword with not DMA method.
@@ -472,7 +477,22 @@ void uart_set_pin(uart_tx_pin_e tx_pin,uart_rx_pin_e rx_pin)
 	gpio_set_input_en(rx_pin);
 }
 
-
+/**
+ * @brief     	uart0 send data function
+ * @param[in]  	uart_num - UART0 or UART1
+ *            	the NDMA transmission
+ * @param[in] 	Addr - pointer to the buffer containing data need to send
+ * @param[in] 	len - NDMA transmission length
+ * @return    	none
+ */
+volatile unsigned char uart_send_ndma(uart_num_e uart_num, unsigned char * Addr, unsigned char len )
+{
+	for(u8 i=0;i<len;i++)
+	{
+		uart_send_byte(UART0,Addr[i]);
+	}
+	return 1;
+}
 
 /**
  * @brief     	uart0 send data function, this  function tell the DMA to get data from the RAM and start
@@ -486,7 +506,7 @@ volatile unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * Addr, 
 {
 	if (reg_uart_status2(uart_num) & FLD_UART_TX_DONE )
 	{
-		dma_set_address(uart_dma_tx_chn[uart_num],(u32)reg_dma_addr(Addr),reg_uart_data_buf_adr(uart_num));
+		dma_set_address(uart_dma_tx_chn[uart_num],(u32)convert_ram_addr_cpu2bus(Addr),reg_uart_data_buf_adr(uart_num));
 		dma_set_size(uart_dma_tx_chn[uart_num],len,DMA_WORD_WIDTH);
 		dma_chn_en(uart_dma_tx_chn[uart_num]);
 
@@ -501,13 +521,15 @@ volatile unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * Addr, 
  *            	the DMA transmission
  * @param[in]  	uart_num - UART0 or UART1
  * @param[in] 	Addr - pointer to the buffer  receive data¡£
+ * @param[in]   rev_size - the number that you want to receive should be multiple of 4,like 4,8,12,16 .....
  * @return    	none
  */
- void uart_receive_dma(uart_num_e uart_num, unsigned char * Addr)
+
+ void uart_receive_dma(uart_num_e uart_num, unsigned char * Addr,unsigned char rev_size)
 {
-	dma_set_address(uart_dma_rx_chn[uart_num],reg_uart_data_buf_adr(uart_num),(u32)reg_dma_addr(Addr+4));
-	reg_dma_size(uart_dma_rx_chn[uart_num]) = 0xffffffff;
-//	dma_set_size(uart_dma_rx_chn[uart_num], 16, DMA_WORD_WIDTH);
+
+	dma_set_address(uart_dma_rx_chn[uart_num],reg_uart_data_buf_adr(uart_num),(u32)convert_ram_addr_cpu2bus(Addr));
+	dma_set_size(uart_dma_rx_chn[uart_num], rev_size, DMA_WORD_WIDTH);
 	dma_chn_en(uart_dma_rx_chn[uart_num]);
 }
 
@@ -597,7 +619,7 @@ volatile unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * Addr, 
   * @param[in] none
   * @return    none
   */
- static unsigned char uart_IsPrime(unsigned int n)
+ static unsigned char uart_is_prime(unsigned int n)
  {
  	unsigned int i = 5;
  	if(n <= 3){
@@ -702,12 +724,8 @@ static void uart_set_fuc_pin(uart_tx_pin_e tx_pin,uart_rx_pin_e rx_pin)
  	gpio_set_gpio_dis(rx_pin);
  }
 
-
+/*******************************      BLE Stack Use     ******************************/
 unsigned char uart_dma_send(unsigned char* Addr)//todo : biao
 {
 	return 0;
-}
-unsigned char uart_tx_is_busy(void)
-{
-    return 0;
 }

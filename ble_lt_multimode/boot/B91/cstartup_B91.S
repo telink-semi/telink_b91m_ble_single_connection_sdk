@@ -23,7 +23,7 @@
  * @version  A001
  *
  *******************************************************************************************************/
-
+#ifdef MCU_STARTUP_B91
     .section .vectors, "ax"
 
     //.org  and linker's relaxation (-flto) cannot be used at the same time
@@ -41,6 +41,9 @@
 _RESET_ENTRY:
 	/* Decide whether this is an NMI or cold reset */
 	csrr t0, mcause
+	j 		 _NMI_HANDLER
+    .org 0x8
+_NMI_HANDLER:
 	bnez t0, nmi_handler
     j 		 _START
 
@@ -53,10 +56,10 @@ _RESET_ENTRY:
     .org 0x26
     //.short (0x0003)           //READ:    cmd:1x, addr:1x, data:1x, dummy:0
     //.short (0x070B)           //FREAD:   cmd:1x, addr:1x, data:1x, dummy:8
-    .short (0x173B)           //DREAD:   cmd:1x, addr:1x, data:2x, dummy:8
+    //.short (0x173B)           //DREAD:   cmd:1x, addr:1x, data:2x, dummy:8
     //.short (0x53BB)           //X2READ:  cmd:1x, addr:2x, data:2x, dummy:4
     //.short (0x276B)           //QREAD:   cmd:1x, addr:1x, data:4x, dummy:8
-    //.short (0x65EB)             //X4READ:  cmd:1x, addr:4x, data:4x, dummy:6
+    .short (0x65EB)             //X4READ:  cmd:1x, addr:4x, data:4x, dummy:6
     .option pop
     .align 2
 
@@ -181,14 +184,24 @@ _DATA_INIT_BEGIN:
 	/* Zero .bss section in sram */
 _ZERO_BSS:
     lui    t0, 0
-    addi   t0, t0, 0
     la     t2, _BSS_VMA_START
     la     t3, _BSS_VMA_END
 _ZERO_BSS_BEGIN:
-    bleu   t3, t2, _FILL_STK
+    bleu   t3, t2, _ZERO_AES
     sw     t0, 0(t2)
     addi   t2, t2, 4
     j      _ZERO_BSS_BEGIN
+
+	/* Zero .aes section in sram */
+_ZERO_AES:
+    lui    t0, 0
+    la     t2, _AES_VMA_START
+    la     t3, _AES_VMA_END
+_ZERO_AES_BEGIN:
+    bleu   t3, t2, _FILL_STK
+    sw     t0, 0(t2)
+    addi   t2, t2, 4
+    j      _ZERO_AES_BEGIN
 
 	/* Fill the remaining section in sram */
 _FILL_STK:
@@ -378,14 +391,24 @@ _IDATA_INIT_BEGIN:
 	/* Zero .bss section in sram */
 _IZERO_BSS:
     lui    t0, 0
-    addi   t0, t0, 0
     la     t2, _BSS_VMA_START
     la     t3, _BSS_VMA_END
 _IZERO_BSS_BEGIN:
-    bleu   t3, t2, _IFILL_STK
+    bleu   t3, t2, _IZERO_AES
     sw     t0, 0(t2)
     addi   t2, t2, 4
     j      _IZERO_BSS_BEGIN
+
+	/* Zero .aes section in sram */
+_IZERO_AES:
+    lui    t0, 0
+    la     t2, _AES_VMA_START
+    la     t3, _AES_VMA_END
+_IZERO_AES_BEGIN:
+    bleu   t3, t2, _IFILL_STK
+    sw     t0, 0(t2)
+    addi   t2, t2, 4
+    j      _IZERO_AES_BEGIN
 
 	/* Fill the remaining section in sram */
 _IFILL_STK:
@@ -455,3 +478,4 @@ __vectors:
 	INTERRUPT %irqno
 	.set irqno, irqno+1
 	.endr
+#endif

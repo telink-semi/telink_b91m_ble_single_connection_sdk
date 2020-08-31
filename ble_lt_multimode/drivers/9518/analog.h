@@ -76,15 +76,17 @@ void analog_write_buff(unsigned char addr, unsigned char *buff, int len);
  * @param[in]  len - the length of read value.
  * @return     none.
  */
-void analog_dma_write_reg32(dma_chn_e chn, unsigned char addr, void * pdat);
+void analog_dma_write_reg32(dma_chn_e chn, unsigned char addr, void *pdat);
+
 /**
- * @brief      This function serves to analog register write use DMA.
- * @param[in]  addr - address need to be read.
- * @param[in]  *buff - the value need to be read.
- * @param[in]  len - the length of read value.
+ * @brief      This function serves to analog register write by word using dma.
+ * @param[in]  chn - the dma channel.
+ * @param[in]  addr - address need to be write.
+ * @param[in]  pdat - the value need to be write.
  * @return     none.
  */
-void analog_dma_read_reg32(dma_chn_e chn, unsigned char addr,void * pdat);
+void analog_dma_read_reg32(dma_chn_e chn, unsigned char addr,void *pdat);
+
 /**
  * @brief      This function serves to analog register write adr_dat mode.
  * @param[in]  addr - address need to be read.

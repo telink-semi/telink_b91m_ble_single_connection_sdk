@@ -16,28 +16,10 @@
                  only one input pin can be selected one time.
  * @return none
  */
-unsigned char buf_flag=0;
 
-void mdec_init(MDEC_PinTypeDef pin)
+void mdec_init(mdec_pin_e pin)
 {
-	analog_write_reg8(0x4e, analog_read_reg8(0x4e) & (~BIT(7)));    //turn to 32K_RC
-	clock_cal_32k_rc();
-
-	if(pin==GPIO_PA0_MDEC){
-		analog_write_reg8(mdec_rst_addr,(analog_read_reg8(mdec_rst_addr) & (~FLD_CLS_MDEC)) | FLD_SELE_PA0);//A0
-	    }
-    if(pin==GPIO_PB7_MDEC){
-    	analog_write_reg8(mdec_rst_addr,(analog_read_reg8(mdec_rst_addr) & (~FLD_CLS_MDEC)) | FLD_SELE_PB7 );//B7
-    	}
-    if(pin==GPIO_PC4_MDEC){
-    	analog_write_reg8(mdec_rst_addr,(analog_read_reg8(mdec_rst_addr) & (~FLD_CLS_MDEC)) | FLD_SELE_PC4 );//C4
-    	}
-    if(pin==GPIO_PD0_MDEC){
-        	analog_write_reg8(mdec_rst_addr,(analog_read_reg8(mdec_rst_addr) & (~FLD_CLS_MDEC)) | FLD_SELE_PD0 );//D0
-        }
-    if(pin==GPIO_PE0_MDEC){
-			analog_write_reg8(mdec_rst_addr,(analog_read_reg8(mdec_rst_addr) & (~FLD_CLS_MDEC)) | FLD_SELE_PE0 );//E0
-		}
+	analog_write_reg8(mdec_rst_addr,(analog_read_reg8(mdec_rst_addr) & (~FLD_CLS_MDEC)) | pin);//A0/B7/C4/D0/E0
 }
 
 /**
@@ -48,10 +30,7 @@ void mdec_init(MDEC_PinTypeDef pin)
 unsigned char mdec_read_dat(unsigned char *dat)
 {
 	unsigned char m0,m1,m2,data_crc;
-	if(analog_read_reg8(0x64) & BIT(4) )//
-	{
-		analog_write_reg8(0x64,0x10);
-		buf_flag = dat[0]=analog_read_reg8(0x6a);
+		dat[0]=analog_read_reg8(0x6a);
 		dat[1]=analog_read_reg8(0x6b);
 		dat[2]=analog_read_reg8(0x6c);
 		dat[3]=analog_read_reg8(0x6d);
@@ -66,9 +45,6 @@ unsigned char mdec_read_dat(unsigned char *dat)
 		if(data_crc==dat[4]){
 			return 1;
 		}
-
-	}
-
 	return 0;
 
 }

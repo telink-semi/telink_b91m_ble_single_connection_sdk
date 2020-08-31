@@ -25,6 +25,9 @@
 
 
 /////////////////// FEATURE SELECT /////////////////////////////////
+/**
+ *  @brief  Feature select in bLE Sample project
+ */
 #define BLE_APP_PM_ENABLE					1
 #define PM_NO_SUSPEND_ENABLE				1
 #define PM_DEEPSLEEP_RETENTION_ENABLE		1
@@ -71,8 +74,9 @@
 			#define			CR_VOL_DN				0xf1
 
 
-
-
+			/**
+			 *  @brief  Normal keyboard map
+			 */
 			#define		KB_MAP_NORMAL	{	CR_VOL_DN,		VK_1,	 \
 											CR_VOL_UP,		VK_2 }
 
@@ -115,6 +119,9 @@
 	#endif
 #define     UI_LED_ENABLE           1
 #if UI_LED_ENABLE
+	/**
+	 *  @brief  Definition gpio for led
+	 */
 	#define	GPIO_LED_WHITE			GPIO_PB6
 	#define	GPIO_LED_GREEN			GPIO_PB5
 	#define	GPIO_LED_BLUE			GPIO_PB4
@@ -146,6 +153,9 @@
 
 	#if (UI_BUTTON_ENABLE)
 			//---------------  Button -------------------------------
+			/**
+			 *  @brief  Definition gpio for button detection
+			 */
 			#define	SW1_GPIO				GPIO_PD5
 			#define	SW2_GPIO				GPIO_PD6
 			#define PD5_FUNC				AS_GPIO
@@ -159,6 +169,9 @@
 
 
 	#if (UI_LED_ENABLE)
+			/**
+			 *  @brief  Definition gpio for led
+			 */
 			//---------------  LED ----------------------------------
 			#define	GPIO_LED_RED			GPIO_PA3
 			#define	GPIO_LED_WHITE			GPIO_PB1
@@ -196,7 +209,7 @@
 
 
 /////////////////// DEEP SAVE FLG //////////////////////////////////
-#define USED_DEEP_ANA_REG                   DEEP_ANA_REG0 //u8,can save 8 bit info when deep
+#define USED_DEEP_ANA_REG                   DEEP_ANA_REG1 //u8,can save 8 bit info when deep
 #define CONN_DEEP_FLG	                    BIT(0) //if 1: conn deep, 0: adv deep
 
 
@@ -205,8 +218,14 @@
 
 
 /////////////////// Clock  /////////////////////////////////
+/**
+ *  @brief  MCU system clock
+ */
 #define CLOCK_SYS_CLOCK_HZ  	16000000
 
+/**
+ *  @brief  Definition the number of system tick for 1s/1ms/1us
+ */
 enum{
 	CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,
 	CLOCK_SYS_CLOCK_1MS = (CLOCK_SYS_CLOCK_1S / 1000),
@@ -226,7 +245,9 @@ enum{
 
 
 
-
+/**
+ *  @brief  Definition for gpio debug
+ */
 #define DEBUG_GPIO_ENABLE							1
 
 #if(DEBUG_GPIO_ENABLE)

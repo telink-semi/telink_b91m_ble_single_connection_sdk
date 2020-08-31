@@ -25,6 +25,9 @@
 #include "stack/ble/ble.h"
 #include "app_att.h"
 
+/**
+ *  @brief  connect parameters structure for ATT
+ */
 typedef struct
 {
   /** Minimum value for the connection event (interval. 0x0006 - 0x0C80 * 1.25 ms) */
@@ -420,6 +423,11 @@ static const attribute_t my_Attributes[] = {
 
 };
 
+/**
+ * @brief      Initialize the attribute table
+ * @param[in]  none
+ * @return     none
+ */
 void	my_att_init (void)
 {
 	bls_att_setAttributeTable ((u8 *)my_Attributes);

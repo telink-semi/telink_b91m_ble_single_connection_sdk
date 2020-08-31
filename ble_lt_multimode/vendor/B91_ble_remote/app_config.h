@@ -36,14 +36,19 @@
 ////////////////////////// AUDIO CONFIG (RCU board) /////////////////////////////
 #if (BLE_AUDIO_ENABLE)
 
-#define	ADPCM_PACKET_LEN				   128
-
-#define TL_MIC_ADPCM_UNIT_SIZE			   248
-
-#define TL_MIC_BUFFER_SIZE				   1984
+	/* RCU Audio MODE:
+	 * TL_AUDIO_RCU_ADPCM_GATT_TLEINK
+	 * TL_AUDIO_RCU_ADPCM_GATT_GOOGLE
+	 * TL_AUDIO_RCU_ADPCM_HID
+	 * TL_AUDIO_RCU_SBC_HID
+	 * TL_AUDIO_RCU_ADPCM_HID_DONGLE_TO_STB
+	 * TL_AUDIO_RCU_SBC_HID_DONGLE_TO_STB
+	 * TL_AUDIO_RCU_MSBC_HID
+	 */
+	#define TL_AUDIO_MODE  			TL_AUDIO_RCU_ADPCM_GATT_TLEINK
 
 #define BLE_DMIC_ENABLE						1
-//DMIC 使用时需要跳线：DDATA-->PB2；  DCLK1-->PB3
+//DMIC 浣跨敤鏃堕渶瑕佽烦绾匡細DDATA-->PB2锛�  DCLK1-->PB3
 #if	BLE_DMIC_ENABLE
 	#define PB2_FUNC						AS_DMIC_DI
 	#define PB3_FUNC						AS_DMIC_SCK
@@ -219,7 +224,7 @@
 
 
 /////////////////// DEEP SAVE FLG //////////////////////////////////
-#define USED_DEEP_ANA_REG                   DEEP_ANA_REG0 //u8,can save 8 bit info when deep
+#define USED_DEEP_ANA_REG                   DEEP_ANA_REG1 //u8,can save 8 bit info when deep
 #define CONN_DEEP_FLG	                    BIT(0) //if 1: conn deep, 0: adv deep
 
 

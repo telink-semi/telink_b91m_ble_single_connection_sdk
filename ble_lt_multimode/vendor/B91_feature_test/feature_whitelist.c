@@ -78,13 +78,25 @@ _attribute_data_retention_	my_fifo_t	blt_txfifo = {
 int  app_whilteList_enable;
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_CONNECT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_connect (u8 e, u8 *p, int n)
 {
 
 }
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_TERMINATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_terminate (u8 e, u8 *p, int n)
 {
 
@@ -96,6 +108,13 @@ void	task_terminate (u8 e, u8 *p, int n)
 
 
 int AA_dbg_suspend;
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void  func_suspend_enter (u8 e, u8 *p, int n)
 {
 	AA_dbg_suspend ++;
@@ -103,7 +122,13 @@ void  func_suspend_enter (u8 e, u8 *p, int n)
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
@@ -116,7 +141,11 @@ _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 
 
 
-
+/**
+ * @brief		user initialization for white list timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_whitelist_test_init_normal(void)
 {
 
@@ -138,7 +167,7 @@ void feature_whitelist_test_init_normal(void)
 
 
 
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
@@ -153,10 +182,17 @@ void feature_whitelist_test_init_normal(void)
 
 
 ///////////////////// USER application initialization ///////////////////
+	/**
+	 * @brief	Adv Packet data
+	 */
 	u8 tbl_advData[] = {
 		 0x05, 0x09, 't', 'e', 's', 't',
 		 0x02, 0x01, 0x05,
 		};
+
+	/**
+	 * @brief	Scan Response Packet data
+	 */
 	u8	tbl_scanRsp [] = {
 			 0x05, 0x09, 't', 'e', 's', 't',
 		};
@@ -237,7 +273,11 @@ void feature_whitelist_test_init_normal(void)
 
 }
 
-
+/**
+ * @brief		user initialization for white list timer test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void feature_whitelist_test_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)

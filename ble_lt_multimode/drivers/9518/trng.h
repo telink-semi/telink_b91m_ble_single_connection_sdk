@@ -43,6 +43,8 @@ void trng_init(void);
  * @return    the value of one random number.
  */
 unsigned int trng_rand(void);
+
+/*******************************      BLE Stack Use     ******************************/
 #define rand	trng_rand
 #define random_generator_init  trng_init
 void generateRandomNum(int len, unsigned char *data);

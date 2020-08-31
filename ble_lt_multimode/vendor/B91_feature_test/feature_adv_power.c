@@ -76,6 +76,14 @@ _attribute_data_retention_	my_fifo_t	blt_txfifo = {
 
 
 int AA_dbg_suspend;
+
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void  func_suspend_enter (u8 e, u8 *p, int n)
 {
 	AA_dbg_suspend ++;
@@ -83,7 +91,13 @@ void  func_suspend_enter (u8 e, u8 *p, int n)
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
@@ -96,7 +110,11 @@ _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 
 
 
-
+/**
+ * @brief		user initialization for adv_power test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_adv_power_test_init_normal(void)
 {
 	//random number generator must be initiated here( in the beginning of user_init_nromal)
@@ -125,7 +143,7 @@ void feature_adv_power_test_init_normal(void)
 
 
 
-	blc_ll_initAdvertising_module(mac_public);
+	blc_ll_initAdvertising_module();
 
 /******************************************************************************************************
  * Here are just some ADV power example
@@ -157,11 +175,18 @@ void feature_adv_power_test_init_normal(void)
 //	blc_ll_setAdvCustomedChannel(33,34,35);
 
 #if 0   // connectable undirected ADV
+	/**
+	 * @brief	Adv Packet data
+	 */
 	//ADV data length: 12 byte
 	u8 tbl_advData[12] = {
 		 0x08, 0x09, 't', 'e', 's', 't', 'a', 'd', 'v',
 		 0x02, 0x01, 0x05,
 		};
+
+	/**
+	 * @brief	Scan Response Packet data
+	 */
 	u8	tbl_scanRsp [] = {
 			 0x08, 0x09, 'T', 'E', 'S', 'T', 'A', 'D', 'V',	//scan name
 		};
@@ -213,7 +238,11 @@ void feature_adv_power_test_init_normal(void)
 
 #else  // non_connectable undirected ADV, no need scanRsp
 
-	#if 1 	//ADV data length: 16 byte
+	/**
+	 * @brief	Adv Packet data
+	 */
+	#if 1
+		//ADV data length: 16 byte
 		u8 tbl_advData[8] = {
 			 0x0C, 0x09, 't', 'e', 's', 't', 'a', 'd',
 			};
@@ -295,7 +324,11 @@ void feature_adv_power_test_init_normal(void)
 
 }
 
-
+/**
+ * @brief		user initialization for adv_power test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void feature_adv_power_test_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)

@@ -49,10 +49,9 @@ _attribute_data_retention_	own_addr_type_t 	app_own_address_type = OWN_ADDRESS_P
 
 
 
-
-//////////////////////////////////////////////////////////////////////////////
-//	 Adv Packet, Response Packet
-//////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief	Adv Packet data
+ */
 const u8	tbl_advData[] = {
 	 0x05, 0x09, 'e', 'H', 'I', 'D',
 	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
@@ -60,6 +59,9 @@ const u8	tbl_advData[] = {
 	 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
 };
 
+/**
+ * @brief	Scan Response Packet data
+ */
 const u8	tbl_scanRsp [] = {
 		 0x08, 0x09, 'e', 'S', 'a', 'm', 'p', 'l', 'e',
 	};
@@ -82,7 +84,13 @@ _attribute_data_retention_	u32	latest_user_event_tick;
 
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void  ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
 {
 	if( blc_ll_getCurrentState() == BLS_LINK_STATE_CONN && ((u32)(bls_pm_getSystemWakeupTick() - clock_time())) > 80 * CLOCK_16M_SYS_TIMER_CLK_1MS){  //suspend time > 30ms.add gpio wakeup
@@ -99,7 +107,13 @@ _attribute_ram_code_ void  ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
 
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_ADV_DURATION_TIMEOUT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void 	app_switch_to_indirect_adv(u8 e, u8 *p, int n)
 {
 
@@ -239,7 +253,7 @@ void blt_pm_proc(void)
 
 
 
-	#if 0//(!TEST_CONN_CURRENT_ENABLE)   //test connection power, should disable deepSleep
+	#if (!TEST_CONN_CURRENT_ENABLE)   //test connection power, should disable deepSleep
 			if(sendTerminate_before_enterDeep == 2){  //Terminate OK
 				analog_write_reg8(USED_DEEP_ANA_REG, analog_read_reg8(USED_DEEP_ANA_REG) | CONN_DEEP_FLG);
 				cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepSleep
@@ -306,7 +320,7 @@ void user_init_normal(void)
 	//////////// Controller Initialization  Begin /////////////////////////
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);		//mandatory
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 //	blc_ll_initPowerManagement_module();        //pm module:      	 optional
@@ -409,7 +423,7 @@ void user_init_normal(void)
 	#if PM_NO_SUSPEND_ENABLE
 		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(3, 3);
-		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 420 : 440);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 320 : 350);
 	#elif (PM_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(95, 95);

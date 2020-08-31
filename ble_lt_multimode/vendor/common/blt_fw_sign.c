@@ -13,6 +13,11 @@
 #include "blt_common.h"
 #include "proj_lib/firmware_encrypt.h"
 
+/**
+ * @brief		This function is used to check digital signature of firmware
+ * @param[in]	none
+ * @return      none
+ */
 void blt_firmware_signature_check(void)
 {
 		unsigned int flash_mid;
@@ -26,7 +31,7 @@ void blt_firmware_signature_check(void)
 
 		firmware_encrypt_based_on_uid (flash_uid, signature_enc_key);
 
-		if(tmemcmp(signature_enc_key, (u8*)(FLASH_INITIAL_ADDR_OFFSET | (flash_sector_calibration + CALIB_OFFSET_FIRMWARE_SIGNKEY)), 16)){  //signature not match
+		if(tmemcmp(signature_enc_key, (u8*)(FLASH_R_BASE_ADDR | (flash_sector_calibration + CALIB_OFFSET_FIRMWARE_SIGNKEY)), 16)){  //signature not match
 			while(1);   //user can change the code here to stop firmware running
 		}
 }

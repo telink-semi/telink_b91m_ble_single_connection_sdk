@@ -33,6 +33,7 @@
 #include "vendor/common/blt_soft_timer.h"
 #include "vendor/common/blt_common.h"
 #include "app_ui.h"
+#include "app_audio.h"
 
 #define 	ADV_IDLE_ENTER_DEEP_TIME			60  //60 s
 #define 	CONN_IDLE_ENTER_DEEP_TIME			60  //60 s
@@ -297,7 +298,7 @@ _attribute_ram_code_ void blt_pm_proc(void)
 			}
 		}
 		else if(sendTerminate_before_enterDeep == 2){  //Terminate OK
-			analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) | CONN_DEEP_FLG);
+			analog_write_reg8(USED_DEEP_ANA_REG, analog_read_reg8(USED_DEEP_ANA_REG) | CONN_DEEP_FLG);
 			cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
 		}
 
@@ -361,7 +362,7 @@ void user_init_normal(void)
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 //	blc_ll_initPowerManagement_module();        //pm module:      	 optional

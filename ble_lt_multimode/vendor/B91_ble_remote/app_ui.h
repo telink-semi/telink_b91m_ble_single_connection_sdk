@@ -42,7 +42,6 @@ void ui_enable_mic (int en);
 
 extern 	u8 		key_type;
 extern	int 	key_not_released;
-extern	int     ui_mtu_size_exchange_req;
 extern	int 	ir_not_released;
 extern	u8 		user_key_mode;
 extern	u8      ir_hw_initialed;

@@ -27,7 +27,9 @@
 #if(FEATURE_TEST_MODE == TEST_GATT_SECURITY)
 	//NOTICE:  ATT table defined in the file: feature_gatt_security.c
 #else
-
+/**
+ *  @brief  connect parameters structure for ATT
+ */
 typedef struct
 {
   /** Minimum value for the connection event (interval. 0x0006 - 0x0C80 * 1.25 ms) */
@@ -563,7 +565,11 @@ static const  u8 my_OtaName[] 						= {'O', 'T', 'A'};
 	};
 #endif
 
-
+/**
+ * @brief      Initialize the attribute table
+ * @param[in]  none
+ * @return     none
+ */
 void	my_att_init (void)
 {
 	bls_att_setAttributeTable ((u8 *)my_Attributes);

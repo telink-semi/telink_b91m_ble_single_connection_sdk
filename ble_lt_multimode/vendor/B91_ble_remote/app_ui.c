@@ -28,8 +28,10 @@
 #include "app_att.h"
 #include "rc_ir.h"
 
+#include "app_audio.h"
 
-_attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
+
+//_attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 _attribute_data_retention_	int 	key_not_released;
 u8      ir_hw_initialed = 0;   //note: can not be retention variable
 
@@ -77,167 +79,6 @@ _attribute_data_retention_	u8 		ota_is_working = 0;
 		}
 	}
 
-
-#endif
-#if (BLE_AUDIO_ENABLE)
-#include "tl_audio.h"
-
-#define AUDIO_DEBUG			1
-
-#if (AUDIO_DEBUG)
-
-	dma_llp_config_t rx_dma_list_config[2];
-
-	dma_llp_config_t tx_dma_list_config[2];
-	extern u8 audio_tx_dma_chn;
-	extern u8 audio_rx_dma_chn;
-	 void audio_tx_dma_dis()
-	 {
-	 	dma_chn_dis(audio_tx_dma_chn);
-	 }
-
-	 void audio_rx_dma_dis()
-	 {
-	 	dma_chn_dis(audio_rx_dma_chn);
-	 }
-
-	volatile u8 amic_enable;
-	void audio_amic_init(void)
-	{
-		audio_set_codec_supply();
-
-		core_enable_interrupt();
-		audio_set_rx_fifo_h_lvl1_th((TL_MIC_BUFFER_SIZE>>2)-2);// set rx fifo high level 1 threshold ,h_level=0x3fe,when max_rx_wptr=0x3ff(full). max_rx_rptr=0,(max_rx_wptr-max_rx_rptr)>h_level ,produce  interrupt
-		audio_set_irq_mask(FLD_AUDIO_IRQ_RXFIFO_H_L1_EN);
-		plic_interrupt_enable(IRQ20_DFIFO);
-
-		audio_init(AMIC_IN_ONLY ,AUDIO_16K,STEREO_BIT_16);
-		audio_rx_dma_chain_init(DMA2,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
-//		audio_tx_dma_chain_init (DMA3,(u16*)&buffer_mic,AUDIO_BUFF_SIZE);
-	}
-	void audio_dmic_init()
-	{
-		audio_set_codec_supply();
-
-		core_enable_interrupt();
-		audio_set_rx_fifo_h_lvl1_th((TL_MIC_BUFFER_SIZE>>2)-2);// set rx fifo high level 1 threshold ,h_level=0x3fe,when max_rx_wptr=0x3ff(full). max_rx_rptr=0,(max_rx_wptr-max_rx_rptr)>h_level ,produce  interrupt
-		audio_set_irq_mask(FLD_AUDIO_IRQ_RXFIFO_H_L1_EN);
-		plic_interrupt_enable(IRQ20_DFIFO);
-
-		audio_set_dmic_pin(DMIC_GROUPB_B2_DAT_B3_B4_CLK);
-		audio_init(DMIC_IN_ONLY ,AUDIO_16K,MONO_BIT_16);
-
-		audio_rx_dma_chain_init(DMA2,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
-//		audio_tx_dma_chain_init (DMA3,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
-	}
-	void audio_mic_off()//
-	{
-		audio_clk_en(0,0);
-		audio_rx_dma_dis();
-//		audio_tx_dma_dis();
-	}
-#endif
-
-	_attribute_data_retention_	u8		ui_mic_enable = 0;
-
-	_attribute_data_retention_	u8 		key_voice_press = 0;
-
-	u32 	key_voice_pressTick = 0;
-
-	void ui_enable_mic (int en)
-	{
-		ui_mic_enable = en;
-
-		#if (BLT_APP_LED_ENABLE)
-			device_led_setup(led_cfg[en ? LED_AUDIO_ON : LED_AUDIO_OFF]);
-		#endif
-		gpio_write(GPIO_LED_RED,en);
-		if(en){  //audio on
-			///////////////////// AUDIO initialization///////////////////
-			#if (BLE_DMIC_ENABLE)  //Dmic config
-				audio_dmic_init();
-			#else  //Amic config
-				audio_amic_init();
-			#endif
-		}
-		else{  //audio off
-			#if (BLE_DMIC_ENABLE)  //Dmic config
-			audio_mic_off();
-			#else  //audio off
-				audio_mic_off();
-			#endif
-		}
-
-		#if (BATT_CHECK_ENABLE)
-			battery_set_detect_enable(!en);
-		#endif
-	}
-
-
-	void voice_press_proc(void)
-	{
-		key_voice_press = 0;
-		ui_enable_mic (1);
-#if 1
-		if(ui_mtu_size_exchange_req && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN){
-			ui_mtu_size_exchange_req = 0;
-			blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, 0x009e);
-		}
-#endif
-	}
-
-
-	void task_audio (void)
-	{
-		static u32 audioProcTick = 0;
-		if(clock_time_exceed(audioProcTick, 500)){
-			audioProcTick = clock_time();
-		}
-		else{
-			return;
-		}
-
-		///////////////////////////////////////////////////////////////
-//		log_event(TR_T_audioTask);
-#if  0//
-		proc_mic_encoder ();
-
-		int *p = mic_encoder_data_buffer ();
-		if(p)
-		{
-			mic_encoder_data_read_ok();
-		}
-		//////////////////////////////////////////////////////////////////
-#else
-		proc_mic_encoder ();
-
-		if (blc_ll_getTxFifoNumber() < 9)
-		{
-			int *p = mic_encoder_data_buffer ();
-			if (p)					//around 3.2 ms @16MHz clock
-			{
-				if( BLE_SUCCESS == bls_att_pushNotifyData (AUDIO_MIC_INPUT_DP_H, (u8*)p, ADPCM_PACKET_LEN) ){
-					mic_encoder_data_read_ok();
-					DBG_CHN5_TOGGLE;
-				}
-			}
-		}
-#endif
-	}
-
-
-
-	void blc_checkConnParamUpdate(void)
-	{
-		extern u32 interval_update_tick;
-
-		if(	 interval_update_tick && clock_time_exceed(interval_update_tick,5*1000*1000) && \
-			 blc_ll_getCurrentState() == BLS_LINK_STATE_CONN &&  bls_ll_getConnectionInterval()!= 8 )
-		{
-			interval_update_tick = clock_time() | 1;
-			bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);
-		}
-	}
 
 #endif
 
@@ -457,14 +298,18 @@ extern u32	scan_pin_need;
 	_attribute_data_retention_	static u32 button1_press_tick;
 
 	_attribute_data_retention_	static int consumer_report = 0;
-
+	/**
+	 * @brief 	record the result of key detect
+	 */
 	typedef	struct{
 		u8 	cnt;				//count button num
 		u8 	btn_press;
 		u8 	keycode[MAX_BTN_SIZE];			//6 btn
 	}vc_data_t;
 	_attribute_data_retention_	vc_data_t vc_event;
-
+	/**
+	 * @brief 	record the status of button process
+	 */
 	typedef struct{
 		u8  btn_history[4];		//vc history btn save
 		u8  btn_filter_last;
@@ -473,7 +318,11 @@ extern u32	scan_pin_need;
 	}btn_status_t;
 	_attribute_data_retention_	btn_status_t 	btn_status;
 
-
+	/**
+	 * @brief      Debounce processing during button detection
+	 * @param[in]  btn_v - vc_event.btn_press
+	 * @return     1:Detect new button;0:Button isn't changed
+	 */
 	u8 btn_debounce_filter(u8 *btn_v)
 	{
 		u8 change = 0;
@@ -493,6 +342,11 @@ extern u32	scan_pin_need;
 		return change;
 	}
 
+	/**
+	 * @brief      This function is key detection processing
+	 * @param[in]  read_key - Decide whether to return the key detection result
+	 * @return     1:Detect new button;0:Button isn't changed
+	 */
 	u8 vc_detect_button(int read_key)
 	{
 		u8 btn_changed, i;
@@ -521,6 +375,13 @@ extern u32	scan_pin_need;
 		return 0;
 	}
 
+	/**
+	 * @brief		this function is used to detect if button pressed or released.
+	 * @param[in]	e - event type when this function is triggered by LinkLayer event
+	 * @param[in]	p - event callback data pointer for when this function is triggered by LinkLayer event
+	 * @param[in]	n - event callback data length when this function is triggered by LinkLayer event
+	 * @return      none
+	 */
 	void proc_button (u8 e, u8 *p, int n)
 	{
 		int det_key = vc_detect_button (1);

@@ -23,20 +23,8 @@
 #define LL__H_
 
 
-#include <stack/ble/ble_common.h>
-#include "stack/ble/ble_config.h"
-
-#include "stack/ble/hci/hci_cmd.h"
-#include <stack/ble/ll/ll_adv.h>
-#include <stack/ble/ll/ll_init.h>
-#include "stack/ble/ll/ll_conn/ll_master.h"
-#include <stack/ble/ll/ll_pm.h>
-#include <stack/ble/ll/ll_scan.h>
-#include "stack/ble/ll/ll_conn/ll_slave.h"
-
-
 #include "tl_common.h"
-#include "drivers.h"
+#include "stack/ble/ble_common.h"
 
 
 
@@ -101,7 +89,11 @@ int 		blt_sdk_main_loop(void);
 
 
 
-
+/**
+ * @brief   LinkLayer initialization after deepSleep retention wake_up
+ * @param	none
+ * @return	none
+ */
 void 		blc_ll_recoverDeepRetention(void);
 
 
@@ -124,19 +116,23 @@ void 		blc_ll_initStandby_module (u8 *public_adr);
 
 
 
-
+/**
+ * @brief      this function is used to set the LE Random Device Address in the Controller
+ * @param[in]  *randomAddr -  Random Device Address
+ * @return     status, 0x00:  succeed
+ * 					   other: failed
+ */
 ble_sts_t 	blc_ll_setRandomAddr(u8 *randomAddr);
+
+
 
 
 ble_sts_t 	blc_ll_readBDAddr(u8 *addr);
 
-extern 		u8	blt_state;
-static inline
-u8 			blc_ll_getCurrentState(void)	{return blt_state;}
+
+u8 			blc_ll_getCurrentState(void);
 
 u8 			blc_ll_getLatestAvgRSSI(void);
-
-u16   		blc_ll_setInitTxDataLength (u16 maxTxOct);   //core4.2 long data packet
 
 
 bool		blc_ll_isControllerEventPending(void);
@@ -154,19 +150,6 @@ u8  		blc_ll_getTxFifoNumber (void);
 void		bls_app_registerEventCallback (u8 e, blt_event_callback_t p);
 
 
-
-
-
-
-
-bool 		blc_ll_isBrxBusy (void);
-
-bool		blc_ll_isBtxBusy (void);
-
-void 		blc_ll_init_max_md_nums(u8 num);
-
-
-void  		blc_ll_set_CustomedAdvScanAccessCode(u32 accss_code);
 
 
 

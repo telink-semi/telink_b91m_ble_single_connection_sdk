@@ -1,26 +1,22 @@
 /********************************************************************************************************
  * @file     main.c 
  *
- * @brief    This is the source file for TLSR8258
+ * @brief    for TLSR chips
  *
- * @author	 junwei.lu@telink-semi.com;
- * @date     May 8, 2018
+ * @author	 public@telink-semi.com;
+ * @date     Sep. 18, 2018
  *
- * @par      Copyright (c) 2018, Telink Semiconductor (Shanghai) Co., Ltd.
+ * @par      Copyright (c) Telink Semiconductor (Shanghai) Co., Ltd.
  *           All rights reserved.
  *
- *           The information contained herein is confidential property of Telink
- *           Semiconductor (Shanghai) Co., Ltd. and is available under the terms
- *           of Commercial License Agreement between Telink Semiconductor (Shanghai)
- *           Co., Ltd. and the licensee or the terms described here-in. This heading
- *           MUST NOT be removed from this file.
+ *			 The information contained herein is confidential and proprietary property of Telink
+ * 		     Semiconductor (Shanghai) Co., Ltd. and is available under the terms
+ *			 of Commercial License Agreement between Telink Semiconductor (Shanghai)
+ *			 Co., Ltd. and the licensee in separate contract or the terms described here-in.
+ *           This heading MUST NOT be removed from this file.
  *
- *           Licensees are granted free, non-transferable use of the information in this
- *           file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
- * @par      History:
- * 			 1.initial release(DEC. 26 2018)
- *
- * @version  A001
+ * 			 Licensees are granted free, non-transferable use of the information in this
+ *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
  *
  *******************************************************************************************************/
 #include "app_config.h"
@@ -35,6 +31,11 @@ extern void main_loop (void);
 extern void usb_init(void) ;
 
 
+/**
+ * @brief		BLE SDK RF interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void rf_irq_handler(void)
 {
 	NESTED_IRQ_ENTER();
@@ -45,12 +46,19 @@ _attribute_ram_code_ void rf_irq_handler(void)
 	irq_blt_sdk_handler ();
 
 	DBG_CHN10_LOW;
+	/*Must ensure the order of execution of complete and
+	 * subsequent mret instructions(insert fence instruction)*/
 	NESTED_IRQ_EXIT();
 	plic_interrupt_complete(IRQ15_ZB_RT);
 	NDS_FENCE_IORW;
 }
 
 
+/**
+ * @brief		BLE SDK System timer interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void stimer_irq_handler(void)
 {
 	NESTED_IRQ_ENTER();
@@ -60,21 +68,30 @@ _attribute_ram_code_ void stimer_irq_handler(void)
 
 	irq_blt_sdk_handler ();
 
-
 	DBG_CHN11_LOW;
+	/*Must ensure the order of execution of complete and
+	 * subsequent mret instructions(insert fence instruction)*/
 	NESTED_IRQ_EXIT();
 	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
 	NDS_FENCE_IORW;
 }
 
+
+/**
+ * @brief		BLE USB endpoint interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void usb_endpoint_irq_handler(void)
 {
 	NESTED_IRQ_ENTER();
 	usb_endpoints_irq_handler ();
 
-	plic_interrupt_complete(IRQ11_USB_ENDPOINT);  	//plic_interrupt_complete
-
+	/*Must ensure the order of execution of complete and
+	 * subsequent mret instructions(insert fence instruction)*/
 	NESTED_IRQ_EXIT();
+	plic_interrupt_complete(IRQ11_USB_ENDPOINT);  	//plic_interrupt_complete
+	NDS_FENCE_IORW;
 }
 
 

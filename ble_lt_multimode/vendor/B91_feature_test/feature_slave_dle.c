@@ -57,7 +57,11 @@ _attribute_data_retention_	u16  final_MTU_size = 23;
 _attribute_data_retention_	u8	app_test_data[TEST_DATA_LEN];
 _attribute_data_retention_	u32 app_test_data_tick = 0;
 
-
+/**
+ * @brief      write callback of Attribute of TelinkSppDataClient2ServerUUID
+ * @param[in]  p - rf_packet_att_write_t
+ * @return     0
+ */
 int module_onReceiveData(rf_packet_att_write_t *p)
 {
 	u8 len = p->l2capLen - 3;
@@ -83,6 +87,13 @@ int module_onReceiveData(rf_packet_att_write_t *p)
 	return 0;
 }
 
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_CONNECT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_connect (u8 e, u8 *p, int n)
 {
 	printf("----- connected -----\n");
@@ -95,7 +106,13 @@ void	task_connect (u8 e, u8 *p, int n)
 	final_MTU_size = 23;
 }
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_TERMINATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_terminate (u8 e, u8 *p, int n)
 {
 	printf("----- terminate rsn: 0x%x -----\n", *p);
@@ -129,13 +146,25 @@ void	task_dle_exchange (u8 e, u8 *p, int n)
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
-
+/**
+ * @brief      callback function of Host Event
+ * @param[in]  h - Host Event type
+ * @param[in]  para - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     0
+ */
 int app_host_event_callback (u32 h, u8 *para, int n)
 {
 
@@ -201,7 +230,11 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 	return 0;
 }
 
-
+/**
+ * @brief		user initialization for slave DLE test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_sdle_test_init_normal(void)
 {
 
@@ -226,7 +259,7 @@ void feature_sdle_test_init_normal(void)
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();   //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
@@ -264,9 +297,16 @@ void feature_sdle_test_init_normal(void)
 
 
 ///////////////////// USER application initialization ///////////////////
+	/**
+	 * @brief	Adv Packet data
+	 */
 	u8 tbl_advData[] = {
 		 0x08, 0x09, 't', 'e', 's', 't', 'D', 'L', 'E',
 		};
+
+	/**
+	 * @brief	Scan Response Packet data
+	 */
 	u8	tbl_scanRsp [] = {
 			0x08, 0x09, 't', 'e', 's', 't', 'D', 'L', 'E',
 		};
@@ -305,7 +345,11 @@ void feature_sdle_test_init_normal(void)
 }
 
 
-
+/**
+ * @brief		user initialization for slave DLE test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void feature_sdle_test_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
@@ -321,7 +365,11 @@ _attribute_ram_code_ void feature_sdle_test_init_deepRetn(void)
 }
 
 
-
+/**
+ * @brief		This is main_loop function in slave DLE project
+ * @param[in]	none
+ * @return      none
+ */
 void feature_sdle_test_mainloop(void)
 {
 	if(connect_event_occurTick && clock_time_exceed(connect_event_occurTick, 1500000)){  //1.5 S after connection established

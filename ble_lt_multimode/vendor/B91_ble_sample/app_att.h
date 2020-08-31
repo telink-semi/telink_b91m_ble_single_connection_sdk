@@ -11,6 +11,9 @@
 
 
 ///////////////////////////////////// ATT  HANDLER define ///////////////////////////////////////
+/**
+ *  @brief  Att handle define
+ */
 typedef enum
 {
 	ATT_H_START = 0,

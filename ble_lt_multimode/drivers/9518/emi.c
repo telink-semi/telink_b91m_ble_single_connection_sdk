@@ -103,7 +103,27 @@ void rf_continue_mode_setup(void)
  */
 void rf_emi_tx_continue_setup(rf_mode_e rf_mode,rf_power_level_e power_level,signed char rf_chn,unsigned char pkt_type)
 {
-	rf_drv_init(rf_mode);     // RF_MODE_BLE_1M
+	rf_mode_init();
+	switch(rf_mode)
+	{
+		case RF_MODE_BLE_1M_NO_PN:
+			rf_set_ble_1M_NO_PN_mode();
+			break;
+		case RF_MODE_BLE_2M:
+			rf_set_ble_2M_NO_PN_mode();
+			break;
+		case RF_MODE_LR_S2_500K:
+			rf_set_ble_500K_mode();
+			break;
+		case RF_MODE_LR_S8_125K:
+			rf_set_ble_125K_mode();
+			break;
+		case RF_MODE_ZIGBEE_250K:
+			rf_set_zigbee_250K_mode();
+			break;
+
+		default:break;
+	}
 	rf_pn_disable();
 	rf_set_chn(rf_chn);
 	reg_rf_ll_ctrl0 = 0x45;   // tx_en
@@ -162,12 +182,32 @@ void rf_continue_mode_run(void)
  */
 void rf_emi_rx(rf_mode_e mode,signed char rf_chn)
 {
-	rf_drv_init(mode);
+	rf_mode_init();
+	switch(mode)
+	{
+		case RF_MODE_BLE_1M_NO_PN:
+			rf_set_ble_1M_NO_PN_mode();
+			break;
+		case RF_MODE_BLE_2M:
+			rf_set_ble_2M_NO_PN_mode();
+			break;
+		case RF_MODE_LR_S2_500K:
+			rf_set_ble_500K_mode();
+			break;
+		case RF_MODE_LR_S8_125K:
+			rf_set_ble_125K_mode();
+			break;
+		case RF_MODE_ZIGBEE_250K:
+			rf_set_zigbee_250K_mode();
+			break;
+
+		default:break;
+	}
 	rf_set_rx_dma(emi_rx_packet,3,64);
 	rf_pn_disable();
 	rf_set_chn(rf_chn);//set freq
 	if(mode != RF_MODE_ZIGBEE_250K)
-		write_reg32(ACCESS_ADDR,ACCESS_CODE); 	//accesscode: 1001-0100 1000-0010 0110-1110 1000-1110   29 41 76 71
+		write_reg32(ACCESS_ADDR,ACCESS_CODE_EMI); 	//accesscode: 1001-0100 1000-0010 0110-1110 1000-1110   29 41 76 71
 	write_reg8 (ACCLEN_ADDR, read_reg8(ACCLEN_ADDR)|0x80); //trig accesscode
 	rf_set_tx_rx_off();
 	rf_set_rxmode();
@@ -380,9 +420,29 @@ void rf_emi_tx_burst_setup(rf_mode_e rf_mode,rf_power_level_e power_level,signed
 	write_reg8(0x10083c,0x10); // print buffer size set
 	rf_set_tx_dma(2,2);
 	rf_set_chn(rf_chn);
-	rf_drv_init(rf_mode);
+	rf_mode_init();
+	switch(rf_mode)
+	{
+		case RF_MODE_BLE_1M_NO_PN:
+			rf_set_ble_1M_NO_PN_mode();
+			break;
+		case RF_MODE_BLE_2M:
+			rf_set_ble_2M_NO_PN_mode();
+			break;
+		case RF_MODE_LR_S2_500K:
+			rf_set_ble_500K_mode();
+			break;
+		case RF_MODE_LR_S8_125K:
+			rf_set_ble_125K_mode();
+			break;
+		case RF_MODE_ZIGBEE_250K:
+			rf_set_zigbee_250K_mode();
+			break;
+
+		default:break;
+	}
 	if(rf_mode != RF_MODE_ZIGBEE_250K)
-		write_reg32(ACCESS_ADDR,ACCESS_CODE); 	//accesscode: 1001-0100 1000-0010 0110-1110 1000-1110   29 41 76 71
+		write_reg32(ACCESS_ADDR,ACCESS_CODE_EMI); 	//accesscode: 1001-0100 1000-0010 0110-1110 1000-1110   29 41 76 71
 	write_reg8 (ACCLEN_ADDR, read_reg8(ACCLEN_ADDR)|0x80); //trig accesscode
 
 	rf_pn_disable();

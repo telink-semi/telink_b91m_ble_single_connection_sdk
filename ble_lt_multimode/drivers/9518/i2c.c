@@ -282,7 +282,7 @@ void i2c_master_write_dma(unsigned char id, unsigned char *data, unsigned char l
 	reg_i2c_id = (id & (~FLD_I2C_WRITE_READ_BIT)); //BIT(0):R:High  W:Low
 
 	dma_set_size(i2c_dma_tx_chn,len,DMA_WORD_WIDTH);
-	dma_set_address(i2c_dma_tx_chn,(u32)reg_dma_addr(data),reg_i2c_data_buf0_addr);
+	dma_set_address(i2c_dma_tx_chn,(u32)convert_ram_addr_cpu2bus(data),reg_i2c_data_buf0_addr);
 	dma_chn_en(i2c_dma_tx_chn);
 
 	reg_i2c_len   =  len;
@@ -306,7 +306,7 @@ void i2c_master_read_dma(unsigned char id, unsigned char *rx_data, unsigned char
 	reg_i2c_id |= FLD_I2C_WRITE_READ_BIT;  //BIT(0):R:High  W:Low
 
 	dma_set_size(i2c_dma_rx_chn,len,DMA_WORD_WIDTH);
-	dma_set_address(i2c_dma_rx_chn,reg_i2c_data_buf0_addr,(u32)reg_dma_addr(rx_data));
+	dma_set_address(i2c_dma_rx_chn,reg_i2c_data_buf0_addr,(u32)convert_ram_addr_cpu2bus(rx_data));
 	dma_chn_en(i2c_dma_rx_chn);
 
 	reg_i2c_len   =  len;

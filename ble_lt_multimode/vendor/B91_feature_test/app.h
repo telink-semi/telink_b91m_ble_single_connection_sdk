@@ -25,58 +25,228 @@
 #include "tl_common.h"
 #include "drivers.h"
 
+/**
+ * @brief		user initialization when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void user_init_normal(void);
+
+/**
+ * @brief		user initialization when MCU wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void user_init_deepRetn(void);
+
+/**
+ * @brief		This is main_loop function
+ * @param[in]	none
+ * @return      none
+ */
 void main_loop (void);
 
-
+/**
+ * @brief		user initialization for link layer state test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_linklayer_state_test_init_normal(void);
+
+/**
+ * @brief		user initialization for link layer state test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_linklayer_state_test_init_deepRetn(void);
 
-
+/**
+ * @brief		user initialization for adv_power test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_adv_power_test_init_normal(void);
+
+/**
+ * @brief		user initialization for adv_power test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_adv_power_test_init_deepRetn(void);
 
-
+/**
+ * @brief		user initialization for security test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_security_test_init_normal(void);
+
+/**
+ * @brief		user initialization for security test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_security_test_init_deepRetn(void);
+
+/**
+ * @brief		This is main_loop function in security test project
+ * @param[in]	none
+ * @return      none
+ */
 void feature_security_test_mainloop(void);
 
+/**
+ * @brief		user initialization for GATT security test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
+void feature_gatt_security_test_init_normal(void);
 
+/**
+ * @brief		user initialization for GATT security test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
+void feature_gatt_security_test_init_deepRetn(void);
+
+/**
+ * @brief		user initialization for software timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_soft_timer_test_init_normal(void);
+
+/**
+ * @brief		user initialization for software timer test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_soft_timer_test_init_deepRetn(void);
 
-
+/**
+ * @brief		user initialization for white list timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_whitelist_test_init_normal(void);
+
+/**
+ * @brief		user initialization for white list timer test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_whitelist_test_init_deepRetn(void);
 
+/**
+ * @brief		PHY test project interrupt handle
+ * @param[in]	none
+ * @return      none
+ */
+void app_phytest_irq_proc(void);
 
-void feature_phytest_init_normal(void);
-void feature_phytest_irq_proc(void);
 
-
+/**
+ * @brief		user initialization for slave DLE test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_sdle_test_init_normal(void);
+
+/**
+ * @brief		user initialization for slave DLE test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_sdle_test_init_deepRetn(void);
+
+/**
+ * @brief		This is main_loop function in slave DLE project
+ * @param[in]	none
+ * @return      none
+ */
 void feature_sdle_test_mainloop(void);
 
-
+/**
+ * @brief		user initialization for master DLE test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_mdle_test_init_normal(void);
+
+/**
+ * @brief		user initialization for master DLE test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_mdle_test_init_deepRetn(void);
+
+/**
+ * @brief		This is main_loop function in master DLE project
+ * @param[in]	none
+ * @return      none
+ */
 void feature_mdle_test_mainloop(void);
 
-
+/**
+ * @brief		user initialization for extended adv test timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_ext_adv_init_normal(void);
+
+/**
+ * @brief		user initialization for extended adv test timer test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_ext_adv_init_deepRetn(void);
 
-
+/**
+ * @brief		user initialization for BLE 2M/Coded PHY adv test timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_2m_coded_phy_adv_init_normal(void);
 
-
+/**
+ * @brief		user initialization for BLE 2M/Coded PHY adv test timer test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
+void feature_2m_coded_phy_adv_init_deepRetn(void);
+/**
+ * @brief		user initialization for BLE 2M/Coded PHY connect test timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_2m_coded_phy_conn_init_normal(void);
+
+/**
+ * @brief		user initialization for BLE 2M/Coded PHY connect test timer test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_2m_coded_phy_conn_init_deepRetn(void);
+
+/**
+ * @brief		This is main_loop function in BLE 2M/Coded PHY connect project
+ * @param[in]	none
+ * @return      none
+ */
 void feature_2m_coded_phy_conn_mainloop(void);
 
+/**
+ * @brief		user initialization for Channel Selection Algorithm 2 test timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_csa2_init_normal(void);
+
+/**
+ * @brief		user initialization for Channel Selection Algorithm 2 test timer test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_csa2_init_deepRetn(void);
 
 #endif /* APP_H_ */

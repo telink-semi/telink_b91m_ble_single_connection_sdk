@@ -81,6 +81,13 @@ _attribute_data_retention_	my_fifo_t	blt_txfifo = {
 
 
 int AA_dbg_suspend;
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void  func_suspend_enter (u8 e, u8 *p, int n)
 {
 	AA_dbg_suspend ++;
@@ -88,6 +95,13 @@ void  func_suspend_enter (u8 e, u8 *p, int n)
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
@@ -98,6 +112,12 @@ _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 
 
 #if (BLE_PHYTEST_MODE == PHYTEST_MODE_OVER_HCI_WITH_UART)
+
+	/**
+	 * @brief      callback function of rx from uart
+	 * @param[in]  none
+	 * @return     0
+	 */
 	int rx_from_uart_cb (void)
 	{
 		if(my_fifo_get(&hci_rx_fifo) == 0)
@@ -118,6 +138,11 @@ _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 	}
 
 	_attribute_data_retention_ static u32 uart_tx_tick = 0;
+	/**
+	 * @brief      callback function of tx from uart
+	 * @param[in]  none
+	 * @return     0
+	 */
 	int tx_to_uart_cb (void)
 	{
 		uart_data_t T_txdata_buf;
@@ -149,7 +174,11 @@ _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 
 
 
-
+/**
+ * @brief		user initialization for PHY test timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_phytest_init_normal(void)
 {
 
@@ -232,7 +261,11 @@ void feature_phytest_init_normal(void)
 	unsigned char uart_no_dma_rec_data[72] = {0};
 #endif
 
-
+/**
+ * @brief		PHY test project interrupt handle
+ * @param[in]	none
+ * @return      none
+ */
 void app_phytest_irq_proc(void)
 {
 	unsigned char uart_dma_irqsrc;

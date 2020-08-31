@@ -118,7 +118,16 @@ typedef struct {
 	unsigned int write_num_en:1;/*wnum_en : 30*/
 	unsigned int auto_en:1;/*/*auto_en : 31*/
 }dma_config_st;
-extern dma_config_st rf_tx_dma_config;
+
+
+typedef struct {
+	unsigned int dma_chain_ctl;
+	unsigned int dma_chain_src_addr;
+	unsigned int dma_chain_dst_addr;
+	unsigned int dma_chain_data_len;
+	unsigned int dma_chain_llp_ptr;
+}dma_chain_config_t ;
+
 
 /**
  * @brief     This function configures DMA control register.
@@ -181,8 +190,19 @@ static inline void dma_clr_irq_mask(dma_chn_e chn,dma_irq_mask_e mask)
 static inline void dma_set_size(dma_chn_e chn,u32 size_byte,dma_transfer_width_e byte_width)
 {
 	 reg_dma_size(chn) =((size_byte+byte_width-1)/byte_width)|( (size_byte % byte_width)<<22);
-
 }
+
+
+/**
+ * @brief   this  function calculate the DMA to tx/rx size byte.
+ * @param[in] bytesize - the address of dma   tx/rx size
+ * @param[in] byte_width -  dma   tx/rx  width
+ *  */
+static inline u32 dma_cal_size(u32 size_byte,dma_transfer_width_e byte_width)
+{
+	 return (((size_byte+byte_width-1)/byte_width)|( (size_byte % byte_width)<<22));
+}
+
 
 /**
  * @brief   this  function set  the DMA to get data from the RAM and sent to interface buff.

@@ -36,7 +36,7 @@ enum{
 	INTCNTL_PRIO_HIGH,
 };
 
-typedef enum{
+typedef enum{//todo
 	FLD_IRQ_EXCEPTION_EN ,
 	FLD_IRQ_SYSTIMER_EN,
 	FLD_IRQ_ALG_EN,

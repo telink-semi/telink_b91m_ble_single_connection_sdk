@@ -39,7 +39,7 @@
  * @param[in]  *public_adr -  public address pointer
  * @return     none
  */
-void 		blc_ll_initAdvertising_module(u8 *public_adr);
+void 		blc_ll_initAdvertising_module(void);
 
 
 /**
@@ -81,7 +81,7 @@ ble_sts_t   bls_ll_setAdvParam( u16 intervalMin,  u16 intervalMax,  adv_type_t a
 
 /**
  * @brief      This function is used to request the Controller to start or stop advertising.
- * @param	   adv_enable - Advertising_Enable
+ * @param[in]  adv_enable - Advertising_Enable
  * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
 ble_sts_t   bls_ll_setAdvEnable(adv_en_t adv_enable);
@@ -91,9 +91,6 @@ ble_sts_t   bls_ll_setAdvEnable(adv_en_t adv_enable);
 
 
 
-ble_sts_t 	bls_ll_setAdvInterval(u16 intervalMin, u16 intervalMax);
-ble_sts_t 	bls_ll_setAdvChannelMap(adv_chn_map_t adv_channelMap);
-ble_sts_t 	bls_ll_setAdvFilterPolicy(adv_fp_type_t advFilterPolicy);
 
 ble_sts_t   bls_ll_setAdvDuration (u32 duration_us, u8 duration_en);
 

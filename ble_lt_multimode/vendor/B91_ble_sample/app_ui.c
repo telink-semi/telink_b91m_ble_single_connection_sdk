@@ -184,7 +184,9 @@ extern u32	scan_pin_need;
 	_attribute_data_retention_	static u32 button1_press_tick;
 
 	_attribute_data_retention_	static int consumer_report = 0;
-
+	/**
+	 * @brief 	record the result of key detect
+	 */
 	typedef	struct{
 		u8 	cnt;				//count button num
 		u8 	btn_press;
@@ -192,6 +194,9 @@ extern u32	scan_pin_need;
 	}vc_data_t;
 	_attribute_data_retention_	vc_data_t vc_event;
 
+	/**
+	 * @brief 	record the status of button process
+	 */
 	typedef struct{
 		u8  btn_history[4];		//vc history btn save
 		u8  btn_filter_last;
@@ -200,7 +205,11 @@ extern u32	scan_pin_need;
 	}btn_status_t;
 	_attribute_data_retention_	btn_status_t 	btn_status;
 
-
+	/**
+	 * @brief      Debounce processing during button detection
+	 * @param[in]  btn_v - vc_event.btn_press
+	 * @return     1:Detect new button;0:Button isn't changed
+	 */
 	u8 btn_debounce_filter(u8 *btn_v)
 	{
 		u8 change = 0;
@@ -220,6 +229,11 @@ extern u32	scan_pin_need;
 		return change;
 	}
 
+	/**
+	 * @brief      This function is key detection processing
+	 * @param[in]  read_key - Decide whether to return the key detection result
+	 * @return     1:Detect new button;0:Button isn't changed
+	 */
 	u8 vc_detect_button(int read_key)
 	{
 		u8 btn_changed, i;

@@ -21,7 +21,7 @@ enum{
 };
 
 #define reg_system_cal_irq		REG_ADDR8(STIMER_BASE_ADDR+0x9)   //status or source
-//enum{
+//enum{//todo
 //	FLD_SYSTEM_IRQ_CLR 		= 	BIT(0),
 //	FLD_SYSTEM_IRQ_CLR_CAL  = 	BIT(1),   // ?
 //};

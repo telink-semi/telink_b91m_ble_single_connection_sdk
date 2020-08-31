@@ -1,27 +1,23 @@
 /********************************************************************************************************
- * @file     app_config.h 
+ * @file     app_config.h
  *
- * @brief    This is the header file for TLSR8258
+ * @brief    for TLSR chips
  *
- * @author	 junwei.lu@telink-semi.com;
- * @date     May 8, 2018
+ * @author	 public@telink-semi.com;
+ * @date     Sep. 18, 2018
  *
- * @par      Copyright (c) 2018, Telink Semiconductor (Shanghai) Co., Ltd.
+ * @par      Copyright (c) Telink Semiconductor (Shanghai) Co., Ltd.
  *           All rights reserved.
  *
- *           The information contained herein is confidential property of Telink
- *           Semiconductor (Shanghai) Co., Ltd. and is available under the terms
- *           of Commercial License Agreement between Telink Semiconductor (Shanghai)
- *           Co., Ltd. and the licensee or the terms described here-in. This heading
- *           MUST NOT be removed from this file.
+ *			 The information contained herein is confidential and proprietary property of Telink
+ * 		     Semiconductor (Shanghai) Co., Ltd. and is available under the terms
+ *			 of Commercial License Agreement between Telink Semiconductor (Shanghai)
+ *			 Co., Ltd. and the licensee in separate contract or the terms described here-in.
+ *           This heading MUST NOT be removed from this file.
  *
- *           Licensees are granted free, non-transferable use of the information in this
- *           file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
- * @par      History:
- * 			 1.initial release(DEC. 26 2018)
+ * 			 Licensees are granted free, non-transferable use of the information in this
+ *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
  *
- * @version  A001
- *         
  *******************************************************************************************************/
 #pragma once
 
@@ -41,7 +37,7 @@
 #define BLE_HOST_SIMPLE_SDP_ENABLE					1  //1  //simple service discovery
 
 
-#define BLE_MASTER_OTA_ENABLE						0//1  //slave ota test
+#define BLE_MASTER_OTA_ENABLE						1  //slave ota test
 #define AUDIO_SDM_ENBALE							0//if using sdm playback, should better disable USB MIC
 
 #define UI_AUDIO_ENABLE								1//1
@@ -97,7 +93,7 @@
 	 * TL_AUDIO_DONGLE_MSBC_HID
 	 * TL_AUDIO_DONGLE_OPUS_GATT_AMAZON
 	 */
-	#define TL_AUDIO_MODE  			TL_AUDIO_DONGLE_OPUS_GATT_AMAZON
+	#define TL_AUDIO_MODE  			TL_AUDIO_DONGLE_ADPCM_GATT_TELINK
 
 	#if (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_GATT_GOOGLE)
 		#define GOOGLE_VOICE_MODE	0x01	//	0x01:PTT;	0x03:HTT
@@ -199,8 +195,8 @@ enum{
 
 	#define BLE_ADV_DBG_EN					1
 	#define BLE_IRQ_DBG_EN					1
+	#define	UDB_STR_DATA_ENABLE				1
 #endif
-#define	UDB_STR_DATA_ENABLE					1
 
 
 

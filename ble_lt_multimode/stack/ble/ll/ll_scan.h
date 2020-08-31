@@ -32,7 +32,7 @@
  * @param	   none
  * @return     none
  */
-void 		blc_ll_initScanning_module(u8 *public_adr);
+void 		blc_ll_initScanning_module(void);
 
 
 /**

@@ -29,9 +29,7 @@
 #ifndef LL_PM_H_
 #define LL_PM_H_
 
-#ifndef 	BLS_USER_TIMER_WAKEUP_ENABLE
-#define		BLS_USER_TIMER_WAKEUP_ENABLE	1
-#endif
+
 
 
 ////////////////// Power Management ///////////////////////
@@ -40,7 +38,6 @@
 #define			SUSPEND_CONN				BIT(1)
 #define			DEEPSLEEP_RETENTION_ADV		BIT(2)
 #define			DEEPSLEEP_RETENTION_CONN	BIT(3)
-#define			MCU_STALL					BIT(6)
 
 
 

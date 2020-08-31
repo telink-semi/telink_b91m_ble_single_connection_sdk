@@ -29,7 +29,11 @@
 #include "vendor/common/blt_soft_timer.h"
 
 
-
+/**
+ * @brief		user initialization when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void user_init_normal(void)
 {
 #if (   FEATURE_TEST_MODE == TEST_ADVERTISING_ONLY || FEATURE_TEST_MODE == TEST_SCANNING_ONLY \
@@ -92,7 +96,11 @@ void user_init_normal(void)
 
 
 
-
+/**
+ * @brief		user initialization when MCU wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void user_init_deepRetn(void)
 {
 
@@ -161,6 +169,11 @@ u32 tick_loop=0;
 /*----------------------------------------------------------------------------*/
 /*-------- Main Loop                                                ----------*/
 /*----------------------------------------------------------------------------*/
+/**
+ * @brief		This is main_loop function
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void main_loop (void)
 {
 	tick_loop++;

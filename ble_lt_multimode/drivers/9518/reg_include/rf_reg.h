@@ -124,6 +124,7 @@ enum{
 	FLD_RF_ACC_LEN			    =   BIT_RNG(0,2),
 	FLD_RF_LR_TX_SEL 			=	BIT(4),
 	FLD_RF_BLE_LR				=	BIT(5),
+	FLD_RF_LR_ACC_TRIG			=	BIT(7),
 };
 
 

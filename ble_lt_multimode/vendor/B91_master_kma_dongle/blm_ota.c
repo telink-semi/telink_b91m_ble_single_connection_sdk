@@ -308,7 +308,7 @@ void proc_ota (void)
 			}
 
 
-			n_firmware = *(u32 *)(flash_adr_ota_master + 0x18);
+			n_firmware = *(u32 *)(FLASH_R_BASE_ADDR | flash_adr_ota_master + 0x18);
 			if(n_firmware > (FW_SIZE_MAX<<10)){  //bigger then 128K
 				ota_set_result(0);
 				return;
@@ -337,7 +337,7 @@ void proc_ota (void)
 	}
 	else if (host_ota_start == 4)
 	{
-		p_firmware = (u8 *)flash_adr_ota_master;
+		p_firmware = (u8 *)(FLASH_R_BASE_ADDR | flash_adr_ota_master);
 		ota_adr = 0;
 
 

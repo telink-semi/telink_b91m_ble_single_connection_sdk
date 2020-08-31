@@ -40,6 +40,7 @@ enum{
 	FLD_AES_MODE	=	BIT(1),
 };
 #define reg_aes_data            reg_aes_ctrl//REG_ADDR32(0x548)
+#define reg_embase_addr     	REG_ADDR32(0x140b04)
 //#define reg_aes_key(v)     		REG_ADDR8(0x1600b4+v)
 #define reg_aes_key(v)     		REG_ADDR32(0x1600b4+(v*4))
 #define reg_aes_ptr     		REG_ADDR32(0x1600c4)

@@ -72,9 +72,19 @@
 
 
 
-
+/**
+ * @brief      this  function is used to initialize GAP Peripheral
+ * @param	   none
+ * @return     none
+ */
 void 		blc_gap_peripheral_init(void);
 
+
+/**
+ * @brief      this  function is used to initialize GAP Central
+ * @param	   none
+ * @return     none
+ */
 void 		blc_gap_central_init(void);
 
 

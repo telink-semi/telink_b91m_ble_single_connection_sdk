@@ -26,6 +26,11 @@
 
 #include "tl_common.h"
 
+
+
+/**
+ * @brief	PHY test mode
+ */
 #ifndef			PHYTEST_MODE_DISABLE
 #define			PHYTEST_MODE_DISABLE					0
 #endif
@@ -43,85 +48,60 @@
 #endif
 
 
+
+
+/**
+ * @brief	PHY test mode enableor disable
+ */
 #define 		BLC_PHYTEST_DISABLE						0
 #define 		BLC_PHYTEST_ENABLE						1
 
 
 
-#define			PHY_CMD_SETUP							0
-#define			PHY_CMD_RX								1
-#define			PHY_CMD_TX								2
-#define			PHY_CMD_END								3
-
-
-#define 		PKT_TYPE_PRBS9 							0
-#define 		PKT_TYPE_0X0F 							1
-#define 		PKT_TYPE_0X55 							2
-#define 		PKT_TYPE_0XFF 							3
-
-#define			PKT_TYPE_HCI_PRBS9						0
-#define			PKT_TYPE_HCI_0X0F						1
-#define			PKT_TYPE_HCI_0X55 						2
-#define			PKT_TYPE_HCI_PRBS15						3
-#define			PKT_TYPE_HCI_0XFF 						4
-#define			PKT_TYPE_HCI_0X00						5
-#define			PKT_TYPE_HCI_0XF0						6
-#define			PKT_TYPE_HCI_0XAA						7
-enum{
-	PHY_EVENT_STATUS	 = 0,
-	PHY_EVENT_PKT_REPORT = 0x8000,
-};
-
-enum{
-	PHY_STATUS_SUCCESS 	 = 0,
-	PHY_STATUS_FAIL 	 = 0x0001,
-};
-
-
-
-
-
-typedef struct {
-	u8 cmd;
-	u8 tx_start;
-	u16 pkts;
-
-	u32 tick_tx;
-}phy_data_t;
 
 
 
 
 
 
-
-
-/******************************* User Interface  ************************************/
+/**
+ * @brief      for user to initialize PHY test module
+ * @param      none
+ * @return     none
+ */
 void 	  blc_phy_initPhyTest_module(void);
 
+
+/**
+ * @brief      for user to set PHY test enable or disable
+ * @param[in]  en - 1: enable; 0:disable
+ * @return     status: 0x00 command OK, no other rvalue
+ */
 ble_sts_t blc_phy_setPhyTestEnable (u8 en);
+
+
+/**
+ * @brief      for user to get PHY test status: enable or disable
+ * @param      none
+ * @return     1: PHY test is enable; 0: PHY test is disable
+ */
 bool 	  blc_phy_isPhyTestEnable(void);
 
 
-//user for phy test 2 wire uart mode
+/**
+ * @brief      uart RX data process for PHY test 2 wire UART mode
+ * @param      none
+ * @return     always 0
+ */
 int 	 phy_test_2_wire_rx_from_uart (void);
+
+
+/**
+ * @brief      uart TX data process for PHY test 2 wire UART mode
+ * @param      none
+ * @return     always 0
+ */
 int 	 phy_test_2_wire_tx_to_uart (void);
-
-
-
-/************************* Stack Interface, user can not use!!! ***************************/
-
-int 	  blc_phy_test_main_loop(void);
-
-int 	  blc_phytest_cmd_handler (u8 *p, int n);
-
-ble_sts_t blc_phy_setReceiverTest (u8 rx_chn);
-ble_sts_t blc_phy_setTransmitterTest (u8 tx_chn, u8 length, u8 pkt_type);
-ble_sts_t blc_phy_setPhyTestEnd(u8 *pkt_num);
-
-ble_sts_t blc_phy_reset(void);
-void blc_phy_preamble_length_set(unsigned char len);
-void phy_test_driver_init(rf_mode_e rf_mode);
 
 
 

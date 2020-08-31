@@ -78,7 +78,7 @@ extern "C" {
 
 
 
-#define FEATURE_TEST_MODE								TEST_EXTENDED_ADVERTISING
+#define FEATURE_TEST_MODE								TEST_ADVERTISING_ONLY
 
 
 
@@ -208,6 +208,9 @@ extern "C" {
 	#define UI_LED_ENABLE					1
 
 	//Button gpio cfg
+	/**
+	 *  @brief  Definition gpio for button detection
+	 */
 	#define	SW1_GPIO						GPIO_PC6
 	#define	SW2_GPIO						GPIO_PC7
 	#define PC6_FUNC						AS_GPIO
@@ -218,6 +221,9 @@ extern "C" {
 	#define PULL_WAKEUP_SRC_PC7				PM_PIN_PULLUP_10K
 
 	// LED GPIO
+	/**
+	 *  @brief  Definition gpio for led
+	 */
 	#define GPIO_LED_BLUE		GPIO_PB4
 	#define GPIO_LED_GREEN		GPIO_PB5
 	#define GPIO_LED_WHITE		GPIO_PB6
@@ -255,10 +261,16 @@ extern "C" {
 #endif
 
 /////////////////// Clock  /////////////////////////////////
+/**
+ *  @brief  MCU system clock
+ */
 #ifndef CLOCK_SYS_CLOCK_HZ
 #define CLOCK_SYS_CLOCK_HZ  	16000000
 #endif
 
+/**
+ *  @brief  Definition the number of system tick for 1s/1ms/1us
+ */
 enum{
 	CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,
 	CLOCK_SYS_CLOCK_1MS = (CLOCK_SYS_CLOCK_1S / 1000),
@@ -309,6 +321,9 @@ typedef struct{
 
 
 ///////////////////////////////////// ATT  HANDLER define ///////////////////////////////////////
+/**
+ *  @brief  Attribute handler define
+ */
 typedef enum
 {
 	ATT_H_START = 0,
@@ -433,7 +448,9 @@ typedef enum
 
 }ATT_HANDLE;
 
-
+/**
+ *  @brief  Definition for gpio debug
+ */
 #define DEBUG_GPIO_ENABLE							1
 
 #if(DEBUG_GPIO_ENABLE)

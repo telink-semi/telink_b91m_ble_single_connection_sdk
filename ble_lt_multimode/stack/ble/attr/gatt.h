@@ -28,6 +28,14 @@
 
 /************************************ User Interface  *****************************************/
 
+/**
+ * @brief	   This function is used to provide data used in Scanning Packets that have a data field.
+ * @param[in]  connHandle -  connection handle
+ * @param[in]  attHandle - The number of significant octets in the Scan_Response_Data.
+ * @param[in]  *p -  data buffer pointer
+ * @param[in]  len - data byte number
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
 ble_sts_t	blc_gatt_pushHandleValueNotify  (u16 connHandle, u16 attHandle, u8 *p, int len);
 
 ble_sts_t	blc_gatt_pushHandleValueIndicate(u16 connHandle, u16 attHandle, u8 *p, int len);
@@ -40,22 +48,20 @@ ble_sts_t 	blc_gatt_pushWriteRequest (u16 connHandle, u16 attHandle, u8 *p, int 
 
 
 
-#if 0  //not available now
 
-ble_sts_t 	blc_gatt_pushFindInformationRequest(u8 *dat, u16 start_attHandle, u16 end_attHandle);
+ble_sts_t 	blc_gatt_pushFindInformationRequest(u16 connHandle, u16 start_attHandle, u16 end_attHandle);
 
-ble_sts_t 	blc_gatt_pushFindByTypeValueRequest (u8 *dat, u16 start_attHandle, u16 end_attHandle, u8 *uuid, u8* attr_value, int len);
+ble_sts_t 	blc_gatt_pushFindByTypeValueRequest (u16 connHandle, u16 start_attHandle, u16 end_attHandle, u16 uuid, u8* attr_value, int len);
 
-ble_sts_t 	blc_gatt_pushReadByTypeRequest (u8 *dat, u16 start_attHandle, u16 end_attHandle, u8 *uuid, int uuid_len);
+ble_sts_t 	blc_gatt_pushReadByTypeRequest (u16 connHandle, u16 start_attHandle, u16 end_attHandle, u8 *uuid, int uuid_len);
 
-ble_sts_t 	blc_gatt_pushReadRequest (u8 *dat, u16 attHandle);
+ble_sts_t 	blc_gatt_pushReadRequest (u16 connHandle, u16 attHandle);
 
-ble_sts_t 	blc_gatt_pushReadBlobRequest (u8 *dat, u16 attHandle, u16 offset);
+ble_sts_t 	blc_gatt_pushReadBlobRequest (u16 connHandle, u16 attHandle, u16 offset);
 
-ble_sts_t 	blc_gatt_pushReadByGroupTypeRequest (u8 *dat, u16 start_attHandle, u16 end_attHandle, u8 *uuid, int uuid_len);
+ble_sts_t 	blc_gatt_pushReadByGroupTypeRequest (u16 connHandle, u16 start_attHandle, u16 end_attHandle, u8 *uuid, int uuid_len);
 
 
-#endif
 
 
 

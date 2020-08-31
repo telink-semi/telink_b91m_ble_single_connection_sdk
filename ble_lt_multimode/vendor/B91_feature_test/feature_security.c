@@ -29,7 +29,7 @@
 #include "application/usbstd/usbkeycode.h"
 #include "vendor/common/blt_soft_timer.h"
 #include "vendor/common/blt_common.h"
-
+#include "app_buffer.h"
 
 
 #if (FEATURE_TEST_MODE == TEST_SMP_SECURITY)
@@ -65,7 +65,7 @@
 
 
 
-#define     SMP_TEST_MODE						SMP_TEST_LEGACY_PARING_JUST_WORKS
+#define     SMP_TEST_MODE						SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI
 
 
 #if (SMP_TEST_MODE == SMP_TEST_SC_NUMERIC_COMPARISON || \
@@ -77,16 +77,27 @@ _attribute_data_retention_	int 	key_not_released;
 _attribute_data_retention_  u8      digital_key_cnt;
 _attribute_data_retention_  u8      tk_input[6];
 
+/**
+ *  @brief  The keyboard map of consumer key
+ */
 static u16 vk_consumer_map[16] = {
 	MKEY_VOL_UP, MKEY_VOL_DN, MKEY_MUTE, MKEY_CHN_UP, MKEY_CHN_DN, MKEY_POWER,
 	MKEY_AC_SEARCH, MKEY_RECORD, MKEY_PLAY, MKEY_PAUSE, MKEY_STOP, MKEY_FAST_FORWARD,
 	MKEY_FAST_FORWARD, MKEY_AC_HOME, MKEY_AC_BACK, MKEY_MENU,
 };
 
+/**
+ *  @brief  The keyboard map of digital key
+ */
 static u8 vk_dig_map[10] = {
 	VK_0, VK_1, VK_2, VK_3, VK_4, VK_5, VK_6, VK_7, VK_8, VK_9,
 };
 
+/**
+ * @brief      Set led on or off
+ * @param[in]  on_or_off - led is on or off
+ * @return     none
+ */
 static void led_onoff(bool on_or_off)
 {
 	u8 onoff = on_or_off ? 1:0;
@@ -94,6 +105,13 @@ static void led_onoff(bool on_or_off)
 	gpio_write(GPIO_LED, onoff);
 }
 
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void  ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
 {
 	if( blc_ll_getCurrentState() == BLS_LINK_STATE_CONN && ((u32)(bls_pm_getSystemWakeupTick() - clock_time())) > 80 * CLOCK_16M_SYS_TIMER_CLK_1MS){  //suspend time > 30ms.add gpio wakeup
@@ -101,6 +119,11 @@ void  ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
 	}
 }
 
+/**
+ * @brief		this function is used to process keyboard matrix status change.
+ * @param[in]	none
+ * @return      none
+ */
 void key_change_proc(void)
 {
 	u8 key0 = kb_event.keycode[0];
@@ -202,6 +225,14 @@ void key_change_proc(void)
 
 _attribute_data_retention_ static int gpioWakeup_keyProc_cnt = 0;
 _attribute_data_retention_ static u32 keyScanTick = 0;
+
+/**
+ * @brief      this function is used to detect if key pressed or released.
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void proc_keyboard (u8 e, u8 *p, int n)
 {
 	//when key press gpio wakeup suspend, proc keyscan at least GPIO_WAKEUP_KEYPROC_CNT times
@@ -230,8 +261,39 @@ void proc_keyboard (u8 e, u8 *p, int n)
 
 #endif
 
+
+u32 A_slavepincode = 0;
+u8 A_pincodeflag =0;
+//u8 A_slavepincode_1 = 0;
+//u8 A_slavepincode_2 = 0;
+//u8 A_slavepincode_3 = 0;
+//u8 A_slavepincode_4 = 0;
+//u8 A_slavepincode_5 = 0;
+//u8 A_slavepincode_6 = 0;
+
+/**
+ * @brief		This is main_loop function in security test project
+ * @param[in]	none
+ * @return      none
+ */
 void feature_security_test_mainloop(void)
 {
+#if SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI
+
+//	if(A_slavepincode_6 !=0)
+//	{
+//		A_slavepincode = A_slavepincode_1*100000 + A_slavepincode_2*10000 + \
+//				A_slavepincode_3*1000 + A_slavepincode_4*100 + A_slavepincode_5*10 + A_slavepincode_6;
+//	}
+
+	if(A_pincodeflag && A_slavepincode)
+	{
+		blc_smp_setTK_by_PasskeyEntry(A_slavepincode);
+		A_pincodeflag =0;
+	}
+
+#endif
+
 #if (SMP_TEST_MODE == SMP_TEST_SC_NUMERIC_COMPARISON || \
 	 SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MDSI || SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MISI || \
 	 SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MISI || SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI)
@@ -258,7 +320,7 @@ void feature_security_test_mainloop(void)
 	}
 #endif
 }
-
+#if 0
 
 #define RX_FIFO_SIZE	64
 #define RX_FIFO_NUM		8
@@ -287,6 +349,7 @@ _attribute_data_retention_	my_fifo_t	blt_txfifo = {
 
 
 
+#endif
 
 
 
@@ -301,14 +364,27 @@ _attribute_data_retention_	my_fifo_t	blt_txfifo = {
 
 
 
-
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_CONNECT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_connect (u8 e, u8 *p, int n)
 {
 	printf("connected\n");
 }
 
 volatile u8 A_dis_conn_rsn;
+
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_TERMINATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_terminate (u8 e, u8 *p, int n)
 {
 	printf("terminate rsn: 0x%x\n", *p);
@@ -316,6 +392,13 @@ void	task_terminate (u8 e, u8 *p, int n)
 
 
 int AA_dbg_suspend;
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void  func_suspend_enter (u8 e, u8 *p, int n)
 {
 	AA_dbg_suspend ++;
@@ -323,7 +406,13 @@ void  func_suspend_enter (u8 e, u8 *p, int n)
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
@@ -336,7 +425,13 @@ _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 
 
 
-
+/**
+ * @brief      callback function of Host Event
+ * @param[in]  h - Host Event type
+ * @param[in]  para - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     0
+ */
 int app_host_event_callback (u32 h, u8 *para, int n)
 {
 	u8 event = h & 0xFF;
@@ -444,7 +539,11 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 
 extern void	my_att_init(void);
 
-
+/**
+ * @brief		user initialization for security test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_security_test_init_normal(void)
 {
 
@@ -460,6 +559,9 @@ void feature_security_test_init_normal(void)
 	//for 1M  Flash, flash_sector_mac_address equals to 0xFF000
 	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 	////// Controller Initialization  //////////
@@ -467,7 +569,7 @@ void feature_security_test_init_normal(void)
 	blc_ll_initStandby_module(mac_public);				//mandatory
 
 
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
@@ -687,6 +789,9 @@ void feature_security_test_init_normal(void)
 
 
 ///////////////////// USER application initialization ///////////////////
+	/**
+	 * @brief	Adv Packet data
+	 */
 	u8 tbl_advData[] = {
 		 0x08, 0x09, 't', 'e', 's', 't', 'S', 'M', 'P',
 		#if (1) //We'd better add this, because for some smartphones, the system may be forbidden to connect
@@ -695,6 +800,10 @@ void feature_security_test_init_normal(void)
 			 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
 		#endif
 		};
+
+	/**
+	 * @brief	Scan Response Packet data
+	 */
 	u8	tbl_scanRsp [] = {
 			 0x08, 0x09, 't', 'e', 's', 't', 'S', 'M', 'P',
 		};
@@ -736,7 +845,11 @@ void feature_security_test_init_normal(void)
 }
 
 
-
+/**
+ * @brief		user initialization for security test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void feature_security_test_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)

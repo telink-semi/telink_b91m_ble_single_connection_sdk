@@ -43,7 +43,9 @@
 
 	u32 ctrl_btn[] = {SW1_GPIO, SW2_GPIO};
 	u8 btn_map[MAX_BTN_SIZE] = {BTN_PAIR, BTN_UNPAIR};
-
+	/**
+	 * @brief 	record the result of key detect
+	 */
 	typedef	struct{
 		u8 	cnt;				//count button num
 		u8 	btn_press;
@@ -51,6 +53,9 @@
 	}vc_data_t;
 	vc_data_t vc_event;
 
+	/**
+	 * @brief 	record the status of button process
+	 */
 	typedef struct{
 		u8  btn_history[4];		//vc history btn save
 		u8  btn_filter_last;
@@ -59,7 +64,11 @@
 	}btn_status_t;
 	btn_status_t 	btn_status;
 
-
+	/**
+	 * @brief      Debounce processing during button detection
+	 * @param[in]  btn_v - vc_event.btn_press
+	 * @return     1:Detect new button;0:Button isn't changed
+	 */
 	u8 btn_debounce_filter(u8 *btn_v)
 	{
 		u8 change = 0;
@@ -79,6 +88,11 @@
 		return change;
 	}
 
+	/**
+	 * @brief      This function is key detection processing
+	 * @param[in]  read_key - Decide whether to return the key detection result
+	 * @return     1:Detect new button;0:Button isn't changed
+	 */
 	u8 vc_detect_button(int read_key)
 	{
 		u8 btn_changed, i;
@@ -107,6 +121,11 @@
 		return 0;
 	}
 
+	/**
+	 * @brief		this function is used to detect if button pressed or released.
+	 * @param[in]	none
+	 * @return      none
+	 */
 	void proc_button (void)
 	{
 //		static u32 button_det_tick;
@@ -163,7 +182,6 @@
 
 				if(key0 == BTN_PAIR)
 				{
-					DBG_CHN5_TOGGLE;
 					if(!master_ota_test_mode){
 						dongle_pairing_enable = 1;
 					}

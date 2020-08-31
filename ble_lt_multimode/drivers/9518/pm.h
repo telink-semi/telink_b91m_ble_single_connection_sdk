@@ -43,27 +43,27 @@
  * 	      when MCU wakeup from deepsleep, read the information by by calling analog_read function
  * 	      Reset these analog registers only by power cycle
  */
-
-#define DEEP_ANA_REG0                       0x3d //initial value =0x00
-#define DEEP_ANA_REG1                       0x3e //initial value =0x00
-#define DEEP_ANA_REG2                       0x3f //initial value =0x0f
+#define DEEP_ANA_REG0                       0x39 //initial value =0x00
+#define DEEP_ANA_REG1                       0x3a //initial value =0x00
+#define DEEP_ANA_REG2                       0x3b //initial value =0x00
+#define DEEP_ANA_REG3                      	0x3c //initial value =0x00
+#define DEEP_ANA_REG4                       0x3d //initial value =0x00
+#define DEEP_ANA_REG5                       0x3e //initial value =0x00
+#define DEEP_ANA_REG6                       0x3f //initial value =0x0f
 
 /**
  * @brief these analog register can store data in deepsleep mode or deepsleep with SRAM retention mode.
  * 	      Reset these analog registers by watchdog, chip reset, RESET Pin, power cycle
  */
 
-#define DEEP_ANA_REG6                       0x38 //initial value =0xff
-#define DEEP_ANA_REG7                       0x39 //initial value =0x00
-#define DEEP_ANA_REG8                       0x3a //initial value =0x00
-#define DEEP_ANA_REG9                       0x3b //initial value =0x00
-#define DEEP_ANA_REG10                      0x3c //initial value =0x00
+#define DEEP_ANA_REG7                       0x38 //initial value =0xff
 
 
-#define SYS_NEED_REINIT_EXT32K			    BIT(0)
+
+#define SYS_NEED_REINIT_EXT32K			    BIT(1)
 
 //ana3e system used, user can not use
-#define SYS_DEEP_ANA_REG 					DEEP_ANA_REG1
+#define SYS_DEEP_ANA_REG 					DEEP_ANA_REG0
 
 #define	ZB_POWER_DOWN						1 //weather to power down the RF before suspend
 #define	AUDIO_POWER_DOWN					1 //weather to power down the AUDIO before suspend
@@ -116,6 +116,18 @@ enum {
 	 STATUS_ENTER_SUSPEND  			= BIT(30),
 };
 
+/**
+ * @brief   mcu status
+ */
+
+enum {
+	 MCU_STATUS_POWER_ON  		= BIT(0),
+	 MCU_STATUS_REBOOT_BACK    	= BIT(2),
+	 MCU_STATUS_DEEPRET_BACK  	= BIT(3),
+	 MCU_STATUS_DEEP_BACK		= BIT(4),
+};
+
+
 typedef enum{
 	Level_Low=0,
 	Level_High =1,
@@ -159,7 +171,7 @@ typedef struct{
 	unsigned char is_deepretn_back;
 	unsigned char is_pad_wakeup;
 	unsigned char wakeup_src;
-	unsigned char rsvd;
+	unsigned char mcu_status;
 }pm_para_t;
 
 extern _attribute_aligned_(4) pm_para_t	pmParam;
@@ -218,6 +230,17 @@ static inline int pm_get_wakeup_src(void)
 {
 	return pmParam.wakeup_src;
 }
+
+/**
+ * @brief      This function serves to get the status of mcu.
+ * @param[in]  none.
+ * @return     mcu_status.
+ */
+static inline int pm_get_mcu_status(void)
+{
+	return pmParam.mcu_status;
+}
+
 
 /**
  * @brief      This function configures a GPIO pin as the wakeup pin.
@@ -287,10 +310,10 @@ void cpu_wakeup_init(power_mode_e power_mode) ;
  * @param[in] none.
  * @return    system timer tick value.
 **/
-static inline  void  sys_clock_time_en(void)
-{
-	reg_system_ctrl		|=(FLD_SYSTEM_TIMER_EN|FLD_SYSTEM_32K_CAL_EN) ;
-}
+//static inline  void  sys_clock_time_en(void)
+//{
+//	reg_system_ctrl		|=(FLD_SYSTEM_TIMER_EN|FLD_SYSTEM_32K_CAL_EN) ;
+//}
 
 /**
  * @brief   This function serves to recover system timer from tick of internal 32k RC.

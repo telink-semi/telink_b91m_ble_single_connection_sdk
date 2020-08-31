@@ -19,12 +19,6 @@
  *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided. 
  *           
  *******************************************************************************************************/
-/*
- * ble_smp.h
- *
- *  Created on: 2016-9-27
- *      Author: Telink
- */
 
 #ifndef BLE_SMP_H_
 #define BLE_SMP_H_
@@ -244,11 +238,18 @@ extern smp_info_handler_t		func_smp_info;
 
 
 /******************************* User Interface  *****************************************/
+
+
+/**
+ * @brief      This function is used to request the Controller to start or stop advertising.
+ * @param[in]  device_num - Advertising_Enable
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
 void 		blc_smp_param_setBondingDeviceMaxNumber ( int device_num);
 
 void 		blc_smp_setSecurityLevel(le_security_mode_level_t  mode_level);
 
-
+void 		blc_smp_preMakeEcdhKeysEnable(u8 enable);
 
 
 

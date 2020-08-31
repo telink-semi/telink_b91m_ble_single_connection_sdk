@@ -24,9 +24,8 @@
  *
  *******************************************************************************************************/
 #include "core.h"
-
-#include "plic.h"
 #include "compiler.h"
+#include "plic.h"
 /** @brief Enable interrupts globally in the system.
  * This macro must be used when the initialization phase is over and the interrupts
  * can start being handled by the system.

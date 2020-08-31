@@ -32,12 +32,10 @@ extern	unsigned char		ui_mic_enable;
 extern	unsigned char 		key_voice_press;
 extern	int     			ui_mtu_size_exchange_req;
 
-void dmic_gpio_reset (void);
-void amic_gpio_reset (void);
 void ui_enable_mic (int en);
 void voice_press_proc(void);
 void blc_checkConnParamUpdate(void);
-void proc_audio(void);
+void task_audio (void);
 int server2client_auido_proc(void* p);
 void audio_state_check(void);
 void voice_key_release(void);

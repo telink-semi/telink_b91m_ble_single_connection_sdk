@@ -26,7 +26,7 @@
 #include "drivers.h"
 #include "app_config.h"
 #include "vendor/common/blt_common.h"
-
+#include "app_buffer.h"
 
 
 
@@ -38,7 +38,7 @@
 #define FEATURE_DEEPSLEEP_RETENTION_ENABLE				0
 
 
-
+#if 0
 
 #define RX_FIFO_SIZE	64
 #define RX_FIFO_NUM		8
@@ -65,7 +65,10 @@ _attribute_data_retention_	my_fifo_t	blt_txfifo = {
 												0,
 												blt_txfifo_b,};
 
-
+/**
+ *  @brief  connect parameters structure for ATT
+ */
+#endif
 
 typedef struct
 {
@@ -232,7 +235,7 @@ static const u8 my_OtaCharVal[19] = {
 
 
 
-#define     SMP_TEST_MODE						LE_SECURITY_MODE_1_LEVEL_2
+#define     SMP_TEST_MODE						LE_SECURITY_MODE_1_LEVEL_3
 
 //use lightblue or nrf connect app, after connected, enable notify, write some data into characteristic Telink SPP:Phone->Module
 
@@ -251,8 +254,8 @@ static const u8 my_OtaCharVal[19] = {
 #elif(SMP_TEST_MODE == LE_SECURITY_MODE_1_LEVEL_3)
 	//#define     SPP_C2S_ATT_PERMISSIONS_RDWR        ATT_PERMISSIONS_RDWR
 	//#define     SPP_C2S_ATT_PERMISSIONS_RDWR        ATT_PERMISSIONS_ENCRYPT_RDWR
-	//#define     SPP_C2S_ATT_PERMISSIONS_RDWR        ATT_PERMISSIONS_AUTHEN_RDWR
-	#define     SPP_C2S_ATT_PERMISSIONS_RDWR        ATT_PERMISSIONS_SECURE_CONN_RDWR
+	#define     SPP_C2S_ATT_PERMISSIONS_RDWR        ATT_PERMISSIONS_AUTHEN_RDWR
+	//#define     SPP_C2S_ATT_PERMISSIONS_RDWR        ATT_PERMISSIONS_SECURE_CONN_RDWR
 #elif(SMP_TEST_MODE == LE_SECURITY_MODE_1_LEVEL_4)
 	//#define     SPP_C2S_ATT_PERMISSIONS_RDWR        ATT_PERMISSIONS_RDWR
 	//#define     SPP_C2S_ATT_PERMISSIONS_RDWR        ATT_PERMISSIONS_ENCRYPT_RDWR
@@ -260,7 +263,11 @@ static const u8 my_OtaCharVal[19] = {
 	#define     SPP_C2S_ATT_PERMISSIONS_RDWR        ATT_PERMISSIONS_SECURE_CONN_RDWR
 #endif
 
-
+/**
+ * @brief      write callback of Attribute of TelinkSppDataClient2ServerUUID
+ * @param[in]  p - rf_packet_att_write_t
+ * @return     0
+ */
 int module_onReceiveData(rf_packet_att_write_t *p)
 {
 	u8 len = p->l2capLen - 3;
@@ -325,18 +332,37 @@ static const attribute_t my_Attributes[] = {
 
 };
 
+/**
+ * @brief      Initialize the attribute table
+ * @param[in]  none
+ * @return     none
+ */
 void	my_att_init (void)
 {
 	bls_att_setAttributeTable ((u8 *)my_Attributes);
 }
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_CONNECT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_connect (u8 e, u8 *p, int n)
 {
 	printf("connected\n");
 }
 
 volatile u8 A_dis_conn_rsn;
+
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_TERMINATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_terminate (u8 e, u8 *p, int n)
 {
 	printf("terminate rsn: 0x%x\n", *p);
@@ -344,6 +370,13 @@ void	task_terminate (u8 e, u8 *p, int n)
 
 
 int AA_dbg_suspend;
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void  func_suspend_enter (u8 e, u8 *p, int n)
 {
 	AA_dbg_suspend ++;
@@ -351,14 +384,26 @@ void  func_suspend_enter (u8 e, u8 *p, int n)
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
 
-
+/**
+ * @brief      callback function of Host Event
+ * @param[in]  h - Host Event type
+ * @param[in]  para - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     0
+ */
 int app_host_event_callback (u32 h, u8 *para, int n)
 {
 	u8 event = h & 0xFF;
@@ -452,7 +497,11 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 
 extern void	security_test_att_init (void);
 
-
+/**
+ * @brief		user initialization for GATT security test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_gatt_security_test_init_normal(void)
 {
 
@@ -474,8 +523,10 @@ void feature_gatt_security_test_init_normal(void)
 	blc_ll_initBasicMCU();   //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
 
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
 
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
@@ -571,9 +622,16 @@ void feature_gatt_security_test_init_normal(void)
 
 
 ///////////////////// USER application initialization ///////////////////
+	/**
+	 * @brief	Adv Packet data
+	 */
 	u8 tbl_advData[] = {
 		 0x0C, 0x09, 't', 'e', 's', 't', 'G', 'A', 'T', 'T', 'S','E','C',
 		};
+
+	/**
+	 * @brief	Scan Response Packet data
+	 */
 	u8	tbl_scanRsp [] = {
 			0x0C, 0x09, 't', 'e', 's', 't', 'G', 'A', 'T', 'T', 'S','E','C',
 		};
@@ -614,7 +672,11 @@ void feature_gatt_security_test_init_normal(void)
 }
 
 
-
+/**
+ * @brief		user initialization for GATT security test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void feature_gatt_security_test_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)

@@ -133,6 +133,9 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	irq_enable();
 
 	while (1) {
+		#if(MODULE_WATCHDOG_ENABLE)
+			wd_clear(); //clear watch dog
+		#endif
 		main_loop ();
 	}
 

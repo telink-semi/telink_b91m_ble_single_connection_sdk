@@ -28,6 +28,7 @@
 #include "ble_common.h"
 #include "ble_format.h"
 
+#include "phy/phy_stack.h"
 #include "phy/phy.h"
 #include "phy/phy_test.h"
 
@@ -50,7 +51,6 @@
 #include "ll/ll_conn/conn_stack.h"
 #include "ll/ll_conn/ll_slave.h"
 #include "ll/ll_conn/ll_master.h"
-#include "ll/ll_conn/ll_conn_phy.h"
 #include "ll/ll_conn/ll_conn_csa.h"
 
 #include "ll/ll_ext_adv.h"

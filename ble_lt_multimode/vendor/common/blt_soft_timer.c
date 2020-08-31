@@ -36,7 +36,13 @@
 _attribute_data_retention_	blt_soft_timer_t	blt_timer;
 
 
-//按照定时时间将timer排序，便于process时 依次触发timer
+/**
+ * @brief		This function is used to Sort the timers according
+ * 				to the time of the timed task, so as to trigger the
+ * 				timers in turn
+ * @param[in]	none
+ * @return      none
+ */
 int  blt_soft_timer_sort(void)
 {
 	if(blt_timer.currentNum < 1 || blt_timer.currentNum > MAX_TIMER_NUM){
@@ -44,7 +50,7 @@ int  blt_soft_timer_sort(void)
 		return 0;
 	}
 	else{
-		// 冒泡排序  BubbleSort
+		//BubbleSort
 		int n = blt_timer.currentNum;
 		u8 temp[sizeof(blt_time_event_t)];
 
@@ -68,7 +74,13 @@ int  blt_soft_timer_sort(void)
 
 
 
-//user add timer
+/**
+ * @brief		This function is used to add new software timer task
+ * @param[in]	func - callback function for software timer task
+ * @param[in]	interval_us - the interval for software timer task
+ * @return      0 - timer task is full, add fail
+ * 				1 - create successfully
+ */
 int blt_soft_timer_add(blt_timer_callback_t func, u32 interval_us)
 {
 	int i;
@@ -92,7 +104,15 @@ int blt_soft_timer_add(blt_timer_callback_t func, u32 interval_us)
 }
 
 
-//timer 本来就是有序的，删除的时候，采用往前覆盖，所以不会破坏顺序，不需要重新排序
+
+/**
+ * @brief		Timer tasks are originally ordered. When deleting, it will
+ * 				be overwritten forward, so the order will not be destroyed
+ * 				and there is no need to reorder
+ * @param[in]	index - the index for some software timer task
+ * @return      0 - delete fail
+ * 				other - delete successfully
+ */
 int  blt_soft_timer_delete_by_index(u8 index)
 {
 	if(index >= blt_timer.currentNum){
@@ -108,7 +128,12 @@ int  blt_soft_timer_delete_by_index(u8 index)
 	blt_timer.currentNum --;
 }
 
-
+/**
+ * @brief		This function is used to delete timer tasks
+ * @param[in]	func - callback function for software timer task
+ * @return      0 - delete fail
+ * 				1 - delete successfully
+ */
 int 	blt_soft_timer_delete(blt_timer_callback_t func)
 {
 
@@ -117,7 +142,7 @@ int 	blt_soft_timer_delete(blt_timer_callback_t func)
 		if(blt_timer.timer[i].cb == func){
 			blt_soft_timer_delete_by_index(i);
 
-			if(i == 0){  //删除的是最近的timer，需要更新时间
+			if(i == 0){  //The most recent timer is deleted, and the time needs to be updated
 
 				if( (u32)(blt_timer.timer[0].t - clock_time()) < 3000 *  CLOCK_16M_SYS_TIMER_CLK_1MS){
 					bls_pm_setAppWakeupLowPower(blt_timer.timer[0].t,  1);
@@ -136,7 +161,11 @@ int 	blt_soft_timer_delete(blt_timer_callback_t func)
 }
 
 
-
+/**
+ * @brief		This function is used to manage software timer tasks
+ * @param[in]	type - the type for trigger
+ * @return      none
+ */
 void  	blt_soft_timer_process(int type)
 {
 	if(type == CALLBACK_ENTRY){ //callback trigger
@@ -200,7 +229,11 @@ void  	blt_soft_timer_process(int type)
 
 }
 
-
+/**
+ * @brief		This function is used to register the call back for pm_appWakeupLowPowerCb
+ * @param[in]	none
+ * @return      none
+ */
 void 	blt_soft_timer_init(void)
 {
 	bls_pm_registerAppWakeupLowPowerCb(blt_soft_timer_process);

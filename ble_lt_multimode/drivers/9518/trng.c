@@ -73,9 +73,10 @@ _attribute_ram_code_  unsigned int trng_rand(void)  //16M clock, code in flash 2
 	g_rnd_m_z = 36969 * (g_rnd_m_z & 0xffff) + (g_rnd_m_z >> 16);
 	unsigned int result = (g_rnd_m_z << 16) + g_rnd_m_w;
 
-	return (unsigned int)( result  ^ clock_time() );
+	return (unsigned int)( result  ^ sys_get_stimer_tick() );
 }
 
+/*******************************      BLE Stack Use     ******************************/
 void generateRandomNum(int len, unsigned char *data)
 {
 	int i;

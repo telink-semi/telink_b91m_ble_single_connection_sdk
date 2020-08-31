@@ -1,27 +1,23 @@
 /********************************************************************************************************
- * @file     app.c 
+ * @file     app.c
  *
- * @brief    This is the source file for TLSR8258
+ * @brief    for TLSR chips
  *
- * @author	 junwei.lu@telink-semi.com;
- * @date     May 8, 2018
+ * @author	 public@telink-semi.com;
+ * @date     Sep. 18, 2018
  *
- * @par      Copyright (c) 2018, Telink Semiconductor (Shanghai) Co., Ltd.
+ * @par      Copyright (c) Telink Semiconductor (Shanghai) Co., Ltd.
  *           All rights reserved.
  *
- *           The information contained herein is confidential property of Telink
- *           Semiconductor (Shanghai) Co., Ltd. and is available under the terms
- *           of Commercial License Agreement between Telink Semiconductor (Shanghai)
- *           Co., Ltd. and the licensee or the terms described here-in. This heading
- *           MUST NOT be removed from this file.
+ *			 The information contained herein is confidential and proprietary property of Telink
+ * 		     Semiconductor (Shanghai) Co., Ltd. and is available under the terms
+ *			 of Commercial License Agreement between Telink Semiconductor (Shanghai)
+ *			 Co., Ltd. and the licensee in separate contract or the terms described here-in.
+ *           This heading MUST NOT be removed from this file.
  *
- *           Licensees are granted free, non-transferable use of the information in this
- *           file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
- * @par      History:
- * 			 1.initial release(DEC. 26 2018)
+ * 			 Licensees are granted free, non-transferable use of the information in this
+ *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
  *
- * @version  A001
- *         
  *******************************************************************************************************/
 
 #include "tl_common.h"
@@ -50,6 +46,11 @@ _attribute_data_retention_	own_addr_type_t 	app_own_address_type = OWN_ADDRESS_P
 
 int main_idle_loop (void);
 
+/**
+ * @brief		user initialization when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void user_init_normal(void)
 {
 	//random number generator must be initiated here( in the beginning of user_init_nromal)
@@ -72,7 +73,7 @@ void user_init_normal(void)
 	usb_dp_pullup_en (1);  //open USB enum
 
 
-////////////////// BLE stack initialization ////////////////////////////////////
+	//////////////////////////// BLE stack Initialization  Begin //////////////////////////////////
 	u8  mac_public[6];
 	u8  mac_random_static[6];
 
@@ -80,10 +81,10 @@ void user_init_normal(void)
 	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
 
-	////// Controller Initialization  //////////
+	//////////// Controller Initialization  Begin /////////////////////////
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
-	blc_ll_initScanning_module(mac_public); 			//scan module: 		 mandatory for BLE master,
+	blc_ll_initScanning_module(); 			//scan module: 		 mandatory for BLE master,
 	blc_ll_initInitiating_module();						//initiate module: 	 mandatory for BLE master,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initMasterRoleSingleConn_module();			//master module: 	 mandatory for BLE master,
@@ -92,22 +93,31 @@ void user_init_normal(void)
 
 	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
 	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+	//////////// Controller Initialization  End /////////////////////////
 
-	////// Host Initialization  //////////
+	//////////// Host Initialization  Begin /////////////////////////
+	/* Host Initialization */
+
+	/* GAP initialization must be done before any other host feature initialization !!! */
 	blc_gap_central_init();										//gap initialization
+
+	/* L2CAP Initialization */
 	blc_l2cap_register_handler (app_l2cap_handler);  	//l2cap initialization
 	blc_hci_registerControllerEventHandler(controller_event_callback); //controller hci event to host all processed in this func
 
-	//bluetooth event
+	/* bluetooth event */
 	blc_hci_setEventMask_cmd (HCI_EVT_MASK_DISCONNECTION_COMPLETE | HCI_EVT_MASK_ENCRYPTION_CHANGE);
 
-	//bluetooth low energy(LE) event
+	/* bluetooth low energy(LE) event */
 	blc_hci_le_setEventMask_cmd(		HCI_LE_EVT_MASK_CONNECTION_COMPLETE 		\
 									|	HCI_LE_EVT_MASK_ADVERTISING_REPORT 			\
 									|   HCI_LE_EVT_MASK_CONNECTION_UPDATE_COMPLETE  \
 									|	HCI_LE_EVT_MASK_PHY_UPDATE_COMPLETE			\
 									|   HCI_LE_EVT_MASK_CONNECTION_ESTABLISH );         //connection establish: telink private event
 
+	/* SMP Initialization may involve flash write/erase(when one sector stores too much information,
+	 *   is about to exceed the sector threshold, this sector must be erased, and all useful information
+	 *   should re_stored) , so it must be done after battery check */
 	#if (BLE_HOST_SMP_ENABLE)
 		blm_smp_configParingSecurityInfoStorageAddr(FLASH_ADR_PARING);
 		blm_smp_registerSmpFinishCb(app_host_smp_finish);
@@ -125,8 +135,11 @@ void user_init_normal(void)
 
 	extern int host_att_register_idle_func (void *p);
 	host_att_register_idle_func (main_idle_loop);
+	//////////// Host Initialization  End /////////////////////////
 
-	//set scan parameter and scan enable
+	//////////////////////////// BLE stack Initialization  End //////////////////////////////////
+
+	////////////////// config scan parameter /////////////////////
 #if 1
 	blc_ll_setScanParameter(SCAN_TYPE_PASSIVE, SCAN_INTERVAL_100MS, SCAN_INTERVAL_100MS,	\
 							OWN_ADDRESS_PUBLIC, SCAN_FP_ALLOW_ADV_ANY);
@@ -134,6 +147,8 @@ void user_init_normal(void)
 	blc_ll_setScanParameter(SCAN_TYPE_ACTIVE, SCAN_INTERVAL_100MS, SCAN_INTERVAL_100MS,	\
 							OWN_ADDRESS_PUBLIC, SCAN_FP_ALLOW_ADV_ANY);
 #endif
+
+	////////////////// scan enable /////////////////////
 	blc_ll_setScanEnable (BLC_SCAN_ENABLE, DUP_FILTER_DISABLE);
 
 	#if (UI_UPPER_COMPUTER_ENABLE)
@@ -149,9 +164,11 @@ void user_init_normal(void)
 
 }
 
-/////////////////////////////////////////////////////////////////////
-// main loop flow
-/////////////////////////////////////////////////////////////////////
+/**
+ * @brief		This is main_idle_loop function
+ * @param[in]	none
+ * @return      none
+ */
 int main_idle_loop (void)
 {
 

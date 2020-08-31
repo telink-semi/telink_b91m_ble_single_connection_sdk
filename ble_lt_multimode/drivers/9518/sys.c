@@ -76,9 +76,9 @@ int write_reg_table(const tbl_cmd_set_st * pt, int size)
 	int l=0;
 
 	while (l<size) {
-		unsigned int  cadr = ((unsigned int)0x80000000) | pt[l].ADR;
-		unsigned char cdat = pt[l].DAT;
-		unsigned char ccmd = pt[l].CMD;
+		unsigned int  cadr = ((unsigned int)0x80000000) | pt[l].adr;
+		unsigned char cdat = pt[l].dat;
+		unsigned char ccmd = pt[l].cmd;
 		unsigned char cvld =(ccmd & TCMD_UNDER_WR);
 		ccmd &= TCMD_MASK;
 		if (cvld) {
@@ -89,7 +89,7 @@ int write_reg_table(const tbl_cmd_set_st * pt, int size)
 				analog_write_reg8 (cadr, cdat);
 			}
 			else if (ccmd == TCMD_WAIT) {
-				delay_us(pt[l].ADR*256 + cdat);
+				delay_us(pt[l].adr*256 + cdat);
 			}
 		}
 		l++;
@@ -105,7 +105,7 @@ int write_reg_table(const tbl_cmd_set_st * pt, int size)
  */
 _attribute_ram_code_ void delay_us(u32 microsec)
 {
-	unsigned long t = clock_time();
+	unsigned long t = sys_get_stimer_tick();
 	while(!clock_time_exceed(t, microsec)){
 	}
 }
@@ -118,7 +118,7 @@ _attribute_ram_code_ void delay_us(u32 microsec)
 _attribute_ram_code_ void delay_ms(u32 millisec)
 {
 
-	unsigned long t = clock_time();
+	unsigned long t = sys_get_stimer_tick();
 	while(!clock_time_exceed(t, millisec*1000)){
 	}
 }

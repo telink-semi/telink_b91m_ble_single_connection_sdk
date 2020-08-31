@@ -327,13 +327,19 @@ extern void uart_send_byte(uart_num_e uart_num,unsigned char tx_data);
  * @return    none
  */
 extern unsigned char uart_read_byte(uart_num_e uart_num);
-
+/**
+ * @brief     This function serves to judge if the transmission of uart is done.
+ * @param[in] uart_num - UART0 or UART1.
+ * @return    0:tx is done     1:tx isn't done
+ */
+unsigned char uart_tx_is_busy(uart_num_e uart_num);
 /**
  * @brief     This function serves to send uart0 data by halfword with not DMA method.
  * @param[in] uart_num - UART0 or UART1.
  * @param[in] tx_data - the data to be send.
  * @return    none
  */
+
 extern void uart_send_hword(uart_num_e uart_num, unsigned short tx_data);
 
 /**
@@ -377,6 +383,16 @@ extern void uart_set_rts_pin(uart_rts_pin_e rts_pin);
 extern void uart_set_pin(uart_tx_pin_e tx_pin,uart_rx_pin_e rx_pin);
 
 /**
+ * @brief     	uart0 send data function
+ * @param[in]  	uart_num - UART0 or UART1
+ *            	the NDMA transmission
+ * @param[in] 	Addr - pointer to the buffer containing data need to send
+ * @param[in] 	len -N DMA transmission length
+ * @return  	none
+ */
+extern volatile unsigned char uart_send_ndma(uart_num_e uart_num, unsigned char * Addr, unsigned char len );
+
+/**
  * @brief     	uart0 send data function, this  function tell the DMA to get data from the RAM and start
  * @param[in]  	uart_num - UART0 or UART1
  *            	the DMA transmission
@@ -393,7 +409,7 @@ extern volatile unsigned char uart_send_dma(uart_num_e uart_num, unsigned char *
  * @param[in] 	Addr - pointer to the buffer  receive data¡£
  * @return     	none
  */
-extern void uart_receive_dma(uart_num_e uart_num, unsigned char * Addr);
+extern void uart_receive_dma(uart_num_e uart_num, unsigned char * Addr,unsigned char irq_size);
 
 /**
  * @brief     This function serves to set uart tx_dam channel and config dma tx default.
@@ -577,6 +593,7 @@ static inline void uart_rts_manual_mode(uart_num_e uart_num)
 {
 	reg_uart_ctrl2(uart_num) |= (FLD_UART_RTS_MANUAL_M);
 }
+
+/*******************************      BLE Stack Use     ******************************/
 unsigned char uart_dma_send(unsigned char* Addr);
-unsigned char uart_tx_is_busy(void);
 #endif	/* UART_H_ */

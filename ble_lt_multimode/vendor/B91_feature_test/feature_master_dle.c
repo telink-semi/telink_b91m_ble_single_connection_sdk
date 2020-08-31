@@ -68,7 +68,9 @@ static u32 cur_conn_device_hdl; //conn_handle
 
 	u32 ctrl_btn[] = {SW1_GPIO, SW2_GPIO};
 	u8 btn_map[MAX_BTN_SIZE] = {BTN_PAIR, BTN_UNPAIR};
-
+	/**
+	 * @brief 	record the result of key detect
+	 */
 	typedef	struct{
 		u8 	cnt;				//count button num
 		u8 	btn_press;
@@ -76,6 +78,9 @@ static u32 cur_conn_device_hdl; //conn_handle
 	}vc_data_t;
 	vc_data_t vc_event;
 
+	/**
+	 * @brief 	record the status of button process
+	 */
 	typedef struct{
 		u8  btn_history[4];		//vc history btn save
 		u8  btn_filter_last;
@@ -83,7 +88,11 @@ static u32 cur_conn_device_hdl; //conn_handle
 		u8 	btn_new;					//new btn  flag
 	}btn_status_t;
 	btn_status_t 	btn_status;
-
+	/**
+	 * @brief      Debounce processing during button detection
+	 * @param[in]  btn_v - vc_event.btn_press
+	 * @return     1:Detect new button;0:Button isn't changed
+	 */
 	u8 btn_debounce_filter(u8 *btn_v)
 	{
 		u8 change = 0;
@@ -102,6 +111,11 @@ static u32 cur_conn_device_hdl; //conn_handle
 		return change;
 	}
 
+	/**
+	 * @brief      This function is key detection processing
+	 * @param[in]  read_key - Decide whether to return the key detection result
+	 * @return     1:Detect new button;0:Button isn't changed
+	 */
 	u8 vc_detect_button(int read_key)
 	{
 		u8 btn_changed, i;
@@ -127,6 +141,11 @@ static u32 cur_conn_device_hdl; //conn_handle
 		return 0;
 	}
 
+	/**
+	 * @brief		this function is used to detect if button pressed or released.
+	 * @param[in]	none
+	 * @return      none
+	 */
 	void proc_button (void)
 	{
 		int det_key = vc_detect_button (1);
@@ -174,6 +193,12 @@ static u32 cur_conn_device_hdl; //conn_handle
 	}
 #endif
 
+/**
+ * @brief      This function servers for l2cap data handler
+ * @param[in]  conn_handle - connect handle
+ * @param[in]  raw_pkt - data pointer of l2cap
+ * @return     0
+ */
 int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 {
 	//l2cap data packeted, make sure that user see complete l2cap data
@@ -260,6 +285,14 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 //////////////////////////////////////////////////////////
 // event call back
 //////////////////////////////////////////////////////////
+
+/**
+ * @brief      callback function of HCI Controller Event
+ * @param[in]  h - HCI Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 int controller_event_callback (u32 h, u8 *p, int n)
 {
 	if (h &HCI_FLAG_EVENT_BT_STD)		//ble controller hci event
@@ -369,6 +402,11 @@ int controller_event_callback (u32 h, u8 *p, int n)
 	return 0;
 }
 
+/**
+ * @brief		user initialization for master DLE test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_mdle_test_init_normal(void)
 {
 	//random number generator must be initiated here( in the beginning of user_init_nromal)
@@ -389,7 +427,7 @@ void feature_mdle_test_init_normal(void)
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();
 	blc_ll_initStandby_module(mac_public);				//mandatory
-	blc_ll_initScanning_module(mac_public); 	//scan module: 		 mandatory for BLE master,
+	blc_ll_initScanning_module(); 	//scan module: 		 mandatory for BLE master,
 	blc_ll_initInitiating_module();			//initiate module: 	 mandatory for BLE master,
 	blc_ll_initConnection_module();						//connection module  mandatory for BLE slave/master
 	blc_ll_initMasterRoleSingleConn_module();			//master module: 	 mandatory for BLE master,
@@ -429,7 +467,11 @@ void feature_mdle_test_init_normal(void)
 }
 
 
-
+/**
+ * @brief		user initialization for master DLE test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void feature_mdle_test_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
@@ -438,7 +480,11 @@ _attribute_ram_code_ void feature_mdle_test_init_deepRetn(void)
 }
 
 
-
+/**
+ * @brief		This is main_loop function in master DLE project
+ * @param[in]	none
+ * @return      none
+ */
 void feature_mdle_test_mainloop(void)
 {
 	/////////////////////////////////////// HCI ///////////////////////////////////////

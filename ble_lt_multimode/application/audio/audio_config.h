@@ -58,6 +58,10 @@
 		#define	ADPCM_PACKET_LEN				57
 		#define MIC_SHORT_DEC_SIZE				120
 		#define	TL_MIC_BUFFER_SIZE				480
+	#elif(TL_AUDIO_MODE == TL_AUDIO_RCU_OPUS_GATT_AMAZON)
+		#define	ADPCM_PACKET_LEN				80
+		#define MIC_SHORT_DEC_SIZE				320
+		#define	TL_MIC_BUFFER_SIZE				1280
 	#else
 
 	#endif

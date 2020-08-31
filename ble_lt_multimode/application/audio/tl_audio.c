@@ -626,7 +626,7 @@ void mic_encoder_data_read_ok (void)
 void	proc_mic_encoder (void)
 {
 	static u16	buffer_mic_rptr;
-	u16 mic_wptr = get_mic_wr_ptr();
+	u16 mic_wptr = (audio_get_rx_dma_wptr (DMA2) - (u32)buffer_mic) >> 1;
 	u16 l = (mic_wptr >= buffer_mic_rptr) ? (mic_wptr - buffer_mic_rptr) : 0xffff;
 
 	if (l >=(TL_MIC_BUFFER_SIZE>>2)) {
@@ -800,6 +800,89 @@ void	proc_mic_encoder (void)
 			buffer_mic_pkt_rptr++;
 		}
 
+	}
+}
+
+int	*	mic_encoder_data_buffer ()
+{
+	if (buffer_mic_pkt_rptr == buffer_mic_pkt_wptr) {
+			return 0;
+	}
+
+	int *ps = buffer_mic_enc + (ADPCM_PACKET_LEN>>2) *
+			(buffer_mic_pkt_rptr & (TL_MIC_PACKET_BUFFER_NUM - 1));
+
+
+	return ps;
+}
+
+void mic_encoder_data_read_ok (void)
+{
+	buffer_mic_pkt_rptr++;
+}
+#elif(TL_AUDIO_MODE == TL_AUDIO_RCU_OPUS_GATT_AMAZON)
+#include "opus/include/opus.h"
+OpusEncoder* enc = NULL;
+void opus_related_init(void)
+{
+	extern OpusEncoder * opus_para_init();
+	enc = opus_para_init();
+}
+void	proc_mic_encoder (void)
+{
+
+	static u16	buffer_mic_rptr;
+
+	u16 mic_wptr = (audio_get_rx_dma_wptr (DMA2) - (u32)buffer_mic) >> 1;
+
+	u16 l = (mic_wptr >= buffer_mic_rptr) ? (mic_wptr - buffer_mic_rptr) : 0xffff;
+
+	if (l >=(TL_MIC_BUFFER_SIZE>>2)) {
+		s16 *ps = buffer_mic + buffer_mic_rptr;
+#if 	TL_NOISE_SUPRESSION_ENABLE
+        // for FIR adc sample data, only half part data are effective
+		for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
+			ps[i] = noise_supression (ps[i]);
+        }
+#endif
+#if 	IIR_FILTER_ENABLE
+		extern u8 mic_start_flag;
+		if(mic_start_flag){
+			mic_start_flag =0;
+			tmemset(filter_1,0,sizeof(filter_1));
+			tmemset(filter_2,0,sizeof(filter_2));
+			tmemset(filter_3,0,sizeof(filter_3));
+		}
+		memcpy(filter_1,c1,sizeof(c1));
+		memcpy(filter_2,c2,sizeof(c2));
+		memcpy(filter_3,c3,sizeof(c3));
+		#if 1
+		voice_iir(ps,ps,filter_2,(TL_MIC_BUFFER_SIZE>>2),filter2_shift);
+		voice_iir(ps,ps,filter_3,(TL_MIC_BUFFER_SIZE>>2),filter3_shift);
+		voice_iir(ps,ps,filter_1,(TL_MIC_BUFFER_SIZE>>2),filter1_shift);
+		#endif
+#endif
+#if   1
+		opus_encode(enc, ps, 320, (u8 *)(buffer_mic_enc + (ADPCM_PACKET_LEN>>2) *
+				(buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1))), 320);
+#else
+		mic_to_adpcm_split (	ps,	TL_MIC_ADPCM_UNIT_SIZE,
+						(s16 *)(buffer_mic_enc + (ADPCM_PACKET_LEN>>2) *
+						(buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1))), 1);
+#endif
+		buffer_mic_rptr = buffer_mic_rptr+(TL_MIC_BUFFER_SIZE>>2);
+		if(buffer_mic_rptr>=(TL_MIC_BUFFER_SIZE>>1))
+		{
+			buffer_mic_rptr=0;
+		}
+		buffer_mic_pkt_wptr++;
+		int pkts = (buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & (TL_MIC_PACKET_BUFFER_NUM*2-1);
+		if (pkts > TL_MIC_PACKET_BUFFER_NUM) {
+			buffer_mic_pkt_rptr++;
+//			log_event (TR_T_adpcm_enc_overflow);
+		}
+
+//		log_task_end (TR_T_adpcm);
 	}
 }
 

@@ -69,7 +69,9 @@ _attribute_data_retention_	my_fifo_t	blt_txfifo = {
 
 
 
-
+/**
+ * @brief	Adv Packet data
+ */
 const u8	tbl_advData[] = {
 	 0x05, 0x09, 'x', 'H', 'i', 'd',
 	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
@@ -77,6 +79,9 @@ const u8	tbl_advData[] = {
 	 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
 };
 
+/**
+ * @brief	Scan Response Packet data
+ */
 const u8	tbl_scanRsp [] = {
 		 0x08, 0x09, 'x', 'R', 'e', 'm', 'o', 't', 'e',
 	};
@@ -99,14 +104,26 @@ _attribute_data_retention_	u16 cur_conn_handle;
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_CONNECT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_connect (u8 e, u8 *p, int n)
 {
 //	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1S long sleep
@@ -115,7 +132,13 @@ void	task_connect (u8 e, u8 *p, int n)
 	device_connection_tick = clock_time() | 1;
 }
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_TERMINATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
 	device_in_connection_state = 0;
@@ -123,7 +146,13 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 }
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_PHY_UPDATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void 	callback_phy_update_complete_event(u8 e,u8 *p, int n)
 {
 //	hci_le_phyUpdateCompleteEvt_t *pEvt = (hci_le_phyUpdateCompleteEvt_t *)p;
@@ -133,7 +162,11 @@ void 	callback_phy_update_complete_event(u8 e,u8 *p, int n)
 }
 
 
-
+/**
+ * @brief		user initialization for BLE 2M/Coded PHY connect test timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_2m_coded_phy_conn_init_normal(void)
 {
 
@@ -156,7 +189,7 @@ void feature_2m_coded_phy_conn_init_normal(void)
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
@@ -222,7 +255,11 @@ void feature_2m_coded_phy_conn_init_normal(void)
 
 
 
-
+/**
+ * @brief		user initialization for BLE 2M/Coded PHY connect test timer test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void feature_2m_coded_phy_conn_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
@@ -247,6 +284,12 @@ _attribute_data_retention_ u32 phy_update_test_tick = 0;
 _attribute_data_retention_ u32 phy_update_test_seq = 0;
 
 _attribute_data_retention_	int AAA_update = 0;
+
+/**
+ * @brief		This is main_loop function in BLE 2M/Coded PHY connect project
+ * @param[in]	none
+ * @return      none
+ */
 void feature_2m_coded_phy_conn_mainloop(void)
 {
 	if(device_connection_tick && clock_time_exceed(device_connection_tick, 2000000)){

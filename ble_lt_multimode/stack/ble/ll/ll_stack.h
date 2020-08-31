@@ -47,14 +47,14 @@
 #define 		LL_SLAVE_TX_SETTLE								86
 #define 		LL_MASTER_TX_SETTLE								87
 
-#define			LL_ADV_TX_STL_2M								84
-#define			LL_ADV_TX_STL_CODED								116
+#define			LL_ADV_TX_STL_2M								115
+#define			LL_ADV_TX_STL_CODED								124
 
-#define 		LL_SLAVE_TX_STL_2M								86
-#define 		LL_SLAVE_TX_STL_CODED							118
+#define 		LL_SLAVE_TX_STL_2M								117
+#define 		LL_SLAVE_TX_STL_CODED							125
 
-#define			LL_MASTER_TX_STL_2M								86
-#define			LL_MASTER_TX_STL_CODED							119
+#define			LL_MASTER_TX_STL_2M								117
+#define			LL_MASTER_TX_STL_CODED							125
 
 #else// close rx dly
 //TX settle time
@@ -76,10 +76,16 @@
 
 
 
+#define			BLE_STATE_ADV									1
+#define			BLE_STATE_SCAN									2
+#define			BLE_STATE_INIT									3
 #define			BLE_STATE_BTX_S									4
 #define			BLE_STATE_BTX_E									5
 #define			BLE_STATE_BRX_S									6
 #define			BLE_STATE_BRX_E									7
+#define			BLE_STATE_ADV_IN_SLAVE							8
+#define			BLE_STATE_SCAN_IN_SLAVE							9
+#define			BLE_STATE_SCAN_IN_ADV							10
 
 
 
@@ -239,6 +245,7 @@ void 		blc_ll_registerConnectionTerminateHandler(ll_conn_terminate_handler_t  ha
 extern my_fifo_t		hci_tx_fifo;
 
 extern u8			 blt_state;
+extern u8			 blc_state;
 extern u32			 blc_tlkEvent_pending;
 
 
@@ -279,6 +286,21 @@ void 			blc_ll_registerConnectionEncryptionDoneCallback(ll_enc_done_callback_t  
 bool  			blt_ll_getRealTxFifoNumber (void);
 
 ble_sts_t  		blc_hci_reset(void);
+
+
+
+
+
+bool 		blc_ll_isBrxBusy (void);
+
+bool		blc_ll_isBtxBusy (void);
+
+void 		blc_ll_init_max_md_nums(u8 num);
+
+
+void  		blc_ll_set_CustomedAdvScanAccessCode(u32 accss_code);
+
+
 
 int blm_send_acl_to_btusb (u16 conn, u8 *p);
 
@@ -431,6 +453,12 @@ static inline u32 	bls_ll_getConnectionCreateTime(void)
 
 ble_sts_t 	bls_hci_le_setAdvParam(adv_para_t *para);
 ble_sts_t 	bls_hci_le_readChannelMap(u16 connHandle, u8 *returnChannelMap);
+
+
+ble_sts_t 	bls_ll_setAdvInterval(u16 intervalMin, u16 intervalMax);
+ble_sts_t 	bls_ll_setAdvChannelMap(adv_chn_map_t adv_channelMap);
+ble_sts_t 	bls_ll_setAdvFilterPolicy(adv_fp_type_t advFilterPolicy);
+
 
 
 
@@ -588,7 +616,9 @@ ble_sts_t 	blc_ll_setInitEnable (u8 en);
 
 
 /******************************* ll_pm start ***********************************************************************/
-
+#ifndef 	BLS_USER_TIMER_WAKEUP_ENABLE
+#define		BLS_USER_TIMER_WAKEUP_ENABLE	1
+#endif
 
 /******************************* ll_pm end *************************************************************************/
 
@@ -1138,6 +1168,15 @@ int  		blt_ll_updateAdvPacket(void);
 void		blt_ll_reset_ext_adv(void);
 
 
+//Set Extended ADV parameters
+ble_sts_t	blc_ll_setAdvRandomAddr(u8 advHandle, u8* rand_addr);
+ble_sts_t	blc_ll_setExtAdvEnable_n(u32 extAdv_en, u8 sets_num, u8 *pData);
+
+
+ble_sts_t	blc_ll_removeAdvSet(u8 advHandle);
+ble_sts_t	blc_ll_clearAdvSets(void);
+//TODO
+//void 		blt_clearAdvSetsParam(ll_ext_adv_t		*pEadv);
 
 /******************************* ll_ext_adv end *************************************************************************/
 

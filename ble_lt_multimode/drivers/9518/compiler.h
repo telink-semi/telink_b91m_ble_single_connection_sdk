@@ -36,8 +36,8 @@
 #define _attribute_custom_code_  		_attribute_session_(".custom") volatile
 #define _attribute_no_inline_   		__attribute__((noinline))
 #define _inline_ 						inline
-
-
+#define _attribute_aes_data_sec_      	__attribute__((section(".aes_data")))
+#define _attribute_data_dlm_   			_attribute_session_(".dlm_data")//dlm:Data Local Memory
 #ifndef	BLC_PM_EN
 #define	BLC_PM_EN							1
 #endif
@@ -45,6 +45,7 @@
 #ifndef	BLC_PM_DEEP_RETENTION_MODE_EN
 #define	BLC_PM_DEEP_RETENTION_MODE_EN		1
 #endif
+
 
 #if (BLC_PM_DEEP_RETENTION_MODE_EN)
 	#define _attribute_data_retention_   	_attribute_session_(".retention_data")

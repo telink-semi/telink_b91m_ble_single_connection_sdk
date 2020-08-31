@@ -33,7 +33,7 @@
 #include "app_config.h"
 #include "vendor/common/blt_soft_timer.h"
 #include "vendor/common/blt_common.h"
-
+#include "app_buffer.h"
 
 #if (FEATURE_TEST_MODE == TEST_USER_BLT_SOFT_TIMER)
 
@@ -42,7 +42,7 @@
 #define FEATURE_PM_ENABLE								0
 #define FEATURE_DEEPSLEEP_RETENTION_ENABLE				0
 
-
+#if 0
 
 #define RX_FIFO_SIZE	64
 #define RX_FIFO_NUM		8
@@ -71,24 +71,43 @@ _attribute_data_retention_	my_fifo_t	blt_txfifo = {
 												0,
 												blt_txfifo_b,};
 
-
+#endif
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 _attribute_ram_code_ void  func_suspend_exit (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_CONNECT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_connect (u8 e, u8 *p, int n)
 {
 	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  //interval=10ms latency=99 timeout=4s
 
 }
 
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_TERMINATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_terminate (u8 e, u8 *p, int n)
 {
 
@@ -97,7 +116,11 @@ void	task_terminate (u8 e, u8 *p, int n)
 
 
 
-
+/**
+ * @brief      This function servers gpio test
+ * @param[in]  none
+ * @return     0
+ */
 int gpio_test0(void)
 {
 	//gpio 0 toggle to see the effect
@@ -107,6 +130,12 @@ int gpio_test0(void)
 }
 
 _attribute_data_retention_	static u8 timer_change_flg = 0;
+
+/**
+ * @brief      This function servers gpio test
+ * @param[in]  none
+ * @return     0
+ */
 int gpio_test1(void)
 {
 	//gpio 1 toggle to see the effect
@@ -123,6 +152,11 @@ int gpio_test1(void)
 
 }
 
+/**
+ * @brief      This function servers gpio test
+ * @param[in]  none
+ * @return     0
+ */
 int gpio_test2(void)
 {
 	//gpio 2 toggle to see the effect
@@ -140,6 +174,11 @@ int gpio_test2(void)
 	return 0;
 }
 
+/**
+ * @brief      This function servers gpio test
+ * @param[in]  none
+ * @return     0
+ */
 int gpio_test3(void)
 {
 	//gpio 3 toggle to see the effect
@@ -152,7 +191,11 @@ int gpio_test3(void)
 
 
 
-
+/**
+ * @brief		user initialization for software timer test project when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void feature_soft_timer_test_init_normal(void)
 {
 
@@ -169,11 +212,14 @@ void feature_soft_timer_test_init_normal(void)
 
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();   //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
 
-	blc_ll_initAdvertising_module(mac_public); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
@@ -186,10 +232,17 @@ void feature_soft_timer_test_init_normal(void)
 
 
 ///////////////////// USER application initialization ///////////////////
+	/**
+	 * @brief	Adv Packet data
+	 */
 	u8 tbl_advData[] = {
 		 0x08, 0x09, 't', 'e', 's', 't', 'T', 'I', 'M',
 		 0x02, 0x01, 0x05,
 		};
+
+	/**
+	 * @brief	Scan Response Packet data
+	 */
 	u8	tbl_scanRsp [] = {
 			 0x08, 0x09, 't', 'e', 's', 't', 'T', 'I', 'M',
 		};
@@ -241,7 +294,11 @@ void feature_soft_timer_test_init_normal(void)
 
 }
 
-
+/**
+ * @brief		user initialization for software timer test project when MCU power on or wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void feature_soft_timer_test_init_deepRetn(void)
 {
 #if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)

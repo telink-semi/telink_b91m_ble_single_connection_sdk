@@ -254,7 +254,7 @@ enum{
 
 enum{
 	FLD_SPI_STATE_RESERVED  =BIT_RNG(0,1),
-	FLD_SPI_RXF_UR_INT	    =BIT(2),
+	FLD_SPI_RXF_OR_INT	    =BIT(2),
 	FLD_SPI_TXF_UR_INT	    =BIT(3),
 	FLD_SPI_RXF_INT         =BIT(4),
 	FLD_SPI_TXF_INT 	    =BIT(5),
