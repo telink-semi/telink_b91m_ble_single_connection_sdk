@@ -34,7 +34,7 @@ void	myudb_set_txfifo_local ();
 
 void	myudb_set_txfifo (void *p);
 
-#define			my_irq_disable()		u32 rie = core_disable_interrupt ()
+#define			my_irq_disable()		u32 rie = core_interrupt_disable ()
 #define			my_irq_restore()		core_restore_interrupt(rie)
 #define			LOG_EVENT_TIMESTAMP		0
 #define			LOG_DATA_B1_0			0

@@ -100,8 +100,8 @@ void i2c_set_pin(i2c_sda_pin_e sda_pin,i2c_scl_pin_e scl_pin)
 	unsigned char mask = 0xff;
 
 	//disable sda_pin and scl_pin gpio function.
-	gpio_set_gpio_dis(scl_pin);
-	gpio_set_gpio_dis(sda_pin);
+	gpio_function_dis(scl_pin);
+	gpio_function_dis(sda_pin);
 
 	//enable gpio as i2c sda function.
 	if(sda_pin == I2C_GPIO_SDA_B3)
@@ -152,10 +152,10 @@ void i2c_set_pin(i2c_sda_pin_e sda_pin,i2c_scl_pin_e scl_pin)
 
 	reg_gpio_func_mux(scl_pin)=(reg_gpio_func_mux(scl_pin)& mask)|val;
     
-	gpio_setup_up_down_resistor(sda_pin, PM_PIN_PULLUP_10K);
-	gpio_setup_up_down_resistor(scl_pin, PM_PIN_PULLUP_10K);
-	gpio_set_input_en(sda_pin);//enable sda input
-	gpio_set_input_en(scl_pin);//enable scl input
+	gpio_set_up_down_res(sda_pin, GPIO_PIN_PULLUP_10K);
+	gpio_set_up_down_res(scl_pin, GPIO_PIN_PULLUP_10K);
+	gpio_input_en(sda_pin);//enable sda input
+	gpio_input_en(scl_pin);//enable scl input
 }
 
 /**

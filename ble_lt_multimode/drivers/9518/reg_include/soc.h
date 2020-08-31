@@ -156,6 +156,14 @@ enum{
 
 #define reg_dmic_mod				REG_ADDR8(SC_BASE_ADDR+0x2d)
 
+#define reg_wakeup_en				REG_ADDR8(SC_BASE_ADDR+0x2e)
+enum{
+	FLD_USB_PWDN_I        	=	BIT(0),
+	FLD_GPIO_WAKEUP_I       =	BIT(1),
+	FLD_USB_RESUME        	=	BIT(2),
+	FLD_STANDBY_EX        	=	BIT(3),
+};
+
 #define reg_dmic_clk_set			REG_ADDR8(SC_BASE_ADDR+0x33)
 
 

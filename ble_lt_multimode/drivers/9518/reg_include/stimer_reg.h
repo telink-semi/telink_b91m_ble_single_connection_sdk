@@ -12,27 +12,27 @@
 #define STIMER_BASE_ADDR			   	0x140200
 #define reg_system_tick         		REG_ADDR32(STIMER_BASE_ADDR)
 
-#define reg_system_irq_level         	REG_ADDR32(STIMER_BASE_ADDR+0x4)   //0x140204
-#define reg_system_tick_irq				reg_system_irq_level
-#define reg_system_irq_mask				REG_ADDR8(STIMER_BASE_ADDR+0x8) //0x140208
+#define reg_system_irq_level         	REG_ADDR32(STIMER_BASE_ADDR+0x4)
+
+#define reg_system_irq_mask				REG_ADDR8(STIMER_BASE_ADDR+0x8)
 enum{
-	FLD_SYSTEM_IRQ_MASK 	= 	BIT_RNG(0,2),   // STIMER_IRQ_MASK, STIMER_32K_CAL_IRQ_MASK
+	FLD_SYSTEM_IRQ_MASK 	= 	BIT_RNG(0,2),
 	FLD_SYSTEM_TRIG_PAST_EN = 	BIT(3),
 };
 
-#define reg_system_cal_irq		REG_ADDR8(STIMER_BASE_ADDR+0x9)   //status or source
-//enum{//todo
-//	FLD_SYSTEM_IRQ_CLR 		= 	BIT(0),
-//	FLD_SYSTEM_IRQ_CLR_CAL  = 	BIT(1),   // ?
-//};
+#define reg_system_cal_irq		REG_ADDR8(STIMER_BASE_ADDR+0x9)
 
+typedef enum{
+	FLD_SYSTEM_IRQ  		= 	BIT(0),
+	FLD_SYSTEM_32K_IRQ  	= 	BIT(1),
+}stimer_irq_e;
 
 #define reg_system_ctrl		    REG_ADDR8(STIMER_BASE_ADDR+0xa)
 enum{
 	FLD_SYSTEM_32K_WR_EN 		= 	BIT(0),
-	FLD_SYSTEM_TIMER_EN 	    = 	BIT(1),		  //enable in sys_init
+	FLD_SYSTEM_TIMER_EN 	    = 	BIT(1),
 	FLD_SYSTEM_TIMER_AUTO 	    = 	BIT(2),
-	FLD_SYSTEM_32K_CAL_EN 		= 	BIT(3),       //enable in sys_init
+	FLD_SYSTEM_32K_CAL_EN 		= 	BIT(3),
 	FLD_SYSTEM_32K_CAL_MODE 	= 	BIT_RNG(4,7),
 
 };
@@ -62,5 +62,23 @@ enum{
 	FLD_SYSTEM_UPDATE_UPON_32K 			=   BIT(0),
 	FLD_SYSTEM_RUN_UPON_NXT_32K		    =   BIT(1),
 };
+
+/*******************************      BLE Stack Use     ******************************/
+#define reg_system_tick_irq				reg_system_irq_level
+
+typedef enum {
+	STIMER_IRQ_MASK     		=   BIT(0),
+	STIMER_32K_CAL_IRQ_MASK     =   BIT(1),
+}stimer_irq_mask_e;
+
+typedef enum {
+	FLD_IRQ_SYSTEM_TIMER     		=   BIT(0),
+}system_timer_irq_mask_e;
+
+
+typedef enum {
+	STIMER_IRQ_CLR	     		=   BIT(0),
+	STIMER_32K_CAL_IRQ_CLR     	=   BIT(1),
+}stimer_irq_clr_e;
 
 #endif /* STIMER_REG_H_ */

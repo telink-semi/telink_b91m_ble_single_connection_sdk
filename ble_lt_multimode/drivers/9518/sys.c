@@ -23,9 +23,10 @@
  * @version  A001
  *
  *******************************************************************************************************/
-#include "nds_intrinsic.h"
-#include "core.h"
+
 #include "sys.h"
+#include "core.h"
+#include "nds_intrinsic.h"
 #include "compiler.h"
 #include "analog.h"
 #include "gpio.h"
@@ -103,7 +104,7 @@ int write_reg_table(const tbl_cmd_set_st * pt, int size)
  * @param[in] microsec - need to delay.
  * @return    none
  */
-_attribute_ram_code_ void delay_us(u32 microsec)
+_attribute_ram_code_sec_ void delay_us(u32 microsec)
 {
 	unsigned long t = sys_get_stimer_tick();
 	while(!clock_time_exceed(t, microsec)){
@@ -115,7 +116,7 @@ _attribute_ram_code_ void delay_us(u32 microsec)
  * @param[in] millisec - need to delay.
  * @return    none
  */
-_attribute_ram_code_ void delay_ms(u32 millisec)
+_attribute_ram_code_sec_ void delay_ms(u32 millisec)
 {
 
 	unsigned long t = sys_get_stimer_tick();

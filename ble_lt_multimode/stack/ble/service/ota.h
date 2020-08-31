@@ -28,13 +28,18 @@
  * @brief	OTA result
  */
 enum{
-	OTA_SUCCESS = 0,     //success
-	OTA_PACKET_LOSS,     //lost one or more OTA PDU
-	OTA_DATA_CRC_ERR,     //data CRC err
-	OTA_WRITE_FLASH_ERR,  //write OTA data to flash ERR
- 	OTA_DATA_UNCOMPLETE,  //lost last one or more OTA PDU
- 	OTA_TIMEOUT, 		  //
- 	OTA_FW_CHECK_ERR,
+	OTA_SUCCESS = 0,		//success
+	OTA_PACKET_LOSS,		//lost one or more OTA PDU
+	OTA_DATA_CRC_ERR,		//data CRC err
+	OTA_WRITE_FLASH_ERR,	//write OTA data to flash ERR
+ 	OTA_DATA_UNCOMPLETE,	//lost last one or more OTA PDU
+ 	OTA_TIMEOUT,			//total timeout
+ 	OTA_FW_CHECK_ERR,		//firmware CRC check error
+	OTA_FW_TYPE_ERR,		//firmware type error
+	OTA_VERSION_NUMBER_ERR,	//the version number to be update is lower than the current version
+	OTA_PDU_LARGER_DLE,		//OTA PDU is larger than DLE supported
+	OTA_PDU_ERR,			//OTA PDU is not equal to 64 or 128
+ 	OTA_RF_PACKET_TIMEOUT,	//timeout between RF packet
 };
 
 
@@ -90,6 +95,15 @@ void bls_ota_setTimeout(u32 timeout_us);
  * @return     none
  */
 void bls_ota_set_fwSize_and_fwBootAddr(int firmware_size_k, int boot_addr);
+
+
+/**
+ * @brief      This function is used to set OTA firmware version flash address and version number
+ * 			   this must be call every user initialize
+ * @param[in]  none
+ * @return     none
+ */
+void bls_ota_set_VersionFlashAddr_and_VersionNumber(u32 version_flash_addr, u32 version_number);
 
 
 /**

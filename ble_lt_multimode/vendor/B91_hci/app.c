@@ -392,8 +392,8 @@ void user_init_normal(void)
 
 		//uart irq set
 		plic_interrupt_enable(IRQ19_UART0);
-		uart_tx_irq_trig_level_ndma(UART0, 0);
-		uart_rx_irq_trig_level_ndma(UART0, 1);
+		uart_tx_irq_trig_level(UART0, 0);
+		uart_rx_irq_trig_level(UART0, 1);
 
 		uart_set_irq_mask(UART0, UART_RX_IRQ_MASK);
 

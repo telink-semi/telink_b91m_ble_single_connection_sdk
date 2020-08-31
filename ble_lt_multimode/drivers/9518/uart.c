@@ -411,7 +411,7 @@ void uart_set_cts_pin(uart_cts_pin_e cts_pin)
 		val = BIT(2);
 	}
 	reg_gpio_func_mux(cts_pin)=(reg_gpio_func_mux(cts_pin)& mask)|val;
-	gpio_set_gpio_dis(cts_pin);
+	gpio_function_dis(cts_pin);
 }
 
 
@@ -457,7 +457,7 @@ void uart_set_rts_pin(uart_rts_pin_e rts_pin)
 		val = BIT(6);
 	}
 	reg_gpio_func_mux(rts_pin)=(reg_gpio_func_mux(rts_pin)& mask)|val;
-	gpio_set_gpio_dis(rts_pin);
+	gpio_function_dis(rts_pin);
 }
 
 
@@ -470,22 +470,22 @@ void uart_set_rts_pin(uart_rts_pin_e rts_pin)
 */
 void uart_set_pin(uart_tx_pin_e tx_pin,uart_rx_pin_e rx_pin)
 {
-	gpio_set_up_down_res(tx_pin, PM_PIN_PULLUP_10K);
-	gpio_set_up_down_res(rx_pin, PM_PIN_PULLUP_10K);
+	gpio_set_up_down_res(tx_pin, GPIO_PIN_PULLUP_10K);
+	gpio_set_up_down_res(rx_pin, GPIO_PIN_PULLUP_10K);
 	uart_set_fuc_pin(tx_pin,rx_pin);//set tx and rx pin
-	gpio_set_input_en(tx_pin);
-	gpio_set_input_en(rx_pin);
+	gpio_input_en(tx_pin);
+	gpio_input_en(rx_pin);
 }
 
 /**
- * @brief     	uart0 send data function
- * @param[in]  	uart_num - UART0 or UART1
- *            	the NDMA transmission
- * @param[in] 	Addr - pointer to the buffer containing data need to send
- * @param[in] 	len - NDMA transmission length
- * @return    	none
- */
-volatile unsigned char uart_send_ndma(uart_num_e uart_num, unsigned char * Addr, unsigned char len )
+* @brief uart0 send data function
+* @param[in] uart_num - UART0 or UART1
+* the NDMA transmission
+* @param[in] Addr - pointer to the buffer containing data need to send
+* @param[in] len - NDMA transmission length
+* @return none
+*/
+volatile unsigned char uart_send(uart_num_e uart_num, unsigned char * Addr, unsigned char len )
 {
 	for(u8 i=0;i<len;i++)
 	{
@@ -493,6 +493,7 @@ volatile unsigned char uart_send_ndma(uart_num_e uart_num, unsigned char * Addr,
 	}
 	return 1;
 }
+
 
 /**
  * @brief     	uart0 send data function, this  function tell the DMA to get data from the RAM and start
@@ -568,7 +569,7 @@ volatile unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * Addr, 
  {
 	uart_set_cts_pin(cts_pin);
 
-	gpio_set_input_en(cts_pin);//enable input
+	gpio_input_en(cts_pin);//enable input
 
 	if (cts_parity)
 	{
@@ -720,8 +721,8 @@ static void uart_set_fuc_pin(uart_tx_pin_e tx_pin,uart_rx_pin_e rx_pin)
  	//note:  setting pad the function  must before  setting no_gpio function, cause it will lead to uart transmit extra one byte data at begin.(confirmed by minghai&sunpeng)
  	reg_gpio_func_mux(rx_pin)=(reg_gpio_func_mux(rx_pin)& mask)|val;
 
- 	gpio_set_gpio_dis(tx_pin);
- 	gpio_set_gpio_dis(rx_pin);
+ 	gpio_function_dis(tx_pin);
+ 	gpio_function_dis(rx_pin);
  }
 
 /*******************************      BLE Stack Use     ******************************/

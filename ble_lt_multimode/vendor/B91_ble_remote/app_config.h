@@ -59,9 +59,15 @@
 
 #endif
 
+
+#if (BLE_REMOTE_OTA_ENABLE)
+	#define OTA_VERSION_FLASH_ADDR			0xEF000
+	#define OTA_VERSION_NUMBER				0x01
+#endif
+
+
+
 #define	UDB_DEBUG_EN						0
-
-
 #if (UDB_DEBUG_EN)
 	#define PA5_FUNC						AS_USB_DM
 	#define PA6_FUNC						AS_USB_DP

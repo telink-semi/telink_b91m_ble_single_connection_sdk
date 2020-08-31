@@ -56,7 +56,7 @@
 
 #define     PWM_DMA_CHN                 DMA3
 
-#define     PWM_ID						(GET_PWMID(PWM_PWM0_PC0))
+#define     PWM_ID						(get_pwmid(PWM_PWM0_PC0))
 typedef struct{
     unsigned short data[PWM_IR_MAX_NUM];
     unsigned int   data_num;
@@ -140,7 +140,7 @@ void ir_nec_send(u8 addr1, u8 addr2, u8 cmd)
 
 		pwm_clr_irq_status(FLD_PWM0_INIT_FIFO_DONE );
 
-		core_enable_interrupt();//
+		core_interrupt_enable();//
 
 		plic_interrupt_enable(IRQ16_PWM);
 
@@ -337,7 +337,9 @@ void rc_ir_init(void)
 //pwm set
 	pwm_n_invert_en(PWM0_ID);
 
-	pwm_set_clk(SCLOCK_APB, SCLOCK_32K_PWM0|SCLOCK_32K_PWM2,(unsigned char) (sys_clk.pclk*1000*1000/PWM_CLK_SPEED-1) );
+	pwm_set_clk((unsigned char) (sys_clk.pclk*1000*1000/PWM_CLK_SPEED-1));
+
+	pwm_32k_chn_en(PWM_CLOCK_32K_CHN_PWM0|PWM_CLOCK_32K_CHN_PWM2);
 
 	pwm_set_pin(PWM_PWM0_PC0);
 

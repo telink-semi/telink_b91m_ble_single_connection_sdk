@@ -46,27 +46,17 @@ _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 
 #if (AUDIO_DEBUG)
 
-	dma_llp_config_t rx_dma_list_config[2];
+	dma_chain_config_st rx_dma_list_config[2];
 
-	dma_llp_config_t tx_dma_list_config[2];
+	dma_chain_config_st tx_dma_list_config[2];
 	extern u8 audio_tx_dma_chn;
 	extern u8 audio_rx_dma_chn;
-	 void audio_tx_dma_dis()
-	 {
-	 	dma_chn_dis(audio_tx_dma_chn);
-	 }
-
-	 void audio_rx_dma_dis()
-	 {
-	 	dma_chn_dis(audio_rx_dma_chn);
-	 }
-
 	volatile u8 amic_enable;
 	void audio_amic_init(void)
 	{
 		audio_set_codec_supply();
 
-		core_enable_interrupt();
+		core_interrupt_enable();
 		audio_set_rx_fifo_h_lvl1_th((TL_MIC_BUFFER_SIZE>>2)-2);// set rx fifo high level 1 threshold ,h_level=0x3fe,when max_rx_wptr=0x3ff(full). max_rx_rptr=0,(max_rx_wptr-max_rx_rptr)>h_level ,produce  interrupt
 		audio_set_irq_mask(FLD_AUDIO_IRQ_RXFIFO_H_L1_EN);
 		plic_interrupt_enable(IRQ20_DFIFO);
@@ -79,7 +69,7 @@ _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 	{
 		audio_set_codec_supply();
 
-		core_enable_interrupt();
+		core_interrupt_enable();
 		audio_set_rx_fifo_h_lvl1_th((TL_MIC_BUFFER_SIZE>>2)-2);// set rx fifo high level 1 threshold ,h_level=0x3fe,when max_rx_wptr=0x3ff(full). max_rx_rptr=0,(max_rx_wptr-max_rx_rptr)>h_level ,produce  interrupt
 		audio_set_irq_mask(FLD_AUDIO_IRQ_RXFIFO_H_L1_EN);
 		plic_interrupt_enable(IRQ20_DFIFO);
@@ -1217,20 +1207,11 @@ _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 #elif (TL_AUDIO_MODE == TL_AUDIO_RCU_OPUS_GATT_AMAZON)
 #include "../../application/audio/tl_audio.h"
 
-	dma_llp_config_t rx_dma_list_config[2];
+	dma_chain_config_st rx_dma_list_config[2];
 
-	dma_llp_config_t tx_dma_list_config[2];
+	dma_chain_config_st tx_dma_list_config[2];
 	extern u8 audio_tx_dma_chn;
 	extern u8 audio_rx_dma_chn;
-	 void audio_tx_dma_dis()
-	 {
-	 	dma_chn_dis(audio_tx_dma_chn);
-	 }
-
-	 void audio_rx_dma_dis()
-	 {
-	 	dma_chn_dis(audio_rx_dma_chn);
-	 }
 
 	volatile u8 amic_enable;
 	void audio_amic_init(void)

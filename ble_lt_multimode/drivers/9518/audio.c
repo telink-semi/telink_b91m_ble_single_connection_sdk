@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     audio.c
+ * @file    aduio.c
  *
- * @brief    This is the Audio driver file for TLSR8278
+ * @brief    This is the source file for TLSR9518
  *
  * @author	 Driver Group
- * @date     May 8, 2018
+ * @date     September 16, 2019
  *
- * @par      Copyright (c) 2018, Telink Semiconductor (Shanghai) Co., Ltd.
+ * @par      Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd.
  *           All rights reserved.
  *
  *           The information contained herein is confidential property of Telink
@@ -18,59 +18,36 @@
  *           Licensees are granted free, non-transferable use of the information in this
  *           file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
  * @par      History:
- * 			 1.initial release(DEC. 26 2018)
+ * 			 1.initial release(September 16, 2019)
  *
  * @version  A001
  *
  *******************************************************************************************************/
 
-#include "audio.h"
-/********************************************************************************************************
- * @file     audio.c
- *
- * @brief    This is the Audio driver file for TLSR8278
- *
- * @author	 Driver Group
- * @date     May 8, 2018
- *
- * @par      Copyright (c) 2018, Telink Semiconductor (Shanghai) Co., Ltd.
- *           All rights reserved.
- *
- *           The information contained herein is confidential property of Telink
- *           Semiconductor (Shanghai) Co., Ltd. and is available under the terms
- *           of Commercial License Agreement between Telink Semiconductor (Shanghai)
- *           Co., Ltd. and the licensee or the terms described here-in. This heading
- *           MUST NOT be removed from this file.
- *
- *           Licensees are granted free, non-transferable use of the information in this
- *           file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
- * @par      History:
- * 			 1.initial release(DEC. 26 2018)
- *
- * @version  A001
- *
- *******************************************************************************************************/
 
 #include "audio.h"
+#include "clock.h"
 #include "pwm.h"
 #include "../../common/types.h"
+#include "../../common/string.h"
 u8 audio_rx_dma_chn;
 u8 audio_tx_dma_chn;
 
-dma_llp_config_t audio_tx_dma_list_cfg;
-dma_llp_config_t audio_rx_dma_list_cfg;
+dma_chain_config_st g_audio_tx_dma_list_cfg;
+dma_chain_config_st g_audio_rx_dma_list_cfg;
 
 aduio_i2s_codec_config_st audio_i2s_codec_config=
 {
-   .audio_in_mode 		=BIT_16_MONO,
-   .audio_out_mode		=BIT_16_MONO_FIFO0,
-   .i2s_data_select		=I2S_BIT_16_DATA,
-   .codec_data_select	=CODEC_BIT_16_DATA,
-   .i2s_codec_m_s_mode	=I2S_M_CODEC_S,
-   .in_digital_gain		=CODEC_IN_D_GAIN_0_DB,
-   .in_analog_gain      =CODEC_IN_A_GAIN_0_DB,
-   .out_digital_gain    =CODEC_OUT_D_GAIN_0_DB,
-   .out_analog_gain     =CODEC_OUT_A_GAIN_6_DB,
+   .audio_in_mode 			=BIT_16_MONO,
+   .audio_out_mode			=BIT_16_MONO_FIFO0,
+   .i2s_data_select			=I2S_BIT_16_DATA,
+   .codec_data_select		=CODEC_BIT_16_DATA,
+   .i2s_codec_m_s_mode		=I2S_M_CODEC_S,
+   .i2s_data_invert_select  =I2S_DATA_INVERT_DIS,//L channel default
+   .in_digital_gain			=CODEC_IN_D_GAIN_0_DB,
+   .in_analog_gain     		=CODEC_IN_A_GAIN_0_DB,
+   .out_digital_gain   		=CODEC_OUT_D_GAIN_0_DB,
+   .out_analog_gain    		=CODEC_OUT_A_GAIN_6_DB,
 };
 
 dma_config_st audio_dma_rx_config=
@@ -135,9 +112,9 @@ void audio_set_codec_in_path_a_d_gain (codec_in_path_digital_gain_e d_gain,codec
 
 
  /**
-  * 	@brief      This function serves to choose which is master to provide clock.
-  * 	@param[in]  m_s : I2S_S_CODEC_M: i2s as slave ,codec as master; I2S_M_CODEC_S: i2s as  master, codec  asslave
-  * 	@return     none
+  * @brief      This function serves to choose which is master to provide clock.
+  * @param[in]  m_s : I2S_S_CODEC_M: i2s as slave ,codec as master; I2S_M_CODEC_S: i2s as  master, codec  as slave.
+  * @return     none
   */
 void audio_set_i2s_codec_m_s (i2s_codec_m_s_mode_e m_s)
 {
@@ -204,7 +181,7 @@ void aduio_set_chn_wl(audio_channel_wl_mode_e chn_wl)
  * @param[in]  pin - the selected pin.
  * @return    none
  */
-void i2s_set_pin_mux(i2s_pin_e pin)
+void audio_i2s_set_pin_mux(i2s_pin_e pin)
 {
 
 	u8 val=0;
@@ -219,7 +196,7 @@ void i2s_set_pin_mux(i2s_pin_e pin)
 		val = 1<<(start_bit);//function 1
 	}
 	reg_gpio_func_mux(pin)=(reg_gpio_func_mux(pin)& mask)|val;
-	gpio_set_gpio_dis(pin);
+	gpio_function_dis(pin);
 
 }
 
@@ -228,13 +205,13 @@ void i2s_set_pin_mux(i2s_pin_e pin)
  * @param[in] none
  * @return    none
  */
-void i2s_set_pin(void)
+void audio_i2s_set_pin(void)
 {
-	i2s_set_pin_mux(I2S_BCK_PC3);
-	i2s_set_pin_mux(I2S_ADC_LR_PC4);
-	i2s_set_pin_mux(I2S_ADC_DAT_PC5);
-	i2s_set_pin_mux(I2S_DAC_LR_PC6);
-	i2s_set_pin_mux(I2S_DAC_DAT_PC7);
+	audio_i2s_set_pin_mux(I2S_BCK_PC3);
+	audio_i2s_set_pin_mux(I2S_ADC_LR_PC4);
+	audio_i2s_set_pin_mux(I2S_ADC_DAT_PC5);
+	audio_i2s_set_pin_mux(I2S_DAC_LR_PC6);
+	audio_i2s_set_pin_mux(I2S_DAC_DAT_PC7);
 }
 
 /**
@@ -248,21 +225,20 @@ void audio_set_dmic_pin(dmic_pin_group_e pin_gp)
 	if(pin_gp==DMIC_GROUPB_B2_DAT_B3_B4_CLK)
 	{
 		reg_gpio_pad_mul_sel=BIT(2);
-//		reg_gpio_pb_fuc_h=reg_gpio_pb_fuc_h&(~BIT_RNG(0,1));//PB4 fuc
+		reg_gpio_pb_fuc_h=reg_gpio_pb_fuc_h&(~BIT_RNG(0,1));//PB4 fuc
 		reg_gpio_pb_fuc_l=(reg_gpio_pb_fuc_h&(~BIT_RNG(4,7)))|0x0f;//PB2  PB3 fuc
-//		gpio_set_gpio_dis(GPIO_PB2|GPIO_PB3|GPIO_PB4);
-		gpio_set_gpio_dis(GPIO_PB2|GPIO_PB3);
+		gpio_function_dis(GPIO_PB2|GPIO_PB3|GPIO_PB4);
 	}
 	else if(DMIC_GROUPC_C1_DAT_C2_C3_CLK)////can not use
 	{
 		reg_gpio_pc_fuc_l=(reg_gpio_pc_fuc_l&(~BIT_RNG(2,7)))|((2<<2)|(2<<4)|(2<<6));
-		gpio_set_gpio_dis(GPIO_PC1|GPIO_PC2|GPIO_PC3);
+		gpio_function_dis(GPIO_PC1|GPIO_PC2|GPIO_PC3);
 
 	}
 	else if(DMIC_GROUPD_D4_DAT_D5_D6_CLK)//can not use
 	{
 		reg_gpio_pd_fuc_h=(reg_gpio_pd_fuc_h&(~BIT_RNG(0,5)))|((1<<0)|(1<<2)|(1<<4));
-		gpio_set_gpio_dis(GPIO_PD4|GPIO_PD5|GPIO_PD6);
+		gpio_function_dis(GPIO_PD4|GPIO_PD5|GPIO_PD6);
 	}
 
 }
@@ -278,6 +254,18 @@ void audio_set_dmic_pin(dmic_pin_group_e pin_gp)
 	 dma_chn_en(audio_rx_dma_chn);
 }
 
+
+ /**
+  * @brief     This function serves to disable rx_dma channel.
+  * @param[in] none.
+  * @return    none
+  */
+  void audio_rx_dma_dis(void)
+ {
+ 	 dma_chn_dis(audio_rx_dma_chn);
+ }
+
+
  /**
   * @brief     This function serves to enable tx_dma channel.
   * @param[in] none.
@@ -290,6 +278,18 @@ void audio_set_dmic_pin(dmic_pin_group_e pin_gp)
 
 
  /**
+  * @brief     This function serves to disable tx_dma channel.
+  * @param[in] none.
+  * @return    none
+  */
+ void audio_tx_dma_dis(void)
+{
+	 dma_chn_dis(audio_tx_dma_chn);
+}
+
+
+
+ /**
   * @brief     This function serves to config  rx_dma channel.
   * @param[in] dma_chn_e: dma channel
   * @param[in] dst_addr:the dma address of destination
@@ -297,14 +297,14 @@ void audio_set_dmic_pin(dmic_pin_group_e pin_gp)
   * @param[in] head_of_list:the head address of dma llp.
   * @return    none
   */
-void audio_rx_dma_config(dma_chn_e chn,u16 *dst_addr,u32 data_len,dma_llp_config_t *head_of_list)
+void audio_rx_dma_config(dma_chn_e chn,u16 *dst_addr,u32 data_len,dma_chain_config_st *head_of_list)
 {
 	audio_rx_dma_chn=chn;
 	audio_set_rx_buff_len(data_len);
 	dma_config(audio_rx_dma_chn,&audio_dma_rx_config);
-	dma_set_address( chn,REG_AUDIO_AHB_BASE,(u32)reg_dma_addr(dst_addr));//SRC_addr  //dst addr ch0 adc
+	dma_set_address( chn,REG_AUDIO_AHB_BASE,(u32)convert_ram_addr_cpu2bus(dst_addr));
 	dma_set_size(chn,data_len,DMA_WORD_WIDTH);
-	reg_dma_llp(chn)=(u32)reg_dma_addr(head_of_list);
+	reg_dma_llp(chn)=(u32)convert_ram_addr_cpu2bus(head_of_list);
 
 }
 
@@ -316,13 +316,13 @@ void audio_rx_dma_config(dma_chn_e chn,u16 *dst_addr,u32 data_len,dma_llp_config
  * @param[in] data_len:the length of dma size by byte.
  * @return    none
  */
-void audio_rx_dma_add_list_element(dma_llp_config_t *config_addr,dma_llp_config_t *llpointer ,u16 * dst_addr,u32 data_len)
+void audio_rx_dma_add_list_element(dma_chain_config_st *config_addr,dma_chain_config_st *llpointer ,u16 * dst_addr,u32 data_len)
 {
-	config_addr->audio_dma_ctl=reg_dma_ctrl(audio_rx_dma_chn)|BIT(0);
-	config_addr->audio_dma_src_addr=REG_AUDIO_AHB_BASE;
-	config_addr->audio_dma_dst_addr=(u32)reg_dma_addr(dst_addr);
-	config_addr->audio_dma_data_len=(( data_len+3)/4)|( ( data_len % 4)<<22);
-	config_addr->audio_dma_llp_ptr=(u32)reg_dma_addr(llpointer);
+	config_addr->dma_chain_ctl=reg_dma_ctrl(audio_rx_dma_chn)|BIT(0);
+	config_addr->dma_chain_src_addr=REG_AUDIO_AHB_BASE;
+	config_addr->dma_chain_dst_addr=(u32)convert_ram_addr_cpu2bus(dst_addr);
+	config_addr->dma_chain_data_len=dma_cal_size(data_len,4);
+	config_addr->dma_chain_llp_ptr=(u32)convert_ram_addr_cpu2bus(llpointer);
 }
 
 
@@ -334,14 +334,14 @@ void audio_rx_dma_add_list_element(dma_llp_config_t *config_addr,dma_llp_config_
  * @param[in] head_of_list:the head address of dma llp.
  * @return    none
  */
-void audio_tx_dma_config(dma_chn_e chn,u16 * src_addr, u32 data_len,dma_llp_config_t * head_of_list)
+void audio_tx_dma_config(dma_chn_e chn,u16 * src_addr, u32 data_len,dma_chain_config_st * head_of_list)
 {
 	 audio_tx_dma_chn=chn;
 	 audio_set_tx_buff_len(data_len);
 	 dma_config(audio_tx_dma_chn,&audio_dma_tx_config);
-	 dma_set_address( chn,(u32)reg_dma_addr(src_addr),REG_AUDIO_AHB_BASE);
+	 dma_set_address( chn,(u32)convert_ram_addr_cpu2bus(src_addr),REG_AUDIO_AHB_BASE);
 	 dma_set_size(chn,data_len,DMA_WORD_WIDTH);
-	 reg_dma_llp(chn)=(u32)reg_dma_addr(head_of_list);
+	 reg_dma_llp(chn)=(u32)convert_ram_addr_cpu2bus(head_of_list);
 }
 
 /**
@@ -352,47 +352,18 @@ void audio_tx_dma_config(dma_chn_e chn,u16 * src_addr, u32 data_len,dma_llp_conf
  * @param[in] data_len:the length of dma size by byte.
  * @return    none
  */
-void audio_tx_dma_add_list_element(dma_llp_config_t *config_addr,dma_llp_config_t *llpointer ,u16 * src_addr,u32 data_len)
+void audio_tx_dma_add_list_element(dma_chain_config_st *config_addr,dma_chain_config_st *llpointer ,u16 * src_addr,u32 data_len)
 {
-	config_addr->audio_dma_ctl=reg_dma_ctrl(audio_tx_dma_chn)|BIT(0);
-	config_addr->audio_dma_src_addr=(u32)reg_dma_addr(src_addr);
-	config_addr->audio_dma_dst_addr=REG_AUDIO_AHB_BASE;
-	config_addr->audio_dma_data_len=(( data_len+3)/4)|( ( data_len % 4)<<22);
-	config_addr->audio_dma_llp_ptr=(u32)reg_dma_addr(llpointer);
-}
-
-
-
-/**
- * @brief     This function serves to disable i2s clk and codec clk.
- * @return    none
- */
-void audio_adc_power_down(void)
-{
-	BM_SET(reg_audio_codec_adc12_ctr,FLD_AUDIO_CODEC_ADC12_SOFT_MUTE);//adc mute
-	audio_i2s_clk_dis();
-	audio_codec_clk_dis();
+	config_addr->dma_chain_ctl=reg_dma_ctrl(audio_tx_dma_chn)|BIT(0);
+	config_addr->dma_chain_src_addr=(u32)convert_ram_addr_cpu2bus(src_addr);
+	config_addr->dma_chain_dst_addr=REG_AUDIO_AHB_BASE;
+	config_addr->dma_chain_data_len=dma_cal_size(data_len,4);
+	config_addr->dma_chain_llp_ptr=(u32)convert_ram_addr_cpu2bus(llpointer);
 }
 
 
 /**
- * @brief     This function serves to enable i2s clk and enable ande set coxdec to digital record mode with analog power-down state.
- * @return    none
- */
-void audio_adc_dmic_power_restore(void)
-{
-	audio_i2s_clk_en();
-	audio_codec_clk_en();
-	/*digital record mode with analog power-down*/
-	reg_audio_codec_vic_ctr= MASK_VAL( FLD_AUDIO_CODEC_SB, CODEC_ITF_AC,\
-									FLD_AUDIO_CODEC_SB_ANALOG, CODEC_ITF_PD, \
-									FLD_AUDIO_CODEC_SLEEP_ANALOG, CODEC_ITF_PD);
-	BM_CLR(reg_audio_codec_adc12_ctr,FLD_AUDIO_CODEC_ADC12_SOFT_MUTE);//adc unmute
-}
-
-
-/**
- * @brief     This function serves to  initialise audio by muc
+ * @brief     This function serves to  initialize audio by mc
  * @param[in] flow_mode:
  * @param[in] audio_sample_rate_e:audio sampling rate.
  * @param[in] channel_wl:word length and channel number.
@@ -401,9 +372,9 @@ void audio_adc_dmic_power_restore(void)
 void audio_init(audio_flow_mode_e flow_mode,audio_sample_rate_e rate,audio_channel_wl_mode_e channel_wl)
 {
 	aduio_set_chn_wl(channel_wl);
-	audio_set_codec_clk(1,16);////from ppl 192/16=12M
+	audio_set_codec_clk(1,16);//from ppl 192/16=12M
 	audio_mux_config(CODEC_I2S,audio_i2s_codec_config.audio_in_mode,audio_i2s_codec_config.audio_in_mode,audio_i2s_codec_config.audio_out_mode);
-	audio_i2s_config(I2S_I2S_MODE,audio_i2s_codec_config.i2s_data_select,audio_i2s_codec_config.i2s_codec_m_s_mode);
+	audio_i2s_config(I2S_I2S_MODE,audio_i2s_codec_config.i2s_data_select,audio_i2s_codec_config.i2s_codec_m_s_mode,audio_i2s_codec_config.i2s_data_invert_select);
 	audio_set_i2s_clock(rate,AUDIO_RATE_EQUAL,0);
 	audio_clk_en(1,1);
 	reg_audio_codec_vic_ctr=FLD_AUDIO_CODEC_SLEEP_ANALOG;//active analog sleep mode
@@ -419,13 +390,72 @@ void audio_init(audio_flow_mode_e flow_mode,audio_sample_rate_e rate,audio_chann
 	}
 	while(!(reg_audio_codec_stat_ctr==(FLD_AUDIO_CODEC_ADC12_LOCKED|FLD_AUDIO_CODEC_DAC_LOCKED|FLD_AUDIO_CODEC_PON_ACK)));//wait codec adc/dac locked
 
-
 	audio_data_path_sel(I2S_DATA_IN_FIFO,I2S_OUT,NO_USE,NO_USE);
 }
 
+/**
+ * @brief     This function serves to read data from codec register.
+ * @param[in] addr: the address of codec register
+ * @return    none
+ */
+u8 audio_i2c_codec_read(u8 addr)
+{
+	reg_i2c_data_buf(0)=addr<<1;
+	reg_i2c_len=0x01;//rx_len
+	reg_i2c_sct1=FLD_I2C_LS_ID|FLD_I2C_LS_ADDR|FLD_I2C_LS_START;
+
+	while(i2c_master_busy()); //wait busy=0
+	while(reg_i2c_mst & FLD_I2C_ACK_IN);//wait ack=0
+
+	reg_i2c_sct1=FLD_I2C_LS_ID|FLD_I2C_LS_DATAR|FLD_I2C_LS_START|FLD_I2C_LS_ID_R|FLD_I2C_LS_ACK;
+	while(i2c_master_busy()); //wait busy=0
+	u8 rdat8= reg_i2c_data_buf(0);
+	reg_i2c_sct1=FLD_I2C_LS_STOP|FLD_I2C_LS_ID_R;
+	while(i2c_master_busy()); //wait busy=0
+	return rdat8;
+}
 
 /**
- * @brief     This function serves to  initialise audio by i2c
+ * @brief     This function serves to write data to  codec register.
+ * @param[in] addr: the address of codec register
+ * @return    none
+ */
+void audio_i2c_codec_write(u8 addr ,u8 wdat)
+{
+
+	reg_i2c_data_buf(0)=addr<<1;
+	reg_i2c_data_buf(1)=wdat;
+	reg_i2c_len=2;//tx_len
+	reg_i2c_sct1=FLD_I2C_LS_ID|FLD_I2C_LS_DATAW| FLD_I2C_LS_START| FLD_I2C_LS_STOP;
+	while(i2c_master_busy()); //wait busy=0
+	while(reg_i2c_mst & FLD_I2C_ACK_IN);//wait ack=0
+}
+
+/**
+ * @brief      This function serves to enable i2c master for codec i2c slave .
+ * @param[in]  none.
+ * @return     none.
+ */
+void audio_i2c_init(codec_type_e codec_type, i2c_sda_pin_e sda_pin,i2c_scl_pin_e scl_pin)
+{
+	i2c_master_init();
+	i2c_set_master_clk((unsigned char)(sys_clk.pclk*1000*1000/(4*20000)));//set i2c frequency 400K.
+	//reg_i2c_sp=0x1e;//200k sys_clk.pclk=24M
+	if(codec_type==INNER_CODEC)
+	{
+		reg_audio_i2c_mode=0x05;//codec config by i2c
+		reg_i2c_id=(0x34<<1);//set i2c id
+		reg_audio_i2c_addr=0x34;
+	}
+	else if(codec_type==EXT_CODEC)
+	{
+		reg_i2c_id=0x34;
+		i2c_set_pin(sda_pin,scl_pin);
+	}
+}
+
+/**
+ * @brief     This function serves to  initialize audio by i2c
  * @param[in] flow_mode:
  * @param[in] audio_sample_rate_e:audio sampling rate.
  * @param[in] channel_wl:word length and channel number.
@@ -436,12 +466,12 @@ void audio_init_i2c(audio_flow_mode_e flow_mode,audio_sample_rate_e rate,audio_c
 	aduio_set_chn_wl(channel_wl);
 	audio_set_codec_clk(1,16);////from ppl 192/16=12M
 	audio_mux_config(CODEC_I2S,audio_i2s_codec_config.audio_in_mode,audio_i2s_codec_config.audio_in_mode,audio_i2s_codec_config.audio_out_mode);
-	audio_i2s_config(I2S_I2S_MODE,audio_i2s_codec_config.i2s_data_select,audio_i2s_codec_config.i2s_codec_m_s_mode);
+	audio_i2s_config(I2S_I2S_MODE,audio_i2s_codec_config.i2s_data_select,audio_i2s_codec_config.i2s_codec_m_s_mode,audio_i2s_codec_config.i2s_data_invert_select);
 	audio_set_i2s_clock(rate,AUDIO_RATE_EQUAL,0);
 	audio_clk_en(1,1);
-	i2c_init(INNER_CODEC);
-	i2c_codec_write(addr_audio_codec_vic_ctr,FLD_AUDIO_CODEC_SLEEP_ANALOG);//active analog sleep mode
-	while(!(i2c_codec_read(addr_audio_codec_stat_ctr)&FLD_AUDIO_CODEC_PON_ACK));//wait codec can be configed
+	audio_i2c_init(INNER_CODEC,0,0);
+	audio_i2c_codec_write(addr_audio_codec_vic_ctr,FLD_AUDIO_CODEC_SLEEP_ANALOG);//active analog sleep mode
+	while(!(audio_i2c_codec_read(addr_audio_codec_stat_ctr)&FLD_AUDIO_CODEC_PON_ACK));//wait codec can be configed
 	if(flow_mode<OUT_ONLY)
 	{
 		audio_codec_adc_config(audio_i2s_codec_config.i2s_codec_m_s_mode,(flow_mode%3),rate,audio_i2s_codec_config.codec_data_select,I2C_WREG);
@@ -450,7 +480,7 @@ void audio_init_i2c(audio_flow_mode_e flow_mode,audio_sample_rate_e rate,audio_c
 	{
 		audio_codec_dac_config(audio_i2s_codec_config.i2s_codec_m_s_mode,rate,audio_i2s_codec_config.codec_data_select,I2C_WREG);
 	}
-	while(!(i2c_codec_read(addr_audio_codec_stat_ctr)==(FLD_AUDIO_CODEC_ADC12_LOCKED|FLD_AUDIO_CODEC_DAC_LOCKED|FLD_AUDIO_CODEC_PON_ACK)));//wait codec adc/dac locked
+	while(!(audio_i2c_codec_read(addr_audio_codec_stat_ctr)==(FLD_AUDIO_CODEC_ADC12_LOCKED|FLD_AUDIO_CODEC_DAC_LOCKED|FLD_AUDIO_CODEC_PON_ACK)));//wait codec adc/dac locked
 	audio_data_path_sel(I2S_DATA_IN_FIFO,I2S_OUT,NO_USE,NO_USE);
 }
 
@@ -500,40 +530,40 @@ void audio_codec_dac_config(i2s_codec_m_s_mode_e mode,audio_sample_rate_e rate,c
 	else if (wreg_mode==I2C_WREG)
 	{
 		/*active DAC power,active left and right channel,dac mute*/
-		i2c_codec_write(addr_audio_codec_dac_ctr,MASK_VAL( FLD_AUDIO_CODEC_DAC_SB, 0,\
+		audio_i2c_codec_write(addr_audio_codec_dac_ctr,MASK_VAL( FLD_AUDIO_CODEC_DAC_SB, 0,\
 				FLD_AUDIO_CODEC_DAC_LEFT_ONLY, 0, \
 				FLD_AUDIO_CODEC_DAC_SOFT_MUTE, 1));
 
 
 		/*disable sleep mode ,disable sb_analog,disable global standby*/
-		i2c_codec_write(addr_audio_codec_vic_ctr,MASK_VAL( FLD_AUDIO_CODEC_SB, 0,\
+		audio_i2c_codec_write(addr_audio_codec_vic_ctr,MASK_VAL( FLD_AUDIO_CODEC_SB, 0,\
 				FLD_AUDIO_CODEC_SB_ANALOG, 0, \
 				FLD_AUDIO_CODEC_SLEEP_ANALOG, 0));
 
 		/*data word length ,interface master/slave selection, audio interface protocol selection ,active dac audio interface */
-		i2c_codec_write(addr_audio_codec_dac_itf_ctr,MASK_VAL( FLD_AUDIO_CODEC_FORMAT, CODEC_I2S_MODE,\
+		audio_i2c_codec_write(addr_audio_codec_dac_itf_ctr,MASK_VAL( FLD_AUDIO_CODEC_FORMAT, CODEC_I2S_MODE,\
 											FLD_AUDIO_CODEC_DAC_ITF_SB, CODEC_ITF_AC, \
 											FLD_AUDIO_CODEC_SLAVE, mode, \
 											FLD_AUDIO_CODEC_WL, data_select));
 
 		/* disable DAC digital gain coupling, Left channel DAC digital gain */
-		i2c_codec_write(addr_audio_codec_dacl_gain,MASK_VAL(FLD_AUDIO_CODEC_DAC_LRGOD,0,\
+		audio_i2c_codec_write(addr_audio_codec_dacl_gain,MASK_VAL(FLD_AUDIO_CODEC_DAC_LRGOD,0,\
 				FLD_AUDIO_CODEC_DAC_GODL,audio_i2s_codec_config.out_digital_gain));
 
 
-		i2c_codec_write(addr_audio_codec_dacr_gain,MASK_VAL(FLD_AUDIO_CODEC_DAC_GODR,audio_i2s_codec_config.out_digital_gain));/* Right channel DAC digital gain */
+		audio_i2c_codec_write(addr_audio_codec_dacr_gain,MASK_VAL(FLD_AUDIO_CODEC_DAC_GODR,audio_i2s_codec_config.out_digital_gain));/* Right channel DAC digital gain */
 
 
 		/* disable Headphone gain coupling, set Left channel HP amplifier gain */
-		i2c_codec_write(addr_audio_codec_hpl_gain,MASK_VAL(FLD_AUDIO_CODEC_HPL_LRGO,0,\
+		audio_i2c_codec_write(addr_audio_codec_hpl_gain,MASK_VAL(FLD_AUDIO_CODEC_HPL_LRGO,0,\
 	        	FLD_AUDIO_CODEC_HPL_GOL,audio_i2s_codec_config.out_analog_gain));
 
-		i2c_codec_write(addr_audio_codec_hpr_gain,MASK_VAL(FLD_AUDIO_CODEC_HPR_GOR, audio_i2s_codec_config.out_analog_gain));/*  Right channel HP amplifier gain programming*/
+		audio_i2c_codec_write(addr_audio_codec_hpr_gain,MASK_VAL(FLD_AUDIO_CODEC_HPR_GOR, audio_i2s_codec_config.out_analog_gain));/*  Right channel HP amplifier gain programming*/
 
-		i2c_codec_write(addr_audio_codec_dac_freq_ctr,(FLD_AUDIO_CODEC_DAC_FREQ&rate));
+		audio_i2c_codec_write(addr_audio_codec_dac_freq_ctr,(FLD_AUDIO_CODEC_DAC_FREQ&rate));
 
 		/*dac mute*/
-		i2c_codec_write(addr_audio_codec_dac_ctr,MASK_VAL( FLD_AUDIO_CODEC_DAC_SB, 0,\
+		audio_i2c_codec_write(addr_audio_codec_dac_ctr,MASK_VAL( FLD_AUDIO_CODEC_DAC_SB, 0,\
 				FLD_AUDIO_CODEC_DAC_LEFT_ONLY, 0, \
 				FLD_AUDIO_CODEC_DAC_SOFT_MUTE, 0));
 	}
@@ -567,11 +597,11 @@ void audio_codec_adc_config(i2s_codec_m_s_mode_e mode,audio_input_mode_e in_mode
 		/*Microphone 1 input selection ,Microphone biasing active,Single-ended input,MICBIAS1 output=2.08V,*/
 		reg_audio_codec_mic1_ctr= MASK_VAL( FLD_AUDIO_CODEC_MIC1_SEL, 0,\
 										FLD_AUDIO_CODEC_MICBIAS1_SB, 0, \
-										FLD_AUDIO_CODEC_MIC_DIFF1, 0,\
+										FLD_AUDIO_CODEC_MIC_DIFF1, 1,\
 										FLD_AUDIO_CODEC_MICBIAS1_V, 0);
 		/*Microphone 2 input selection,Single-ended input*/
 		reg_audio_codec_mic2_ctr= MASK_VAL( FLD_AUDIO_CODEC_MIC2_SEL, 0,\
-										FLD_AUDIO_CODEC_MIC_DIFF2, 0);
+										FLD_AUDIO_CODEC_MIC_DIFF2, 1);
 
 		/*analog 0/4/8/12/16/20 dB boost gain*/
 		reg_audio_codec_mic_l_R_gain= MASK_VAL( FLD_AUDIO_CODEC_AMIC_L_GAIN, audio_i2s_codec_config.in_analog_gain,\
@@ -614,12 +644,12 @@ void audio_codec_adc_config(i2s_codec_m_s_mode_e mode,audio_input_mode_e in_mode
 
 
 		/*active adc0 and adc1  channel, if mono only active adc1,adc mute*/
-		i2c_codec_write(addr_audio_codec_adc12_ctr,MASK_VAL( FLD_AUDIO_CODEC_ADC1_SB, 0,\
+		audio_i2c_codec_write(addr_audio_codec_adc12_ctr,MASK_VAL( FLD_AUDIO_CODEC_ADC1_SB, 0,\
 				    FLD_AUDIO_CODEC_ADC2_SB, 0, \
 					FLD_AUDIO_CODEC_ADC12_SOFT_MUTE, 1));
 
 		/*disable sleep mode ,disable sb_analog,disable global standby*/
-		i2c_codec_write(addr_audio_codec_vic_ctr,MASK_VAL( FLD_AUDIO_CODEC_SB, 0,\
+		audio_i2c_codec_write(addr_audio_codec_vic_ctr,MASK_VAL( FLD_AUDIO_CODEC_SB, 0,\
 				FLD_AUDIO_CODEC_SB_ANALOG, 0, \
 				FLD_AUDIO_CODEC_SLEEP_ANALOG, 0));
 
@@ -627,23 +657,23 @@ void audio_codec_adc_config(i2s_codec_m_s_mode_e mode,audio_input_mode_e in_mode
 		if (in_mode==AMIC_IN)
 		{
 			 /*Microphone 1 input selection ,Microphone biasing active,Single-ended input,MICBIAS1 output=2.08V,*/
-			i2c_codec_write(addr_audio_codec_mic1_ctr,MASK_VAL( FLD_AUDIO_CODEC_MIC1_SEL, 0,\
+			audio_i2c_codec_write(addr_audio_codec_mic1_ctr,MASK_VAL( FLD_AUDIO_CODEC_MIC1_SEL, 0,\
 					FLD_AUDIO_CODEC_MICBIAS1_SB, 0, \
 					FLD_AUDIO_CODEC_MIC_DIFF1, 0,\
 					FLD_AUDIO_CODEC_MICBIAS1_V, 0));
 
 			 /*Microphone 2 input selection,Single-ended input*/
-			i2c_codec_write(addr_audio_codec_mic2_ctr,MASK_VAL( FLD_AUDIO_CODEC_MIC2_SEL, 0,\
+			audio_i2c_codec_write(addr_audio_codec_mic2_ctr,MASK_VAL( FLD_AUDIO_CODEC_MIC2_SEL, 0,\
 					FLD_AUDIO_CODEC_MIC_DIFF2, 0));
 
 			/*analog 0/4/8/12/16/20 dB boost gain*/
-			i2c_codec_write(addr_audio_codec_mic_l_R_gain, MASK_VAL( FLD_AUDIO_CODEC_AMIC_L_GAIN, audio_i2s_codec_config.in_analog_gain,\
+			audio_i2c_codec_write(addr_audio_codec_mic_l_R_gain, MASK_VAL( FLD_AUDIO_CODEC_AMIC_L_GAIN, audio_i2s_codec_config.in_analog_gain,\
 					FLD_AUDIO_CODEC_AMIC_R_GAIN, audio_i2s_codec_config.in_analog_gain));
 
 		}
 		else if(in_mode==DMIC_IN)
 		{
-			i2c_codec_write(addr_audio_dmic_12,MASK_VAL( FLD_AUDIO_CODEC_ADC_DMIC_SEL2, 1,\
+			audio_i2c_codec_write(addr_audio_dmic_12,MASK_VAL( FLD_AUDIO_CODEC_ADC_DMIC_SEL2, 1,\
 					FLD_AUDIO_CODEC_ADC_DMIC_SEL1,1, \
 					FLD_AUDIO_CODEC_DMIC2_SB,CODEC_ITF_AC,\
 					FLD_AUDIO_CODEC_DMIC1_SB, CODEC_ITF_AC));
@@ -652,28 +682,28 @@ void audio_codec_adc_config(i2s_codec_m_s_mode_e mode,audio_input_mode_e in_mode
 		else if(in_mode==LINE_IN)
 		{
 			 /*analog 0/4/8/12/16/20 dB boost gain*/
-			i2c_codec_write(addr_audio_codec_mic_l_R_gain, MASK_VAL( FLD_AUDIO_CODEC_AMIC_L_GAIN, audio_i2s_codec_config.in_analog_gain,\
+			audio_i2c_codec_write(addr_audio_codec_mic_l_R_gain, MASK_VAL( FLD_AUDIO_CODEC_AMIC_L_GAIN, audio_i2s_codec_config.in_analog_gain,\
 					FLD_AUDIO_CODEC_AMIC_R_GAIN, audio_i2s_codec_config.in_analog_gain));
 		}
 
 			  /*0db~43db  1db step ,digital programmable gain*/
-			i2c_codec_write(addr_audio_adc1_gain,MASK_VAL(  FLD_AUDIO_CODEC_ADC_LRGID,1,\
+		audio_i2c_codec_write(addr_audio_adc1_gain,MASK_VAL(  FLD_AUDIO_CODEC_ADC_LRGID,1,\
 					FLD_AUDIO_CODEC_ADC_GID1,audio_i2s_codec_config.in_digital_gain));
 
 
-			i2c_codec_write(addr_audio_codec_adc_itf_ctr,MASK_VAL( FLD_AUDIO_CODEC_FORMAT, CODEC_I2S_MODE,\
+		audio_i2c_codec_write(addr_audio_codec_adc_itf_ctr,MASK_VAL( FLD_AUDIO_CODEC_FORMAT, CODEC_I2S_MODE,\
 					FLD_AUDIO_CODEC_SLAVE, mode, \
 					 FLD_AUDIO_CODEC_WL, data_select));
 
-			i2c_codec_write(addr_audio_codec_adc2_ctr,~FLD_AUDIO_CODEC_ADC12_SB);  /*audio adc interface active*/
+		audio_i2c_codec_write(addr_audio_codec_adc2_ctr,~FLD_AUDIO_CODEC_ADC12_SB);  /*audio adc interface active*/
 
 
 			/*  adc high pass filter active, set adc sample rate   */
-			i2c_codec_write(addr_audio_codec_adc_freq_ctr,MASK_VAL(  FLD_AUDIO_CODEC_ADC12_HPF_EN,1,\
+		audio_i2c_codec_write(addr_audio_codec_adc_freq_ctr,MASK_VAL(  FLD_AUDIO_CODEC_ADC12_HPF_EN,1,\
 					FLD_AUDIO_CODEC_ADC_FREQ,rate));
 
 			/*dac mute*/
-			i2c_codec_write(addr_audio_codec_adc12_ctr,MASK_VAL( FLD_AUDIO_CODEC_ADC1_SB, 0,\
+		audio_i2c_codec_write(addr_audio_codec_adc12_ctr,MASK_VAL( FLD_AUDIO_CODEC_ADC1_SB, 0,\
 					FLD_AUDIO_CODEC_ADC2_SB, 0, \
 					FLD_AUDIO_CODEC_ADC12_SOFT_MUTE, 0));
 
@@ -704,8 +734,8 @@ void audio_mux_config(audio_flow_e audio_flow, audio_in_mode_e ain0_mode , audio
  * @brief     This function serves to set data path .
  * @param[in] ain0_sel :fifo0 input source select
  * @param[in] aout0_sel:fifo0 output source select
- * @param[in] ain0_sel :fifo1 input source select
- * @param[in] aout0_sel:fifo1 output source select
+ * @param[in] ain1_sel :fifo1 input source select
+ * @param[in] aout1_sel:fifo1 output source select
  * @return    none
  */
 void audio_data_path_sel (audio_mux_ain_e ain0_sel, audio_mux_aout_e aout0_sel, audio_mux_ain_e ain1_sel, audio_mux_aout_e aout1_sel)
@@ -722,15 +752,16 @@ void audio_data_path_sel (audio_mux_ain_e ain0_sel, audio_mux_aout_e aout0_sel, 
  * @param[in] i2s_format :interface protocol
  * @param[in] wl:audio data word length
  * @param[in] i2s_m_s:select i2s as master or slave
+ * @param[in] en: 1 enable audio data invert , 0 disable audio data invert .for example in mono mode switch R and L data to fifo .
  * @return    none
  */
-void audio_i2s_config(i2s_mode_select_e i2s_format,i2s_data_select_e wl,i2s_codec_m_s_mode_e  m_s)
+void audio_i2s_config(i2s_mode_select_e i2s_format,i2s_data_select_e wl,  i2s_codec_m_s_mode_e m_s , audio_data_invert_e en )
 {
 
     reg_i2s_cfg = MASK_VAL( FLD_AUDIO_I2S_FORMAT, i2s_format,\
 		   FLD_AUDIO_I2S_WL, wl, \
 		   FLD_AUDIO_I2S_LRP, 0, \
-		   FLD_AUDIO_I2S_LRSWAP, 0, \
+		   FLD_AUDIO_I2S_LRSWAP, en, \
 		   FLD_AUDIO_I2S_ADC_DCI_MS, m_s, \
 		   FLD_AUDIO_I2S_DAC_DCI_MS, m_s);
 }
@@ -741,8 +772,9 @@ void audio_i2s_config(i2s_mode_select_e i2s_format,i2s_data_select_e wl,i2s_code
  * @param[in] match:the match of audio rate.
  * @param[in] match_en: initial must 0, then change rate must 1
  * @return    none
+ * Notice i2s clock  divider from pll,sampling rate calculation is based on pll=192M,so pll must be 192M
  */
-_attribute_ram_code_ void  audio_set_i2s_clock (audio_sample_rate_e audio_rate,audio_rate_match_e  match,u8 match_en)
+_attribute_ram_code_sec_noinline_ void  audio_set_i2s_clock (audio_sample_rate_e audio_rate,audio_rate_match_e  match,u8 match_en)
 {
 	reg_tx_wptr=0xffff;//enable tx_rptr
 	u16  tx_rptr_old;
@@ -854,7 +886,7 @@ _attribute_ram_code_ void  audio_set_i2s_clock (audio_sample_rate_e audio_rate,a
 
 
 /**
- * @brief     This function serves to set dma rx_buff.
+ * @brief  This function serves to set audio rx dma chain transfer.
  * @param[in] chn: dma_chn_e: dma channel
  * @param[in] in_buff:the pointer of rx_buff.
  * @param[in] buff_size:the size of rx_buff.
@@ -862,14 +894,14 @@ _attribute_ram_code_ void  audio_set_i2s_clock (audio_sample_rate_e audio_rate,a
  */
  void audio_rx_dma_chain_init (dma_chn_e chn,u16 * in_buff,u32 buff_size )
 {
-	audio_rx_dma_config(chn,(u16*)in_buff, buff_size, &audio_rx_dma_list_cfg);
-	audio_rx_dma_add_list_element(&audio_rx_dma_list_cfg, &audio_rx_dma_list_cfg,(u16*)in_buff, buff_size);
+	audio_rx_dma_config(chn,(u16*)in_buff, buff_size, &g_audio_rx_dma_list_cfg);
+	audio_rx_dma_add_list_element(&g_audio_rx_dma_list_cfg, &g_audio_rx_dma_list_cfg,(u16*)in_buff, buff_size);
 	audio_rx_dma_en();
 }
 
 
 /**
- * @brief     This function serves to set dma tx_buff.
+ * @brief  This function serves to initialize audio tx dma chain transfer.
  * @param[in] chn: dma_chn_e: dma channel
  * @param[in] out_buff:the pointer of tx_buff.
  * @param[in] buff_size:the size of tx_buff.
@@ -877,8 +909,8 @@ _attribute_ram_code_ void  audio_set_i2s_clock (audio_sample_rate_e audio_rate,a
  */
 void audio_tx_dma_chain_init (dma_chn_e chn,u16 * out_buff,u32 buff_size)
 {
-	audio_tx_dma_config(chn, (u16*)out_buff, buff_size, &audio_tx_dma_list_cfg);
-	audio_tx_dma_add_list_element(&audio_tx_dma_list_cfg, &audio_tx_dma_list_cfg, (u16*)out_buff, buff_size);
+	audio_tx_dma_config(chn, (u16*)out_buff, buff_size, &g_audio_tx_dma_list_cfg);
+	audio_tx_dma_add_list_element(&g_audio_tx_dma_list_cfg, &g_audio_tx_dma_list_cfg, (u16*)out_buff, buff_size);
 	audio_tx_dma_en();
 }
 
@@ -894,9 +926,6 @@ void audio_tx_dma_chain_init (dma_chn_e chn,u16 * out_buff,u32 buff_size)
 #define		WM8731_SAMPLING_CTRL 				0x10		//Sampling Control
 #define		WM8731_ACTIVE_CTRL 					0x12		//Active Control
 #define		WM8731_RESET_CTRL 					0x1e		//Reset Register
-
-
-
 
 u8 LineIn_To_I2S_CMD_TAB[9][2]={	 		{WM8731_RESET_CTRL, 				0x00},
 		                                    {WM8731_ST_LINE_VOL,			    0x10},
@@ -918,111 +947,151 @@ void audio_set_ext_codec(void)
 {
 	for (u8 i=0;i<9;i++)
 	{
-		i2c_codec_write(LineIn_To_I2S_CMD_TAB[i][0]>>1,LineIn_To_I2S_CMD_TAB[i][1]);
+		audio_i2c_codec_write(LineIn_To_I2S_CMD_TAB[i][0]>>1,LineIn_To_I2S_CMD_TAB[i][1]);
 	}
 }
 
 
 /**
  * @brief     This function serves to  set pwm0 as external codec mclk
+ * @param[in] pin: the pin of pwm0
  * @return    none
  */
-void pwm_set(void)
+void pwm_set(pwm_pin_e pin)
 {
-	//select pd4 as PWM0 output.
 	reg_pwm_enable=0;
 	reg_pwm0_enable=0;//off pwm0
-	pwm_set_pin(PWM_PWM0_PB4);
-	reg_pwm_clkdiv = 0;//set pwm clk equal pclk 24M
+	pwm_set_pin(pin);
+	pwm_set_clk((unsigned char) (sys_clk.pclk*1000*1000/24000000-1));
+	//reg_pwm_clkdiv = 0;//set pwm clk equal pclk 24M
 	pwm_set_pwm0_mode(PWM_NORMAL_MODE);
 	pwm_set_tcmp(PWM0_ID,1);
 	pwm_set_tmax(PWM0_ID,2);//24M/2=12M pwm  mclk to  ext codec clk
-   pwm_start(PWM0_ID);
+    pwm_start(PWM0_ID);
 
 }
+
+
 /**
- * @brief     This function serves to  initialise audio by i2c
- * @param[in] flow_mode:
- * @param[in] audio_sample_rate_e:audio sampling rate.
- * @param[in] channel_wl:word length and channel number.
+ * @brief This function serves to initialize audio(external codec WM8731) by i2c.
+ * @param[in]  pin: the pin of pwm0 ,as external codec mclk.
+ * @param[in]  sda_pin - the pin port selected as I2C sda pin port.
+ * @param[in]  scl_pin - the pin port selected as I2C scl pin port.
  * @return    none
  */
-void audio_i2s_init(void)
+void audio_i2s_init(pwm_pin_e pwm0_pin, i2c_sda_pin_e sda_pin,i2c_scl_pin_e scl_pin)
 {
-	pwm_set();
-	i2s_set_pin();
-	i2c_init(EXT_CODEC);
+	pwm_set(pwm0_pin);
+	audio_i2s_set_pin();
+	audio_i2c_init(EXT_CODEC,sda_pin,scl_pin);
 	aduio_set_chn_wl(MONO_BIT_16);
 	audio_mux_config(IO_I2S,BIT_16_MONO,BIT_16_MONO,BIT_16_MONO_FIFO0);
-	audio_i2s_config(I2S_I2S_MODE,I2S_BIT_16_DATA,I2S_M_CODEC_S);
+	audio_i2s_config(I2S_I2S_MODE,I2S_BIT_16_DATA,I2S_M_CODEC_S,I2S_DATA_INVERT_DIS);
 	audio_set_i2s_clock(AUDIO_32K,AUDIO_RATE_EQUAL,0);
 	audio_clk_en(1,1);
 	audio_set_ext_codec();
 	audio_data_path_sel(I2S_DATA_IN_FIFO,I2S_OUT,NO_USE,NO_USE);
 
 }
+
+
+
 /**
- * @brief     This function serves to read data from codec register.
- * @param[in] addr: the address of codec register
+ * @brief     This function serves to change sample rate for dac.
+ * @param[in] rate:  the sample rate of dac
+ * @param[in] buff: the pointer of audio buff
+ * @param[in] buff_len: the length of audio buff
  * @return    none
  */
-u8 i2c_codec_read(u8 addr)
+_attribute_ram_code_sec_ void audio_change_sample_rate (audio_sample_rate_e  rate,void * buff,u32 buff_len)
 {
-	reg_i2c_data_buf(0)=addr<<1;
-	reg_i2c_len=0x01;//rx_len
-	reg_i2c_sct1=FLD_I2C_LS_ID|FLD_I2C_LS_ADDR|FLD_I2C_LS_START;
-
-	while(i2c_master_busy()); //wait busy=0
-	while(reg_i2c_mst & FLD_I2C_ACK_IN);//wait ack=0
-
-	reg_i2c_sct1=FLD_I2C_LS_ID|FLD_I2C_LS_DATAR|FLD_I2C_LS_START|FLD_I2C_LS_ID_R|FLD_I2C_LS_ACK;
-	while(i2c_master_busy()); //wait busy=0
-	u8 rdat8= reg_i2c_data_buf(0);
-	reg_i2c_sct1=FLD_I2C_LS_STOP|FLD_I2C_LS_ID_R;
-	while(i2c_master_busy()); //wait busy=0
-	return rdat8;
+	BM_SET(reg_audio_codec_dac_ctr,FLD_AUDIO_CODEC_DAC_SOFT_MUTE);//dac mute
+	audio_tx_dma_dis();
+	audio_set_i2s_clock(rate, AUDIO_RATE_EQUAL,1); //must
+	reg_audio_codec_dac_freq_ctr=(FLD_AUDIO_CODEC_DAC_FREQ&rate);
+	memset(buff,0,buff_len);//CLR BUFF
+	BM_CLR(reg_audio_codec_dac_ctr,FLD_AUDIO_CODEC_DAC_SOFT_MUTE);//dac unmute  must
+	audio_tx_dma_en();
 }
 
+
 /**
- * @brief     This function serves to write data to  codec register.
- * @param[in] addr: the address of codec register
+ * @brief     This function serves to power down codec_dac.
  * @return    none
  */
-void i2c_codec_write(u8 addr ,u8 wdat)
+void audio_codec_dac_power_down(void)
 {
+	BM_SET(reg_audio_codec_dac_ctr,FLD_AUDIO_CODEC_DAC_SOFT_MUTE);
+	delay_ms(10);
+	BM_SET(reg_audio_codec_dac_itf_ctr,FLD_AUDIO_CODEC_DAC_ITF_SB);
+	BM_SET(reg_audio_codec_dac_ctr,FLD_AUDIO_CODEC_DAC_SB);
+	delay_ms(1);
+	BM_SET(reg_audio_codec_vic_ctr,FLD_AUDIO_CODEC_SLEEP_ANALOG);
+	reg_audio_codec_vic_ctr= MASK_VAL( FLD_AUDIO_CODEC_SB, CODEC_ITF_PD,\
+									FLD_AUDIO_CODEC_SB_ANALOG, CODEC_ITF_PD, \
+									FLD_AUDIO_CODEC_SLEEP_ANALOG, CODEC_ITF_PD);
+	audio_tx_dma_dis();
+	audio_clk_en(0,0);
+}
 
-	reg_i2c_data_buf(0)=addr<<1;
-	reg_i2c_data_buf(1)=wdat;
-	reg_i2c_len=2;//tx_len
-	reg_i2c_sct1=FLD_I2C_LS_ID|FLD_I2C_LS_DATAW| FLD_I2C_LS_START| FLD_I2C_LS_STOP;
-	while(i2c_master_busy()); //wait busy=0
-	while(reg_i2c_mst & FLD_I2C_ACK_IN);//wait ack=0
+/**
+ * @brief     This function serves to power on codec_dac.
+ * @return    none
+ */
+void audio_codec_dac_power_on(void)
+{
+	audio_clk_en(1,1);
+	BM_SET(reg_audio_codec_vic_ctr,FLD_AUDIO_CODEC_SLEEP_ANALOG);
+	delay_ms(1);
+	BM_CLR(reg_audio_codec_dac_ctr,FLD_AUDIO_CODEC_DAC_SB);
+	BM_CLR(reg_audio_codec_dac_itf_ctr,FLD_AUDIO_CODEC_DAC_ITF_SB);
+	reg_audio_codec_vic_ctr= MASK_VAL( FLD_AUDIO_CODEC_SB, CODEC_ITF_AC,\
+											FLD_AUDIO_CODEC_SB_ANALOG, CODEC_ITF_AC, \
+											FLD_AUDIO_CODEC_SLEEP_ANALOG, CODEC_ITF_AC);
+	BM_CLR(reg_audio_codec_dac_ctr,FLD_AUDIO_CODEC_DAC_SOFT_MUTE);//un mute
+	audio_tx_dma_en();
+
+}
+
+/**
+ * @brief     This function serves to power down codec_adc.
+ * @return    none
+ */
+void audio_codec_adc_power_down(void)
+{
+	BM_SET(reg_audio_codec_adc12_ctr,FLD_AUDIO_CODEC_DAC_SOFT_MUTE);
+	delay_ms(10);
+	BM_SET(reg_audio_codec_adc_itf_ctr,FLD_AUDIO_CODEC_DAC_ITF_SB);
+	BM_SET(reg_audio_codec_adc12_ctr,FLD_AUDIO_CODEC_ADC1_SB|FLD_AUDIO_CODEC_ADC2_SB);
+
+	BM_SET(reg_audio_codec_vic_ctr,FLD_AUDIO_CODEC_SLEEP_ANALOG);
+	reg_audio_codec_vic_ctr= MASK_VAL( FLD_AUDIO_CODEC_SB, CODEC_ITF_PD,\
+										FLD_AUDIO_CODEC_SB_ANALOG, CODEC_ITF_PD, \
+										FLD_AUDIO_CODEC_SLEEP_ANALOG, CODEC_ITF_PD);
+	audio_rx_dma_dis();
+	audio_clk_en(0,0);
 }
 
 
 /**
- * @brief      This function serves to enable i2c master for codec i2c slave .
- * @param[in]  none.
- * @return     none.
+ * @brief     This function serves to power on codec_adc.
+ * @return    none
  */
-void i2c_init(codec_type_e codec_type)
+void audio_codec_adc_power_on(void)
 {
-	i2c_master_init();
-	//i2c_set_master_clk((unsigned char)(sys_clk.pclk*1000*1000/(4*20000)));//set i2c frequency 400K.
-	reg_i2c_sp=0x1e;//200k sys_clk.pclk=24M
-	if(codec_type==INNER_CODEC)
-	{
-		reg_audio_i2c_mode=0x05;//codec config by i2c
-		reg_i2c_id=(0x34<<1);//set i2c id
-		reg_audio_i2c_addr=0x34;
-	}
-	else if(codec_type==EXT_CODEC)
-	{
-		reg_i2c_id=0x34;
-		i2c_set_pin(I2C_GPIO_SDA_B3,I2C_GPIO_SCL_B2);
-	}
-}
+	audio_clk_en(1,1);
+	BM_SET(reg_audio_codec_vic_ctr,FLD_AUDIO_CODEC_SLEEP_ANALOG);
+	delay_ms(1);
+	BM_CLR(reg_audio_codec_adc12_ctr,FLD_AUDIO_CODEC_ADC1_SB|FLD_AUDIO_CODEC_ADC2_SB);
+	BM_CLR(reg_audio_codec_adc_itf_ctr,FLD_AUDIO_CODEC_DAC_ITF_SB);
+	reg_audio_codec_vic_ctr= MASK_VAL( FLD_AUDIO_CODEC_SB, CODEC_ITF_AC,\
+											FLD_AUDIO_CODEC_SB_ANALOG, CODEC_ITF_AC, \
+											FLD_AUDIO_CODEC_SLEEP_ANALOG, CODEC_ITF_AC);
+	BM_CLR(reg_audio_codec_adc12_ctr,FLD_AUDIO_CODEC_DAC_SOFT_MUTE);
 
+	audio_rx_dma_en();
+
+}
 
 
 

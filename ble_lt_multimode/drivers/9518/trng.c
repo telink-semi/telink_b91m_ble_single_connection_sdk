@@ -27,8 +27,8 @@
 #include "trng.h"
 #include "compiler.h"
 
-_attribute_data_retention_ unsigned int g_rnd_m_w = 0;
-_attribute_data_retention_ unsigned int g_rnd_m_z = 0;
+_attribute_data_retention_sec_ unsigned int g_rnd_m_w = 0;
+_attribute_data_retention_sec_ unsigned int g_rnd_m_z = 0;
 
 /**
  * @brief     This function performs to get one random number.If chip in suspend TRNG module should be close.
@@ -66,7 +66,7 @@ void trng_init(void)
  * @param[in] none.
  * @return    the value of one random number.
  */
-_attribute_ram_code_  unsigned int trng_rand(void)  //16M clock, code in flash 23us, code in sram 4us
+_attribute_ram_code_sec_noinline_  unsigned int trng_rand(void)  //16M clock, code in flash 23us, code in sram 4us
 {
 
 	g_rnd_m_w = 18000 * (g_rnd_m_w & 0xffff) + (g_rnd_m_w >> 16);

@@ -29,7 +29,7 @@
 #include "dma.h"
 #include "reg_include/register_9518.h"
 
-#define GET_PWMID(gpio)     ((gpio==PWM_PWM0_PB4) ? 0 : (  \
+#define get_pwmid(gpio)     ((gpio==PWM_PWM0_PB4) ? 0 : (  \
                      (gpio==PWM_PWM0_PC0) 	? 0 : (  \
                      (gpio==PWM_PWM0_PE3) 	? 0 : (  \
                      (gpio==PWM_PWM0_N_PD0) ? 0 : (  \
@@ -52,7 +52,7 @@
                      (gpio==PWM_PWM5_N_PD5) ? 5 : 0  \
                     		 )))))))))))))))))))))
 
-#define GET_PWM_INVERT_VAL(gpio)     ((gpio==PWM_PWM0_N_PD0) ||    \
+#define get_pwm_invert_val(gpio)     ((gpio==PWM_PWM0_N_PD0) ||    \
                      (gpio==PWM_PWM1_N_PD1) ||        \
                      (gpio==PWM_PWM2_N_PD2) ||        \
                      (gpio==PWM_PWM2_N_PE6) ||        \
@@ -119,27 +119,52 @@ typedef enum{
 }pwm_pin_e;
 
 
-/**
- * @brief  Select the clock source of pwm.
- */
-typedef enum {
-	SCLOCK_APB=0,
-	SCLOCK_32K
-}pwm_sclk_sel_type_e;
 
 
 /**
  * @brief  Select the 32K clock source of pwm.
  */
 typedef enum {
-	SCLOCK_32K_PWM0 = 0x01,
-	SCLOCK_32K_PWM1 = 0x02,
-	SCLOCK_32K_PWM2 = 0x04,
-	SCLOCK_32K_PWM3 = 0x08,
-	SCLOCK_32K_PWM4 = 0x10,
-	SCLOCK_32K_PWM5 = 0x20
-}pwm_sclk_32k_en_chn_e;
 
+	PWM_CLOCK_32K_CHN_NONE = 0x00,
+	PWM_CLOCK_32K_CHN_PWM0 = 0x01,
+	PWM_CLOCK_32K_CHN_PWM1 = 0x02,
+	PWM_CLOCK_32K_CHN_PWM2 = 0x04,
+	PWM_CLOCK_32K_CHN_PWM3 = 0x08,
+	PWM_CLOCK_32K_CHN_PWM4 = 0x10,
+	PWM_CLOCK_32K_CHN_PWM5 = 0x20
+
+}pwm_clk_32k_en_chn_e;
+
+
+
+
+
+
+/**
+ * @brief     This function servers to set pwm clock frequency, when pwm clock source is pclk.
+ * @param[in] pwm_clk_div - variable of the pwm clock.
+ *            PWM frequency = System_clock / (pwm_clk_div+1).
+
+ * @return	  none.
+ */
+static inline void pwm_set_clk(unsigned char pwm_clk_div){
+
+    reg_pwm_clkdiv = pwm_clk_div;
+}
+
+/**
+ * @brief     This function servers to set pwm clock source is 32K.
+ * @detail    be under suspend mode,not support frequency division,the 32K clock source is suitable for continuous mode and counting mode.
+ * @param[in] pwm_32K_en_chn - This variable is used to select the specific PWM channel.
+ * @return	  none.
+ */
+
+static inline void pwm_32k_chn_en(pwm_clk_32k_en_chn_e pwm_32K_en_chn){
+
+	reg_pwm_mode32k= pwm_32K_en_chn;
+
+}
 
 
 /**
@@ -150,25 +175,6 @@ typedef enum {
 void pwm_set_pin(pwm_pin_e pin);
 
 
-/**
- * @brief     This fuction servers to set pwm clock frequency
- * @param[in] pwm_sclk_sel_type - variable to select pwm clock source.
- * @param[in] pwm_32K_en_chn - If pwm_clk_source is 32K, This variable is used to select the specific PWM channel.
- *            But the 32K clock source is not suitable for ir_dma and ir_fifo mode.
- * @param[in] pwm_clk_div - variable of the pwm clock.
- *            PWM frequency = System_clock / (pwm_clk_div+1).
- *            If pwm_clk_source is 32K: PWM frequency = 32K / (pwm_clk_div+1)
- * @return	  none.
- */
-static inline void pwm_set_clk(pwm_sclk_sel_type_e pwm_sclk_sel_type, pwm_sclk_32k_en_chn_e pwm_32K_en_chn,int pwm_clk_div){
-
-    if(pwm_sclk_sel_type==SCLOCK_32K)
-	{
-		reg_pwm_mode32k= pwm_32K_en_chn;   //enable all pwm channel 32k clock source.
-	}
-    reg_pwm_clkdiv = pwm_clk_div;
-
-}
 
 
 /**
@@ -291,9 +297,9 @@ static inline void pwm_set_polarity_dis(pwm_id_e id, int en){
  * @param[in] irq - variable of enum to select the pwm interrupt source.
  * @return	  none.
  */
-static inline void pwm_set_irq_mask(pwm_irq_type_e irq){
+static inline void pwm_set_irq_mask(pwm_irq_e irq){
 
-	if(irq==FLD_PWM0_IRQ_IR_FIFO_EN)
+	if(irq==FLD_PWM0_IR_FIFO_IRQ)
 	{
 		BM_SET(reg_pwm_irq_mask(1), BIT(0));
 	}
@@ -310,9 +316,9 @@ static inline void pwm_set_irq_mask(pwm_irq_type_e irq){
  * @param[in] mask - variable of enum to select the pwm interrupt source.
  * @return	  none.
  */
-static inline void pwm_clr_irq_mask(pwm_irq_type_e irq){
+static inline void pwm_clr_irq_mask(pwm_irq_e irq){
 
-	if(irq==FLD_PWM0_IRQ_IR_FIFO_EN)
+	if(irq==FLD_PWM0_IR_FIFO_IRQ)
 	{
 		BM_SET(reg_pwm_irq_mask(1), irq>>15);
 	}
@@ -329,9 +335,9 @@ static inline void pwm_clr_irq_mask(pwm_irq_type_e irq){
  * @param[in] none.
  * @return	  none.
  */
-static inline u8 pwm_set_irq_status(pwm_irq_status_clr_e irq){
+static inline u8 pwm_get_irq_status(pwm_irq_e irq){
 
-	if(irq==FLD_PWM0_IRQ_IR_FIFO_CNT)
+	if(irq==FLD_PWM0_IR_FIFO_IRQ)
 	{
 		return (reg_pwm_irq_sta(1) & BIT(0));
 	}
@@ -348,9 +354,9 @@ static inline u8 pwm_set_irq_status(pwm_irq_status_clr_e irq){
  * @param[in] irq  - variable of enum to select the pwm interrupt source.
  * @return	  none.
  */
-static inline void pwm_clr_irq_status(pwm_irq_status_clr_e irq){
+static inline void pwm_clr_irq_status(pwm_irq_e irq){
 
-	if(irq==FLD_PWM0_IRQ_IR_FIFO_CNT)
+	if(irq==FLD_PWM0_IR_FIFO_IRQ)
 	{
 		BM_SET(reg_pwm_irq_sta(1), BIT(0));
 	}
@@ -509,6 +515,34 @@ void pwm_set_dma_buf(dma_chn_e chn,u32 buf_addr,u32 len);
  * @return    none
  */
 void pwm_ir_dma_mode_start(dma_chn_e chn);
+
+
+
+/**
+ * @brief     This function servers to configure DMA head node.
+ * @param[in] chn - to select the DMA channel.
+ * @param[in] src_addr - to configure DMA source address.
+ * @param[in] data_len - to configure DMA length.
+ * @param[in] head_of_list - to configure the address of the next node configure.
+ * @return    none
+ */
+void pwm_set_dma_chain_llp(dma_chn_e chn,u16 * src_addr, u32 data_len,dma_chain_config_st * head_of_list);
+
+
+
+
+/**
+ * @brief     This function servers to configure DMA cycle chain node.
+ * @param[in] chn - to select the DMA channel.
+ * @param[in] config_addr  - to servers to configure the address of the current node.
+ * @param[in] llponit - to configure the address of the next node configure.
+ * @param[in] src_addr - to configure DMA source address.
+ * @param[in] data_len - to configure DMA length.
+ * @return    none
+ */
+void pwm_set_tx_dma_add_list_element(dma_chn_e chn,dma_chain_config_st *config_addr,dma_chain_config_st *llponit ,u16 * src_addr,u32 data_len);
+
+
 
 #endif
 

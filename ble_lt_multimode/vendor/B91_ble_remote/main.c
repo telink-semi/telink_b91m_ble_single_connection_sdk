@@ -41,46 +41,41 @@ extern void main_loop (void);
 _attribute_ram_code_
 void rf_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 	DBG_CHN10_HIGH;
 
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_rf);
 
 	irq_blt_sdk_handler ();
 	DBG_CHN10_LOW;
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ15_ZB_RT);
-	NDS_FENCE_IORW;
+
 }
 
 
 _attribute_ram_code_
 void stimer_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 	DBG_CHN9_HIGH;
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_sysTimer);
 
 	irq_blt_sdk_handler ();
 
 	DBG_CHN9_LOW;
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
-	NDS_FENCE_IORW;
+
 }
 
 _attribute_ram_code_
 void pwm_irq_handler(void)
 {
 #if (REMOTE_IR_ENABLE)
-	NESTED_IRQ_ENTER();
+
 //	DBG_CHN1_TOGGLE;
 
 	rc_ir_irq_prc();
 
 //	DBG_CHN1_TOGGLE;
-	plic_interrupt_complete(IRQ16_PWM);
-	NESTED_IRQ_EXIT();
+
 #endif
 }
 

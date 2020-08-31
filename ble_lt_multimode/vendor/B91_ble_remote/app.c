@@ -507,6 +507,7 @@ void user_init_normal(void)
 #if (BLE_REMOTE_OTA_ENABLE)
 	////////////////// OTA relative ////////////////////////
 	bls_ota_clearNewFwDataArea(); //must
+	bls_ota_set_VersionFlashAddr_and_VersionNumber(OTA_VERSION_FLASH_ADDR, OTA_VERSION_NUMBER); //must
 	bls_ota_registerStartCmdCb(app_enter_ota_mode);
 	bls_ota_registerResultIndicateCb(app_debug_ota_result);  //debug
 #endif

@@ -32,9 +32,24 @@
 #include "timer.h"
 #include "sys.h"
 #include "core.h"
-#define NOP5	asm("nop");asm("nop");asm("nop");asm("nop");asm("nop")
-#define NOP10	NOP5;NOP5
-#define NOP40	NOP10;NOP10;NOP10;NOP10
+
+preempt_config_st  static s_flash_preempt_config=
+{
+	.preempt_en =0,
+	.threshold  =1,
+};
+
+/**
+ * @brief This function serves to set   priority threshold.when the  interrupt priority>Threshold flash process will disturb by interrupt.
+ * @param[in]   preempt_en -1 can disturb by interrupt, 0 can disturb by interrupt.
+ * @param[in]   threshold -priority Threshold.
+ * @return    none
+ */
+void flash_plic_preempt_config(unsigned char preempt_en,unsigned char threshold)
+{
+	s_flash_preempt_config.preempt_en=preempt_en;
+	s_flash_preempt_config.threshold=threshold;
+}
 
 static inline int flash_is_busy(){
 	return mspi_read() & 0x01;				//  the busy bit, pls check flash spec
@@ -45,9 +60,9 @@ static inline int flash_is_busy(){
  * @param[in] cmd - set command.
  * @return    none
  */
-_attribute_ram_code_ static void flash_send_cmd(unsigned char cmd){
+_attribute_ram_code_sec_noinline_ static void flash_send_cmd(unsigned char cmd){
 	mspi_high();
-	delay_us(1);
+	CLOCK_DLY_10_CYC;
 	mspi_low();
 	mspi_write(cmd);
 	mspi_wait();
@@ -58,7 +73,7 @@ _attribute_ram_code_ static void flash_send_cmd(unsigned char cmd){
  * @param[in] addr - the flash address.
  * @return    none
  */
-_attribute_ram_code_ static void flash_send_addr(unsigned int addr){
+_attribute_ram_code_sec_noinline_ static void flash_send_addr(unsigned int addr){
 	mspi_write((unsigned char)(addr>>16));
 	mspi_wait();
 	mspi_write((unsigned char)(addr>>8));
@@ -75,9 +90,9 @@ volatile unsigned char flash_cnt = 1;
  * @param[in] none.
  * @return    none.
  */
-_attribute_ram_code_ static void flash_wait_done(void)
+_attribute_ram_code_sec_noinline_ static void flash_wait_done(void)
 {
-	delay_us(100);
+//	delay_us(100);
 	flash_send_cmd(FLASH_READ_STATUS_CMD);
 
 	int i;
@@ -95,11 +110,11 @@ _attribute_ram_code_ static void flash_wait_done(void)
  * @param[in]	addr the start address of the sector needs to erase.
  * @return 		none
  */
-_attribute_ram_code_ void flash_erase_sector_ram(unsigned long addr){
+_attribute_ram_code_sec_noinline_ void flash_erase_sector_ram(unsigned long addr){
 #if SUPPORT_PFT_ARCH
 	reg_irq_threshold = 1;
 #else
-	unsigned int r= core_disable_interrupt();
+	unsigned int r= core_interrupt_disable();
 #endif
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
@@ -107,19 +122,19 @@ _attribute_ram_code_ void flash_erase_sector_ram(unsigned long addr){
 	flash_send_addr(addr);
 	mspi_high();
 	flash_wait_done();
-	NOP5;
+	CLOCK_DLY_5_CYC;
 #if SUPPORT_PFT_ARCH
 	reg_irq_threshold = 0;
 #else
 	core_restore_interrupt(r);
 #endif
 }
-_attribute_text_code_ void flash_erase_sector(unsigned long addr){
-	__asm__("csrci 	mmisc_ctl,8");//disable BTB
-	flash_erase_sector_ram(addr);
-	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
-}
+_attribute_text_sec_ void flash_erase_sector(unsigned long addr){
 
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_erase_sector_ram(addr);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+}
 
 /**
  * @brief 		This function writes the buffer's content to a page.
@@ -128,39 +143,48 @@ _attribute_text_code_ void flash_erase_sector(unsigned long addr){
  * @param[in]   buf the start address of the content needs to write into
  * @return 		none
  */
-_attribute_ram_code_ void flash_write_page_ram(unsigned long addr, unsigned long len, unsigned char *buf){
+_attribute_ram_code_sec_noinline_ void flash_write_page_ram(unsigned long addr, unsigned long len, unsigned char *buf){
 #if SUPPORT_PFT_ARCH
 	reg_irq_threshold = 1;
 #else
-	unsigned int r= core_disable_interrupt();//???irq_disable();
+	unsigned int r= core_interrupt_disable();//???irq_disable();
 #endif
 	mspi_stop_xip();
-
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
 	flash_send_cmd(FLASH_WRITE_CMD);
 	flash_send_addr(addr);
+
 	unsigned int i;
 	for(i = 0; i < len; ++i){
-		mspi_write(buf[i]);		/* write data */
+		mspi_write(buf[i]);			/* write data */
 		mspi_wait();
 	}
-
 	mspi_high();
 	flash_wait_done();
+	CLOCK_DLY_5_CYC;
 
-	NOP5;
 #if SUPPORT_PFT_ARCH
 	reg_irq_threshold = 0;
 #else
 	core_restore_interrupt(r);//???irq_restore(r);
 #endif
 }
-_attribute_text_code_ void flash_write_page(unsigned long addr, unsigned long len, unsigned char *buf){
-	__asm__("csrci 	mmisc_ctl,8");//disable BTB
-	flash_write_page_ram(addr, len, buf);
-	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
-}
+_attribute_text_sec_ void flash_write_page(unsigned long addr, unsigned long len, unsigned char *buf){
 
+	int ns = PAGE_SIZE - (addr & 0xff);
+	int nw = 0;
+
+	do{
+		nw = len > ns ? ns : len;
+		__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+		flash_write_page_ram(addr,len,buf);
+		__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+		ns = PAGE_SIZE;
+		addr += nw;
+		buf += nw;
+		len -= nw;
+	}while(len > 0);
+}
 
 /**
  * @brief 		This function reads the content from a page to the buf.
@@ -169,120 +193,85 @@ _attribute_text_code_ void flash_write_page(unsigned long addr, unsigned long le
  * @param[out]  buf the start address of the buffer
  * @return 		none
  */
-_attribute_ram_code_ void flash_read_page_ram(unsigned long addr, unsigned long len, unsigned char *buf){
+_attribute_ram_code_sec_noinline_ void flash_read_page_ram(unsigned long addr, unsigned long len, unsigned char *buf){
 #if SUPPORT_PFT_ARCH
 	reg_irq_threshold = 1;
 #else
-	unsigned int r= core_disable_interrupt();//???irq_disable();
+	unsigned int r= core_interrupt_disable();//???irq_disable();
 #endif
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_READ_CMD);
 	flash_send_addr(addr);
 
-	mspi_write(0x00);		/* dummy,  to issue clock */
+	mspi_write(0x00);				/* dummy,  to issue clock */
 	mspi_wait();
-	mspi_fm_rd_en();//reg_mspi_fm |= FLD_MSPI_RD_TRIG_EN;//???mspi_ctrl_write(0x0a);	/* auto mode */
+	mspi_fm_rd_en();				/* auto mode */
 	mspi_wait();
 	/* get data */
 	for(int i = 0; i < len; ++i){
 		*buf++ = mspi_get();
 		mspi_wait();
 	}
-	mspi_fm_rd_dis();			/* off read auto mode */
+	mspi_fm_rd_dis();				/* off read auto mode */
 	mspi_high();
-	NOP5;
+	CLOCK_DLY_5_CYC;
 #if SUPPORT_PFT_ARCH
 	reg_irq_threshold = 0;
 #else
 	core_restore_interrupt(r);//???irq_restore(r);
 #endif
 }
-_attribute_text_code_ void flash_read_page(unsigned long addr, unsigned long len, unsigned char *buf){
-	__asm__("csrci 	mmisc_ctl,8");//disable BTB
-	flash_read_page_ram(addr, len, buf);
-	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
-}
+_attribute_text_sec_ void flash_read_page(unsigned long addr, unsigned long len, unsigned char *buf){
 
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_read_page_ram(addr,len,buf);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+}
 
 /**
  * @brief 		This function serves to erase a page(256 bytes).
  * @param[in]   addr the start address of the page needs to erase.
  * @return 		none
  */
-_attribute_ram_code_ void flash_erase_chip_ram(void)
+
+_attribute_ram_code_sec_noinline_ void flash_erase_chip_ram(void)
 {
 #if SUPPORT_PFT_ARCH
 	reg_irq_threshold = 1;
 #else
-	unsigned int r= core_disable_interrupt();
+	unsigned int r= core_interrupt_disable();
 #endif
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
 	flash_send_cmd(FLASH_CHIP_ERASE_CMD);
 	mspi_high();
 	flash_wait_done();
-	NOP5;
+	CLOCK_DLY_5_CYC;
 #if SUPPORT_PFT_ARCH
 	reg_irq_threshold = 0;
 #else
 	core_restore_interrupt(r);
 #endif
 }
-_attribute_text_code_ void flash_erase_chip(void)
-{
-	__asm__("csrci 	mmisc_ctl,8");//disable BTB
+_attribute_text_sec_ void flash_erase_chip(void){
+
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
 	flash_erase_chip_ram();
-	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
-
-
-_attribute_ram_code_ unsigned int flash_get_jedec_id_ram(void)
-{
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r  = core_disable_interrupt();
-#endif
-	flash_send_cmd(FLASH_GET_JEDEC_ID);
-	unsigned char manufacturer = mspi_read();
-	unsigned char mem_type = mspi_read();
-	unsigned char cap_id = mspi_read();
-	mspi_high();
-	NOP5;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);
-#endif
-	return (unsigned int)((manufacturer << 24 | mem_type << 16 | cap_id));
-}
-_attribute_text_code_ unsigned int flash_get_jedec_id(void)
-{
-	__asm__("csrci 	mmisc_ctl,8");//disable BTB
-	unsigned int id;
-	id = flash_get_jedec_id_ram();
-	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
-
-	return id;
-}
-
-
-
-
-
-#if(FLASH_TYPE==S25FL512S)
-#else
-
-#if 0
 /**
  * @brief 		This function serves to erase a page(256 bytes).
  * @param[in]   addr the start address of the page needs to erase.
  * @return 		none
  */
-_attribute_ram_code_ void flash_erase_page(unsigned int addr)
+_attribute_ram_code_ void flash_erase_page_ram(unsigned int addr)
 {
-	unsigned int r=core_disable_interrupt();
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
 
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
@@ -290,8 +279,18 @@ _attribute_ram_code_ void flash_erase_page(unsigned int addr)
 	flash_send_addr(addr);
 	mspi_high();
 	flash_wait_done();
+	CLOCK_DLY_5_CYC;
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
+}
+_attribute_text_sec_ void flash_erase_page(unsigned int addr){
 
-	core_restore_interrupt(r);
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_erase_page_ram(addr);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
@@ -299,9 +298,13 @@ _attribute_ram_code_ void flash_erase_page(unsigned int addr)
  * @param[in]   addr the start address of the block needs to erase.
  * @return 		none
  */
-_attribute_ram_code_ void flash_erase_32kblock(unsigned int addr)
+_attribute_ram_code_sec_noinline_ void flash_erase_32kblock_ram(unsigned int addr)
 {
-	unsigned int r= core_disable_interrupt();
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
 
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
@@ -309,8 +312,18 @@ _attribute_ram_code_ void flash_erase_32kblock(unsigned int addr)
 	flash_send_addr(addr);
 	mspi_high();
 	flash_wait_done();
+	CLOCK_DLY_5_CYC;
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
+}
+_attribute_text_sec_ void flash_erase_32kblock(unsigned int addr){
 
-	core_restore_interrupt(r);
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_erase_32kblock_ram(addr);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
@@ -318,9 +331,13 @@ _attribute_ram_code_ void flash_erase_32kblock(unsigned int addr)
  * @param[in]   addr the start address of the block needs to erase.
  * @return 		none
  */
-_attribute_ram_code_ void flash_erase_64kblock(unsigned int addr)
+_attribute_ram_code_sec_noinline_ void flash_erase_64kblock_ram(unsigned int addr)
 {
-	unsigned int r= core_disable_interrupt();
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
 
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
@@ -328,8 +345,18 @@ _attribute_ram_code_ void flash_erase_64kblock(unsigned int addr)
 	flash_send_addr(addr);
 	mspi_high();
 	flash_wait_done();
+	CLOCK_DLY_5_CYC;
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
+}
+_attribute_text_sec_ void flash_erase_64kblock(unsigned int addr){
 
-	core_restore_interrupt(r);
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_erase_64kblock_ram(addr);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
@@ -337,28 +364,38 @@ _attribute_ram_code_ void flash_erase_64kblock(unsigned int addr)
  * @param[in]  	the value of status
  * @return 		status
  */
-_attribute_ram_code_ unsigned char flash_write_status(unsigned char data)
+_attribute_ram_code_sec_noinline_ void flash_write_status_ram(unsigned short data)
 {
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
+
 	unsigned char result;
-	unsigned int r= core_disable_interrupt();
 
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
 	flash_send_cmd(FLASH_WRITE_STATUS_CMD);
-	mspi_write(data);
+	mspi_write((unsigned char)data);
+	mspi_wait();
+	mspi_write((unsigned char)(data>>8));
 	mspi_wait();
 	mspi_high();
 	flash_wait_done();
-
-	delay_us(100);
-	flash_send_cmd(FLASH_READ_STATUS_CMD);
-
-	result = mspi_read();
 	mspi_high();
+	CLOCK_DLY_5_CYC;
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
+}
+_attribute_text_sec_ void flash_write_status(unsigned short data){
 
-	core_restore_interrupt(r);
-
-	return  result;
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_write_status_ram(data);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
@@ -366,17 +403,36 @@ _attribute_ram_code_ unsigned char flash_write_status(unsigned char data)
  * @param[in]  	none
  * @return 		none
  */
-_attribute_ram_code_ unsigned char flash_read_status(void){
+_attribute_ram_code_sec_noinline_ unsigned short flash_read_status_ram(void){
 
 	unsigned char status =0;
-	unsigned int r= core_disable_interrupt();
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
 
 	mspi_stop_xip();
-	flash_send_cmd(FLASH_READ_STATUS_CMD);
-	/* get low 8 bit status */
-	status = mspi_read();
+	flash_send_cmd(FLASH_READ_STATUS_1_CMD);	/* get high 8 bit status */
+	status = (mspi_read()<<8);
+	mspi_high();	
+	flash_send_cmd(FLASH_READ_STATUS_CMD);		/* get low 8 bit status */
+	status |= mspi_read();
 	mspi_high();
-	core_restore_interrupt(r);
+	CLOCK_DLY_5_CYC;
+
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
+	return status;
+}
+_attribute_text_sec_  unsigned short flash_read_status(void){
+
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	unsigned short status = flash_read_status_ram();
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 	return status;
 }
 
@@ -389,16 +445,31 @@ _attribute_ram_code_ unsigned char flash_read_status(void){
  * @param[in] 	none
  * @return 		none.
  */
-_attribute_ram_code_ void flash_deep_powerdown(void)
+_attribute_ram_code_sec_noinline_ void flash_deep_powerdown_ram(void)
 {
-	unsigned int r= core_disable_interrupt();
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
 
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_POWER_DOWN);
 	mspi_high();
 	delay_us(1);
+	CLOCK_DLY_5_CYC;
 
-	core_restore_interrupt(r);
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
+}
+_attribute_text_sec_ void flash_deep_powerdown(void){
+
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_deep_powerdown_ram();
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
@@ -411,17 +482,32 @@ _attribute_ram_code_ void flash_deep_powerdown(void)
  * @param[in] 	none
  * @return 		none.
  */
-_attribute_ram_code_ void flash_release_deep_powerdown(void)
+_attribute_ram_code_sec_noinline_ void flash_release_deep_powerdown_ram(void)
 {
-	unsigned int r= core_disable_interrupt();
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
 
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_POWER_DOWN_RELEASE);
 	mspi_high();
 	flash_wait_done();
 	mspi_high();
+	CLOCK_DLY_5_CYC;
 
-	core_restore_interrupt(r);
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
+}
+_attribute_text_sec_ void flash_release_deep_powerdown(void){
+
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_release_deep_powerdown_ram();
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
@@ -430,15 +516,20 @@ _attribute_ram_code_ void flash_release_deep_powerdown(void)
  * @param[in] buf - store MID of flash
  * @return    none.
  */
-_attribute_ram_code_ void flash_read_mid(unsigned char *buf){
+_attribute_ram_code_sec_noinline_ void flash_read_mid_ram(unsigned char *buf){
+
 	unsigned char j = 0;
-	unsigned int r= core_disable_interrupt();
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
 
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_GET_JEDEC_ID);
 	mspi_write(0x00);		/* dummy,  to issue clock */
 	mspi_wait();
-	mspi_fm_rd_en();//???mspi_ctrl_write(0x0a);	/* auto mode */
+	mspi_fm_rd_en();		/* auto mode */
 	mspi_wait();
 
 	for(j = 0; j < 3; ++j){
@@ -447,8 +538,19 @@ _attribute_ram_code_ void flash_read_mid(unsigned char *buf){
 	}
 	mspi_fm_rd_dis();			/* off read auto mode */
 	mspi_high();
+	CLOCK_DLY_5_CYC;
 
-	core_restore_interrupt(r);
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
+}
+_attribute_text_sec_ void flash_read_mid(unsigned char *buf){
+
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_read_mid_ram(buf);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
@@ -458,10 +560,14 @@ _attribute_ram_code_ void flash_read_mid(unsigned char *buf){
  * @param[in] buf   - store UID of flash
  * @return    none.
  */
-_attribute_ram_code_ void flash_read_uid(unsigned char idcmd,unsigned char *buf)
+_attribute_ram_code_sec_noinline_ void flash_read_uid_ram(unsigned char idcmd,unsigned char *buf)
 {
 	unsigned char j = 0;
-	unsigned int r= core_disable_interrupt();
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
 
 	mspi_stop_xip();
 	flash_send_cmd(idcmd);
@@ -480,7 +586,7 @@ _attribute_ram_code_ void flash_read_uid(unsigned char idcmd,unsigned char *buf)
 	}
 	mspi_write(0x00);			/* dummy,  to issue clock */
 	mspi_wait();
-	mspi_fm_rd_en();//???mspi_ctrl_write(0x0a);	/* auto mode */
+	mspi_fm_rd_en();			/* auto mode */
 	mspi_wait();
 
 	for(j = 0; j < 16; ++j){
@@ -489,7 +595,19 @@ _attribute_ram_code_ void flash_read_uid(unsigned char idcmd,unsigned char *buf)
 	}
 	mspi_fm_rd_dis();			/* off read auto mode */
 	mspi_high();
-	core_restore_interrupt(r);
+	CLOCK_DLY_5_CYC;
+
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
+}
+_attribute_text_sec_ void flash_read_uid(unsigned char idcmd,unsigned char *buf){
+
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_read_uid_ram(idcmd,buf);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
@@ -499,37 +617,45 @@ _attribute_ram_code_ void flash_read_uid(unsigned char idcmd,unsigned char *buf)
  * @return       0:error 1:ok
 
  */
-_attribute_ram_code_ int flash_read_mid_uid_with_check( unsigned int *flash_mid ,unsigned char *flash_uid)
+_attribute_ram_code_sec_noinline_ int flash_read_mid_uid_with_check_ram( unsigned int *flash_mid ,unsigned char *flash_uid)
 {
-	  unsigned char no_uid[16]={0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01};
-	  int i,f_cnt=0;
-	  unsigned int mid;
+	unsigned char no_uid[16]={0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01};
+	int i,f_cnt=0;
+	unsigned int mid;
 
-	  mspi_stop_xip();
-	  flash_read_mid((unsigned char*)&mid);
-	  mid = mid&0xffff;
-	  *flash_mid  = mid;
-	 //     	  		 CMD        MID
-	 //  GD25LD40C 		 0x4b     0x60c8
-	 //  GD25LD05C  	 0x4b 	  0x60c8
-	 //  P25Q40L   		 0x4b     0x6085
-	 //  MD25D40DGIG	 0x4b     0x4051
-	  if( (mid == 0x60C8) || (mid == 0x6085) ||(mid == 0x4051)){
-		  flash_read_uid(FLASH_GD_PUYA_READ_UID_CMD,(unsigned char *)flash_uid);
-	  }else{
-		  return 0;
-	  }
-	  for(i=0;i<16;i++){
+	mspi_stop_xip();
+	flash_read_mid((unsigned char*)&mid);
+	mid = mid&0xffff;
+	*flash_mid  = mid;
+	//     	  		 CMD        MID
+	//  GD25LD40C 		 0x4b     0x60c8
+	//  GD25LD05C  	 0x4b 	  0x60c8
+	//  P25Q40L   		 0x4b     0x6085
+	//  MD25D40DGIG	 0x4b     0x4051
+	if( (mid == 0x60C8) || (mid == 0x6085) ||(mid == 0x4051)){
+		flash_read_uid(FLASH_GD_PUYA_READ_UID_CMD,(unsigned char *)flash_uid);
+	}else{
+		return 0;
+	}
+	for(i=0;i<16;i++){
 		if(flash_uid[i]==no_uid[i]){
 			f_cnt++;
 		}
-	  }
-	  if(f_cnt==16){//no uid flash
-			  return 0;
+	}
+	if(f_cnt==16){//no uid flash
+		return 0;
 
-	  }else{
-		  return  1;
-	  }
+	}else{
+		return  1;
+	}
+	CLOCK_DLY_5_CYC;
+}
+_attribute_text_sec_ int flash_read_mid_uid_with_check( unsigned int *flash_mid ,unsigned char *flash_uid){
+
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	int result = flash_read_mid_uid_with_check_ram(flash_mid,flash_uid);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+	return result;
 }
 
 /**
@@ -538,17 +664,19 @@ _attribute_ram_code_ int flash_read_mid_uid_with_check( unsigned int *flash_mid 
  * @param[in]   data - refer to Driver API Doc.
  * @return 		none
  */
-_attribute_ram_code_ void flash_lock(Flash_TypeDef type , unsigned short data)
+_attribute_ram_code_sec_noinline_ void flash_lock_ram(flash_type_e type , unsigned short data)
 {
-	unsigned int r= core_disable_interrupt();
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
 
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
 	flash_send_cmd(FLASH_WRITE_STATUS_CMD);
-	if ((type == FLASH_TYPE_GD)||(type == FLASH_TYPE_XTX)){
-		mspi_write((unsigned char)data);   //8 bit status
-	}else if(type == FLASH_TYPE_PUYA){
-
+	if(type == FLASH_TYPE_PUYA)
+	{
 		mspi_write((unsigned char)data);
 		mspi_wait();
 		mspi_write((unsigned char)(data>>8));//16bit status
@@ -557,9 +685,20 @@ _attribute_ram_code_ void flash_lock(Flash_TypeDef type , unsigned short data)
 	mspi_wait();
 	mspi_high();
 	flash_wait_done();
-	delay_us(100);
 	mspi_high();
-	core_restore_interrupt(r);
+	CLOCK_DLY_5_CYC;
+
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
+}
+_attribute_text_sec_ void flash_lock(flash_type_e type , unsigned short data){
+
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_lock_ram(type,data);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
@@ -567,17 +706,19 @@ _attribute_ram_code_ void flash_lock(Flash_TypeDef type , unsigned short data)
  * @param[in]   type - flash type include GD,Puya and XTX
  * @return 		none
  */
-_attribute_ram_code_ void flash_unlock(Flash_TypeDef type)
+_attribute_ram_code_sec_noinline_ void flash_unlock_ram(flash_type_e type)
 {
-	unsigned int r= core_disable_interrupt();
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r= core_interrupt_disable();
+#endif
 
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
 	flash_send_cmd(FLASH_WRITE_STATUS_CMD);
-	if ((type == FLASH_TYPE_GD)||(type == FLASH_TYPE_XTX)){
-		mspi_write(0);   //8 bit status
-	}else if(type == FLASH_TYPE_PUYA){
-
+	if(type == FLASH_TYPE_PUYA)
+	{
 		mspi_write(0);
 		mspi_wait();
 		mspi_write(0);//16bit status
@@ -586,13 +727,53 @@ _attribute_ram_code_ void flash_unlock(Flash_TypeDef type)
 	mspi_wait();
 	mspi_high();
 	flash_wait_done();
-	delay_us(100);
 	mspi_high();
-	core_restore_interrupt(r);
+	CLOCK_DLY_5_CYC;
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);//???irq_restore(r);
+#endif
 }
-#endif
-#endif
 
+_attribute_text_sec_ void flash_unlock(flash_type_e type){
+
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_unlock_ram(type);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+}
+
+/*******************************      BLE Stack Use     ******************************/
+_attribute_ram_code_ unsigned int flash_get_jedec_id_ram(void)
+{
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r  = core_interrupt_disable();
+#endif
+	flash_send_cmd(FLASH_GET_JEDEC_ID);
+	unsigned char manufacturer = mspi_read();
+	unsigned char mem_type = mspi_read();
+	unsigned char cap_id = mspi_read();
+	mspi_high();
+	CLOCK_DLY_5_CYC;
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	core_restore_interrupt(r);
+#endif
+	return (unsigned int)((manufacturer << 24 | mem_type << 16 | cap_id));
+}
+
+_attribute_text_code_ unsigned int flash_get_jedec_id(void)
+{
+	__asm__("csrci 	mmisc_ctl,8");//disable BTB
+	unsigned int id;
+	id = flash_get_jedec_id_ram();
+	__asm__("csrsi 	mmisc_ctl,8");//enable BTB
+
+	return id;
+}
 
 
 

@@ -10,16 +10,15 @@
 
 #include "rf.h"
 
-#define ACCESS_ADDR                      0x140808
-#define ACCESS_CODE_EMI                  0x29417671
-#define ACCLEN_ADDR                      0x140805
+/**********************************************************************************************************************
+ *                                           global macro                                                             *
+ *********************************************************************************************************************/
+#define EMI_ACCESS_ADDR                      0x140808
+#define EMI_ACCESS_CODE                      0x29417671
 
-/**
- * @brief   This function serves to set singletone power.
- * @param   level - the power level.
- * @return  none.
- */
-void rf_set_power_level_index_singletone (rf_power_level_e level);
+/**********************************************************************************************************************
+ *                                         function declaration                                                    *
+ *********************************************************************************************************************/
 
 /**
  * @brief   This function serves to set singletone power and channel.
@@ -27,7 +26,7 @@ void rf_set_power_level_index_singletone (rf_power_level_e level);
  * @param   rf_chn - the channel.
  * @return  none.
  */
-void rf_emi_single_tone(rf_power_level_e power_level,signed char rf_chn);
+void rf_emi_tx_single_tone(rf_power_level_e power_level,signed char rf_chn);
 
 /**
  * @brief   This function serves to set rx mode and channel.
@@ -35,7 +34,7 @@ void rf_emi_single_tone(rf_power_level_e power_level,signed char rf_chn);
  * @param   rf_chn - the rx channel.
  * @return  none.
  */
-void rf_emi_rx(rf_mode_e mode,signed char rf_chn);
+void rf_emi_rx_setup(rf_mode_e mode,signed char rf_chn);
 
 /**
  * @brief   This function serves is receiving service program
@@ -66,13 +65,6 @@ unsigned int rf_emi_get_rxpkt_cnt(void);
 char rf_emi_get_rssi_avg(void);
 
 /**
- * @brief   This function serves to Set the CD mode correlation register.
- * @param   none.
- * @return  none.
- */
-void rf_continue_mode_setup(void);
-
-/**
  * @brief   This function serves to init the CD mode.
  * @param   rf_mode - mode of RF.
  * @param   power_level - power level of RF.
@@ -83,7 +75,7 @@ void rf_continue_mode_setup(void);
  * 					   2:0x55
  * @return  none.
  */
-void rf_emi_tx_continue_setup(rf_mode_e rf_mode,rf_power_level_e power_level,signed char rf_chn,unsigned char pkt_type);
+void rf_emi_tx_continue_update_data(rf_mode_e rf_mode,rf_power_level_e power_level,signed char rf_chn,unsigned char pkt_type);
 
 /**
  * @brief   This function serves to continue to send CD mode.
@@ -91,13 +83,6 @@ void rf_emi_tx_continue_setup(rf_mode_e rf_mode,rf_power_level_e power_level,sig
  * @return  none.
  */
 void rf_continue_mode_run(void);
-
-/**
- * @brief   This function serves to generate random number.
- * @param   the old random number.
- * @return  the new random number.
- */
-unsigned int pnGen(unsigned int state);
 
 /**
  * @brief   This function serves to send packets in the burst mode

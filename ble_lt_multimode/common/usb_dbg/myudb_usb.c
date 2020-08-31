@@ -444,7 +444,7 @@ _attribute_ram_code_ int myudb_mem_cmd (u8 *p, int nbyte)
 		}
 		else if (type == MYHCI_FW_DOWNLOAD)
 		{
-			core_disable_interrupt();
+			core_interrupt_disable();
 			ret = MYHCI_FW_DOWNLOAD;
 		}
 		usb_send_status_pkt (0x82, 8, rsp, 14);

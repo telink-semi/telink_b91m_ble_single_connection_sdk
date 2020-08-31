@@ -8,20 +8,8 @@
 #ifndef STIMER_H_
 #define STIMER_H_
 
-typedef enum {
-	STIMER_IRQ_MASK     		=   BIT(0),
-	STIMER_32K_CAL_IRQ_MASK     =   BIT(1),
-}stimer_irq_mask_e;
+#include "./reg_include/stimer_reg.h"
 
-typedef enum {
-	FLD_IRQ_SYSTEM_TIMER     		=   BIT(0),
-}system_timer_irq_mask_e;
-
-
-typedef enum {
-	STIMER_IRQ_CLR	     		=   BIT(0),
-	STIMER_32K_CAL_IRQ_CLR     	=   BIT(1),
-}stimer_irq_clr_e;
 
 static inline void stimer_set_irq_mask(stimer_irq_mask_e mask)
 {

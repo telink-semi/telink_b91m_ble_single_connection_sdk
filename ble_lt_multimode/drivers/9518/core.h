@@ -28,18 +28,18 @@
 #include "nds_intrinsic.h"
 #include "../../common/types.h"
 #include "../../common/bit.h"
-#define read_csr(reg)		      __nds__csrr(reg)
-#define write_csr(reg, val)	      __nds__csrw(val, reg)
-#define swap_csr(reg, val)	      __nds__csrrw(val, reg)
-#define set_csr(reg, bit)	      __nds__csrrs(bit, reg)
-#define clear_csr(reg, bit)	      __nds__csrrc(bit, reg)
+#define  read_csr(reg)		         __nds__csrr(reg)
+#define  write_csr(reg, val)	     __nds__csrw(val, reg)
+#define  swap_csr(reg, val)	         __nds__csrrw(val, reg)
+#define set_csr(reg, bit)	         __nds__csrrs(bit, reg)
+#define clear_csr(reg, bit)	         __nds__csrrc(bit, reg)
+
 /*
  * Inline nested interrupt entry/exit macros
  */
 /* Svae/Restore macro */
-#define SAVE_CSR(r)             long __##r = read_csr(r);
-#define RESTORE_CSR(r)          write_csr(r, __##r);
-
+#define save_csr(r)             long __##r = read_csr(r);
+#define restore_csr(r)           write_csr(r, __##r);
 /* Support PowerBrake (Performance Throttling) feature */
 #define	SUPPORT_PFT_ARCH		1
 
@@ -65,28 +65,28 @@
 #define MSTATUS32_SD        	0x80000000
 #define MSTATUS64_SD        	0x8000000000000000
 
-#define SAVE_MXSTATUS()         SAVE_CSR(NDS_MXSTATUS)
-#define RESTORE_MXSTATUS()      RESTORE_CSR(NDS_MXSTATUS)
+#define save_mxstatus()         save_csr(NDS_MXSTATUS)
+#define restore_mxstatus()      restore_csr(NDS_MXSTATUS)
 
  /* Nested IRQ entry macro : Save CSRs and enable global interrupt. */
-#define NESTED_IRQ_ENTER()                              \
-	 SAVE_CSR(NDS_MEPC)                              \
-	 SAVE_CSR(NDS_MSTATUS)                           \
-	 SAVE_MXSTATUS()                                 \
+#define core_save_nested_context()                              \
+	 save_csr(NDS_MEPC)                              \
+	 save_csr(NDS_MSTATUS)                           \
+	 save_mxstatus()                                 \
 	 set_csr(NDS_MSTATUS, MSTATUS_MIE);
 
 /* Nested IRQ exit macro : Restore CSRs */
-#define NESTED_IRQ_EXIT()                               \
+#define core_restore_nested_context()                               \
 	 clear_csr(NDS_MSTATUS, MSTATUS_MIE);            \
-	 RESTORE_CSR(NDS_MSTATUS)                        \
-	 RESTORE_CSR(NDS_MEPC)                           \
-	 RESTORE_MXSTATUS()
+	 restore_csr(NDS_MSTATUS)                        \
+	 restore_csr(NDS_MEPC)                           \
+	 restore_mxstatus()
 #define NDS_FENCE_IORW			__nds__fence(FENCE_IORW,FENCE_IORW)
 #else
-#define SAVE_MXSTATUS()
-#define RESTORE_MXSTATUS()
-#define NESTED_IRQ_ENTER()
-#define NESTED_IRQ_EXIT()
+#define save_mxstatus()
+#define restore_mxstatus()
+#define core_save_nested_context()
+#define core_restore_nested_context()
 #endif
 
 
@@ -103,7 +103,7 @@ feature_e;
  * This function must be used when the system wants to disable all the interrupt
  * it could handle.
  */
-static inline u32 core_disable_interrupt(void){
+static inline u32 core_interrupt_disable(void){
 
 	u32 r = read_csr (NDS_MIE);
 	clear_csr(NDS_MIE, BIT(3)| BIT(7)| BIT(11));
@@ -122,9 +122,15 @@ static inline u32 core_restore_interrupt(u32 en){
 	return 0;
 }
 
-void core_enable_interrupt(void);
-#define  irq_disable		core_disable_interrupt
-#define	 irq_enable			core_enable_interrupt
+/** @brief Enable interrupts globally in the system.
+ * This macro must be used when the initialization phase is over and the interrupts
+ * can start being handled by the system.
+ */
+void core_interrupt_enable(void);
+
+
+#define  irq_disable		core_interrupt_disable
+#define	 irq_enable			core_interrupt_enable
 #define  irq_restore(en)	core_restore_interrupt(en)
 
 #endif

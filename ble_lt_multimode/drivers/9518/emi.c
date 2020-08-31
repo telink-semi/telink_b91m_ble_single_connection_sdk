@@ -6,21 +6,29 @@
  */
 #include "emi.h"
 
-#define STATE0		0x1234
-#define STATE1		0x5678
-#define STATE2		0xabcd
-#define STATE3		0xef01
+/**********************************************************************************************************************
+ *                                           local macro                                                             *
+ *********************************************************************************************************************/
+#define EMI_STATE0		                     0x1234
+#define EMI_STATE1		                     0x5678
+#define EMI_TX_FIFO_ADDR                     0x14081c
+#define EMI_TX_PKT_PAYLOAD		             37
 
-#define TX_FIFO_ADDR     0x14081c
-#define TX_PKT_PAYLOAD		37
+/**********************************************************************************************************************
+ *                                           global constants                                                        *
+ *********************************************************************************************************************/
 
 static unsigned char  emi_rx_packet[128] __attribute__ ((aligned (4)));
 static unsigned char  emi_ble_tx_packet [48]  __attribute__ ((aligned (4))) = {3,0,0,0,0,10};
 static unsigned char  emi_zigbee_tx_packet[48]  __attribute__ ((aligned (4))) = {19,0,0,0,20,0,0};
-static unsigned int   emi_rx_cnt  __attribute__ ((aligned (4))) = 0;
-static unsigned int   emi_rssibuf = 0;
-static signed  char   rssi = 0;
-static unsigned int   state0,state1;
+static unsigned int   s_emi_rx_cnt  __attribute__ ((aligned (4))) = 0;
+static unsigned int   s_emi_rssibuf = 0;
+static signed  char   s_emi_rssi = 0;
+static unsigned int   s_state0,s_state1;
+
+/**********************************************************************************************************************
+ *                                          function implementation                                                   *
+ *********************************************************************************************************************/
 
 /**
  * @brief   This function serves to set singletone power.
@@ -54,7 +62,7 @@ void rf_set_power_level_index_singletone (rf_power_level_e level)
  * @param   rf_chn - the channel.
  * @return  none.
  */
-void rf_emi_single_tone(rf_power_level_e power_level,signed char rf_chn)
+void rf_emi_tx_single_tone(rf_power_level_e power_level,signed char rf_chn)
 {
 	rf_set_chn(rf_chn);//set freq
 	rf_set_power_level_index_singletone(power_level);
@@ -79,15 +87,15 @@ void rf_emi_stop(void)
  * @param   none.
  * @return  none.
  */
-void rf_continue_mode_setup(void)
+void rf_emi_tx_continue_setup(void)
 {
 
 	write_reg8(0x140800,0x0a);
 	write_reg8(0x140808,0x00);  // access code
 
 	write_reg8(0x140801,0x80);//kick tx controller to wait data
-	state0 = STATE0;
-	state1 = STATE1;
+	s_state0 = EMI_STATE0;
+	s_state1 = EMI_STATE1;
 }
 
 /**
@@ -101,7 +109,7 @@ void rf_continue_mode_setup(void)
  * 					   2:0x55
  * @return  none.
  */
-void rf_emi_tx_continue_setup(rf_mode_e rf_mode,rf_power_level_e power_level,signed char rf_chn,unsigned char pkt_type)
+void rf_emi_tx_continue_update_data(rf_mode_e rf_mode,rf_power_level_e power_level,signed char rf_chn,unsigned char pkt_type)
 {
 	rf_mode_init();
 	switch(rf_mode)
@@ -128,7 +136,7 @@ void rf_emi_tx_continue_setup(rf_mode_e rf_mode,rf_power_level_e power_level,sig
 	rf_set_chn(rf_chn);
 	reg_rf_ll_ctrl0 = 0x45;   // tx_en
 	rf_set_power_level_index_singletone (power_level);
-	rf_continue_mode_setup();
+	rf_emi_tx_continue_setup();
 	write_reg8(0x140808, pkt_type);  // 0:pbrs9 	1:0xf0	 2:0x55
 }
 
@@ -137,7 +145,7 @@ void rf_emi_tx_continue_setup(rf_mode_e rf_mode,rf_power_level_e power_level,sig
  * @param   the old random number.
  * @return  the new random number.
  */
-unsigned int pnGen(unsigned int state)
+unsigned int emi_pn_gen(unsigned int state)
 {
 	unsigned int feed = 0;
 	feed = (state&0x4000) >> 1;
@@ -155,22 +163,22 @@ unsigned int pnGen(unsigned int state)
 void rf_continue_mode_run(void)
 {
 	if(read_reg8(0x140808) == 1){
-		write_reg32(TX_FIFO_ADDR, 0x0f0f0f0f);
+		write_reg32(EMI_TX_FIFO_ADDR, 0x0f0f0f0f);
 	}else if(read_reg8(0x140808)==2){
-		write_reg32(TX_FIFO_ADDR, 0x55555555);
+		write_reg32(EMI_TX_FIFO_ADDR, 0x55555555);
 	}else if(read_reg8(0x140808)==3){
-		write_reg32(TX_FIFO_ADDR, read_reg32(0x140809));
+		write_reg32(EMI_TX_FIFO_ADDR, read_reg32(0x140809));
 	}else if(read_reg8(0x140808)==4){
-		write_reg32(TX_FIFO_ADDR, 0);
+		write_reg32(EMI_TX_FIFO_ADDR, 0);
 	}else if(read_reg8(0x140808)==5){
-		write_reg32(TX_FIFO_ADDR, 0xffffffff);
+		write_reg32(EMI_TX_FIFO_ADDR, 0xffffffff);
 	}else{
-		write_reg32(TX_FIFO_ADDR, (state0<<16)+state1);
-		state0 = pnGen(state0);
-		state1 = pnGen(state1);
+		write_reg32(EMI_TX_FIFO_ADDR, (s_state0<<16)+s_state1);
+		s_state0 = emi_pn_gen(s_state0);
+		s_state1 = emi_pn_gen(s_state1);
 	}
 
-	while(read_reg8(TX_FIFO_ADDR) & 0x1){
+	while(read_reg8(EMI_TX_FIFO_ADDR) & 0x1){
 	}
 }
 
@@ -180,7 +188,7 @@ void rf_continue_mode_run(void)
  * @param   rf_chn - the rx channel.
  * @return  none.
  */
-void rf_emi_rx(rf_mode_e mode,signed char rf_chn)
+void rf_emi_rx_setup(rf_mode_e mode,signed char rf_chn)
 {
 	rf_mode_init();
 	switch(mode)
@@ -207,14 +215,13 @@ void rf_emi_rx(rf_mode_e mode,signed char rf_chn)
 	rf_pn_disable();
 	rf_set_chn(rf_chn);//set freq
 	if(mode != RF_MODE_ZIGBEE_250K)
-		write_reg32(ACCESS_ADDR,ACCESS_CODE_EMI); 	//accesscode: 1001-0100 1000-0010 0110-1110 1000-1110   29 41 76 71
-	write_reg8 (ACCLEN_ADDR, read_reg8(ACCLEN_ADDR)|0x80); //trig accesscode
+		rf_access_code_comm(EMI_ACCESS_CODE); 	//accesscode: 1001-0100 1000-0010 0110-1110 1000-1110   29 41 76 71
 	rf_set_tx_rx_off();
 	rf_set_rxmode();
 	delay_us(150);
-	rssi = 0;
-	emi_rssibuf = 0;
-	emi_rx_cnt = 0;
+	s_emi_rssi = 0;
+	s_emi_rssibuf = 0;
+	s_emi_rx_cnt = 0;
 }
 
 /**
@@ -228,16 +235,16 @@ void rf_emi_rx_loop(void)
 	{
 	   if((read_reg8(0x140840) & 0xf0) == 0)
 	   {
-		   emi_rssibuf += (read_reg8(0x140c5d));
-		   if(emi_rx_cnt)
+		   s_emi_rssibuf += (read_reg8(0x140c5d));
+		   if(s_emi_rx_cnt)
 		   {
-			   if(emi_rssibuf != 0)
+			   if(s_emi_rssibuf != 0)
 			   {
-				   emi_rssibuf >>= 1;
+				   s_emi_rssibuf >>= 1;
 			   }
 		   }
-		   rssi = emi_rssibuf - 110;
-		   emi_rx_cnt++;
+		   s_emi_rssi = s_emi_rssibuf - 110;
+		   s_emi_rx_cnt++;
 	   }
 	   write_reg8(0x140a20, 1);
 	   write_reg8(0x140a00, 0x80);
@@ -251,7 +258,7 @@ void rf_emi_rx_loop(void)
  */
 unsigned int rf_emi_get_rxpkt_cnt(void)
 {
-	return emi_rx_cnt;
+	return s_emi_rx_cnt;
 }
 
 /**
@@ -261,7 +268,7 @@ unsigned int rf_emi_get_rxpkt_cnt(void)
  */
 char rf_emi_get_rssi_avg(void)
 {
-	return rssi;
+	return s_emi_rssi;
 }
 
 
@@ -290,31 +297,6 @@ void rf_phy_test_prbs9 (unsigned char *p, int n)
 		*p++ = d;
 	}
 }
-
-/**
-*	@brief	  	This function serves to clear the Tx finish flag bit.
-*				After all packet data are sent, corresponding Tx finish flag bit
-*				will be set as 1.By reading this flag bit, it can check whether
-*				packet transmission is finished. After the check, it¡¯s needed to
-*				manually clear this flag bit so as to avoid misjudgment.
-*   @param      none
-*	@return	 	none
-*/
-static inline void rf_tx_finish_clear_flag(void)
-{
-    write_reg8(0x140a20, read_reg8(0x140a20) | 0x02);
-}
-
-/**
-*	@brief	  	This function serves to determine whether sending a packet of data is finished
-*	@param[in]	none.
-*	@return	 	Yes: 1, NO: 0.
-*/
-static inline unsigned char rf_tx_finish(void)
-{
-    return ((read_reg8(0x140a20) & BIT(1))==0x02);
-}
-
 /**
  * @brief   This function serves to send packets in the burst mode
  * @param   rf_mode - mode of RF.
@@ -326,22 +308,23 @@ static inline unsigned char rf_tx_finish(void)
  */
 void rf_emi_tx_burst_loop(rf_mode_e rf_mode,unsigned char pkt_type)
 {
-	u8 rf_data_len = TX_PKT_PAYLOAD+1;
-	u32 rf_tx_dma_len = RF_TX_PAKET_DMA_LEN(rf_data_len);
+	u8 rf_data_len = EMI_TX_PKT_PAYLOAD+1;
+	u32 rf_tx_dma_len = rf_tx_packet_dma_len(rf_data_len);
 	write_reg8(0x140a00, 0x80); // stop SM
+	rf_set_txmode();
 	if((rf_mode==RF_MODE_BLE_1M_NO_PN)||(rf_mode==RF_MODE_BLE_2M))//ble
 	{
-        rf_data_len = TX_PKT_PAYLOAD+2;
-        rf_tx_dma_len = RF_TX_PAKET_DMA_LEN(rf_data_len);
-		emi_ble_tx_packet[4]=0;
-		emi_ble_tx_packet[5]=TX_PKT_PAYLOAD;
-		emi_ble_tx_packet[3] = (rf_tx_dma_len >> 24)&0xff;
-		emi_ble_tx_packet[2] = (rf_tx_dma_len >> 16)&0xff;
-		emi_ble_tx_packet[1] = (rf_tx_dma_len >> 8)&0xff;
-		emi_ble_tx_packet[0] = rf_tx_dma_len&0xff;
-		rf_start_stx ((void *)emi_ble_tx_packet,1, read_reg32(0x140200) + 10);
-	    while(!rf_tx_finish());
-	    rf_tx_finish_clear_flag();
+        rf_data_len = EMI_TX_PKT_PAYLOAD+2;
+        rf_tx_dma_len = rf_tx_packet_dma_len(rf_data_len);
+        emi_ble_tx_packet[4]=0;
+        emi_ble_tx_packet[5]=EMI_TX_PKT_PAYLOAD;
+        emi_ble_tx_packet[3] = (rf_tx_dma_len >> 24)&0xff;
+        emi_ble_tx_packet[2] = (rf_tx_dma_len >> 16)&0xff;
+        emi_ble_tx_packet[1] = (rf_tx_dma_len >> 8)&0xff;
+        emi_ble_tx_packet[0] = rf_tx_dma_len&0xff;
+		rf_tx_pkt(emi_ble_tx_packet);
+		while(!(rf_get_irq_status(FLD_RF_IRQ_TX)));
+		rf_clr_irq_status(FLD_RF_IRQ_TX);
 
 	    delay_ms(2);
 	    if(pkt_type == 0)
@@ -349,17 +332,18 @@ void rf_emi_tx_burst_loop(rf_mode_e rf_mode,unsigned char pkt_type)
 	}
 	else if(rf_mode == RF_MODE_LR_S8_125K)
 	{
-        rf_data_len = TX_PKT_PAYLOAD+2;
-        rf_tx_dma_len = RF_TX_PAKET_DMA_LEN(rf_data_len);
-		emi_ble_tx_packet[4]=0;
-		emi_ble_tx_packet[5]=TX_PKT_PAYLOAD;
-		emi_ble_tx_packet[3] = (rf_tx_dma_len >> 24)&0xff;
-		emi_ble_tx_packet[2] = (rf_tx_dma_len >> 16)&0xff;
-		emi_ble_tx_packet[1] = (rf_tx_dma_len >> 8)&0xff;
-		emi_ble_tx_packet[0] = rf_tx_dma_len&0xff;
-		rf_start_stx ((void *)emi_ble_tx_packet,1, read_reg32(0x140200) + 10);
-	    while(!rf_tx_finish());
-	    rf_tx_finish_clear_flag();
+        rf_data_len = EMI_TX_PKT_PAYLOAD+2;
+        rf_tx_dma_len = rf_tx_packet_dma_len(rf_data_len);
+        emi_ble_tx_packet[4]=0;
+        emi_ble_tx_packet[5]=EMI_TX_PKT_PAYLOAD;
+        emi_ble_tx_packet[3] = (rf_tx_dma_len >> 24)&0xff;
+        emi_ble_tx_packet[2] = (rf_tx_dma_len >> 16)&0xff;
+        emi_ble_tx_packet[1] = (rf_tx_dma_len >> 8)&0xff;
+        emi_ble_tx_packet[0] = rf_tx_dma_len&0xff;
+		rf_tx_pkt(emi_ble_tx_packet);
+		while(!(rf_get_irq_status(FLD_RF_IRQ_TX)));
+		rf_clr_irq_status(FLD_RF_IRQ_TX);
+
 
 	    delay_ms(2);
 	    if(pkt_type == 0)
@@ -367,17 +351,18 @@ void rf_emi_tx_burst_loop(rf_mode_e rf_mode,unsigned char pkt_type)
 	}
 	else if(rf_mode == RF_MODE_LR_S2_500K)
 	{
-        rf_data_len = TX_PKT_PAYLOAD+2;
-        rf_tx_dma_len = RF_TX_PAKET_DMA_LEN(rf_data_len);
-		emi_ble_tx_packet[4]=0;
-		emi_ble_tx_packet[5]=TX_PKT_PAYLOAD;
-		emi_ble_tx_packet[3] = (rf_tx_dma_len >> 24)&0xff;
-		emi_ble_tx_packet[2] = (rf_tx_dma_len >> 16)&0xff;
-		emi_ble_tx_packet[1] = (rf_tx_dma_len >> 8)&0xff;
-		emi_ble_tx_packet[0] = rf_tx_dma_len&0xff;
-		rf_start_stx ((void *)emi_ble_tx_packet,1, read_reg32(0x140200) + 10);
-	    while(!rf_tx_finish());
-	    rf_tx_finish_clear_flag();
+        rf_data_len = EMI_TX_PKT_PAYLOAD+2;
+        rf_tx_dma_len = rf_tx_packet_dma_len(rf_data_len);
+        emi_ble_tx_packet[4]=0;
+        emi_ble_tx_packet[5]=EMI_TX_PKT_PAYLOAD;
+        emi_ble_tx_packet[3] = (rf_tx_dma_len >> 24)&0xff;
+        emi_ble_tx_packet[2] = (rf_tx_dma_len >> 16)&0xff;
+        emi_ble_tx_packet[1] = (rf_tx_dma_len >> 8)&0xff;
+        emi_ble_tx_packet[0] = rf_tx_dma_len&0xff;
+		rf_tx_pkt(emi_ble_tx_packet);
+		while(!(rf_get_irq_status(FLD_RF_IRQ_TX)));
+		rf_clr_irq_status(FLD_RF_IRQ_TX);
+
 
 	    delay_ms(2);
 	    if(pkt_type == 0)
@@ -385,16 +370,17 @@ void rf_emi_tx_burst_loop(rf_mode_e rf_mode,unsigned char pkt_type)
 	}
 	else if(rf_mode == RF_MODE_ZIGBEE_250K)
 	{
-		rf_data_len = TX_PKT_PAYLOAD+1;
-		rf_tx_dma_len = RF_TX_PAKET_DMA_LEN(rf_data_len);
-		emi_zigbee_tx_packet[4]=TX_PKT_PAYLOAD+2;
+		rf_data_len = EMI_TX_PKT_PAYLOAD+1;
+		rf_tx_dma_len = rf_tx_packet_dma_len(rf_data_len);
+		emi_zigbee_tx_packet[4]=EMI_TX_PKT_PAYLOAD+2;
 		emi_zigbee_tx_packet[3] = (rf_tx_dma_len >> 24)&0xff;
 		emi_zigbee_tx_packet[2] = (rf_tx_dma_len >> 16)&0xff;
 		emi_zigbee_tx_packet[1] = (rf_tx_dma_len >> 8)&0xff;
 		emi_zigbee_tx_packet[0] = rf_tx_dma_len&0xff;
-		rf_start_stx ((void *)emi_zigbee_tx_packet,1, read_reg32(0x140200) + 10);
-		while(!rf_tx_finish());
-	    rf_tx_finish_clear_flag();
+		rf_tx_pkt(emi_zigbee_tx_packet);
+		while(!(rf_get_irq_status(FLD_RF_IRQ_TX)));
+		rf_clr_irq_status(FLD_RF_IRQ_TX);
+
 
 	    delay_us(625*2);
 	    if(pkt_type == 0)
@@ -442,8 +428,7 @@ void rf_emi_tx_burst_setup(rf_mode_e rf_mode,rf_power_level_e power_level,signed
 		default:break;
 	}
 	if(rf_mode != RF_MODE_ZIGBEE_250K)
-		write_reg32(ACCESS_ADDR,ACCESS_CODE_EMI); 	//accesscode: 1001-0100 1000-0010 0110-1110 1000-1110   29 41 76 71
-	write_reg8 (ACCLEN_ADDR, read_reg8(ACCLEN_ADDR)|0x80); //trig accesscode
+		rf_access_code_comm(EMI_ACCESS_CODE); 	//accesscode: 1001-0100 1000-0010 0110-1110 1000-1110   29 41 76 71
 
 	rf_pn_disable();
 	rf_set_power_level (power_level);
@@ -462,10 +447,10 @@ void rf_emi_tx_burst_setup(rf_mode_e rf_mode,rf_power_level_e power_level,signed
 	    case RF_MODE_LR_S8_125K:
 	    case RF_MODE_BLE_1M_NO_PN:
 	    case RF_MODE_BLE_2M:
-			emi_ble_tx_packet[4] = pkt_type;//type
+	    	emi_ble_tx_packet[4] = pkt_type;//type
 	    	for(i = 0;i < 37;i++)
 	    	{
-				emi_ble_tx_packet[6+i]=tx_data;
+	    		emi_ble_tx_packet[6+i]=tx_data;
 	    	}
 	    	break;
 	    case RF_MODE_ZIGBEE_250K:

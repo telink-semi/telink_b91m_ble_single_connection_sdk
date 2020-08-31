@@ -25,8 +25,8 @@
  *******************************************************************************************************/
 #ifndef DMA_REG_H
 #define DMA_REG_H
-#include "../sys.h"
 #include "../../../common/bit.h"
+#include "../sys.h"
 /*******************************    dma registers:  0x100400     ******************************/
 #define reg_dma_id					REG_ADDR32(0x100400)
 #define reg_dma_cfg					REG_ADDR32(0x100410)
@@ -80,8 +80,7 @@ enum{
 	FLD_DMA_AUTO_ENABLE_EN           =	BIT(7),
 };
 
-#define reg_dma_addr(addr)			   ((u32)(addr) - 0x80000 + 0xc0200000)
-#define reg_dma_ahp_to_cup_addr(addr)  ((u32)(addr) - 0xc0200000 + 0x80000)
+
 
 #define reg_dma_src_addr(i)			REG_ADDR32 (( 0x00100448 +(i)*0x14))
 #define reg_dma_dst_addr(i)			REG_ADDR32 (( 0x0010044c +(i)*0x14))
@@ -103,6 +102,8 @@ enum{
 
 #define reg_dma_llp(i)			    REG_ADDR32 (( 0x00100454 +(i)*0x14))
 
+
+/*******************************      BLE Stack Use     ******************************/
 #define reg_dma_rx_rptr			REG_ADDR8(0x801004f5)
 #define reg_dma_rx_wptr			REG_ADDR8(0x801004f4)
 

@@ -37,7 +37,12 @@
 /**********************************************************************************************************************
  *                                           global macro                                                             *
  *********************************************************************************************************************/
-
+#define  	CCLK_16M_HCLK_16M_PCLK_16M		clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV12_TO_CCLK, CCLK_DIV1_TO_HCLK, HCLK_DIV1_TO_PCLK, PLL_DIV4_TO_MSPI_CLK)
+#define		CCLK_24M_HCLK_24M_PCLK_24M		clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV8_TO_CCLK, CCLK_DIV1_TO_HCLK, HCLK_DIV1_TO_PCLK, PLL_DIV4_TO_MSPI_CLK)
+#define		CCLK_32M_HCLK_32M_PCLK_16M		clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV6_TO_CCLK, CCLK_DIV1_TO_HCLK, HCLK_DIV2_TO_PCLK, PLL_DIV4_TO_MSPI_CLK)
+#define		CCLK_48M_HCLK_48M_PCLK_24M		clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV4_TO_CCLK, CCLK_DIV1_TO_HCLK, HCLK_DIV2_TO_PCLK, PLL_DIV4_TO_MSPI_CLK)
+#define		CCLK_64M_HCLK_32M_PCLK_16M		clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV3_TO_CCLK, CCLK_DIV2_TO_HCLK, HCLK_DIV2_TO_PCLK, PLL_DIV4_TO_MSPI_CLK)
+#define		CCLK_96M_HCLK_48M_PCLK_24M		clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV2_TO_CCLK, CCLK_DIV2_TO_HCLK, HCLK_DIV2_TO_PCLK, PLL_DIV4_TO_MSPI_CLK)
 
 /**********************************************************************************************************************
  *                                         global data type                                                           *
@@ -52,7 +57,7 @@ typedef struct {
 	unsigned char hclk;			/**< hclk */
 	unsigned char pclk;			/**< pclk */
 	unsigned char mspi_clk;		/**< mspi_clk */
-}sys_clk_s;
+}sys_clk_st;
 
 
 /**
@@ -164,7 +169,7 @@ typedef enum {
 /**********************************************************************************************************************
  *                                     global variable declaration                                                    *
  *********************************************************************************************************************/
-extern sys_clk_s sys_clk;
+extern sys_clk_st sys_clk;
 extern clk_32k_type_e g_clk_32k_src;
 
 /**********************************************************************************************************************
@@ -181,7 +186,7 @@ extern clk_32k_type_e g_clk_32k_src;
  * @param[in]	mspi_clk_div - mspi_clk has two source. pll div and hclk.mspi max is 64M.
  * @return      none
  */
-_attribute_ram_code_ void clock_init(sys_pll_clk_e pll,
+_attribute_ram_code_sec_noinline_ void clock_init(sys_pll_clk_e pll,
 		sys_clock_src_e src,
 		sys_pll_div_to_cclk_e cclk_div,
 		sys_cclk_div_to_hclk_e hclk_div,
@@ -193,32 +198,41 @@ _attribute_ram_code_ void clock_init(sys_pll_clk_e pll,
  * @param[in]   variable of 32k type.
  * @return  none.
  */
-void clock_32k_init (clk_32k_type_e src);
+void clock_32k_init(clk_32k_type_e src);
+
+/**
+ * @brief   	This function serves to kick 32k xtal.
+ * @param[in]   xtal_times - kick times.
+ * @return  	1 success, 0 error.
+ */
+unsigned char clock_kick_32k_xtal(unsigned char xtal_times);
+
 /**
  * @brief     This function performs to select 24M as the system clock source.
  * @param[in] none.
  * @return    none.
  */
 void clock_cal_24m_rc (void);
+
 /**
  * @brief     This function performs to select 32K as the system clock source.
  * @param[in] none.
  * @return    none.
  */
-
 void clock_cal_32k_rc (void);
+
 /**
  * @brief  This function serves to get the 32k tick.
  * @param  none.
  * @return none.
  */
-_attribute_ram_code_  unsigned int clock_get_32k_tick (void);
+_attribute_ram_code_sec_  unsigned int clock_get_32k_tick (void);
 
 /**
  * @brief  This function serves to set the 32k tick.
  * @param  none.
  * @return none.
  */
-_attribute_ram_code_ void clock_set_32k_tick(unsigned int tick);
+_attribute_ram_code_sec_ void clock_set_32k_tick(unsigned int tick);
 #endif
 

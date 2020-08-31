@@ -134,7 +134,7 @@ rf_packet_dbg_adv_t	debug_pkt_adv = {
 unsigned int timer_capture_value = 0;
 void rf_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 	if(rf_get_irq_status(FLD_RF_IRQ_TX)){
 		DBG_CHN1_HIGH;
 		rf_clr_irq_status(FLD_RF_IRQ_TX);
@@ -145,14 +145,12 @@ void rf_irq_handler(void)
 	{
 		rf_clr_irq_status(0xffff);
 	}
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ15_ZB_RT);
-	NDS_FENCE_IORW;
+
 }
 
 void stimer_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 	if(reg_system_cal_irq & STIMER_IRQ_CLR){
 		DBG_CHN0_HIGH;
 		stimer_clr_irq_status();
@@ -160,13 +158,11 @@ void stimer_irq_handler(void)
 		sleep_us(500);
 		DBG_CHN0_LOW;
 	}
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
-	NDS_FENCE_IORW;
+
 }
 void timer0_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 	if(reg_tmr_sta & FLD_TMR_STA_TMR0)
 	{
 		DBG_CHN3_HIGH;
@@ -176,9 +172,7 @@ void timer0_irq_handler(void)
 		sleep_us(200);
 	}
 	DBG_CHN3_LOW;
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ4_TIMER0);
-	NDS_FENCE_IORW;
+
 }
 void user_init()
 {
@@ -188,7 +182,7 @@ void user_init()
 	gpio_write(GPIO_LED_BLUE,1);
 
 
-	core_enable_interrupt();
+	core_interrupt_enable();
 
 	plic_interrupt_enable(IRQ15_ZB_RT);
 
@@ -540,7 +534,7 @@ void ble_manual_tx_test(void){
 	rf_set_tx_dma(2,2);
 
 	#if (0 && RF_TX_IRQ_EN)
-		core_enable_interrupt();
+		core_interrupt_enable();
 		plic_interrupt_enable(IRQ15_ZB_RT);
 		rf_set_irq_mask(FLD_RF_IRQ_TX);
 	#endif
@@ -587,7 +581,7 @@ void ble_stx_test(void){
 	rf_set_tx_dma(2,5);
 
 	#if (0 && RF_TX_IRQ_EN)
-		core_enable_interrupt();
+		core_interrupt_enable();
 		plic_interrupt_enable(IRQ15_ZB_RT);
 		rf_set_irq_mask(FLD_RF_IRQ_TX);
 	#endif
@@ -660,7 +654,7 @@ void ble_btx_tx_test(void){
 	debug_pkt_adv.dma_len = rf_tx_dma_len;
 
 #if (RF_RX_IRQ_EN)
-	core_enable_interrupt();
+	core_interrupt_enable();
 	plic_interrupt_enable(IRQ15_ZB_RT);
 	rf_set_irq_mask(FLD_RF_IRQ_RX);
 #endif
@@ -705,7 +699,7 @@ void ble_manual_rx_test(void){
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
 #if(RF_RX_IRQ_EN)
-	core_enable_interrupt();
+	core_interrupt_enable();
 	plic_interrupt_enable(IRQ15_ZB_RT);
 	rf_set_irq_mask(FLD_RF_IRQ_RX);
 #endif
@@ -784,7 +778,7 @@ void ble_brx_rx_test(void){
 	blt_tx_empty_packet[0] = rf_tx_dma_len & 0xff;
 
 #if(RF_RX_IRQ_EN)
-	core_enable_interrupt();
+	core_interrupt_enable();
 	plic_interrupt_enable(IRQ15_ZB_RT);
 	rf_set_irq_mask(FLD_RF_IRQ_RX);
 #endif
@@ -832,11 +826,11 @@ void ble_brx_rx_test(void){
 		AA_rx_miss_rate = (AA_rx_miss_cnt * 1000)/AA_rx_set_number;
 		printf("AA_rx_miss_rate: %d \n",AA_rx_miss_rate);
 		//stop CRX
-		core_disable_interrupt();
+		core_interrupt_disable();
 		STOP_RF_STATE_MACHINE;   //stop FSM
 		delay_us(100);
 		rf_clr_irq_status(FLD_RF_IRQ_RX);
-		core_enable_interrupt();
+		core_interrupt_enable();
 		//timing control
 		if(bltc_tick_1st_rx){
 			bltc_connExpectTime = bltc_tick_1st_rx + TX_INTERVAL_TICK;
@@ -857,7 +851,7 @@ void ble_srx_test(void){
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
 #if(RF_RX_IRQ_EN)
-	core_enable_interrupt();
+	core_interrupt_enable();
 	plic_interrupt_enable(IRQ15_ZB_RT);
 	rf_set_irq_mask(FLD_RF_IRQ_RX);
 #endif

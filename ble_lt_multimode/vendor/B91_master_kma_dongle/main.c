@@ -38,7 +38,7 @@ extern void usb_init(void) ;
  */
 _attribute_ram_code_ void rf_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 	DBG_CHN10_HIGH;
 
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_rf);
@@ -46,11 +46,7 @@ _attribute_ram_code_ void rf_irq_handler(void)
 	irq_blt_sdk_handler ();
 
 	DBG_CHN10_LOW;
-	/*Must ensure the order of execution of complete and
-	 * subsequent mret instructions(insert fence instruction)*/
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ15_ZB_RT);
-	NDS_FENCE_IORW;
+
 }
 
 
@@ -61,19 +57,16 @@ _attribute_ram_code_ void rf_irq_handler(void)
  */
 _attribute_ram_code_ void stimer_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 	DBG_CHN11_HIGH;
 
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_sysTimer);
 
 	irq_blt_sdk_handler ();
 
+
 	DBG_CHN11_LOW;
-	/*Must ensure the order of execution of complete and
-	 * subsequent mret instructions(insert fence instruction)*/
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
-	NDS_FENCE_IORW;
+
 }
 
 
@@ -84,14 +77,12 @@ _attribute_ram_code_ void stimer_irq_handler(void)
  */
 _attribute_ram_code_ void usb_endpoint_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 	usb_endpoints_irq_handler ();
 
-	/*Must ensure the order of execution of complete and
-	 * subsequent mret instructions(insert fence instruction)*/
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ11_USB_ENDPOINT);  	//plic_interrupt_complete
-	NDS_FENCE_IORW;
+
+
+
 }
 
 
@@ -102,7 +93,7 @@ _attribute_ram_code_ void usb_endpoint_irq_handler(void)
  */
 int main (void)   //must on ramcode
 {
-	blc_pm_select_internal_32k_crystal();
+//	blc_pm_select_internal_32k_crystal();
 
 	cpu_wakeup_init(LDO_MODE);
 

@@ -27,11 +27,6 @@
 #ifndef DMA_H_
 #define DMA_H_
 #include "reg_include/register_9518.h"
-enum{
-	TRANSIZE_BYTE_SIZE=BIT_RNG(22,23),
-	TRANSIZE=BIT_RNG(0,21),
-   };
-
  typedef enum{
 	DMA0=0,
 	DMA1,
@@ -126,7 +121,7 @@ typedef struct {
 	unsigned int dma_chain_dst_addr;
 	unsigned int dma_chain_data_len;
 	unsigned int dma_chain_llp_ptr;
-}dma_chain_config_t ;
+}dma_chain_config_st ;
 
 
 /**
@@ -205,14 +200,37 @@ static inline u32 dma_cal_size(u32 size_byte,dma_transfer_width_e byte_width)
 
 
 /**
- * @brief   this  function set  the DMA to get data from the RAM and sent to interface buff.
- * @param[in] chn - DMA channel
-  * @param[in] src_address - the address of source.
+ * @brief   this function set source and destination address for DMA,
+ *        src_address          dst_address
+ * tx      sram               interface fifo.
+ * rx      interface fifo      sram
+ * @param[in]  chn - DMA channel
+ * @param[in]  src_address - the address of source.
  * @param[in]  dst_address - the address of destination.
  *  */
 static inline void dma_set_address(dma_chn_e chn,u32 src_addr,u32 dst_addr)
 {
 	reg_dma_src_addr(chn)=src_addr;
+	reg_dma_dst_addr(chn)=dst_addr;
+}
+
+
+/**
+ * @brief   this function set source address for DMA,
+ * @param[in]  chn - DMA channel
+ * @param[in]  src_address - the address of source.
+ *  */
+static inline void dma_set_src_address(dma_chn_e chn,u32 src_addr)
+{
+	reg_dma_src_addr(chn)=src_addr;
+}
+
+/**
+ * @brief   this function set destination address for DMA,
+ * @param[in]  dst_address - the address of destination.
+ *  */
+static inline void dma_set_dst_address(dma_chn_e chn,u32 dst_addr)
+{
 	reg_dma_dst_addr(chn)=dst_addr;
 }
 

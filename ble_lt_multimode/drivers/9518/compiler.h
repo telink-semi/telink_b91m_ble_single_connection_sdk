@@ -28,15 +28,28 @@
 #ifndef COMPILER_H_
 #define COMPILER_H_
 
+#define _attribute_ram_code_sec_      			__attribute__((section(".ram_code")))
+#define _attribute_ram_code_sec_noinline_      	__attribute__((section(".ram_code"))) __attribute__((noinline))
+
+#define _attribute_text_sec_   					__attribute__((section(".text")))
+
+#define _attribute_aes_data_sec_      			__attribute__((section(".aes_data")))
+
+#define _attribute_data_retention_sec_   		__attribute__((section(".retention_data")))
+
+#define _attribute_aligned_(s)					__attribute__((aligned(s)))
+
+/// Pack a structure field
+#define __PACKED __attribute__ ((__packed__))
+
+/*******************************      BLE Stack Use     ******************************/
 #include "../../common/config/user_config.h"
 
 #define _attribute_packed_				__attribute__((packed))
-#define _attribute_aligned_(s)			__attribute__((aligned(s)))
 #define _attribute_session_(s)			__attribute__((section(s)))
 #define _attribute_custom_code_  		_attribute_session_(".custom") volatile
 #define _attribute_no_inline_   		__attribute__((noinline))
 #define _inline_ 						inline
-#define _attribute_aes_data_sec_      	__attribute__((section(".aes_data")))
 #define _attribute_data_dlm_   			_attribute_session_(".dlm_data")//dlm:Data Local Memory
 #ifndef	BLC_PM_EN
 #define	BLC_PM_EN							1
@@ -94,8 +107,6 @@
 /// __MODULE__ comes from the RVDS compiler that supports it
 #define __MODULE__ __BASE_FILE__
 
-/// Pack a structure field
-#define __PACKED __attribute__ ((__packed__))
 
 /// Put a variable in a memory maintained during deep sleep
 #define __LOWPOWER_SAVED

@@ -467,7 +467,7 @@ int tx_to_uart_cb (void)
 
 
 
-		if (uart_send_ndma(UART0,(u8 *)(&T_txdata_buf.data),T_txdata_buf.len))
+		if (uart_send(UART0,(u8 *)(&T_txdata_buf.data),T_txdata_buf.len))
 		{
 			my_fifo_pop (&spp_tx_fifo);
 		}

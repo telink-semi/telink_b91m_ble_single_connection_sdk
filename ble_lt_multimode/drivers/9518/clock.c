@@ -24,13 +24,13 @@
  *
  *******************************************************************************************************/
 
-#include "sys.h"
 #include "clock.h"
 #include "compiler.h"
 //#include "analog.h"
 //#include "gpio.h"
 #include "mspi.h"
 #include "../../common/assert.h"
+#include "sys.h"
 /**********************************************************************************************************************
  *                                			  local constants                                                       *
  *********************************************************************************************************************/
@@ -49,7 +49,7 @@
 /**********************************************************************************************************************
  *                                              global variable                                                       *
  *********************************************************************************************************************/
-sys_clk_s sys_clk = {
+sys_clk_st sys_clk = {
 	.pll_clk = 192,
 	.cclk = 24,
 	.hclk = 24,
@@ -68,14 +68,15 @@ sys_clk_s sys_clk = {
  *                                         global function implementation                                             *
  *********************************************************************************************************************/
 
-extern _attribute_data_retention_ unsigned char tl_24mrc_cal;
+_attribute_data_retention_sec_ unsigned char tl_24mrc_cal;
+clk_32k_type_e g_clk_32k_src;
 
 /**
  * @brief   This function serves to set 32k clock source.
  * @param[in]   variable of 32k type.
  * @return  none.
  */
-void clock_32k_init (clk_32k_type_e src)
+void clock_32k_init(clk_32k_type_e src)
 {
 	unsigned char sel_32k   = analog_read_reg8(0x4e)&0x7f;
 	unsigned char power_32k = analog_read_reg8(0x05)&0xfc;
@@ -83,38 +84,68 @@ void clock_32k_init (clk_32k_type_e src)
 	if(src)
 	{
 		analog_write_reg8(0x05, power_32k|0x1);//32k xtal
-		//2.set PD0 as pwm output
-		unsigned char pwm_clk = read_reg8(0x1401d8);//condition: PCLK is 24MHZ,PCLK = HCLK
-		write_reg8(0x1401d8,((pwm_clk & 0xfc) | 0x01));//PCLK = 12M
-		unsigned char reg_31e = read_reg8(0x14031e);	//PD0
-		write_reg8(0x14031e,reg_31e & 0xfe);
-		unsigned short reg_418 = read_reg16(0x140418);	//pwm1 cmp
-		write_reg16(0x140418,0x01);
-		unsigned short reg_41a = read_reg16(0x14041a);  //pwm1 max
-		write_reg16(0x14041a,0x02);
-		unsigned char reg_400 = read_reg8(0x140400);	//pwm en
-		write_reg8(0x140400,0x02);
-		write_reg8(0x140402,0xb6);						//12M/(0xb6 + 1)/2 = 32k
-
-		//3.wait for PWM wake up Xtal
-		delay_ms(5);
-
-		//4.Xtal 32k output
-		analog_write_reg8(0x03,0x4f); //<7:6>current select
-
-		//5.Recover PD0 as Xtal pin
-		write_reg8(0x1401d8,pwm_clk);
-		write_reg8(0x14031e,reg_31e);
-		write_reg16(0x140418,reg_418);
-		write_reg16(0x14041a,reg_41a);
-		write_reg8(0x140400,reg_400);
 	}
 	else
 	{
 		analog_write_reg8(0x05, power_32k|0x2);//32k rc
 	}
+	g_clk_32k_src = src;
 }
 
+/**
+ * @brief   	This function serves to kick 32k xtal.
+ * @param[in]   xtal_times - kick times.
+ * @return  	1 success, 0 error.
+ */
+unsigned char clock_kick_32k_xtal(unsigned char xtal_times)
+{
+	int last_32k_tick;
+	int curr_32k_tick;
+	for(unsigned char i = 0; i< xtal_times; i++)
+	{
+		if(0xff == read_reg8(0x1401fd))
+		{
+			delay_ms(1000);
+		}
+		else		//**Note that the clock is 24M crystal oscillator. PCLK is 24MHZ
+		{
+			//2.set PD0 as pwm output
+			unsigned char pwm_clk = read_reg8(0x1401d8);//**condition: PCLK is 24MHZ,PCLK = HCLK
+			write_reg8(0x1401d8,((pwm_clk & 0xfc) | 0x01));//PCLK = 12M
+			unsigned char reg_31e = read_reg8(0x14031e);	//PD0
+			write_reg8(0x14031e,reg_31e & 0xfe);
+			unsigned short reg_418 = read_reg16(0x140418);	//pwm1 cmp
+			write_reg16(0x140418,0x01);
+			unsigned short reg_41a = read_reg16(0x14041a);  //pwm1 max
+			write_reg16(0x14041a,0x02);
+			unsigned char reg_400 = read_reg8(0x140400);	//pwm en
+			write_reg8(0x140400,0x02);
+			write_reg8(0x140402,0xb6);						//12M/(0xb6 + 1)/2 = 32k
+
+			//3.wait for PWM wake up Xtal
+			delay_ms(100);
+
+			//4.Xtal 32k output
+			analog_write_reg8(0x03,0x4f); //<7:6>current select
+
+			//5.Recover PD0 as Xtal pin
+			write_reg8(0x1401d8,pwm_clk);
+			write_reg8(0x14031e,reg_31e);
+			write_reg16(0x140418,reg_418);
+			write_reg16(0x14041a,reg_41a);
+			write_reg8(0x140400,reg_400);
+		}
+
+		last_32k_tick = clock_get_32k_tick();	//clock_get_32k_tick()
+		delay_us(305);		//for 32k tick accumulator, tick period: 30.5us, dly 10 ticks
+		curr_32k_tick = clock_get_32k_tick();
+		if(last_32k_tick != curr_32k_tick)		//clock_get_32k_tick()
+		{
+			return 1;		//pwm kick 32k pad success
+		}
+	}
+	return 0;
+}
 
 /**
  * @brief     This function performs to select 24M as the system clock source.
@@ -125,7 +156,7 @@ void clock_32k_init (clk_32k_type_e src)
  * @param[in] none.
  * @return    none.
  */
-void clock_cal_24m_rc (void)
+void clock_cal_24m_rc(void)
 {
 	analog_write_reg8(0xc8, 0x80);
 
@@ -149,8 +180,7 @@ void clock_cal_24m_rc (void)
  * @param[in] none.
  * @return    none.
  */
-
-void clock_cal_32k_rc (void)
+void clock_cal_32k_rc(void)
 {
 	analog_write_reg8(0x4f, ((analog_read_reg8(0x4f) & 0x3f) | 0x40));
 	analog_write_reg8(0xc6, 0xf6);
@@ -164,13 +194,12 @@ void clock_cal_32k_rc (void)
 	analog_write_reg8(0x4f, ((analog_read_reg8(0x4f) & 0x3f) | 0x00));//manual on
 }
 
-
 /**
  * @brief  This function serves to set the 32k tick.
  * @param  none.
  * @return none.
  */
-_attribute_ram_code_ void clock_set_32k_tick(unsigned int tick)
+void clock_set_32k_tick(unsigned int tick)
 {
 	reg_system_ctrl |= FLD_SYSTEM_32K_WR_EN;//r_32k_wr = 1;
 	while(reg_system_st & FLD_SYSTEM_RD_BUSY);
@@ -191,7 +220,7 @@ _attribute_ram_code_ void clock_set_32k_tick(unsigned int tick)
  * @param  none.
  * @return none.
  */
-_attribute_ram_code_ unsigned int clock_get_32k_tick (void)
+unsigned int clock_get_32k_tick(void)
 {
 	unsigned int timer_32k_tick;
 	reg_system_st = FLD_SYSTEM_CLR_RD_DONE;//clr rd_done
@@ -203,7 +232,6 @@ _attribute_ram_code_ unsigned int clock_get_32k_tick (void)
 	return timer_32k_tick;
 }
 
-
 /**
  * @brief       This function use to select the system clock source.
  * @param[in]   pll - pll clock.
@@ -214,7 +242,7 @@ _attribute_ram_code_ unsigned int clock_get_32k_tick (void)
  * @param[in]	mspi_clk_div - mspi_clk has two source. pll div and hclk.mspi max is 64M.
  * @return      none
  */
-_attribute_ram_code_ void clock_init(sys_pll_clk_e pll,
+void clock_init(sys_pll_clk_e pll,
 		sys_clock_src_e src,
 		sys_pll_div_to_cclk_e cclk_div,
 		sys_cclk_div_to_hclk_e hclk_div,
@@ -300,6 +328,7 @@ _attribute_ram_code_ void clock_init(sys_pll_clk_e pll,
 	if(CCLK_TO_MSPI_CLK == mspi_clk_div){
 		sys_clk.mspi_clk = sys_clk.cclk;
 	}
+
 
 }
 

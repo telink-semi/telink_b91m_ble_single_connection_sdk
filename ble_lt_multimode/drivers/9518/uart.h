@@ -293,7 +293,7 @@ extern void uart_cal_div_and_bwpc(unsigned int baudrate, unsigned int System_clo
  * @param[in] rx_level - receive level value. ie 0x140089[0,3]
  * @return    none
  */ 
-static inline void uart_rx_irq_trig_level_ndma(uart_num_e uart_num,unsigned char rx_level)
+static inline void uart_rx_irq_trig_level(uart_num_e uart_num,unsigned char rx_level)
 {
 	reg_uart_ctrl3(uart_num) = (reg_uart_ctrl3(uart_num) & (~FLD_UART_RX_IRQ_TRIQ_LEV)) | (rx_level & 0x0f);
 }
@@ -306,7 +306,7 @@ static inline void uart_rx_irq_trig_level_ndma(uart_num_e uart_num,unsigned char
  * @param[in] tx_level - transmit level value.ie 0x140089[4,7]
  * @return    none
  */
-static inline void uart_tx_irq_trig_level_ndma(uart_num_e uart_num,unsigned char tx_level)
+static inline void uart_tx_irq_trig_level(uart_num_e uart_num,unsigned char tx_level)
 {
 	reg_uart_ctrl3(uart_num) = (reg_uart_ctrl3(uart_num) & (~FLD_UART_TX_IRQ_TRIQ_LEV)) | (tx_level << 4);
 }
@@ -383,16 +383,6 @@ extern void uart_set_rts_pin(uart_rts_pin_e rts_pin);
 extern void uart_set_pin(uart_tx_pin_e tx_pin,uart_rx_pin_e rx_pin);
 
 /**
- * @brief     	uart0 send data function
- * @param[in]  	uart_num - UART0 or UART1
- *            	the NDMA transmission
- * @param[in] 	Addr - pointer to the buffer containing data need to send
- * @param[in] 	len -N DMA transmission length
- * @return  	none
- */
-extern volatile unsigned char uart_send_ndma(uart_num_e uart_num, unsigned char * Addr, unsigned char len );
-
-/**
  * @brief     	uart0 send data function, this  function tell the DMA to get data from the RAM and start
  * @param[in]  	uart_num - UART0 or UART1
  *            	the DMA transmission
@@ -400,6 +390,20 @@ extern volatile unsigned char uart_send_ndma(uart_num_e uart_num, unsigned char 
  * @param[in] 	len - DMA transmission length
  * @return  	none
  */ 
+
+
+/**
+ * @brief     	uart0 send data function
+ * @param[in]  	uart_num - UART0 or UART1
+ *            	the NDMA transmission
+ * @param[in] 	Addr - pointer to the buffer containing data need to send
+ * @param[in] 	len -N DMA transmission length
+ * @return  	none
+ */
+extern volatile unsigned char uart_send(uart_num_e uart_num, unsigned char * Addr, unsigned char len );
+
+
+
 extern volatile unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * Addr, unsigned char len );
 
 /**
@@ -427,16 +431,7 @@ extern void uart_set_tx_dma_config(uart_num_e uart_num, dma_chn_e chn);
  */
 extern void uart_set_rx_dma_config(uart_num_e uart_num, dma_chn_e chn);
 
-/**
- * @brief     get the status of uart irq.
- * @param[in] uart_num - UART0 or UART1
- * @return    0: not uart irq ;
- *            not 0: indicate txdone rxdone tx_buf rx_buf rx_err irq
- */
-static inline unsigned char uart_ndmairq_get(uart_num_e uart_num)
-{
-	return ((reg_uart_status1(uart_num)) & FLD_UART_IRQ_O);
-}
+
 
 /**
  * @brief     config the irq of uart tx and rx
@@ -473,6 +468,7 @@ static inline void uart_clr_irq_mask(uart_num_e uart_num,uart_irq_mask_e mask)
 		reg_uart_rx_timeout1(uart_num) &= ~((unsigned char)mask) ;
 	}
 }
+
 
 /**
  * @brief     get the irq status of uart tx and rx

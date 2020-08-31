@@ -57,7 +57,7 @@ void s7816_set_pin(S7816_RTx_PinDef Pin_7816_TRX)
 
 	//---enable UART 7816 CLK(GPIO_PA0
     reg_gpio_func_mux(GPIO_PA0)=(reg_gpio_func_mux(GPIO_PA0)&(~BIT_RNG(0,1)))|BIT(0);
-    gpio_set_gpio_dis(GPIO_PA0);
+    gpio_function_dis(GPIO_PA0);
 	//---enable UART 7816 RXT(Optional)
 
     u8 val = 0;
@@ -66,73 +66,73 @@ void s7816_set_pin(S7816_RTx_PinDef Pin_7816_TRX)
 	{
 		case S7816_UART0_RTX_A4://take care the details of every pin when using this pin
 
-			gpio_set_up_down_res(S7816_UART0_RTX_A4, PM_PIN_PULLUP_10K);
+			gpio_set_up_down_res(S7816_UART0_RTX_A4, GPIO_PIN_PULLUP_10K);
 			/***  set PA4 pin as s7816 function ****/
 			mask = (unsigned char)~(BIT(0)|BIT(1));
 			val = BIT(0);
 			reg_gpio_func_mux(S7816_UART0_RTX_A4)=(reg_gpio_func_mux(S7816_UART0_RTX_A4)& mask)|val;
-			gpio_set_gpio_dis(S7816_UART0_RTX_A4);
+			gpio_function_dis(S7816_UART0_RTX_A4);
 
-			//gpio_set_func(GPIO_PA4,AS_UART0_RX);
-			gpio_set_input_en(S7816_UART0_RTX_A4);
+
+			gpio_input_en(S7816_UART0_RTX_A4);
 			break;
 		case S7816_UART0_RTX_B3:
-			gpio_set_up_down_res(S7816_UART0_RTX_B3, PM_PIN_PULLUP_10K);
+			gpio_set_up_down_res(S7816_UART0_RTX_B3, GPIO_PIN_PULLUP_10K);
 
 			mask = (unsigned char)~(BIT(6)|BIT(7));
 			val = BIT(7);
 			reg_gpio_pad_mul_sel|=BIT(0);
 			reg_gpio_func_mux(S7816_UART0_RTX_B3)=(reg_gpio_func_mux(S7816_UART0_RTX_B3)& mask)|val;
-			gpio_set_gpio_dis(S7816_UART0_RTX_B3);
+			gpio_function_dis(S7816_UART0_RTX_B3);
 
-			//gpio_set_func(GPIO_PB3,AS_UART0_RX);
-			gpio_set_input_en(S7816_UART0_RTX_B3);
+
+			gpio_input_en(S7816_UART0_RTX_B3);
 			break;
 		case S7816_UART0_RTX_D3:
-			gpio_set_up_down_res(S7816_UART0_RTX_D3, PM_PIN_PULLUP_10K);
+			gpio_set_up_down_res(S7816_UART0_RTX_D3, GPIO_PIN_PULLUP_10K);
 
 			mask = (unsigned char)~(BIT(6)|BIT(7));
 			val = 0;
 		  reg_gpio_func_mux(S7816_UART0_RTX_D3)=(reg_gpio_func_mux(S7816_UART0_RTX_D3)& mask)|val;
-			gpio_set_gpio_dis(S7816_UART0_RTX_D3);
+		  gpio_function_dis(S7816_UART0_RTX_D3);
 			//gpio_set_func(GPIO_PD3,AS_UART0_RX);
 
-			gpio_set_input_en(S7816_UART0_RTX_D3);
+		  gpio_input_en(S7816_UART0_RTX_D3);
 			break;
 
 		case S7816_UART1_RTX_C7://take care the details of every pin when using this pin
-			gpio_set_up_down_res(S7816_UART1_RTX_C7, PM_PIN_PULLUP_10K);
+			gpio_set_up_down_res(S7816_UART1_RTX_C7, GPIO_PIN_PULLUP_10K);
 
 			mask = (unsigned char)~(BIT(6)|BIT(7));
 			val = BIT(7);
 			reg_gpio_pad_mul_sel|=BIT(0);
 			reg_gpio_func_mux(S7816_UART1_RTX_C7)=(reg_gpio_func_mux(S7816_UART1_RTX_C7)& mask)|val;
-			gpio_set_gpio_dis(S7816_UART1_RTX_C7);
+			gpio_function_dis(S7816_UART1_RTX_C7);
 			//gpio_set_func(GPIO_PC7,AS_UART1_RX);
 
-			gpio_set_input_en(S7816_UART1_RTX_C7);
+			gpio_input_en(S7816_UART1_RTX_C7);
 			break;
 		case S7816_UART1_RTX_D7:
-			gpio_set_up_down_res(S7816_UART1_RTX_D7, PM_PIN_PULLUP_10K);
+			gpio_set_up_down_res(S7816_UART1_RTX_D7, GPIO_PIN_PULLUP_10K);
 
 			mask = (unsigned char)~(BIT(6)|BIT(7));
 			val = 0;
 		   reg_gpio_func_mux(S7816_UART1_RTX_D7)=(reg_gpio_func_mux(S7816_UART1_RTX_D7)& mask)|val;
-		   gpio_set_gpio_dis(S7816_UART1_RTX_D7);
+		   gpio_function_dis(S7816_UART1_RTX_D7);
 			//gpio_set_func(GPIO_PD7,AS_UART1_RX);
 
-			gpio_set_input_en(S7816_UART1_RTX_D7);
+		   gpio_input_en(S7816_UART1_RTX_D7);
 			break;
 		case S7816_UART1_RTX_E2:
-			gpio_set_up_down_res(S7816_UART1_RTX_E2, PM_PIN_PULLUP_10K);
+			gpio_set_up_down_res(S7816_UART1_RTX_E2, GPIO_PIN_PULLUP_10K);
 
 			mask = (unsigned char)~(BIT(4)|BIT(5));
 			val = BIT(4);
 			reg_gpio_func_mux(S7816_UART1_RTX_E2)=(reg_gpio_func_mux(S7816_UART1_RTX_E2)& mask)|val;
-		    gpio_set_gpio_dis(S7816_UART1_RTX_E2);
+			gpio_function_dis(S7816_UART1_RTX_E2);
 			//gpio_set_func(GPIO_PE2,AS_UART1_RX);
 
-			gpio_set_input_en(S7816_UART1_RTX_E2);
+			gpio_input_en(S7816_UART1_RTX_E2);
 			break;
 		default:
 			break;

@@ -42,7 +42,7 @@ void pwm_set_pin(pwm_pin_e pin)
 	}
 
     reg_gpio_func_mux(pin)=(reg_gpio_func_mux(pin)& mask)|val;
-    gpio_set_gpio_dis(pin);
+    gpio_function_dis(pin);
 }
 
 
@@ -66,11 +66,8 @@ void pwm_set_dma_config(dma_chn_e chn)
  */
 void pwm_set_dma_buf(dma_chn_e chn,u32 buf_addr,u32 len)
 {
-
-	reg_dma_src_addr(chn)= reg_dma_addr(buf_addr);
-	reg_dma_dst_addr(chn)=reg_pwm_data_buf_adr;
-
-	reg_dma_size(chn) =((len+DMA_WORD_WIDTH-1)/DMA_WORD_WIDTH)|( (len % DMA_WORD_WIDTH)<<22);
+	dma_set_address( chn,convert_ram_addr_cpu2bus(buf_addr),reg_pwm_data_buf_adr);
+	dma_set_size(chn,len,DMA_WORD_WIDTH);
 }
 
 
@@ -86,10 +83,38 @@ void pwm_ir_dma_mode_start(dma_chn_e chn)
 
 
 
+/**
+ * @brief     This function servers to configure DMA head node.
+ * @param[in] chn - to select the DMA channel.
+ * @param[in] src_addr - to configure DMA source address.
+ * @param[in] data_len - to configure DMA length.
+ * @param[in] head_of_list - to configure the address of the next node configure.
+ * @return    none
+ */
+void pwm_set_dma_chain_llp(dma_chn_e chn,u16 * src_addr, u32 data_len,dma_chain_config_st * head_of_list)
+{
+	 dma_config(chn,&pwm_tx_dma_config);
+	 dma_set_address( chn,convert_ram_addr_cpu2bus(src_addr),reg_pwm_data_buf_adr);
+	 dma_set_size(chn,data_len,DMA_WORD_WIDTH);
+	 reg_dma_llp(chn)=(u32)convert_ram_addr_cpu2bus(head_of_list);
+}
 
 
-
-
-
-
+/**
+ * @brief     This function servers to configure DMA cycle chain node.
+ * @param[in] chn - to select the DMA channel.
+ * @param[in] config_addr  - to servers to configure the address of the current node.
+ * @param[in] llponit - to configure the address of the next node configure.
+ * @param[in] src_addr - to configure DMA source address.
+ * @param[in] data_len - to configure DMA length.
+ * @return    none
+ */
+void pwm_set_tx_dma_add_list_element(dma_chn_e chn,dma_chain_config_st *config_addr,dma_chain_config_st *llponit ,u16 * src_addr,u32 data_len)
+{
+	config_addr->dma_chain_ctl= reg_dma_ctrl(chn)|BIT(0);
+	config_addr->dma_chain_src_addr=(u32)convert_ram_addr_cpu2bus(src_addr);
+	config_addr->dma_chain_dst_addr=reg_pwm_data_buf_adr;
+    config_addr->dma_chain_data_len=dma_cal_size(data_len,DMA_WORD_WIDTH);
+	config_addr->dma_chain_llp_ptr=(u32)convert_ram_addr_cpu2bus(llponit);
+}
 

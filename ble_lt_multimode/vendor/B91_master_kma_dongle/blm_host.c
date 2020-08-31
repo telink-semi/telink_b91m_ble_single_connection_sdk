@@ -566,7 +566,10 @@ void host_update_conn_proc(void)
 
 
 
-
+#if (BLE_MASTER_OTA_ENABLE)
+extern u16 slave_ota_handle;
+u8 slave_ota_notify_data[7];
+#endif
 volatile int app_l2cap_handle_cnt = 0;
 int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 {
@@ -696,6 +699,15 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 				att_mic (conn_handle, pAtt->dat);
 			}
 #endif
+			#endif
+			#if (BLE_MASTER_OTA_ENABLE)
+			else if(attHandle == slave_ota_handle)
+			{
+				//slave OTA state feedback
+				u8 len = pAtt->l2capLen - 3;
+				tmemcpy (slave_ota_notify_data, pAtt->dat, len);
+				//my_dump_str_data (UDB_STR_DATA_ENABLE, "slave_ota_notify", slave_ota_notify_data, len);
+			}
 			#endif
 			else
 			{

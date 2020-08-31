@@ -94,39 +94,39 @@ void timer_set_mode(timer_type_e type, timer_mode_e mode,unsigned int init_tick,
  */
 void timer_gpio_init(timer_type_e type, gpio_pin_e pin, gpio_pol_e pol )
 {
-	gpio_set_gpio_en(pin);
- 	gpio_set_output_dis(pin); 	//disable output
- 	gpio_set_input_en(pin);		//enable input
+	gpio_function_en(pin);
+	gpio_output_dis(pin); 	//disable output
+	gpio_input_en(pin);		//enable input
 
  	switch(type)
  	{
  		case TIMER0:
  		 	if(pol==POL_FALLING)
  		 	{
- 		 		gpio_set_up_down_res(pin,PM_PIN_PULLUP_10K);
- 		 		gpio_gpio2risc0_irq_en(pin);
- 		 		gpio_set_gpio2risc0_irq_trigger_type(pin,INTR_LOW_LEVEL);
+ 		 		gpio_set_up_down_res(pin,GPIO_PIN_PULLUP_10K);
+ 		 		
+ 		 		gpio_set_gpio2risc0_irq(pin,INTR_LOW_LEVEL);
  		 	}
  		 	else if(pol==POL_RISING)
  		 	{
- 		 		gpio_set_up_down_res(pin,PM_PIN_PULLDOWN_100K);
- 		 		gpio_gpio2risc0_irq_en(pin);
- 		 		gpio_set_gpio2risc0_irq_trigger_type(pin,INTR_HIGH_LEVEL);
+ 		 		gpio_set_up_down_res(pin,GPIO_PIN_PULLDOWN_100K);
+ 		 		
+ 		 		gpio_set_gpio2risc0_irq(pin,INTR_HIGH_LEVEL);
  		 	}
  			break;
 
  		case TIMER1:
  		 	if(pol==POL_FALLING)
  		 	{
- 		 		gpio_set_up_down_res(pin,PM_PIN_PULLUP_10K);
- 		 		gpio_gpio2risc1_irq_en(pin);
- 		 		gpio_set_gpio2risc1_irq_trigger_type(pin,INTR_LOW_LEVEL);
+ 		 		gpio_set_up_down_res(pin,GPIO_PIN_PULLUP_10K);
+ 		 		
+ 		 		gpio_set_gpio2risc1_irq(pin,INTR_LOW_LEVEL);
  		 	}
  		 	else if(pol==POL_RISING)
  		 	{
- 		 		gpio_set_up_down_res(pin,PM_PIN_PULLDOWN_100K);
- 		 		gpio_gpio2risc1_irq_en(pin);
- 		 		gpio_set_gpio2risc1_irq_trigger_type(pin,INTR_HIGH_LEVEL);
+ 		 		gpio_set_up_down_res(pin,GPIO_PIN_PULLDOWN_100K);
+ 
+ 		 		gpio_set_gpio2risc1_irq(pin,INTR_HIGH_LEVEL);
 
  		 	}
  			break;

@@ -60,6 +60,10 @@ int master_ota_test_mode = 0;
 #define CMD_OTA_TEST                        0xff05 //Master send OTA TEST to slave to check slave's state, reserved for BLE Fullstack
 #define CMD_OTA_TEST_RSP                    0xff06 //Slave respond to master's CMD_OTA_TEST, reserved for BLE Fullstack
 #define CMD_OTA_ERROR                       0xff07 //Slave send OTA error to master once it stop OTA process because of some error, reserved for BLE Fullstack
+#define CMD_OTA_VERSION_REQUEST				0xff10
+#define CMD_OTA_VERSION_RESPONSE			0xff11
+#define CMD_OTA_START_LONG_PACKET			0xff12
+#define CMD_OTA_RESULT						0xff13
 
 
 

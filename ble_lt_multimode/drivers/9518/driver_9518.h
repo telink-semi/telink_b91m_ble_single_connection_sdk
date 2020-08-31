@@ -55,3 +55,7 @@
 #include "lpc.h"
 #include "clock.h"
 #include "emi.h"
+
+#include "mspi.h"
+
+

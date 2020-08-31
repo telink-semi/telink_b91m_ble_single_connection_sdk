@@ -221,6 +221,7 @@ static u8 micDataCCC[2];
 static u8 my_MicData 								= 0x80;
 static u8 my_SpeakerData 							= 0x81;
 static u8 my_OtaData 						        = 0x00;
+static u8 otaDataCCC[2];
 
 static const u8  my_MicName[] = {'M', 'i', 'c'};
 static const u8  my_SpeakerName[] = {'S', 'p', 'e', 'a', 'k', 'e', 'r'};
@@ -323,10 +324,11 @@ static const u8 my_batCharVal[5] = {
 
 //// OTA attribute values
 static const u8 my_OtaCharVal[19] = {
-	CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RSP,
+	CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RSP | CHAR_PROP_NOTIFY,
 	U16_LO(OTA_CMD_OUT_DP_H), U16_HI(OTA_CMD_OUT_DP_H),
 	TELINK_SPP_DATA_OTA,
 };
+
 #if (BLE_AUDIO_ENABLE)
 //// Audio attribute values
 static const u8 my_MicCharVal[19] = {
@@ -340,6 +342,7 @@ static const u8 my_SpeakerCharVal[19] = {
 	TELINK_SPEAKER_DATA,
 };
 #endif
+
 // TM : to modify
 static const attribute_t my_Attributes[] = {
 
@@ -430,24 +433,25 @@ static const attribute_t my_Attributes[] = {
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(batteryValueInCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(batteryValueInCCC), 0},	//value
 
 	////////////////////////////////////// OTA /////////////////////////////////////////////////////
-	// 002e - 0031
+	// 002e - 0032
 	{4,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID), 	(u8*)(&my_OtaServiceUUID), 0},
 	{0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},				//prop
 	{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, &otaRead},			//value
+	{0,ATT_PERMISSIONS_RDWR,2,sizeof(otaDataCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(otaDataCCC), 0},				//value
 	{0,ATT_PERMISSIONS_READ, 2,sizeof (my_OtaName),(u8*)(&userdesc_UUID), (u8*)(my_OtaName), 0},
 
 #if (BLE_AUDIO_ENABLE)
 	////////////////////////////////////// Audio /////////////////////////////////////////////////////
-	// 0032 Audio
+	// 0033 Audio
 	{8,ATT_PERMISSIONS_READ,2,16,(u8*)(&my_primaryServiceUUID), 	(u8*)(&my_AudioUUID), 0},
 
-	// 0033 - 0036  MIC
+	// 0034 - 0037  MIC
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_MicCharVal),(u8*)(&my_characterUUID), 		(u8*)(my_MicCharVal), 0},				//prop
 	{0,ATT_PERMISSIONS_READ,16,sizeof(my_MicData),(u8*)(&my_MicUUID), 	(u8*)(&my_MicData), 0},	//value
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(micDataCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(micDataCCC), 0},	//value
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof (my_MicName),(u8*)(&userdesc_UUID), (u8*)(my_MicName), 0},
 
-	// 0037 - 0039  SPEAKER
+	// 0038 - 003a  SPEAKER
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_SpeakerCharVal),(u8*)(&my_characterUUID), 		(u8*)(my_SpeakerCharVal), 0},				//prop
 	{0,ATT_PERMISSIONS_WRITE,16,sizeof(my_SpeakerData),(u8*)(&my_SpeakerUUID), 	(u8*)(&my_SpeakerData), 0},//value
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof (my_SpeakerName),(u8*)(&userdesc_UUID), (u8*)(my_SpeakerName), 0},

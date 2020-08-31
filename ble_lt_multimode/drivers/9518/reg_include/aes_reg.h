@@ -23,26 +23,24 @@
  * @version  A001
  *
  *******************************************************************************************************/
-#ifndef DRIVERS_9518_REG_INCLUDE_AES_REG_H_
-#define DRIVERS_9518_REG_INCLUDE_AES_REG_H_
+#ifndef _AES_REG_H_
+#define _AES_REG_H_
+
 #include "../sys.h"
 #include "../../../common/bit.h"
 
-#define reg_aes_ctrl            REG_ADDR8(0x1600b0)
-#define reg_aes_mode     		REG_ADDR32(0x1600b0)
-enum {
-    FLD_AES_CTRL_CODEC_TRIG = BIT(0),
-    FLD_AES_CTRL_DATA_FEED = BIT(1),
-    FLD_AES_CTRL_CODEC_FINISHED = BIT(2),
-};
-enum{
+#define reg_aes_mode     			REG_ADDR32(0x1600b0)
+typedef enum{
 	FLD_AES_START	=	BIT(0),
-	FLD_AES_MODE	=	BIT(1),
-};
-#define reg_aes_data            reg_aes_ctrl//REG_ADDR32(0x548)
-#define reg_embase_addr     	REG_ADDR32(0x140b04)
-//#define reg_aes_key(v)     		REG_ADDR8(0x1600b4+v)
-#define reg_aes_key(v)     		REG_ADDR32(0x1600b4+(v*4))
-#define reg_aes_ptr     		REG_ADDR32(0x1600c4)
+	FLD_AES_MODE	=	BIT(1),   //0-ciher  1-deciher
+}aes_mode_e;
 
+#define reg_embase_addr     		REG_ADDR32(0x140b04)
+
+#define reg_aes_key(v)     		REG_ADDR32(0x1600b4+(v*4))
+
+#define reg_aes_ptr     		REG_ADDR32(0x1600c4)
+/*******************************      BLE Stack Use     ******************************/
+#define reg_aes_ctrl            REG_ADDR8(0x1600b0)
+#define reg_aes_data            reg_aes_ctrl//REG_ADDR32(0x548)
 #endif /* _AES_REG_H_ */

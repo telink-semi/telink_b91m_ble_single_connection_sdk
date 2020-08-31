@@ -26,17 +26,17 @@
 
 #pragma once
 
+#include "mspi.h"
 #include "compiler.h"
 #include "../../common/types.h"
 
-#define  S25FL512S          1    //for eagle fpga
-
-#define  FLASH_TYPE    		0
+#define PAGE_SIZE 256
 
 /**
  * @brief     flash command definition
  */
-enum{
+typedef enum
+{
 	FLASH_WRITE_STATUS_CMD		=	0x01,
 	FLASH_WRITE_CMD				=	0x02,
 	FLASH_READ_CMD				=	0x03,
@@ -57,10 +57,7 @@ enum{
 	FLASH_DREAD_CMD				=	0x3B,
 	FLASH_X4READ_CMD			=	0xEB,
 	FLASH_QREAD_CMD				=	0x6B,
-#if(FLASH_TYPE==S25FL512S)
-	FLASH_SECT_ERASE_CMD		=	0xD8,   //sector size = 256kBytes
-	FLASH_READ_STATUS_1_CMD		=	0x07,
-#else
+
 	FLASH_SECT_ERASE_CMD		=	0x20,   //sector size = 4KBytes
 	FLASH_32KBLK_ERASE_CMD		=	0x52,
 	FLASH_64KBLK_ERASE_CMD		=	0xD8,
@@ -72,7 +69,7 @@ enum{
 	FLASH_POWER_DOWN_RELEASE	=	0xAB,
 	FLASH_GET_JEDEC_ID			=	0x9F,
 	FLASH_READ_STATUS_1_CMD		=	0x35,
-#endif
+
 	FLASH_VOLATILE_SR_WRITE_CMD	=	0x50,
 	FLASH_SET_BURST_WITH_WRAP_CMD	=	0x77,
 	FLASH_ENABLE_SO_TO_OUTPUT_CMD	=	0x70,
@@ -85,110 +82,87 @@ enum{
 
 	FLASH_ENABLE_RESET	=	0x66,
 	FLASH_DISABLE_SO_TO_OUTPUT	=	0x80,
-};
+}flash_command_e;
 
 /**
  * @brief     flash type definition
  */
- 
 typedef enum{
-	FLASH_TYPE_GD = 0 ,
-	FLASH_TYPE_XTX,
-	FLASH_TYPE_PUYA
-}Flash_TypeDef;
+	FLASH_TYPE_PUYA	= 0,
+}flash_type_e;
 /**
- * @brief     This function serves to Stop XIP operation before flash.
- * @param[in] none.
+ * @brief     	This function serves to Stop XIP operation before flash.
+ * @param[in] 	none.
  * @return    none.
  */
-_attribute_ram_code_ void flash_stop_xip(void);
+_attribute_text_sec_ void flash_stop_xip(void);
 /**
- * @brief     flash capacity definition
- * Call flash_read_mid function to get the size of flash capacity.
- * Example is as follows:
- * unsigned char temp_buf[4];
- * flash_read_mid(temp_buf);
- * The value of temp_buf[2] reflects flash capacity.
+ * @brief     	This function serves to erase a page(256 bytes).
+ * @param[in] 	addr - the start address of the page needs to erase.
+ * @return    	none
+ * @note      	only 8359 support
  */
-typedef enum {
-    FLASH_SIZE_64K     = 0x10,
-    FLASH_SIZE_128K    = 0x11,
-    FLASH_SIZE_256K    = 0x12,
-    FLASH_SIZE_512K    = 0x13,
-    FLASH_SIZE_1M      = 0x14,
-    FLASH_SIZE_2M      = 0x15,
-    FLASH_SIZE_4M      = 0x16,
-    FLASH_SIZE_8M      = 0x17,
-} Flash_CapacityDef;
-/**
- * @brief     This function serves to erase a page(256 bytes).
- * @param[in] addr - the start address of the page needs to erase.
- * @return    none
- * @note      only 8359 support
- */
-_attribute_ram_code_ void flash_erase_page(unsigned int addr);
+_attribute_text_sec_ void flash_erase_page(unsigned int addr);
 
 /**
- * @brief This function serves to erase a sector.
+ * @brief 		This function serves to erase a sector.
  * @param[in]   addr the start address of the sector needs to erase.
- * @return none
+ * @return 		none
  */
-_attribute_text_code_ void flash_erase_sector(unsigned long addr);
+_attribute_text_sec_ void flash_erase_sector(unsigned long addr);
 
 /**
- * @brief This function serves to erase a block(32k).
+ * @brief 		This function serves to erase a block(32k).
  * @param[in]   addr the start address of the block needs to erase.
- * @return none
+ * @return 		none
  */
-_attribute_ram_code_ void flash_erase_32kblock(unsigned int addr);
+_attribute_text_sec_ void flash_erase_32kblock(unsigned int addr);
 
 /**
- * @brief This function serves to erase a block(64k).
+ * @brief 		This function serves to erase a block(64k).
  * @param[in]   addr the start address of the block needs to erase.
- * @return none
+ * @return 		none
  */
-_attribute_ram_code_ void flash_erase_64kblock(unsigned int addr);
+_attribute_text_sec_ void flash_erase_64kblock(unsigned int addr);
 
 /**
- * @brief     This function serves to erase a page(256 bytes).
- * @param[in] addr - the start address of the page needs to erase.
- * @return    none
+ * @brief     	This function serves to erase a page(256 bytes).
+ * @param[in] 	addr - the start address of the page needs to erase.
+ * @return    	none
  */
-_attribute_text_code_ void flash_erase_chip(void);
+_attribute_text_sec_ void flash_erase_chip(void);
 
-
-_attribute_text_code_ unsigned int flash_get_jedec_id(void);
 /**
- * @brief This function writes the buffer's content to a page.
+ * @brief 		This function writes the buffer's content to a page.
  * @param[in]   addr the start address of the page
  * @param[in]   len the length(in byte) of content needs to write into the page
  * @param[in]   buf the start address of the content needs to write into
- * @return none
+ * @return 		none
  */
-_attribute_text_code_ void flash_write_page(unsigned long addr, unsigned long len, unsigned char *buf);
+_attribute_text_sec_ void flash_write_page(unsigned long addr, unsigned long len, unsigned char *buf);
 
 /**
- * @brief This function reads the content from a page to the buf.
+ * @brief 		This function reads the content from a page to the buf.
  * @param[in]   addr the start address of the page
  * @param[in]   len the length(in byte) of content needs to read out from the page
  * @param[out]  buf the start address of the buffer
- * @return none
+ * @return 		none
  */
-_attribute_text_code_ void flash_read_page(unsigned long addr, unsigned long len, unsigned char *buf);
+_attribute_text_sec_ void flash_read_page(unsigned long addr, unsigned long len, unsigned char *buf);
 
 /**
- * @brief This function write the status of flash.
- * @param[in]  the value of status
- * @return status
+ * @brief 		This function write the status of flash.
+ * @param[in]  	the value of status
+ * @return 		status
  */
-_attribute_ram_code_ unsigned char flash_write_status(unsigned char data);
+_attribute_text_sec_ void flash_write_status(unsigned short data);
 
 /**
- * @brief This function reads the status of flash.
- * @param[in]  none
- * @return none
+ * @brief 		This function reads the status of flash.
+ * @param[in]  	none
+ * @return 		none
  */
-_attribute_ram_code_ unsigned char flash_read_status(void);
+_attribute_text_sec_ unsigned short flash_read_status(void);
 
 /**
  * @brief  	Deep Power Down mode to put the device in the lowest consumption mode
@@ -199,7 +173,7 @@ _attribute_ram_code_ unsigned char flash_read_status(void);
  * @param[in] none
  * @return none.
  */
-_attribute_ram_code_ void flash_deep_powerdown(void);
+_attribute_text_sec_ void flash_deep_powerdown(void);
 
 /**
  * @brief		The Release from Power-Down or High Performance Mode/Device ID command is a
@@ -211,14 +185,14 @@ _attribute_ram_code_ void flash_deep_powerdown(void);
  * @param[in]   none
  * @return      none.
  */
-_attribute_ram_code_ void flash_release_deep_powerdown(void);
+_attribute_text_sec_ void flash_release_deep_powerdown(void);
 
 /***********************************
  * @brief	  This function serves to read MID of flash
  * @param[in] buf - store MID of flash
  * @return    none.
  */
-_attribute_ram_code_ void flash_read_mid(unsigned char *buf);
+_attribute_text_sec_ void flash_read_mid(unsigned char *buf);
 
 /**
  * @brief	  This function serves to read UID of flash
@@ -227,7 +201,7 @@ _attribute_ram_code_ void flash_read_mid(unsigned char *buf);
  * @param[in] buf   - store UID of flash
  * @return    none.
  */
-_attribute_ram_code_ void flash_read_uid(unsigned char idcmd,unsigned char *buf);
+_attribute_text_sec_ void flash_read_uid(unsigned char idcmd,unsigned char *buf);
 
 /**
  * @brief This function serves to protect data for flash.
@@ -235,15 +209,24 @@ _attribute_ram_code_ void flash_read_uid(unsigned char idcmd,unsigned char *buf)
  * @param[in]   data - refer to Driver API Doc.
  * @return none
  */
-_attribute_ram_code_ void flash_lock(Flash_TypeDef type , unsigned short data);
+_attribute_text_sec_ void flash_lock(flash_type_e type , unsigned short data);
 
 /**
  * @brief This function serves to protect data for flash.
  * @param[in]   type - flash type include GD,Puya and XTX
  * @return none
  */
-_attribute_ram_code_ void flash_unlock(Flash_TypeDef type);
+_attribute_text_sec_ void flash_unlock(flash_type_e type);
+/**
+ * @brief 		This function serves to set   priority threshold.when the  interrupt priority>Threshold flash process will disturb by interrupt.
+ * @param[in]   preempt_en -1 can disturb by interrupt, 0 can disturb by interrupt.
+ * @param[in]	threshold -priority Threshold.
+ * @return    	none
+ */
+_attribute_text_sec_ void flash_plic_preempt_config(unsigned char preempt_en,unsigned char threshold);
 
+/*******************************      BLE Stack Use     ******************************/
+_attribute_text_code_ unsigned int flash_get_jedec_id(void);
 
 /** \defgroup GP4  Flash Examples
  *

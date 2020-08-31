@@ -103,37 +103,33 @@ void dma_irq_handler(void)
 _attribute_ram_code_
 void rf_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 	//DBG_CHN10_HIGH;
 
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_rf);
 
 	irq_blt_sdk_handler ();
 	//DBG_CHN10_LOW;
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ15_ZB_RT);
-	NDS_FENCE_IORW;
+
 }
 
 
 _attribute_ram_code_
 void stimer_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 	//DBG_CHN9_HIGH;
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_sysTimer);
 
 	irq_blt_sdk_handler ();
 
 	//DBG_CHN9_LOW;
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ1_SYSTIMER);  	//plic_interrupt_complete
-	NDS_FENCE_IORW;
+
 }
 
 void uart0_irq_handler(void)
 {
-	NESTED_IRQ_ENTER();
+
 
 	if(uart_get_irq_status(UART0, UART_RXBUF_IRQ_STATUS))
 	{
@@ -142,9 +138,7 @@ void uart0_irq_handler(void)
 		uart0_recieve_irq();
 	}
 
-	NESTED_IRQ_EXIT();
-	plic_interrupt_complete(IRQ19_UART0);
-	NDS_FENCE_IORW;
+
 }
 
 

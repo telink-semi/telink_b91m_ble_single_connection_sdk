@@ -124,7 +124,6 @@ enum{
 	FLD_RF_ACC_LEN			    =   BIT_RNG(0,2),
 	FLD_RF_LR_TX_SEL 			=	BIT(4),
 	FLD_RF_BLE_LR				=	BIT(5),
-	FLD_RF_LR_ACC_TRIG			=	BIT(7),
 };
 
 
@@ -161,8 +160,8 @@ enum{
 #define    reg_rf_access_11		    REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x19)
 #define    reg_rf_access_12		    REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x1a)
 #define    reg_rf_access_13		    REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x1b)
-#define    access_code_base_pipe0   REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x08)
-#define    access_code_base_pipe2   REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x18)
+#define    reg_rf_access_code_base_pipe0   REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x08)
+#define    reg_rf_access_code_base_pipe2   REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x18)
 
 #define    reg_rf_txfifo		    REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x1c)
 enum{
@@ -381,6 +380,7 @@ enum{
 };
 #endif
 
+#define	   reg_rf_rxdma_adr			 0x140880
 #define    reg_rf_rxdma_fifo0        REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x80)
 enum{
 	FLD_RF_RXDMA_FIFO0           =	BIT_RNG(0,7),
@@ -404,7 +404,7 @@ enum{
 	FLD_RF_RXDMA_FIFO3           =	BIT_RNG(0,7),
 };
 
-
+#define	   reg_rf_txdma_adr			0x140884
 #define    reg_rf_txdma_fifo0        REG_ADDR8(REG_BASEBAND_BASE_ADDR+0x84)
 enum{
 	FLD_RF_TXDMA_FIFO0           =	BIT_RNG(0,7),
@@ -577,6 +577,7 @@ enum{
 #define    reg_rf_ll_irq_mask_h     REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1d)
 #define 	reg_rf_irq_mask			REG_ADDR16(REG_BB_LL_BASE_ADDR+0x1c)
 
+
 #define    reg_rf_ll_tx_id          REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1e)
 enum{
 	FLD_RF_R_TX_ID                =	BIT_RNG(0,6),
@@ -591,7 +592,8 @@ enum{
 
 
 #define    reg_rf_irq_status     REG_ADDR16(REG_BB_LL_BASE_ADDR+0x20)
-enum{
+
+typedef enum{
 	FLD_RF_IRQ_RX                =	BIT(0),
 	FLD_RF_IRQ_TX                =	BIT(1),
 	FLD_RF_IRQ_RX_TIMEOUT        =	BIT(2),
@@ -609,7 +611,7 @@ enum{
 	FLD_RF_IRQ_SUPP_OF           =	BIT(14),
 	FLD_RF_IRQ_RXDMA_OF          =	BIT(15),
 	FLD_RF_IRQ_ALL 				 =  0X1FFF,
-};
+}rf_irq_e;
 
 
 
