@@ -549,7 +549,7 @@ void feature_gatt_security_test_init_normal(void)
 	//set security level: "LE_Security_Mode_1_Level_2"
 	blc_smp_setSecurityLevel(Unauthenticated_Paring_with_Encryption);  //if not set, default is : LE_Security_Mode_1_Level_2(Unauthenticated_Paring_with_Encryption)
 	blc_smp_setBondingMode(Bondable_Mode);	// if not set, default is : Bondable_Mode
-	blc_smp_setIoCapability(IO_CAPABLITY_NO_IN_NO_OUT);	// if not set, default is : IO_CAPABILITY_NO_INPUT_NO_OUTPUT
+	blc_smp_setIoCapability(IO_CAPABILITY_NO_IN_NO_OUT);	// if not set, default is : IO_CAPABILITY_NO_INPUT_NO_OUTPUT
 
 	//Smp Initialization may involve flash write/erase(when one sector stores too much information,
 	//   is about to exceed the sector threshold, this sector must be erased, and all useful information

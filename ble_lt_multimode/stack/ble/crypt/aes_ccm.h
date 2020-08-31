@@ -75,9 +75,6 @@ u8 aes_ccm_decryption(u8 *key, u8 *iv, u8 *aStr, u8 *mic, u8 mStrLen, u8 *mStr, 
 //void aes_ll_encryption(u8 *key, u8 *plaintext, u8 *result);
 void aes_ll_encryption(u32* key, u32* plaintext, u8 *result);
 
-void aes_ll_ccm_encryption_init (u8 *ltk, u8 *skdm, u8 *skds, u8 *ivm, u8 *ivs, ble_crypt_para_t *pd);
-void aes_ll_ccm_encryption(u8 *pkt, int master, ble_crypt_para_t *pd);
-int aes_ll_ccm_decryption(u8 *pkt, int master, ble_crypt_para_t *pd);		//OK return 0
 u8 aes_att_encryption_packet(u8 *key, u8 *iv, u8 *mic, u8 mic_len, u8 *ps, u8 len);
 u8 aes_att_decryption_packet(u8 *key, u8 *iv, u8 *mic, u8 mic_len, u8 *ps, u8 len);
 

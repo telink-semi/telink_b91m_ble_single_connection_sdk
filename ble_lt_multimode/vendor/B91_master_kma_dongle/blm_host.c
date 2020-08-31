@@ -479,7 +479,7 @@ int controller_event_callback (u32 h, u8 *p, int n)
 			event_enc_change_t *pe = (event_enc_change_t *)p;
 			blm_smp_encChangeEvt(pe->status, pe->handle, pe->enc_enable);
 		}
-		else if(evtCode == BLM_CONN_ENC_REFRESH)
+		else if(evtCode == HCI_EVT_ENCRYPTION_KEY_REFRESH)
 		{
 			event_enc_refresh_t *pe = (event_enc_refresh_t *)p;
 			blm_smp_encChangeEvt(pe->status, pe->handle, 1);

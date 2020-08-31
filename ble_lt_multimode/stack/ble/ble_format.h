@@ -532,16 +532,6 @@ typedef struct{
 	u16 init_credits;
 	u16 scid[5];
 }rf_packet_l2cap_credit_based_connection_req_t;
-typedef struct{
-	u8	llid;
-	u8  rf_len;
-	u16	l2capLen;
-	u16	chanId;
-	u8  opcode;
-	u8	id;
-	l2cap_sig_cmd_reject_reason reason;
-	u8 data[0]; //optional according reason
-}rf_packet_l2cap_command_reject_rsp_t;
 
 
 typedef struct{

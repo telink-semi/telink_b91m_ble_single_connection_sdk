@@ -202,10 +202,94 @@ typedef enum {
 #define		MAC_MATCH32(md,ms)	(md[0]==ms[0] && md[1]==ms[1])
 /////////////////////////////////////////////////////////////////////////////
 
+/******************************************** ATT ***************************************************************/
+
+/**
+ *  @brief  Definition for Attribute protocol PDUs
+ */
+typedef enum{
+	ATT_OP_ERROR_RSP					= 0x01,
+	ATT_OP_EXCHANGE_MTU_REQ				= 0x02,
+	ATT_OP_EXCHANGE_MTU_RSP				= 0x03,
+	ATT_OP_FIND_INFORMATION_REQ			= 0x04,		ATT_OP_FIND_INFO_REQ = 0x04,
+	ATT_OP_FIND_INFORMATION_RSP			= 0x05,		ATT_OP_FIND_INFO_RSP = 0x05,
+	ATT_OP_FIND_BY_TYPE_VALUE_REQ		= 0x06,
+	ATT_OP_FIND_BY_TYPE_VALUE_RSP		= 0x07,
+	ATT_OP_READ_BY_TYPE_REQ				= 0x08,
+	ATT_OP_READ_BY_TYPE_RSP				= 0x09,
+	ATT_OP_READ_REQ						= 0x0A,
+	ATT_OP_READ_RSP						= 0x0B,
+	ATT_OP_READ_BLOB_REQ				= 0x0C,
+	ATT_OP_READ_BLOB_RSP				= 0x0D,
+	ATT_OP_READ_MULTIPLE_REQ			= 0x0E,		ATT_OP_READ_MULTI_REQ = 0x0E,
+	ATT_OP_READ_MULTIPLE_RSP			= 0x0F,
+	ATT_OP_READ_BY_GROUP_TYPE_REQ		= 0x10,
+	ATT_OP_READ_BY_GROUP_TYPE_RSP		= 0x11,
+	ATT_OP_WRITE_REQ					= 0x12,
+	ATT_OP_WRITE_RSP					= 0x13,
+	ATT_OP_PREPARE_WRITE_REQ			= 0x16,
+	ATT_OP_PREPARE_WRITE_RSP			= 0x17,
+	ATT_OP_EXECUTE_WRITE_REQ			= 0x18,
+	ATT_OP_EXECUTE_WRITE_RSP			= 0x19,
+
+	ATT_OP_HANDLE_VALUE_NTF				= 0x1B,		ATT_OP_HANDLE_VALUE_NOTI = 0x1B,
+	ATT_OP_HANDLE_VALUE_IND				= 0x1D,
+	ATT_OP_HANDLE_VALUE_CFM				= 0x1E,
+
+	ATT_OP_READ_MULTIPLE_VARIABLE_REQ	= 0x20,	//core_5.2
+	ATT_OP_READ_MULTIPLE_VARIABLE_RSP	= 0x21, //core_5.2
+	ATT_OP_MULTIPLE_HANDLE_VALUE_NTF	= 0x23, //core_5.2
+
+	ATT_OP_WRITE_CMD					= 0x52,
+	ATT_OP_SIGNED_WRITE_CMD				= 0xD2,
+}att_pdu_type;
 
 
 
 
+/******************************************** L2CAP ***************************************************************/
+
+/**
+ *  @brief  Definition for L2CAP CID name space for the LE-U
+ */
+typedef enum{
+	L2CAP_CID_NULL				= 0x0000,
+	L2CAP_CID_ATTR_PROTOCOL		= 0x0004,
+	L2CAP_CID_SIG_CHANNEL		= 0x0005,
+	L2CAP_CID_SMP				= 0x0006,
+}l2cap_cid_type;
+
+/**
+ *  @brief  Definition for L2CAP signal packet formats
+ */
+typedef enum{
+	L2CAP_COMMAND_REJECT_RSP           		= 0x01,
+	L2CAP_CONNECTION_REQ                 	= 0x02,
+	L2CAP_CONNECTION_RSP                 	= 0x03,
+	L2CAP_CONFIGURATION_REQ                	= 0x04,
+	L2CAP_CONFIGURATION_RSP           		= 0x05,
+	L2CAP_DISCONNECTION_REQ           		= 0x06,
+	L2CAP_DISCONNECTION_RSP           		= 0x07,
+	L2CAP_ECHO_REQ          		 		= 0x08,
+	L2CAP_ECHO_RSP           				= 0x09,
+	L2CAP_INFORMATION_REQ           		= 0x0A,
+	L2CAP_INFORMATION_RSP           		= 0x0B,
+	L2CAP_CREATE_CHANNEL_REQ          		= 0x0C,
+	L2CAP_CREATE_CHANNEL_RSP           		= 0x0D,
+	L2CAP_MOVE_CHANNEL_REQ           		= 0x0E,
+	L2CAP_MOVE_CHANNEL_RSP           		= 0x0F,
+	L2CAP_MOVE_CHANNEL_CONFIRMATION_REQ		= 0x10,
+	L2CAP_MOVE_CHANNEL_CONFIRMATION_RSP     = 0x11,
+	L2CAP_CONNECTION_PARAMETER_UPDATE_REQ	= 0x12,		L2CAP_CMD_CONN_UPD_PARA_REQ		= 0x12,
+	L2CAP_CONNECTION_PARAMETER_UPDATE_RSP	= 0x13,		L2CAP_CMD_CONN_UPD_PARA_RESP 	= 0x13,
+	L2CAP_LE_CREDIT_BASED_CONNECTION_REQ 	= 0x14,
+	L2CAP_LE_CREDIT_BASED_CONNECTION_RSP 	= 0x15,
+	L2CAP_FLOW_CONTROL_CREDIT_IND 			= 0x16,
+	L2CAP_CREDIT_BASED_CONNECTION_REQ 		= 0x17,	//core_5.2
+	L2CAP_CREDIT_BASED_CONNECTION_RSP 		= 0x18,	//core_5.2
+	L2CAP_CREDIT_BASED_RECONFIGURE_REQ 		= 0x19,	//core_5.2
+	L2CAP_CREDIT_BASED_RECONFIGURE_RSP 		= 0x1A,	//core_5.2
+}l2cap_sig_pkt_format;
 
 
 

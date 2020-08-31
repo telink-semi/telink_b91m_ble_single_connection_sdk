@@ -40,7 +40,6 @@
 
 #include "smp/smp.h"
 #include "smp/smp_stack.h"
-#include "smp/smp_const.h"
 #include "smp/smp_central.h"
 #include "smp/smp_peripheral.h"
 #include "smp/smp_storage.h"

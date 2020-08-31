@@ -26,7 +26,7 @@
 #define LL_MASTER_H_
 
 
-
+rf_packet_l2cap_t * blm_l2cap_packet_pack (u16 conn, u8 * raw_pkt);
 
 
 /**

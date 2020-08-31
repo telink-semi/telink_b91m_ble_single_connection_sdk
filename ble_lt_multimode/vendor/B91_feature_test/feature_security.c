@@ -592,7 +592,7 @@ void feature_security_test_init_normal(void)
 	//set security level: "LE_Security_Mode_1_Level_2"
 	blc_smp_setSecurityLevel(Unauthenticated_Paring_with_Encryption);  //if not set, default is : LE_Security_Mode_1_Level_2(Unauthenticated_Paring_with_Encryption)
 	blc_smp_setBondingMode(Bondable_Mode);	// if not set, default is : Bondable_Mode
-	blc_smp_setIoCapability(IO_CAPABLITY_NO_IN_NO_OUT);	// if not set, default is : IO_CAPABILITY_NO_INPUT_NO_OUTPUT
+	blc_smp_setIoCapability(IO_CAPABILITY_NO_IN_NO_OUT);	// if not set, default is : IO_CAPABILITY_NO_INPUT_NO_OUTPUT
 
 	//Smp Initialization may involve flash write/erase(when one sector stores too much information,
 	//   is about to exceed the sector threshold, this sector must be erased, and all useful information
@@ -616,7 +616,7 @@ void feature_security_test_init_normal(void)
 	//set security level: "LE_Security_Mode_1_Level_2"
 	blc_smp_setSecurityLevel(Unauthenticated_Paring_with_Encryption);  //if not set, default is : LE_Security_Mode_1_Level_2(Unauthenticated_Paring_with_Encryption)
 	blc_smp_setParingMethods(LE_Secure_Connection);
-	blc_smp_setSecurityParamters(Bondable_Mode, 1, 0, 0, IO_CAPABLITY_NO_IN_NO_OUT);
+	blc_smp_setSecurityParamters(Bondable_Mode, 1, 0, 0, IO_CAPABILITY_NO_IN_NO_OUT);
 	blc_smp_setEcdhDebugMode(debug_mode); //use debug mode for sniffer decryption
 
 	//Smp Initialization may involve flash write/erase(when one sector stores too much information,
@@ -668,7 +668,7 @@ void feature_security_test_init_normal(void)
 	blc_smp_setSecurityLevel(Authenticated_Paring_with_Encryption);  //if not set, default is : LE_Security_Mode_1_Level_2(Unauthenticated_Paring_with_Encryption)
 	blc_smp_enableAuthMITM(1);
 	blc_smp_setBondingMode(Bondable_Mode);	// if not set, default is : Bondable_Mode
-	blc_smp_setIoCapability(IO_CAPABLITY_KEYBOARD_ONLY);	// if not set, default is : IO_CAPABILITY_NO_INPUT_NO_OUTPUT
+	blc_smp_setIoCapability(IO_CAPABILITY_KEYBOARD_ONLY);	// if not set, default is : IO_CAPABILITY_NO_INPUT_NO_OUTPUT
 
 	//Smp Initialization may involve flash write/erase(when one sector stores too much information,
 	//   is about to exceed the sector threshold, this sector must be erased, and all useful information
@@ -693,7 +693,7 @@ void feature_security_test_init_normal(void)
 	//set security level: "LE_Security_Mode_1_Level_4"
 	blc_smp_setSecurityLevel(Authenticated_LE_Secure_Connection_Paring_with_Encryption);  //if not set, default is : LE_Security_Mode_1_Level_2(Unauthenticated_Paring_with_Encryption)
 	blc_smp_setParingMethods(LE_Secure_Connection);
-	blc_smp_setSecurityParamters(Bondable_Mode, 1, 0, 0, IO_CAPABLITY_DISPLAY_YESNO);
+	blc_smp_setSecurityParamters(Bondable_Mode, 1, 0, 0, IO_CAPABILITY_DISPLAY_YESNO);
 	blc_smp_setEcdhDebugMode(debug_mode); //use debug mode for sniffer decryption
 
 	//Smp Initialization may involve flash write/erase(when one sector stores too much information,
@@ -755,7 +755,7 @@ void feature_security_test_init_normal(void)
 	//set security level: "LE_Security_Mode_1_Level_4"
 	blc_smp_setSecurityLevel(Authenticated_LE_Secure_Connection_Paring_with_Encryption);  //if not set, default is : LE_Security_Mode_1_Level_2(Unauthenticated_Paring_with_Encryption)
 	blc_smp_setParingMethods(LE_Secure_Connection);
-	blc_smp_setSecurityParamters(Bondable_Mode, 1, 0, 0, IO_CAPABLITY_KEYBOARD_ONLY);
+	blc_smp_setSecurityParamters(Bondable_Mode, 1, 0, 0, IO_CAPABILITY_KEYBOARD_ONLY);
 	blc_smp_setEcdhDebugMode(debug_mode); //use debug mode for sniffer decryption
 
 	//Smp Initialization may involve flash write/erase(when one sector stores too much information,

@@ -42,7 +42,19 @@
 
 
 
+typedef struct{
+	u32 dma_len;
 
+	u8 type   :4;
+	u8 rfu1   :1;
+	u8 chan_sel:1;
+	u8 txAddr :1;
+	u8 rxAddr :1;
+
+	u8  rf_len;
+	u8	advA[6];			//address
+	u8	data[31];			//0-31 byte
+}rf_pkt_pri_adv_t;
 
 //NOTE: this data structure must 4 bytes aligned
 typedef struct
