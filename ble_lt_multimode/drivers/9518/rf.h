@@ -34,6 +34,13 @@
  *                                         RF  global macro                                                           *
  *********************************************************************************************************************/
 
+/**
+ * This define for ble debug the effect of rx_dly.
+ * when this function turn on the time of rx_dly will shorten 6.3us
+ */
+#define 	RF_RX_SHORT_MODE_EN			1
+
+
 #define 	rf_tx_packet_dma_len(rf_data_len)			(((rf_data_len)+3)/4)|(((rf_data_len) % 4)<<22)
 //--------------------------------------------FOR BLE---------------------------------------------------------------//
 // Those setting of offset according to ble packet format, so this setting for ble only.
