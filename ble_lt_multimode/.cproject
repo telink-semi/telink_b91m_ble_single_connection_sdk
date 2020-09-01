@@ -71,7 +71,7 @@
 									<listOptionValue builtIn="false" value="lt_9518"/>
 									<listOptionValue builtIn="false" value="dsp"/>
 								</option>
-								<option id="nds.c.link.option.paths.1790734836" superClass="nds.c.link.option.paths" valueType="libPaths">
+								<option id="nds.c.link.option.paths.1790734836" name="Library search path (-L)" superClass="nds.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/proj_lib}&quot;"/>
 								</option>
 								<inputType id="tool.nds.c.linker.input.1065994281" superClass="tool.nds.c.linker.input">
@@ -239,7 +239,7 @@
 									<listOptionValue builtIn="false" value="lt_9518"/>
 									<listOptionValue builtIn="false" value="dsp"/>
 								</option>
-								<option id="nds.c.link.option.paths.1802829112" superClass="nds.c.link.option.paths" valueType="libPaths">
+								<option id="nds.c.link.option.paths.1802829112" name="Library search path (-L)" superClass="nds.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/proj_lib}&quot;"/>
 								</option>
 								<inputType id="tool.nds.c.linker.input.1535159444" superClass="tool.nds.c.linker.input">
@@ -566,7 +566,7 @@
 									<listOptionValue builtIn="false" value="lt_9518"/>
 									<listOptionValue builtIn="false" value="dsp"/>
 								</option>
-								<option id="nds.c.link.option.paths.1373449280" superClass="nds.c.link.option.paths" valueType="libPaths">
+								<option id="nds.c.link.option.paths.1373449280" name="Library search path (-L)" superClass="nds.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/proj_lib}&quot;"/>
 								</option>
 								<inputType id="tool.nds.c.linker.input.1764478472" superClass="tool.nds.c.linker.input">
@@ -664,7 +664,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="lst" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.1287809320" name="B91_ble_remote" parent="config.nds.base">
+				<configuration artifactExtension="elf" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.1287809320" name="B91_ble_remote" parent="config.nds.base" postbuildStep="&quot;${workspace_loc:/${ProjName}}/tl_check_fw.bat&quot;   ${ConfigName}">
 					<folderInfo id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.1287809320." name="/" resourcePath="">
 						<toolChain id="nds.nds32le-elf-mculib-v5f.base.1258563327" name="nds32le-elf-mculib-v5f" superClass="nds.nds32le-elf-mculib-v5f.base">
 							<option id="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU.674247070" name="CPU" superClass="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU"/>
@@ -733,7 +733,7 @@
 								<option id="nds.c.link.option.virtualhosting.27028621" name="Virtual Hosting (-mvh)" superClass="nds.c.link.option.virtualhosting" value="false" valueType="boolean"/>
 								<option id="nds.c.link.option.ldflags.1480321787" name="Linker flags" superClass="nds.c.link.option.ldflags" value=" " valueType="string"/>
 								<option id="nds.c.link.option.LTO.1568534802" name="Link Time Optimization (-flto)" superClass="nds.c.link.option.LTO" value="true" valueType="boolean"/>
-								<option id="nds.c.link.option.other.duplacitecompiler.1134722337" name="DuplaciteComplierOption" superClass="nds.c.link.option.other.duplacitecompiler" value="-g3 -mcpu=d25f -ffunction-sections -fdata-sections -fmessage-length=0 -fno-builtin -fomit-frame-pointer -fno-strict-aliasing -fshort-wchar -fuse-ld=bfd " valueType="string"/>
+								<option id="nds.c.link.option.other.duplacitecompiler.1134722337" name="DuplaciteComplierOption" superClass="nds.c.link.option.other.duplacitecompiler" value="-g3 -mcpu=d25f -ffunction-sections -fdata-sections -fmessage-length=0 -fno-builtin -fomit-frame-pointer -fno-strict-aliasing -fshort-wchar -fuse-ld=bfd -fpack-struct " valueType="string"/>
 								<option id="nds.c.link.option.libs.104711410" name="Libraries (-l)" superClass="nds.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="lt_9518"/>
@@ -742,7 +742,7 @@
 								<option id="nds.c.link.option.userobjs.787067469" name="Other objects" superClass="nds.c.link.option.userobjs" valueType="userObjs">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/proj_lib/liblt_9518.a}&quot;"/>
 								</option>
-								<option id="nds.c.link.option.paths.2132021398" superClass="nds.c.link.option.paths" valueType="libPaths">
+								<option id="nds.c.link.option.paths.2132021398" name="Library search path (-L)" superClass="nds.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/proj_lib}&quot;"/>
 								</option>
 								<inputType id="tool.nds.c.linker.input.935496152" superClass="tool.nds.c.linker.input">
@@ -760,7 +760,7 @@
 								<option id="nds.objdump.option.disable.443809308" name="Disable. (Do not auto-generate output file.)" superClass="nds.objdump.option.disable" value="false" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.objcopy.base.238323989" name="Objcopy (object content copy)" superClass="tool.nds32le-elf-mculib-v5f.objcopy.base">
-								<option id="nds.objcopy.option.disable.626318115" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="false" valueType="boolean"/>
+								<option id="nds.objcopy.option.disable.626318115" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="true" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.size.base.1434102226" name="Size (section size listing)" superClass="tool.nds32le-elf-mculib-v5f.size.base"/>
 							<tool command="$(ANDESIGHT_ROOT)/utils/nds_ldsag --version=v5" id="tool.nds32le-elf-mculib-v5f.ldsag.base.1691993850" name="LdSaG Tool" superClass="tool.nds32le-elf-mculib-v5f.ldsag.base">
@@ -1066,7 +1066,7 @@
 									<listOptionValue builtIn="false" value="lt_9518"/>
 									<listOptionValue builtIn="false" value="dsp"/>
 								</option>
-								<option id="nds.c.link.option.paths.220929886" superClass="nds.c.link.option.paths" valueType="libPaths">
+								<option id="nds.c.link.option.paths.220929886" name="Library search path (-L)" superClass="nds.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/proj_lib}&quot;"/>
 								</option>
 								<inputType id="tool.nds.c.linker.input.1823647299" superClass="tool.nds.c.linker.input">
