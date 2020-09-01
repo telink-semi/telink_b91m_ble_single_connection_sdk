@@ -128,7 +128,7 @@ static inline u32 core_restore_interrupt(u32 en){
  */
 void core_interrupt_enable(void);
 
-
+/*******************************      BLE Stack Use     ******************************/
 #define  irq_disable		core_interrupt_disable
 #define	 irq_enable			core_interrupt_enable
 #define  irq_restore(en)	core_restore_interrupt(en)

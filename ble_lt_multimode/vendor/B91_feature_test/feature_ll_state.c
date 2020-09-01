@@ -225,7 +225,6 @@ void feature_linklayer_state_test_init_normal(void)
 
 
 	if(status != BLE_SUCCESS){  //adv setting err
-//		write_reg8(0x8000, 0x11);  //debug
 		while(1);
 	}
 
@@ -288,7 +287,6 @@ void feature_linklayer_state_test_init_normal(void)
 									 ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC, \
 									 0,  NULL,  BLT_ENABLE_ADV_37, ADV_FP_NONE);
 	if(status != BLE_SUCCESS){  //adv setting err
-		write_reg8(0x8000, 0x11);  //debug
 		while(1);
 	}
 
@@ -355,7 +353,6 @@ void feature_linklayer_state_test_init_normal(void)
 									 ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC, \
 									 0,  NULL,  BLT_ENABLE_ADV_37, ADV_FP_NONE);
 	if(status != BLE_SUCCESS){  //adv setting err
-		write_reg8(0x8000, 0x11);  //debug
 		while(1);
 	}
 
@@ -429,7 +426,6 @@ void feature_linklayer_state_test_init_normal(void)
 									 ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC, \
 									 0,  NULL,  BLT_ENABLE_ADV_ALL, ADV_FP_NONE);
 	if(status != BLE_SUCCESS){  //adv setting err
-		write_reg8(0x8000, 0x11);  //debug
 		while(1);
 	}
 

@@ -10,25 +10,25 @@
 
 #include "./reg_include/stimer_reg.h"
 
-
+ //different with driver, use in many app, change last to avoid 
 static inline void stimer_set_irq_mask(stimer_irq_mask_e mask)
 {
 	reg_system_irq_mask |= mask;
 }
-
+ //different with driver, use in many app, change last to avoid 
 static inline void stimer_clr_irq_mask(stimer_irq_mask_e mask)
 {
 	reg_system_irq_mask &= (~mask);
 }
-
+ //different with driver, use in many app, change last to avoid 
 static inline void stimer_clr_irq_status(void)
 {
 	reg_system_cal_irq = STIMER_IRQ_CLR;
 }
 
-static inline unsigned char stimer_get_irq_status(unsigned char mask)
+static inline unsigned char stimer_get_irq_status(void)
 {
-	return ((unsigned char )BM_IS_SET(reg_system_cal_irq, mask));
+	return reg_system_cal_irq;
 }
 
 static inline void stimer_set_irq_capture(unsigned int tick)

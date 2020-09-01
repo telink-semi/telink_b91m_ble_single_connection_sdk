@@ -106,18 +106,11 @@ void blc_initMacAddress(int flash_addr, u8 *mac_public, u8 *mac_random_static)
 		mac_public[1] = value_rand[1];
 		mac_public[2] = value_rand[2];
 
-		#if(MCU_CORE_TYPE == MCU_CORE_8258)
-			mac_public[3] = 0x38;             //company id: 0xA4C138
-			mac_public[4] = 0xC1;
-			mac_public[5] = 0xA4;
-		#elif(MCU_CORE_TYPE == MCU_CORE_8278)
-			mac_public[3] = 0xD1;             //company id: 0xC119D1
-			mac_public[4] = 0x19;
-			mac_public[5] = 0xC4;
-		#elif(MCU_CORE_TYPE == MCU_CORE_9518)
-			//TODO
-			//company id:
-		#endif
+		//TODO
+		//company id:
+		mac_public[3] = 0xD1;             //company id: 0xC119D1
+		mac_public[4] = 0x19;
+		mac_public[5] = 0xC4;
 
 
 		flash_write_page (flash_addr, 6, mac_public);

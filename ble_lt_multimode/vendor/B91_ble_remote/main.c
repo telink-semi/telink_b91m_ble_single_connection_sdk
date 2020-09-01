@@ -37,7 +37,11 @@ extern void user_init_normal();
 extern void main_loop (void);
 
 
-
+/**
+ * @brief		BLE SDK RF interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_
 void rf_irq_handler(void)
 {
@@ -52,6 +56,12 @@ void rf_irq_handler(void)
 }
 
 
+
+/**
+ * @brief		BLE SDK System timer interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_
 void stimer_irq_handler(void)
 {
@@ -70,11 +80,11 @@ void pwm_irq_handler(void)
 {
 #if (REMOTE_IR_ENABLE)
 
-//	DBG_CHN1_TOGGLE;
+	DBG_CHN1_TOGGLE;
 
 	rc_ir_irq_prc();
 
-//	DBG_CHN1_TOGGLE;
+	DBG_CHN1_TOGGLE;
 
 #endif
 }

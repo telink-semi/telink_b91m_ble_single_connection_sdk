@@ -106,6 +106,7 @@
 /**
  * @brief 	Power type for different application
  */
+ //different with driver, use in many app, change last to avoid 
 typedef enum{
 	LDO_MODE 		=0x00,	/**< LDO mode */
 	DCDC_LDO_MODE	=0x01,	/**< DCDC_LDO mode */

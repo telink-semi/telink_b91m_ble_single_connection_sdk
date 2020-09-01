@@ -34,6 +34,7 @@
 #include "vendor/common/blt_common.h"
 #include "app_ui.h"
 #include "app_audio.h"
+#include "rc_ir.h"
 
 #define 	ADV_IDLE_ENTER_DEEP_TIME			60  //60 s
 #define 	CONN_IDLE_ENTER_DEEP_TIME			60  //60 s
@@ -92,7 +93,7 @@ _attribute_data_retention_	u32	lowBattDet_tick   = 0;
 extern u32	scan_pin_need;
 extern int 	key_not_released;
 
-	void proc_keyboard (u8 e, u8 *p, int n);
+void proc_keyboard (u8 e, u8 *p, int n);
 
 #elif (UI_BUTTON_ENABLE)
 
@@ -175,7 +176,9 @@ void	task_connect (u8 e, u8 *p, int n)
 	interval_update_tick = clock_time() | 1; //none zero
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+	#if(BOARD_SELECT == EVK_BOARD)
+		gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+	#endif
 #endif
 }
 
@@ -208,7 +211,9 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+	#if(BOARD_SELECT == EVK_BOARD)
+		gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+	#endif
 #endif
 
 	advertise_begin_tick = clock_time();
@@ -290,7 +295,7 @@ _attribute_ram_code_ void blt_pm_proc(void)
 			}
 		#endif
 
-	#if 0 //deepsleep
+	#if 1 //deepsleep
 		if(sendTerminate_before_enterDeep == 1){ //sending Terminate and wait for ack before enter deepsleep
 			if(user_task_flg){  //detect key Press again,  can not enter deep now
 				sendTerminate_before_enterDeep = 0;
@@ -343,7 +348,6 @@ void user_init_normal(void)
 	random_generator_init();  //this is must
 
 
-
 ////////////////// BLE stack initialization ////////////////////////////////////
 	u8  mac_public[6];
 	u8  mac_random_static[6];
@@ -365,7 +369,6 @@ void user_init_normal(void)
 	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
-//	blc_ll_initPowerManagement_module();        //pm module:      	 optional
 
 
 	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
@@ -409,7 +412,7 @@ void user_init_normal(void)
 											bondInfo.peer_addr_type,  bondInfo.peer_addr,
 											MY_APP_ADV_CHANNEL,
 											ADV_FP_NONE);
-			if(status != BLE_SUCCESS) { write_reg8(0x40002, 0x11); 	while(1); }  //debug: adv setting err
+			if(status != BLE_SUCCESS) { while(1); }  //debug: adv setting err
 
 			//it is recommended that direct adv only last for several seconds, then switch to indirect adv
 			bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE, 1);
@@ -512,6 +515,9 @@ void user_init_normal(void)
 	bls_ota_registerResultIndicateCb(app_debug_ota_result);  //debug
 #endif
 
+#if (BLT_APP_LED_ENABLE)
+	device_led_init(GPIO_LED_RED, LED_ON_LEVAL);  //LED initialization
+#endif
 
 }
 
@@ -534,7 +540,9 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 			cpu_set_gpio_wakeup (pin[i], Level_High,1);  //drive pin pad high wakeup deepsleep
 		}
 	#endif
-
+#if (BLT_APP_LED_ENABLE)
+	device_led_init(GPIO_LED_RED, LED_ON_LEVAL);  //LED initialization
+#endif
 #endif
 }
 

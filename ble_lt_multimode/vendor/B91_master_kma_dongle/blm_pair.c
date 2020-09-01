@@ -246,7 +246,6 @@ void	user_master_host_pairing_flash_init(void)
 				user_tbl_slaveMac.curNum ++;
 			}
 			else{ //slave mac in flash more than max, we think it's code bug
-				write_sram32(0x80000,0x12345678);  //for debug
 				irq_disable();
 				while(1);
 			}

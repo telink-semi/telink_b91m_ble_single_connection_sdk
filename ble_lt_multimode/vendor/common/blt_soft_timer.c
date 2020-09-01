@@ -46,7 +46,6 @@ _attribute_data_retention_	blt_soft_timer_t	blt_timer;
 int  blt_soft_timer_sort(void)
 {
 	if(blt_timer.currentNum < 1 || blt_timer.currentNum > MAX_TIMER_NUM){
-		write_reg32(0x40000, 0x11111120); while(1); //debug ERR
 		return 0;
 	}
 	else{
@@ -116,7 +115,6 @@ int blt_soft_timer_add(blt_timer_callback_t func, u32 interval_us)
 int  blt_soft_timer_delete_by_index(u8 index)
 {
 	if(index >= blt_timer.currentNum){
-		write_reg32(0x40000, 0x11111121); while(1); //debug ERR
 		return 0;
 	}
 
@@ -188,7 +186,7 @@ void  	blt_soft_timer_process(int type)
 		if(blt_is_timer_expired(blt_timer.timer[i].t ,now) ){ //timer trigger
 
 			if(blt_timer.timer[i].cb == NULL){
-				write_reg32(0x40000, 0x11111122); while(1); //debug ERR
+
 			}
 			else{
 				result = blt_timer.timer[i].cb();

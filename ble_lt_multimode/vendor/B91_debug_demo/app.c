@@ -388,7 +388,7 @@ void rf_irq_handler(void)
 		bltParam_conn_rx_num ++;
 		reg_dma_size(1)=0xffffffff;
 		rf_clr_irq_status(FLD_RF_IRQ_RX);
-		rf_start_srx(0, 0);
+		rf_start_srx(0);
 	}
 #elif (TEST_MODE_SELECT == TEST_MODE_BRX_RX)
 	if(rf_get_irq_status(FLD_RF_IRQ_RX))
@@ -607,7 +607,7 @@ void ble_stx_test(void){
 //		printf("STx packet: %d \n",debug_pkt_adv.data[0]);
 //		array_printf((u8*)&debug_pkt_adv,sizeof (rf_packet_dbg_adv_t));
 
-		rf_start_stx((void *)&debug_pkt_adv, 1,  clock_time() + 100);
+		rf_start_stx((void *)&debug_pkt_adv, clock_time() + 100);
 
 		delay_us(2000);  //2mS is enough for packet sending
 		if(rf_get_irq_status(FLD_RF_IRQ_TX)){
@@ -857,7 +857,7 @@ void ble_srx_test(void){
 #endif
 
 #if(RF_RX_IRQ_EN)
-	rf_start_srx(0, 0);
+	rf_start_srx(0);
 	while(1){
 		gpio_toggle(GPIO_LED_RED);
 		delay_ms(500);
@@ -865,7 +865,7 @@ void ble_srx_test(void){
 
 #else
 
-	rf_start_srx(0, 0);
+	rf_start_srx(0);
 	while(1)
 	{
 		if(rf_get_irq_status(FLD_RF_IRQ_RX))
@@ -891,7 +891,7 @@ void ble_srx_test(void){
 			#endif
 			reg_dma_size(1)=0xffffffff;
 			rf_clr_irq_status(FLD_RF_IRQ_RX);
-			rf_start_srx(0, 0);
+			rf_start_srx(0);
 		}
 
 	}

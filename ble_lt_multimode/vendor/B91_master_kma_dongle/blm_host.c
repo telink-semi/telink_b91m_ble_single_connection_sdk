@@ -706,7 +706,9 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 				//slave OTA state feedback
 				u8 len = pAtt->l2capLen - 3;
 				tmemcpy (slave_ota_notify_data, pAtt->dat, len);
-				//my_dump_str_data (UDB_STR_DATA_ENABLE, "slave_ota_notify", slave_ota_notify_data, len);
+				#if UDB_DEBUG_EN
+				my_dump_str_data (UDB_STR_DATA_ENABLE, "slave_ota_notify", slave_ota_notify_data, len);
+				#endif
 			}
 			#endif
 			else

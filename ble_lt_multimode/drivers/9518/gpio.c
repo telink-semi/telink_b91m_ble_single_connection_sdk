@@ -1,10 +1,10 @@
 /********************************************************************************************************
  * @file     gpio.c
  *
- * @brief    This is the source file for TLSR8258
+ * @brief    This is the source file for TLSR9518
  *
- * @author	 BLE Team
- * @date     June 16, 2020
+ * @author	 Driver Group
+ * @date     May 8, 2020
  *
  * @par      Copyright (c) 2018, Telink Semiconductor (Shanghai) Co., Ltd.
  *           All rights reserved.
@@ -25,7 +25,6 @@
  *******************************************************************************************************/
 
 #include "gpio.h"
-#include "gpio_default_9518.h"
 
 /**********************************************************************************************************************
  *                                			  local constants                                                       *
@@ -457,6 +456,7 @@ void gpio_usr_init(int anaRes_init_en, gpio_init_s* st)
 #include "compiler.h"
 #include "reg_include/register_9518.h"
 #include "analog.h"
+#include "gpio_default_9518.h"
 
 /**
  * @brief      This function servers to initiate pull up-down resistor of all gpio.
@@ -525,25 +525,41 @@ static void gpio_analog_resistance_init(void)
  * @param[in]  value - enable or disable the pin's input function(0: disable, 1: enable)
  * @return     none
  */
-void gpio_set_input_en(gpio_pin_e pin)
+void gpio_set_input_en(gpio_pin_e pin, unsigned int value)
 {
 	unsigned char	bit = pin & 0xff;
 	unsigned short group = pin & 0xf00;
 
 	if(group == GPIO_GROUPA || group == GPIO_GROUPB || group == GPIO_GROUPE)
 	{
-		BM_SET(reg_gpio_ie(pin), bit);
+		if(value){
+			BM_SET(reg_gpio_ie(pin), bit);
+		}
+		else{
+			BM_CLR(reg_gpio_ie(pin), bit);
+		}
 	}
 
     else if(group == GPIO_GROUPC)
     {
-    	analog_write_reg8(areg_gpio_pc_ie, analog_read_reg8(areg_gpio_pc_ie)|bit);
+    	if(value){
+        	analog_write_reg8(areg_gpio_pc_ie, analog_read_reg8(areg_gpio_pc_ie)|bit);
+    	}
+    	else{
+        	analog_write_reg8(areg_gpio_pc_ie, analog_read_reg8(areg_gpio_pc_ie)&(~bit));
+    	}
     }
 
     else if(group == GPIO_GROUPD)
     {
-    	analog_write_reg8(areg_gpio_pd_ie, analog_read_reg8(areg_gpio_pd_ie)|bit);
+    	if(value){
+        	analog_write_reg8(areg_gpio_pd_ie, analog_read_reg8(areg_gpio_pd_ie)|bit);
+    	}
+    	else{
+    		analog_write_reg8(areg_gpio_pd_ie, analog_read_reg8(areg_gpio_pd_ie)&(~bit));
+    	}
     }
+
 }
 
 /**

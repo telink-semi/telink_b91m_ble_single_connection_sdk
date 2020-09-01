@@ -29,7 +29,8 @@
 #include "rc_ir.h"
 
 #include "app_audio.h"
-
+#include "app_ui.h"
+#include "../common/blt_led.h"
 
 //_attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 _attribute_data_retention_	int 	key_not_released;
@@ -40,28 +41,64 @@ extern u32	latest_user_event_tick;
 #define CONSUMER_KEY   	   		1
 #define KEYBOARD_KEY   	   		2
 #define IR_KEY   	   			3
+#define IDLE_KEY   	   			4
+
+
+///////////////////// key mode //////////////////////
+#define KEY_MODE_BLE	   		0    //ble key
+#define KEY_MODE_IR        		1    //ir  key
+
 _attribute_data_retention_	u8 			key_type;
 _attribute_data_retention_	int 		key_not_released;
 _attribute_data_retention_	int 		ir_not_released;
+_attribute_data_retention_	u8 			user_key_mode = KEY_MODE_BLE;
+_attribute_data_retention_	u8 			ota_is_working = 0;
 
-_attribute_data_retention_	u8 		ota_is_working = 0;
+/////////////////////////// led management /////////////////////
+#if (BLT_APP_LED_ENABLE)
+	const led_cfg_t led_cfg[] = {
+			{1000,    0,      1,      0x00,	 },    //power-on, 50ms on
+			{100,	  0 ,	  0xff,	  0x02,  },    //audio on, long on
+			{0,	      100 ,   0xff,	  0x02,  },    //audio off, long off
+			{500,	  500 ,   2,	  0x01,	 },    //1Hz for 2 seconds
+			{250,	  250 ,   4,	  0x01,  },    //2Hz for 2 seconds
+			{200,	  800 ,   3,	  0x01,  },    //1Hz for 3 seconds
+			{250,	  250 ,   200,	  0x08,  },    //2Hz for 100 seconds
+			{200,	  800 ,   60,	  0x08,  },    //1Hz for 60 seconds
+			{0,	      1 ,	  1,	  0x40,  },    //LED off, high priority
+	};
 
+#endif
 
+static const u16 vk_consumer_map[16] = {
+		MKEY_VOL_UP,
+		MKEY_VOL_DN,
+		MKEY_MUTE,
+		MKEY_CHN_UP,
 
+		MKEY_CHN_DN,
+		MKEY_POWER,
+		MKEY_AC_SEARCH,
+
+		MKEY_PLAY,
+		MKEY_PAUSE,
+		MKEY_STOP,
+		MKEY_FAST_FORWARD,  //can not find fast_backword in <<HID Usage Tables>>
+
+		MKEY_FAST_FORWARD,
+		MKEY_AC_HOME,
+		MKEY_AC_BACK,
+		MKEY_MENU,
+};
 
 #if (REMOTE_IR_ENABLE)
 	//ir key
 	#define TYPE_IR_SEND			1
 	#define TYPE_IR_RELEASE			2
-
-	///////////////////// key mode //////////////////////
-	#define KEY_MODE_BLE	   		0    //ble key
-	#define KEY_MODE_IR        		1    //ir  key
-
-
-//	static const u8 kb_map_ble[30] = 	KB_MAP_BLE;
-//	static const u8 kb_map_ir[30] = 	KB_MAP_IR;
-
+#if(BOARD_SELECT == REMOTE_BOARD)
+	static const u8 kb_map_ble[30] = 	KB_MAP_BLE;
+	static const u8 kb_map_ir[30] = 	KB_MAP_IR;
+#endif
 
 	void ir_dispatch(u8 type, u8 syscode ,u8 ircode){
 
@@ -90,7 +127,7 @@ _attribute_data_retention_	u8 		ota_is_working = 0;
 		#if (BLT_APP_LED_ENABLE)
 			device_led_setup(led_cfg[LED_SHINE_OTA]);
 		#endif
-		bls_ota_setTimeout(15 * 1000 * 1000); //set OTA timeout  15 seconds
+		bls_ota_setTimeout(30 * 1000 * 1000); //set OTA timeout  30 seconds
 	}
 
 
@@ -99,6 +136,7 @@ _attribute_data_retention_	u8 		ota_is_working = 0;
 	{
 		#if(1 && UI_LED_ENABLE)  //this is only for debug
 			if(result == OTA_SUCCESS){  //led for debug: OTA success
+#if(BOARD_SELECT == EVK_BOARD)
 				gpio_write(GPIO_LED_BLUE, 1);
 				sleep_ms(500);
 				gpio_write(GPIO_LED_BLUE, 0);
@@ -107,13 +145,14 @@ _attribute_data_retention_	u8 		ota_is_working = 0;
 				sleep_ms(500);
 				gpio_write(GPIO_LED_BLUE, 0);
 				sleep_ms(500);
+#endif
 			}
 			else{  //OTA fail
-
+#if(BOARD_SELECT == EVK_BOARD)
 				gpio_write(GPIO_LED_BLUE, 1);
 				sleep_ms(200);
 				gpio_write(GPIO_LED_BLUE, 0);
-
+#endif
 				#if 0 //this is only for debug,  can not use this in application code
 					irq_disable();
 					WATCHDOG_DISABLE;
@@ -126,14 +165,15 @@ _attribute_data_retention_	u8 		ota_is_working = 0;
 		#endif
 	}
 #endif
-
-
-
 void key_change_proc(void)
 {
 
 	latest_user_event_tick = clock_time();  //record latest key change time
 
+	if(key_voice_press){  //clear voice key press flg
+		key_voice_press = 0;
+	}
+	
 	u8 key0 = kb_event.keycode[0];
 	u8 key_buf[8] = {0,0,0,0,0,0,0,0};
 	u8 key_value;
@@ -144,26 +184,7 @@ void key_change_proc(void)
 	}
 	else if(kb_event.cnt == 1)
 	{
-#if (REMOTE_IR_ENABLE)
-		if(key0 == CR_VOL_UP){  	//volume up
-			key_value = IR_VOL_UP;
-		}
-		else if(key0 == CR_VOL_DN){ //volume down
-			key_value = IR_VOL_DN;
-		}
-		else if(key0 == VK_1){
-			key_value = IR_VK_1;
-		}
-		else{
-			key_value = IR_HOME;
-		}
-		gpio_write(GPIO_LED_WHITE,1);
-		key_type = IR_KEY;
-		if(!ir_not_released){
-			ir_dispatch(TYPE_IR_SEND, 0x88, key_value);
-			ir_not_released = 1;
-		}
-#else
+#if (BOARD_SELECT == EVK_BOARD)
 		if(key0 >= CR_VOL_UP )  //volume up/down
 		{
 			key_type = CONSUMER_KEY;
@@ -186,6 +207,7 @@ void key_change_proc(void)
 			key_buf[2] = key0;
 			if(key0 == VK_1)
 			{
+
 			}
 			else if(key0 == VOICE)
 			{
@@ -202,19 +224,97 @@ void key_change_proc(void)
 
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
 		}
+#elif(BOARD_SELECT == REMOTE_BOARD)
+		key_value = key0;
+#if(REMOTE_IR_ENABLE)
+		if(key0 == KEY_MODE_SWITCH)//for switch ble & ir mode
+		{
+			user_key_mode = !user_key_mode;
+		#if (BLT_APP_LED_ENABLE)
+			device_led_setup(led_cfg[LED_SHINE_SLOW + user_key_mode]);
+		#endif
+		}
+		else if(key0==VOICE)
+		{
+#if (BLE_AUDIO_ENABLE)
+			if(ui_mic_enable){  //if voice on, voice off
+				ui_enable_mic (0);
+			}
+			else{ //if voice not on, mark voice key press tick
+				key_voice_press = 1;
+				key_voice_pressTick = clock_time();
+			}
+#endif
+		}
+		else if(user_key_mode == KEY_MODE_BLE)
+		{
+			key_value = kb_map_ble[key0];
+			if(key_value >= 0xf0 ){
+				key_type = CONSUMER_KEY;
+				u16 consumer_key = vk_consumer_map[key_value & 0x0f];
+				blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
+			}
+			else
+			{
+				key_type = KEYBOARD_KEY;
+				key_buf[2] = key_value;
+				blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
+			}
+		}
+		else if(user_key_mode == KEY_MODE_IR)
+		{
+			key_value = kb_map_ir[key0];
+			key_type = IR_KEY;
+			if(!ir_not_released){
+				ir_dispatch(TYPE_IR_SEND, 0x88, key_value);
+				ir_not_released = 1;
+			}
+			else
+			{
+				key_type = IDLE_KEY;
+			}
+		}
+#else  //only ble
+		if(key0==VOICE)
+		{
+#if (BLE_AUDIO_ENABLE)
+			if(ui_mic_enable){  //if voice on, voice off
+				ui_enable_mic (0);
+			}
+			else{ //if voice not on, mark voice key press tick
+				key_voice_press = 1;
+				key_voice_pressTick = clock_time();
+			}
+#endif
+		}
+		else if(key_value >= 0xf0 ){
+			key_type = CONSUMER_KEY;
+			u16 consumer_key = vk_consumer_map[key_value & 0x0f];
+			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
+		}
+		else
+		{
+			key_type = KEYBOARD_KEY;
+			key_buf[2] = key_value;
+			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
+		}
+#endif
+
+
 #endif
 	}
 	else   //kb_event.cnt == 0,  key release
 	{
+#if(BOARD_SELECT == EVK_BOARD)
 		gpio_write(GPIO_LED_WHITE,0);
 		gpio_write(GPIO_LED_GREEN,0);
+#endif
 		key_not_released = 0;
 		if(key_type == CONSUMER_KEY)
 		{
 			u16 consumer_key = 0;
 
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
-
 		}
 		else if(key_type == KEYBOARD_KEY)
 		{
@@ -253,20 +353,14 @@ void proc_keyboard (u8 e, u8 *p, int n)
 	kb_event.keycode[0] = 0;
 	int det_key = kb_scan_key (0, 1);
 
-
-
 	if (det_key){
 		key_change_proc();
 	}
 
 #if (BLE_AUDIO_ENABLE)
 	 //long press voice 1 second
-//	if(key_voice_press && !ui_mic_enable && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN && \
-//		clock_time_exceed(key_voice_pressTick, 1000000)){
-//		voice_press_proc();
-//	}
-	if(key_voice_press && !ui_mic_enable &&clock_time_exceed(key_voice_pressTick, 1000000))
-	{
+	if(key_voice_press && !ui_mic_enable && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN && \
+		clock_time_exceed(key_voice_pressTick, 1000000)){
 		voice_press_proc();
 	}
 #endif

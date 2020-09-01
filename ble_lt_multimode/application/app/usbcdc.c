@@ -25,7 +25,7 @@
 
 #include "usbcdc.h"
 #include "../../drivers/9518/usbhw.h"
-#include "../../drivers/9518/usbhw_i.h"
+//#include "../../drivers/9518/usbhw_i.h"
 #include "../drivers/usb.h"
 #include "../os/ev.h"
 //#include "../os/sys.h"

@@ -50,7 +50,20 @@ extern	u8		ui_mic_enable;
 extern	u8 		key_voice_press;
 extern	int		lowBatt_alarmFlag;
 
-
+/////////////////////////// led management /////////////////////
+#if (BLT_APP_LED_ENABLE)
+	enum{
+		LED_POWER_ON = 0,
+		LED_AUDIO_ON,
+		LED_AUDIO_OFF,
+		LED_SHINE_SLOW,
+		LED_SHINE_FAST,
+		LED_SHINE_KEY,
+		LED_SHINE_OTA,
+		LED_SHINE_ADV_IND,
+		LED_OFF_HIGH_PRIORITY,
+	};
+#endif
 
 
 

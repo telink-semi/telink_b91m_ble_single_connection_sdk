@@ -32,40 +32,49 @@
 #include "stack/ble/ble.h"
 
 extern void user_init_normal();
-extern void user_init();
+extern void user_init_deepRetn();
 extern void main_loop (void);
-extern volatile unsigned char rec_buff[];
 
+/**
+ * @brief		BLE SDK RF interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_
 void rf_irq_handler(void)
 {
-
 	DBG_CHN10_HIGH;
 
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_rf);
 
 	irq_blt_sdk_handler ();
-	DBG_CHN10_LOW;
 
+	DBG_CHN10_LOW;
 }
 
-
+/**
+ * @brief		BLE SDK System timer interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_
 void stimer_irq_handler(void)
 {
-
 	DBG_CHN9_HIGH;
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_sysTimer);
 
 	irq_blt_sdk_handler ();
 
 	DBG_CHN9_LOW;
-
 }
 
+/**
+ * @brief		BLE SDK UART0 interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 void uart0_irq_handler(void)
 {
-
 
 	if(uart_get_irq_status(UART0, UART_RXBUF_IRQ_STATUS))
 	{
@@ -73,8 +82,6 @@ void uart0_irq_handler(void)
 
 		uart0_recieve_irq();
 	}
-
-
 }
 
 /**
@@ -82,12 +89,14 @@ void uart0_irq_handler(void)
  * @param[in]	none
  * @return      none
  */
-int main (void)   //must on ramcode
+_attribute_ram_code_ int main (void)   //must on ramcode
 {
+	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
 
 	sys_init(LDO_MODE);
 
+	/* detect if MCU is wake_up from deep retention mode */
 	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
 
 #if (CLOCK_SYS_CLOCK_HZ == 16000000)
@@ -106,11 +115,22 @@ int main (void)   //must on ramcode
 
 	gpio_init(!deepRetWakeUp);
 
-	user_init_normal();
-
+	/* load customized freq_offset cap value. */
+	//blc_app_loadCustomizedParameters();  //note: to be tested
+	if( deepRetWakeUp ){ //MCU wake_up from deepSleep retention mode
+		user_init_deepRetn ();
+	}
+	else{ //MCU power_on or wake_up from deepSleep mode
+		/* read flash size only in power_on or deepSleep */
+		//blc_readFlashSize_autoConfigCustomFlashSector();
+		user_init_normal();
+	}
 	irq_enable();
 
 	while (1) {
+		#if(MODULE_WATCHDOG_ENABLE)
+			wd_clear(); //clear watch dog
+		#endif
 		main_loop ();
 	}
 

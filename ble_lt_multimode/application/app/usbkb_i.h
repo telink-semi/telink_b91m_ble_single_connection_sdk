@@ -24,7 +24,7 @@
 
 #include "usbkb.h"
 #include "../../drivers/9518/usbhw.h"
-#include "../../drivers/9518/usbhw_i.h"
+//#include "../../drivers/9518/usbhw_i.h"
 #include "../../common/config/user_config.h"
 
 /** HID class report descriptor. This is a special descriptor constructed with values from the

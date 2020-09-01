@@ -431,15 +431,12 @@ u8 key_fifo_add(u8 type, u8*key)
 					irq_disable();
 					WATCHDOG_DISABLE;
 
-					write_reg8(0x40001, result);  //OTA fail reason
-					write_reg8(0x40000, 0x33);
 					while(1){
 						gpio_write(GPIO_LED, 1);
 						sleep_us(200000);
 						gpio_write(GPIO_LED, 0);
 						sleep_us(200000);
 					}
-					write_reg8(0x40000, 0x44);
 				#endif
 
 			}

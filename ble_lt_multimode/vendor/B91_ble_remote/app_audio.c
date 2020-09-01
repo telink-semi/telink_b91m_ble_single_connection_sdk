@@ -31,10 +31,15 @@
 #include "stack/ble/ble.h"
 
 #include "app_att.h"
+#include "app_ui.h"
 
 _attribute_data_retention_	u8		ui_mic_enable = 0;
 _attribute_data_retention_	u8 		key_voice_press = 0;
 _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
+
+#if (BLT_APP_LED_ENABLE)
+extern  const   led_cfg_t led_cfg[];
+#endif
 
 #if (BLE_AUDIO_ENABLE)
 
@@ -42,51 +47,34 @@ _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 #if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)					//GATT Telink
 #include "../../application/audio/tl_audio.h"
 
-#define AUDIO_DEBUG			1
-
-#if (AUDIO_DEBUG)
-
 	dma_chain_config_st rx_dma_list_config[2];
-
 	dma_chain_config_st tx_dma_list_config[2];
 	extern u8 audio_tx_dma_chn;
 	extern u8 audio_rx_dma_chn;
 	volatile u8 amic_enable;
+
 	void audio_amic_init(void)
 	{
 		audio_set_codec_supply();
-
-		core_interrupt_enable();
-		audio_set_rx_fifo_h_lvl1_th((TL_MIC_BUFFER_SIZE>>2)-2);// set rx fifo high level 1 threshold ,h_level=0x3fe,when max_rx_wptr=0x3ff(full). max_rx_rptr=0,(max_rx_wptr-max_rx_rptr)>h_level ,produce  interrupt
-		audio_set_irq_mask(FLD_AUDIO_IRQ_RXFIFO_H_L1_EN);
-		plic_interrupt_enable(IRQ20_DFIFO);
-
-		audio_init(AMIC_IN_ONLY ,AUDIO_16K,STEREO_BIT_16);
+		audio_set_codec_in_path_a_d_gain(CODEC_IN_D_GAIN_20_DB,CODEC_IN_A_GAIN_0_DB);//recommend setting dgain:20db,again 0db
+		audio_init(AMIC_IN_ONLY ,AUDIO_16K,MONO_BIT_16);
 		audio_rx_dma_chain_init(DMA2,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
-//		audio_tx_dma_chain_init (DMA3,(u16*)&buffer_mic,AUDIO_BUFF_SIZE);
 	}
 	void audio_dmic_init()
 	{
 		audio_set_codec_supply();
-
-		core_interrupt_enable();
-		audio_set_rx_fifo_h_lvl1_th((TL_MIC_BUFFER_SIZE>>2)-2);// set rx fifo high level 1 threshold ,h_level=0x3fe,when max_rx_wptr=0x3ff(full). max_rx_rptr=0,(max_rx_wptr-max_rx_rptr)>h_level ,produce  interrupt
-		audio_set_irq_mask(FLD_AUDIO_IRQ_RXFIFO_H_L1_EN);
-		plic_interrupt_enable(IRQ20_DFIFO);
-
+		audio_set_codec_in_path_a_d_gain(CODEC_IN_D_GAIN_20_DB,CODEC_IN_A_GAIN_0_DB);
 		audio_set_dmic_pin(DMIC_GROUPB_B2_DAT_B3_B4_CLK);
 		audio_init(DMIC_IN_ONLY ,AUDIO_16K,MONO_BIT_16);
-
 		audio_rx_dma_chain_init(DMA2,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
-//		audio_tx_dma_chain_init (DMA3,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
 	}
 	void audio_mic_off()//
 	{
 		audio_clk_en(0,0);
 		audio_rx_dma_dis();
-//		audio_tx_dma_dis();
+		extern void audio_codec_adc_power_down(void);
+		audio_codec_adc_power_down();
 	}
-#endif
 
 	u32 	key_voice_pressTick = 0;
 
@@ -97,7 +85,9 @@ _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 		#if (BLT_APP_LED_ENABLE)
 			device_led_setup(led_cfg[en ? LED_AUDIO_ON : LED_AUDIO_OFF]);
 		#endif
-		gpio_write(GPIO_LED_RED,en);
+		#if(BOARD_SELECT == EVK_BOARD)
+			gpio_write(GPIO_LED_RED,en);
+		#endif
 		if(en){  //audio on
 			///////////////////// AUDIO initialization///////////////////
 			#if (BLE_DMIC_ENABLE)  //Dmic config
@@ -145,16 +135,6 @@ _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 
 		///////////////////////////////////////////////////////////////
 //		log_event(TR_T_audioTask);
-#if  0//
-		proc_mic_encoder ();
-
-		int *p = mic_encoder_data_buffer ();
-		if(p)
-		{
-			mic_encoder_data_read_ok();
-		}
-		//////////////////////////////////////////////////////////////////
-#else
 		proc_mic_encoder ();
 
 		if (blc_ll_getTxFifoNumber() < 9)
@@ -168,7 +148,6 @@ _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 				}
 			}
 		}
-#endif
 	}
 
 	void blc_checkConnParamUpdate(void)
@@ -1217,12 +1196,14 @@ _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 	void audio_amic_init(void)
 	{
 		audio_set_codec_supply();
-		audio_init(AMIC_IN_ONLY ,AUDIO_16K,STEREO_BIT_16);
+		audio_set_codec_in_path_a_d_gain(CODEC_IN_D_GAIN_20_DB,CODEC_IN_A_GAIN_0_DB);//recommend setting dgain:20db,again 0db
+		audio_init(AMIC_IN_ONLY ,AUDIO_16K,MONO_BIT_16);
 		audio_rx_dma_chain_init(DMA2,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
 	}
 	void audio_dmic_init()
 	{
 		audio_set_codec_supply();
+		audio_set_codec_in_path_a_d_gain(CODEC_IN_D_GAIN_20_DB,CODEC_IN_A_GAIN_0_DB);//recommend setting dgain:20db,again 0db
 		audio_set_dmic_pin(DMIC_GROUPB_B2_DAT_B3_B4_CLK);
 		audio_init(DMIC_IN_ONLY ,AUDIO_16K,MONO_BIT_16);
 		audio_rx_dma_chain_init(DMA2,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
@@ -1231,6 +1212,8 @@ _attribute_data_retention_	int     ui_mtu_size_exchange_req = 0;
 	{
 		audio_clk_en(0,0);
 		audio_rx_dma_dis();
+		extern void audio_codec_adc_power_down(void);
+		audio_codec_adc_power_down();
 	}
 
 	u32 	key_voice_pressTick = 0;

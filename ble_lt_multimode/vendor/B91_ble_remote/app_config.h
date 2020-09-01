@@ -24,18 +24,28 @@
 
 
 
-/////////////////// FEATURE SELECT /////////////////////////////////
+////////////////////////// FEATURE SELECT //////////////////////////////////////
 #define BLE_APP_PM_ENABLE					1
 #define PM_NO_SUSPEND_ENABLE				1
 #define PM_DEEPSLEEP_RETENTION_ENABLE		1
 #define TEST_CONN_CURRENT_ENABLE            0 //test connection current, disable UI to have a pure power
 #define BLE_REMOTE_SECURITY_ENABLE      	1
-#define REMOTE_IR_ENABLE					0
+#define REMOTE_IR_ENABLE					1
 #define BLE_AUDIO_ENABLE					1
 #define BLE_REMOTE_OTA_ENABLE				1
+
+#define	BLT_APP_LED_ENABLE					1
+#define UI_LED_ENABLE          				1
+#define LED_ON_LEVAL          				1
+
+////////////////////////// BOARD SELECT ////////////////////////////////////////
+#define EVK_BOARD							0    			//Ver:C1T213A20_V1_1
+#define REMOTE_BOARD						1    			//Ver:C1T216A5_V3_0, DP for SW
+
+#define	BOARD_SELECT						REMOTE_BOARD
+
 ////////////////////////// AUDIO CONFIG (RCU board) /////////////////////////////
 #if (BLE_AUDIO_ENABLE)
-
 	/* RCU Audio MODE:
 	 * TL_AUDIO_RCU_ADPCM_GATT_TLEINK
 	 * TL_AUDIO_RCU_ADPCM_GATT_GOOGLE
@@ -47,15 +57,15 @@
 	 */
 	#define TL_AUDIO_MODE  			TL_AUDIO_RCU_ADPCM_GATT_TLEINK
 
-#define BLE_DMIC_ENABLE						1
-//DMIC 浣跨敤鏃堕渶瑕佽烦绾匡細DDATA-->PB2锛�  DCLK1-->PB3
-#if	BLE_DMIC_ENABLE
-	#define PB2_FUNC						AS_DMIC_DI
-	#define PB3_FUNC						AS_DMIC_SCK
+	#define BLE_DMIC_ENABLE						0
+	//DMIC for EVK_BOARD DDATA-->PB2   DCLK1-->PB3
+	#if	BLE_DMIC_ENABLE
+		#define PB2_FUNC						AS_DMIC_DI
+		#define PB3_FUNC						AS_DMIC_SCK
 
-	#define PB2_INPUT_ENABLE				1
-	#define PB3_INPUT_ENABLE				1
-#endif
+		#define PB2_INPUT_ENABLE				1
+		#define PB3_INPUT_ENABLE				1
+	#endif
 
 #endif
 
@@ -67,26 +77,83 @@
 
 
 
-#define	UDB_DEBUG_EN						0
-#if (UDB_DEBUG_EN)
-	#define PA5_FUNC						AS_USB_DM
-	#define PA6_FUNC						AS_USB_DP
-	#define PA5_INPUT_ENABLE				1
-	#define PA6_INPUT_ENABLE				1
+#define			CR_VOL_UP				0xf0  ////
+#define			CR_VOL_DN				0xf1
+#define			CR_VOL_MUTE				0xf2
+#define			CR_CHN_UP				0xf3
+#define			CR_CHN_DN				0xf4  ////
+#define			CR_POWER				0xf5
+#define			CR_SEARCH				0xf6
+#define			CR_ENTER				0xf7
+#define			CR_PLAY					0xf8  ////
+#define			CR_PAUSE				0xf9
+#define			CR_STOP					0xfa
+#define			CR_FAST_BACKWARD		0xfb
+#define			CR_FAST_FORWARD			0xfc  ////
+#define			CR_HOME					0xfd
+#define			CR_BACK					0xfe
+#define			CR_MENU					0xff
 
-	#define BLE_ADV_DBG_EN					1
-	#define BLE_IRQ_DBG_EN					1
-#endif
+//special key
+#define		 	VOICE					0xc0
+#define 		KEY_MODE_SWITCH			0xc1
+#define		 	PHY_TEST				0xc2
 
 
+#define 		IR_VK_0			0x00
+#define 		IR_VK_1			0x01
+#define 		IR_VK_2			0x02
+#define			IR_VK_3			0x03
+#define			IR_VK_4			0x04
+#define 		IR_VK_5			0x05
+#define 		IR_VK_6			0x06
+#define 		IR_VK_7			0x07
+#define 		IR_VK_8			0x08
+#define 		IR_VK_9			0x09
 
-#if 1 //(SAMPLE_BOARD_SELECT == EVK_C1T139A30_V1P2)
+#define 		IR_POWER		0x12
+#define			IR_AUDIO_MUTE	0x0d
+#define 		IR_NETFLIX		0x0f
+#define			IR_BACK			0x0e
+#define			IR_VOL_UP		0x0b
+#define			IR_VOL_DN		0x0c
+#define 		IR_NEXT			0x20
+#define 		IR_PREV			0x21
+#define			IR_MENU			0x23
+#define 		IR_HOME			0x24
+#define 		IR_OPER_KEY		0x2e
+#define 		IR_INFO			0x2f
+#define			IR_REWIND		0x32
+#define 		IR_FAST_FOWARD	0x34
+#define 		IR_PLAY_PAUSE	0x35
+#define			IR_GUIDE		0x41
+#define 		IR_UP			0x45
+#define			IR_DN			0x44
+#define 		IR_LEFT			0x42
+#define 		IR_RIGHT		0x43
+#define			IR_SEL			0x46
+#define 		IR_RED_KEY		0x6b
+#define 		IR_GREEN_KEY	0x6c
+#define 		IR_YELLOW_KEY	0x6d
+#define 		IR_BLUE_KEY		0x6e
+#define 		IR_RECORD		0x72
+#define 		IR_OPTION		0x73
+#define 		IR_STOP			0x74
+#define 		IR_SEARCH		0x75
+#define 		IR_TEXT			0x76
+#define 		IR_VOICE		0x77
+#define 		IR_PAUSE		0x78
+
+#define			T_VK_CH_UP		0xd0
+#define			T_VK_CH_DN		0xd1
+
+#if (BOARD_SELECT == EVK_BOARD)
+
 	#if (TEST_CONN_CURRENT_ENABLE) //test current, disable keyboard
 			#define	UI_KEYBOARD_ENABLE						0
 	#else
 			#define	UI_KEYBOARD_ENABLE						1
 	#endif
-
 
 	#if (UI_KEYBOARD_ENABLE)   // if test pure power, kyeScan GPIO setting all disabled
 			//---------------  KeyMatrix PB2/PB3/PB4/PB5 -----------------------------
@@ -95,23 +162,19 @@
 
 			#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
 
-
-
 			#define			CR_VOL_UP				0xf0  ////
 			#define			CR_VOL_DN				0xf1
 			#define			VOICE					0xc0
 
-
-
 			#define		KB_MAP_NORMAL	{	CR_VOL_UP,		VK_1,	 \
 											CR_VOL_DN,		VOICE }
 
-#if REMOTE_IR_ENABLE
+	#if REMOTE_IR_ENABLE
 			#define			IR_VOL_UP		0x0b
 			#define 		IR_VK_1			0x01
 			#define			IR_VOL_DN		0x0c
 			#define 		IR_HOME			0x24
-#endif
+	#endif
 			//////////////////// KEY CONFIG (EVK board) ///////////////////////////
 			#define  KB_DRIVE_PINS  {GPIO_PC2, GPIO_PC0}
 			#define  KB_SCAN_PINS   {GPIO_PC3, GPIO_PC1}
@@ -140,83 +203,139 @@
 			#define PC3_INPUT_ENABLE		1
 			#define PC1_INPUT_ENABLE		1
 
-
-
 			#define		KB_MAP_NUM		KB_MAP_NORMAL
 			#define		KB_MAP_FN		KB_MAP_NORMAL
-
-
 	#endif
-#define     UI_LED_ENABLE           1
-#if UI_LED_ENABLE
-	#define	GPIO_LED_WHITE			GPIO_PB6
-	#define	GPIO_LED_GREEN			GPIO_PB5
-	#define	GPIO_LED_BLUE			GPIO_PB4
-#if (HARDWARE_BOARD_SELECT == HW_C1T219A20_V1_0_64_EVB)
-	#define GPIO_LED_RED			GPIO_PB7
-#elif (HARDWARE_BOARD_SELECT == HW_C1T217A20_V1_0_48_EVB)
-	#define GPIO_LED_RED			GPIO_PB2
-#elif (HARDWARE_BOARD_SELECT == HW_C1T213A20_V1_0_80_EVB)
-	#define GPIO_LED_RED			GPIO_PB7
-#endif
-	#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
-
-	#define PB7_FUNC				AS_GPIO
-	#define PB6_FUNC				AS_GPIO
-	#define PB5_FUNC				AS_GPIO
-	#define PB4_FUNC				AS_GPIO
-
-	#define	PB7_OUTPUT_ENABLE		1
-	#define	PB6_OUTPUT_ENABLE		1
-	#define PB5_OUTPUT_ENABLE		1
-	#define	PB4_OUTPUT_ENABLE		1
-#endif
-#elif (SAMPLE_BOARD_SELECT == DONGLE_C1T139A3_V2P0A)
-	#undef  PM_DEEPSLEEP_RETENTION_ENABLE
-	#define PM_DEEPSLEEP_RETENTION_ENABLE					0    //dongle demo no need deepSleepRetention
-
-	#define	UI_BUTTON_ENABLE								1
-	#define UI_LED_ENABLE									1
-
-	#if (UI_BUTTON_ENABLE)
-			//---------------  Button -------------------------------
-			#define	SW1_GPIO				GPIO_PD5
-			#define	SW2_GPIO				GPIO_PD6
-			#define PD5_FUNC				AS_GPIO
-			#define PD6_FUNC				AS_GPIO
-			#define PD5_INPUT_ENABLE		1
-			#define PD6_INPUT_ENABLE		1
-			#define PULL_WAKEUP_SRC_PD5     PM_PIN_PULLUP_10K
-			#define PULL_WAKEUP_SRC_PD6     PM_PIN_PULLUP_10K
-	#endif
-
-
-
-	#if (UI_LED_ENABLE)
-			//---------------  LED ----------------------------------
-			#define	GPIO_LED_RED			GPIO_PA3
-			#define	GPIO_LED_WHITE			GPIO_PB1
-			#define	GPIO_LED_GREEN			GPIO_PA2
-			#define	GPIO_LED_BLUE			GPIO_PB0
-			#define	GPIO_LED_YELLOW			GPIO_PA4
-
-			#define PA3_FUNC				AS_GPIO
-			#define PB1_FUNC				AS_GPIO
-			#define PA2_FUNC				AS_GPIO
-			#define PB0_FUNC				AS_GPIO
-			#define PA4_FUNC				AS_GPIO
-
-			#define	PA3_OUTPUT_ENABLE		1
-			#define	PB1_OUTPUT_ENABLE		1
-			#define PA2_OUTPUT_ENABLE		1
-			#define	PB0_OUTPUT_ENABLE		1
-			#define	PA4_OUTPUT_ENABLE		1
+	#if UI_LED_ENABLE
+			#define	GPIO_LED_WHITE			GPIO_PB6
+			#define	GPIO_LED_GREEN			GPIO_PB5
+			#define	GPIO_LED_BLUE			GPIO_PB4
+			#define GPIO_LED_RED			GPIO_PB7
 
 			#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+
+			#define PB7_FUNC				AS_GPIO
+			#define PB6_FUNC				AS_GPIO
+			#define PB5_FUNC				AS_GPIO
+			#define PB4_FUNC				AS_GPIO
+
+			#define	PB7_OUTPUT_ENABLE		1
+			#define	PB6_OUTPUT_ENABLE		1
+			#define PB5_OUTPUT_ENABLE		1
+			#define	PB4_OUTPUT_ENABLE		1
 	#endif
+
+#elif(BOARD_SELECT == REMOTE_BOARD)
+
+
+/////////IF SELECT REMOTE BOARD THIS IS MUST FOR DP AS SWIRE TO DOWNLOAD FW !!!//////////
+	#define PA5_FUNC						AS_USB_DM
+	#define PA6_FUNC						AS_USB_DP
+	#define PA5_INPUT_ENABLE				1
+	#define PA6_INPUT_ENABLE				1
+
+	#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+
+	#if (TEST_CONN_CURRENT_ENABLE) //test current, disable keyboard
+			#define	UI_KEYBOARD_ENABLE						0
+	#else
+			#define	UI_KEYBOARD_ENABLE						1
+	#endif
+
+	#if (UI_KEYBOARD_ENABLE)   // if test pure power, kyeScan GPIO setting all disabled
+		//---------------  KeyMatrix PB2/PB3/PB4/PB5 -----------------------------
+		#define		MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
+		#define		MATRIX_COL_PULL					PM_PIN_PULLUP_10K
+		#if (REMOTE_IR_ENABLE)  //with IR keymap
+			#define 	GPIO_IR_CONTROL					GPIO_PD0
+
+			#define		KB_MAP_NORMAL	{\
+							{0, 	     1,				    2,			3,		4,		}, \
+							{VOICE,		 KEY_MODE_SWITCH,	7,			8,		9	    }, \
+							{10,		 11,				12,			13,		14,		}, \
+							{15,		 16,				17,			18,		19,		}, \
+							{20,		 21,				22,			23,		24,		}, \
+							{25,		 26,				27,			28,		29,		}, }
+
+			#define		KB_MAP_BLE	{\
+							VK_B,		CR_POWER,		VK_NONE,		VK_C,				CR_HOME,	 \
+							VOICE,		VK_NONE,		VK_NONE,		CR_VOL_UP,			CR_VOL_DN,	 \
+							VK_2,		VK_RIGHT,		CR_VOL_DN,		VK_3,				VK_1,	 \
+							VK_5,		VK_ENTER,		CR_VOL_UP,		VK_6,				VK_4,	 \
+							VK_8,		VK_DOWN,		VK_UP ,			VK_9,				VK_7,	 \
+							VK_0,		CR_BACK,		VK_LEFT,		CR_VOL_MUTE,		CR_MENU,	 }
+
+			#define		KB_MAP_IR	{\
+							VK_NONE,	VK_NONE,		VK_NONE,	VK_NONE,			VK_NONE,	 \
+							VK_NONE,	VK_NONE,		VK_NONE,	VK_NONE,			VK_NONE,	 \
+							IR_VK_2,	VK_NONE,		VK_NONE,	IR_VK_3,			IR_VK_1, 	 \
+							IR_VK_5,	VK_NONE,		VK_NONE,	IR_VK_6,			IR_VK_4,	 \
+							IR_VK_8,	VK_NONE,		VK_NONE,	IR_VK_9,			IR_VK_7,	 \
+							IR_VK_0,	VK_NONE,		VK_NONE,	VK_NONE,			VK_NONE,	 }
+		#else   //key map
+			#define		KB_MAP_NORMAL {\
+							VK_B,		CR_POWER,		VK_NONE,		VK_C,				CR_HOME,	 \
+							VOICE,	VK_NONE,		VK_NONE,		CR_VOL_UP,			CR_VOL_DN,	 \
+							VK_2,		VK_RIGHT,		CR_VOL_DN,		VK_3,				VK_1,	 \
+							VK_5,		VK_ENTER,		CR_VOL_UP,		VK_6,				VK_4,	 \
+							VK_8,		VK_DOWN,		VK_UP ,			VK_9,				VK_7,	 \
+							VK_0,		CR_BACK,		VK_LEFT,		CR_VOL_MUTE,		CR_MENU,	 }
+
+		#endif  //end of REMOTE_IR_ENABLE
+	#endif//end of UI_KEYBOARD_ENABLE
+//////////////////// KEY CONFIG (RCU board) ///////////////////////////
+		#define KB_DRIVE_PINS  	{GPIO_PE2, GPIO_PB4, GPIO_PB5, GPIO_PE1, GPIO_PE4}
+		#define KB_SCAN_PINS   	{GPIO_PB1, GPIO_PB0, GPIO_PA4, GPIO_PA0, GPIO_PE6, GPIO_PE5}
+		//drive pin as gpio
+		#define	PE2_FUNC				AS_GPIO
+		#define	PB4_FUNC				AS_GPIO
+		#define	PB5_FUNC				AS_GPIO
+		#define	PE1_FUNC				AS_GPIO
+		#define	PE4_FUNC				AS_GPIO
+		//drive pin need 100K pulldown
+		#define	PULL_WAKEUP_SRC_PE2		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PB4		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PB5		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PE1		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PE4		MATRIX_ROW_PULL
+		//drive pin open input to read gpio wakeup level
+		#define PE2_INPUT_ENABLE		1
+		#define PB4_INPUT_ENABLE		1
+		#define PB5_INPUT_ENABLE		1
+		#define PE1_INPUT_ENABLE		1
+		#define PE4_INPUT_ENABLE		1
+		//scan pin as gpio
+		#define	PB1_FUNC				AS_GPIO
+		#define	PB0_FUNC				AS_GPIO
+		#define	PA4_FUNC				AS_GPIO
+		#define	PA0_FUNC				AS_GPIO
+		#define	PE6_FUNC				AS_GPIO
+		#define	PE5_FUNC				AS_GPIO
+		//scan  pin need 10K pullup
+		#define	PULL_WAKEUP_SRC_PB1		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PB0		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PA4		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PA0		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PE6		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PE5		MATRIX_COL_PULL
+		//scan pin open input to read gpio level
+		#define PB1_INPUT_ENABLE		1
+		#define PB0_INPUT_ENABLE		1
+		#define PA4_INPUT_ENABLE		1
+		#define PA0_INPUT_ENABLE		1
+		#define PE6_INPUT_ENABLE		1
+		#define PE5_INPUT_ENABLE		1
+
+		#define	KB_MAP_NUM		KB_MAP_NORMAL
+		#define	KB_MAP_FN		KB_MAP_NORMAL
+
+	#if BLT_APP_LED_ENABLE
+		#define LED_ON_LEVAL 						1 			//gpio output high voltage to turn on led
+		#define	GPIO_LED_RED						GPIO_PB6
+		#define	GPIO_LED_GREEN						GPIO_PC3
+	#endif
+
 #endif
-
-
 
 #ifndef	UI_KEYBOARD_ENABLE
 #define UI_KEYBOARD_ENABLE									0
@@ -226,17 +345,9 @@
 #define UI_BUTTON_ENABLE									0
 #endif
 
-
-
-
 /////////////////// DEEP SAVE FLG //////////////////////////////////
 #define USED_DEEP_ANA_REG                   DEEP_ANA_REG1 //u8,can save 8 bit info when deep
 #define CONN_DEEP_FLG	                    BIT(0) //if 1: conn deep, 0: adv deep
-
-
-
-
-
 
 /////////////////// Clock  /////////////////////////////////
 #define CLOCK_SYS_CLOCK_HZ  	16000000

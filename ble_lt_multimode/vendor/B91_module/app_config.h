@@ -30,10 +30,11 @@ extern "C" {
 
 
 /////////////////// MODULE /////////////////////////////////
-#define BLE_MODULE_PM_ENABLE				0
-#define PM_DEEPSLEEP_RETENTION_ENABLE		0
-
-#define BLE_OTA_ENABLE						0
+#define BLE_MODULE_PM_ENABLE				1
+#define PM_NO_SUSPEND_ENABLE				1
+#define PM_DEEPSLEEP_RETENTION_ENABLE		1
+#define TEST_CONN_CURRENT_ENABLE            0 //test connection current, disable UI to have a pure power
+#define BLE_OTA_ENABLE						1
 #define TELIK_SPP_SERVICE_ENABLE			1
 #define BLE_MODULE_INDICATE_DATA_TO_MCU		1
 #define BATT_CHECK_ENABLE       			0   //enable or disable battery voltage detection

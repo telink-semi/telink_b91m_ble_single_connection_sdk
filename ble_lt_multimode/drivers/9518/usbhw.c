@@ -25,9 +25,8 @@
  *******************************************************************************************************/
 
 #include "usbhw.h"
-//#include "irq.h"
-//#include "bsp.h"
-#include "usbhw_i.h"
+#include "../../drivers.h"
+#include "reg_include/register_9518.h"
 
 /**
  * @brief      This function disables the manual interrupt

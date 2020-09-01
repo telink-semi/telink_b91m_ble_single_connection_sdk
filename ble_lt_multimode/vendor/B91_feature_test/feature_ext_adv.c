@@ -152,11 +152,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
  */
 _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 {
-#if (MCU_CORE_TYPE == MCU_CORE_8278)
-	rf_set_power_level_index (RF_POWER_P3p50dBm);
-#else
 	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
-#endif
 }
 
 
@@ -209,11 +205,7 @@ void feature_ext_adv_init_normal(void)
 
 
 
-#if (MCU_CORE_TYPE == MCU_CORE_8278)
-	rf_set_power_level_index (RF_POWER_P3p50dBm);
-#else
 	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
-#endif
 
 
 
@@ -471,11 +463,7 @@ _attribute_ram_code_ void feature_ext_adv_init_deepRetn(void)
 
 	blc_ll_initBasicMCU();   //mandatory
 
-#if (MCU_CORE_TYPE == MCU_CORE_8278)
-	rf_set_power_level_index (RF_POWER_P3p50dBm);
-#else
 	rf_set_power_level_index (RF_POWER_INDEX_P2p79dBm);
-#endif
 
 	blc_ll_recoverDeepRetention();
 

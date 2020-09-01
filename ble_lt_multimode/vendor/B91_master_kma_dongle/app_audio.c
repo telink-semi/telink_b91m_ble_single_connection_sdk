@@ -161,7 +161,7 @@ _attribute_ram_code_ void proc_audio (void)
 }
 #elif  (TL_AUDIO_MODE == TL_AUDIO_DONGLE_ADPCM_HID_DONGLE_TO_STB)		//HID Service,ADPCM,Dongle to STB,STB decode
 
-#include "application/usbstd/usbhw_i.h"
+//#include "application/usbstd/usbhw_i.h"
 #include "application/usbstd/usbhw.h"
 
 #define MIC_BUFF_NUM	32
@@ -280,7 +280,7 @@ _attribute_ram_code_ void proc_audio (void)
 	abuf_mic_dec ();
 }
 #elif  (TL_AUDIO_MODE == TL_AUDIO_DONGLE_SBC_HID_DONGLE_TO_STB)		//HID Service,Dongle to STB,STB decode
-#include "application/usbstd/usbhw_i.h"
+//#include "application/usbstd/usbhw_i.h"
 #include "application/usbstd/usbhw.h"
 
 #define MIC_BUFF_NUM	32

@@ -1,10 +1,10 @@
 /********************************************************************************************************
- * @file     app_config.h 
+ * @file     app_config.h
  *
  * @brief    for TLSR chips
  *
  * @author	 public@telink-semi.com;
- * @date     Sep. 18, 2015
+ * @date     Sep. 18, 2018
  *
  * @par      Copyright (c) Telink Semiconductor (Shanghai) Co., Ltd.
  *           All rights reserved.

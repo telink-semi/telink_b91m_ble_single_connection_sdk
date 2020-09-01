@@ -1,10 +1,10 @@
 /********************************************************************************************************
- * @file     app.c 
+ * @file     app.c
  *
  * @brief    for TLSR chips
  *
  * @author	 public@telink-semi.com;
- * @date     Sep. 18, 2015
+ * @date     Sep. 18, 2018
  *
  * @par      Copyright (c) Telink Semiconductor (Shanghai) Co., Ltd.
  *           All rights reserved.
@@ -19,6 +19,7 @@
  *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
  *
  *******************************************************************************************************/
+
 #include "tl_common.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
@@ -81,31 +82,7 @@ _attribute_data_retention_	my_fifo_t	hci_tx_fifo = {
 												0,
 												0,
 												hci_tx_fifo_b,};
-#if 0
-//RF Tx / Rx fifo
-#define RX_FIFO_SIZE	64
-#define RX_FIFO_NUM		8
 
-#define TX_FIFO_SIZE	40
-#define TX_FIFO_NUM		16
-
-_attribute_data_retention_  u8 		 	blt_rxfifo_b[RX_FIFO_SIZE * RX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_rxfifo = {
-												RX_FIFO_SIZE,
-												RX_FIFO_NUM,
-												0,
-												0,
-												blt_rxfifo_b,};
-
-
-_attribute_data_retention_  u8 		 	blt_txfifo_b[TX_FIFO_SIZE * TX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_txfifo = {
-												TX_FIFO_SIZE,
-												TX_FIFO_NUM,
-												0,
-												0,
-												blt_txfifo_b,};
-#endif
 
 #define     MY_APP_ADV_CHANNEL					BLT_ENABLE_ADV_ALL
 #define 	MY_ADV_INTERVAL_MIN					ADV_INTERVAL_30MS
@@ -115,14 +92,17 @@ _attribute_data_retention_	my_fifo_t	blt_txfifo = {
 
 
 
-//////////////////////////////////////////////////////////////////////////////
-//	Adv Packet, Response Packet
-//////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief	Adv Packet data
+ */
 const u8	tbl_advData[] = {
 	 0x05, 0x09, 't', 'H', 'C', 'I',
 	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
 };
 
+/**
+ * @brief	Scan Response Packet data
+ */
 const u8	tbl_scanRsp [] = {
 		 0x07, 0x09, 't', 'H', 'C', 'I', '0', '1',	//scan name " tmodul"
 	};
@@ -226,7 +206,7 @@ int tx_to_uart_cb (void)
 		tmemcpy(&T_txdata_buf.data, p + 2, p[0]+p[1]*256);
 		T_txdata_buf.len = p[0]+p[1]*256 ;
 
-		if (uart_send_dma(UART0,(u8 *)(&T_txdata_buf.data),T_txdata_buf.len))
+		if (uart_send(UART0,(u8 *)(&T_txdata_buf.data),T_txdata_buf.len))
 		{
 			my_fifo_pop (&hci_tx_fifo);
 		}
@@ -283,7 +263,11 @@ void uart0_recieve_process(void)
 }
 
 
-
+/**
+ * @brief		user initialization when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void user_init_normal(void)
 {
 
@@ -307,7 +291,7 @@ void user_init_normal(void)
 		blc_ll_initExtAdvDataBuffer(app_advData, APP_MAX_LENGTH_ADV_DATA);
 		blc_ll_initExtScanRspDataBuffer(app_scanRspData, APP_MAX_LENGTH_SCAN_RESPONSE_DATA);
 	#else
-		blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
+		blc_ll_initAdvertising_module(); 			//adv module: 		 mandatory for BLE slave,
 	#endif
 	blc_ll_initConnection_module();					//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();					//slave module: 	 mandatory for BLE slave,
@@ -327,7 +311,7 @@ void user_init_normal(void)
 											 0,  NULL,
 											 MY_APP_ADV_CHANNEL,
 											 ADV_FP_NONE);
-	if(status != BLE_SUCCESS) { write_reg8(0x40002, 0x11); 	while(1); }  //debug: adv setting err
+	if(status != BLE_SUCCESS) { while(1); }  //debug: adv setting err
 	bls_ll_setAdvEnable(0);  //adv enable
 
 
@@ -342,59 +326,20 @@ void user_init_normal(void)
 
 		usb_dp_pullup_en (1);  //open USB enum
 	#else	//uart
-		//note: dma addr must be set first before any other uart initialization!
-#if 0
-		uart_recbuff_init( (unsigned short *)hci_rx_fifo_b, hci_rx_fifo.size);
-		uart_gpio_set(UART_TX_PB1, UART_RX_PB0);
-		uart_reset();  //will reset uart digital registers from 0x90 ~ 0x9f, so uart setting must set after this reset
-
-
-		//baud rate: 115200
-		#if (CLOCK_SYS_CLOCK_HZ == 16000000)
-			uart_init(9, 13, PARITY_NONE, STOP_BIT_ONE);
-		#elif (CLOCK_SYS_CLOCK_HZ == 24000000)
-			uart_init(12, 15, PARITY_NONE, STOP_BIT_ONE);
-		#elif (CLOCK_SYS_CLOCK_HZ == 32000000)
-			uart_init(17, 13, PARITY_NONE, STOP_BIT_ONE);
-		#elif (CLOCK_SYS_CLOCK_HZ == 48000000)
-			uart_init(25, 15, PARITY_NONE, STOP_BIT_ONE);
-		#endif
-
-		uart_dma_enable(1, 1); 	//uart data in hardware buffer moved by dma, so we need enable them first
-		irq_set_mask(FLD_IRQ_DMA_EN);
-		dma_chn_irq_enable(FLD_DMA_CHN_UART_RX | FLD_DMA_CHN_UART_TX, 1);   	//uart Rx/Tx dma irq enable
-		uart_irq_enable(0, 0);  	//uart Rx/Tx irq no need, disable them
-#endif
 
 		uart_reset(UART0);  //will reset uart digital registers from 0x90 ~ 0x9f, so uart setting must set after this reset
-
-		u8 *uart_rx_addr = (hci_rx_fifo_b + (hci_rx_fifo.wptr & (hci_rx_fifo.num-1)) * hci_rx_fifo.size);
 		uart_set_pin(UART0_TX_PB2, UART0_RX_PB3);
-
 		//baud rate: 115200
 		unsigned short div;
 		unsigned char bwpc;
 		uart_cal_div_and_bwpc(115200, sys_clk.pclk*1000*1000, &div, &bwpc);
-		//uart_set_dma_rx_timeout(UART0, bwpc, 12, UART_BW_MUL1);
+
 		uart_init(UART0, div, bwpc, UART_PARITY_NONE, UART_STOP_BIT_ONE);
-
-		//uart_clr_irq_mask(UART0, UART_RX_IRQ_MASK | UART_TX_IRQ_MASK);
-
-//		plic_interrupt_enable(IRQ5_DMA);
-//
-//		uart_set_rx_dma_config(UART0, DMA3);
-//		uart_set_tx_dma_config(UART0, DMA4);
-//
-//		dma_set_irq_mask(DMA3, TC_MASK | ERR_MASK | ABT_MASK );
-//		dma_set_irq_mask(DMA4, TC_MASK | ERR_MASK | ABT_MASK );
-//
-//		uart_receive_dma(UART0, uart_rx_addr);
 
 		//uart irq set
 		plic_interrupt_enable(IRQ19_UART0);
 		uart_tx_irq_trig_level(UART0, 0);
 		uart_rx_irq_trig_level(UART0, 1);
-
 		uart_set_irq_mask(UART0, UART_RX_IRQ_MASK);
 
 		extern int rx_from_uart_cb (void);
@@ -423,8 +368,12 @@ void user_init_normal(void)
 #endif
 }
 
-// main loop flow
-/////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief		This is main_loop function
+ * @param[in]	none
+ * @return      none
+ */
 void main_loop (void)
 {
 	////////////////////////////////////// BLE entry /////////////////////////////////

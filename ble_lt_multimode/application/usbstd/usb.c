@@ -40,7 +40,7 @@
 #include "usbdesc.h"
 #include "../usbstd/StdRequestType.h"
 #include "../../drivers/9518/usbhw.h"
-#include "../../drivers/9518/usbhw_i.h"
+//#include "../../drivers/9518/usbhw_i.h"
 
 
 #if (USB_MOUSE_ENABLE)
@@ -859,7 +859,7 @@ void usb_init_interrupt() {
 
 	usbhw_enable_manual_interrupt(FLD_CTRL_EP_AUTO_STD | FLD_CTRL_EP_AUTO_DESC);
 
-	reg_usb_edp_en = 0xff;
+	reg_usb_edp_en = 0xff;//todo by zhangchong
 
 }
 
@@ -874,7 +874,7 @@ void usb_init() {
     usbkb_init();
 #endif
 
-	usb_init_interrupt();
+    usb_init_interrupt();
 
 #if 1 //FLOW_NO_OS
 #else

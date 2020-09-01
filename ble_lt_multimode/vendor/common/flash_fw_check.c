@@ -39,8 +39,8 @@ static const unsigned long fw_crc32_half_tbl[16] = {
 u32 fw_crc_init = 0xFFFFFFFF;
 
 /***********************************
- * this function must be called after the function cpu_wakeup_init.
- * cpu_wakeup_init will set the ota_program_offset value.
+ * this function must be called after the function sys_init.
+ * sys_init will set the ota_program_offset value.
  */
 /**
  * @brief		This function is used to check the firmware is ok or not

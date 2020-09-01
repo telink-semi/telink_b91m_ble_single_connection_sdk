@@ -201,7 +201,6 @@ typedef struct {
  *  @brief  Event Parameters for "7.7.65.4 LE Read Remote Features Complete event"
  */
 #define LL_FEATURE_SIZE                                      			8
-
 typedef struct {
 	u8         subEventCode;
 	u8         status;

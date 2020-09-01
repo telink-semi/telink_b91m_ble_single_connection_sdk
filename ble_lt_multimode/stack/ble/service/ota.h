@@ -23,6 +23,16 @@
 #define BLE_LL_OTA_H_
 
 
+/**
+ * @brief	OTA command
+ */
+#define CMD_OTA_FW_VERSION					0xff00
+#define CMD_OTA_START						0xff01
+#define CMD_OTA_END							0xff02
+#define CMD_OTA_VERSION_REQUEST				0xff10
+#define CMD_OTA_VERSION_RESPONSE			0xff11
+#define CMD_OTA_START_LONG_PACKET			0xff12
+#define CMD_OTA_RESULT						0xff13
 
 /**
  * @brief	OTA result

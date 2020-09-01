@@ -136,9 +136,9 @@ void ir_nec_send(u8 addr1, u8 addr2, u8 cmd)
 
 		pwm_ir_dma_mode_start(PWM_DMA_CHN);
 
-		pwm_set_irq_mask(FLD_PWM0_IR_DMA_FIFO_MODE_INIT);
+		pwm_set_irq_mask(FLD_PWM0_IR_DMA_FIFO_IRQ);
 
-		pwm_clr_irq_status(FLD_PWM0_INIT_FIFO_DONE );
+		pwm_clr_irq_status(FLD_PWM0_IR_DMA_FIFO_IRQ );
 
 		core_interrupt_enable();//
 
@@ -195,9 +195,9 @@ void ir_send_release(void)
 
 	ir_send_ctrl.is_sending = IR_SENDING_NONE;
 
-	pwm_clr_irq_status(FLD_PWM0_INIT_FIFO_DONE);        //clear irq status
+	pwm_clr_irq_status(FLD_PWM0_IR_DMA_FIFO_IRQ);        //clear irq status
 
-	pwm_clr_irq_mask(FLD_PWM0_IR_DMA_FIFO_MODE_INIT);   //disable irq mask
+	pwm_clr_irq_mask(FLD_PWM0_IR_DMA_FIFO_IRQ);   //disable irq mask
 
 	irq_restore(r);
 }
@@ -271,9 +271,9 @@ _attribute_ram_code_
 #endif
 void rc_ir_irq_prc(void)
 {
-	if(pwm_set_irq_status(FLD_PWM0_INIT_FIFO_DONE)){
+	if(pwm_get_irq_status(FLD_PWM0_IR_DMA_FIFO_IRQ)){
 
-		pwm_clr_irq_status(FLD_PWM0_INIT_FIFO_DONE);
+		pwm_clr_irq_status(FLD_PWM0_IR_DMA_FIFO_IRQ);
 
 		if(ir_send_ctrl.repeat_enable){
 
@@ -337,9 +337,7 @@ void rc_ir_init(void)
 //pwm set
 	pwm_n_invert_en(PWM0_ID);
 
-	pwm_set_clk((unsigned char) (sys_clk.pclk*1000*1000/PWM_CLK_SPEED-1));
-
-	pwm_32k_chn_en(PWM_CLOCK_32K_CHN_PWM0|PWM_CLOCK_32K_CHN_PWM2);
+	pwm_set_clk((unsigned char) (sys_clk.pclk*1000*1000/PWM_CLK_SPEED-1));//use pclk is ok
 
 	pwm_set_pin(PWM_PWM0_PC0);
 

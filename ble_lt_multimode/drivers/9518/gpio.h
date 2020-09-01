@@ -613,7 +613,7 @@ typedef enum {
  * @param[in]  value - enable or disable the pin's input function(0: disable, 1: enable)
  * @return     none
  */
-void gpio_set_input_en(gpio_pin_e pin);
+void gpio_set_input_en(gpio_pin_e pin, unsigned int value);
 
 /**
  * @brief      This function servers to enable gpio function.

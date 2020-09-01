@@ -43,15 +43,12 @@ extern "C" {
 #ifndef STRING_PRODUCT
 #define STRING_PRODUCT		L"2.4G Wireless Audio"
 #endif
-#if (MCU_CORE_TYPE == MCU_CORE_9518)
-	#ifndef STRING_SERIAL
-	#define STRING_SERIAL		L"TLSR9518"
-	#endif
-#else
-	#ifndef STRING_SERIAL
-	#define STRING_SERIAL		L"TLSR9518"
-	#endif
+
+#ifndef STRING_SERIAL
+#define STRING_SERIAL		L"TLSR9518"
 #endif
+
+
 
 
 

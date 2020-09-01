@@ -26,12 +26,13 @@
 
 #include "sys.h"
 #include "core.h"
-#include "nds_intrinsic.h"
+#include "pm.h"
 #include "compiler.h"
 #include "analog.h"
 #include "gpio.h"
 #include "mspi.h"
 #include "../../common/assert.h"
+
 /**********************************************************************************************************************
  *                                			  local constants                                                       *
  *********************************************************************************************************************/
@@ -62,7 +63,6 @@
 /**********************************************************************************************************************
  *                                         global function implementation                                             *
  *********************************************************************************************************************/
-
 
 /**
  * @brief      This function performs a series of operations of writing digital or analog registers

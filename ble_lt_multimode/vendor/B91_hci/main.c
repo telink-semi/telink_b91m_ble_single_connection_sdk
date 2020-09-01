@@ -31,105 +31,50 @@ extern my_fifo_t hci_rx_fifo;
 extern void user_init_normal(void);
 extern void main_loop (void);
 
-#if 0
-_attribute_ram_code_ void irq_handler(void)
-{
-	irq_blt_sdk_handler ();
 
-#if (HCI_ACCESS==HCI_USE_UART)
-	unsigned char irqS = dma_chn_irq_status_get();
-    if(irqS & FLD_DMA_CHN_UART_RX)	//rx
-    {
-    	dma_chn_irq_status_clr(FLD_DMA_CHN_UART_RX);
-
-    	u8* w = hci_rx_fifo.p + (hci_rx_fifo.wptr & (hci_rx_fifo.num-1)) * hci_rx_fifo.size;
-    	if(w[0]!=0)
-    	{
-    		my_fifo_next(&hci_rx_fifo);
-    		u8* p = hci_rx_fifo.p + (hci_rx_fifo.wptr & (hci_rx_fifo.num-1)) * hci_rx_fifo.size;
-    		reg_dma_uart_rx_addr = (u16)((u32)p);  //switch uart RX dma address
-    	}
-    }
-
-    if(irqS & FLD_DMA_CHN_UART_TX)	//tx
-    {
-    	dma_chn_irq_status_clr(FLD_DMA_CHN_UART_TX);
-    }
-#endif
-}
-
-
-extern my_fifo_t spp_rx_fifo;
-_attribute_ram_code_
-void dma_irq_handler(void)
-{
-	volatile static u32 aa0;
-	volatile static u32 aa1;
-	volatile static u32 aa2;
-	volatile static u32 aa3;
-	unsigned int uart_dma_irq_src = reg_dma_isr;
-	if((uart_dma_irq_src & FLD_DMA_CHANNEL0_IRQ))
-	{
-		aa0++;
-		reg_dma_isr |= FLD_DMA_CHANNEL0_IRQ;
-	}
-	if((uart_dma_irq_src & FLD_DMA_CHANNEL1_IRQ))
-	{
-		aa1++;
-		reg_dma_isr |= FLD_DMA_CHANNEL1_IRQ;
-	}
-	if((uart_dma_irq_src & FLD_DMA_CHANNEL3_IRQ))//dma 3 RX
-	{
-		aa2++;
-		reg_dma_isr |= FLD_DMA_CHANNEL3_IRQ;
-    	u8* w = hci_rx_fifo.p + (hci_rx_fifo.wptr & (hci_rx_fifo.num-1)) * hci_rx_fifo.size;
-    	if(w[0]!=0)
-    	{
-    		my_fifo_next(&hci_rx_fifo);
-    	}
-    	u8* p = hci_rx_fifo.p + (hci_rx_fifo.wptr & (hci_rx_fifo.num-1)) * hci_rx_fifo.size;
-    	uart_receive_dma(UART0, (unsigned char *)(u32)p);
-	}
-
-	if( ( uart_dma_irq_src &FLD_DMA_CHANNEL4_IRQ))////dma 4
-	{
-		aa3++;
-		reg_dma_isr |= FLD_DMA_CHANNEL4_IRQ;
-	}
-	plic_interrupt_complete(IRQ5_DMA);
-}
-#endif
-
+/**
+ * @brief		BLE SDK RF interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_
 void rf_irq_handler(void)
 {
-
 	//DBG_CHN10_HIGH;
 
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_rf);
 
 	irq_blt_sdk_handler ();
-	//DBG_CHN10_LOW;
 
+	//DBG_CHN10_LOW;
 }
 
 
+/**
+ * @brief		BLE SDK System timer interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_
 void stimer_irq_handler(void)
 {
-
 	//DBG_CHN9_HIGH;
+
 	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_sysTimer);
 
 	irq_blt_sdk_handler ();
 
 	//DBG_CHN9_LOW;
-
 }
 
+
+/**
+ * @brief		uart0 interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
 void uart0_irq_handler(void)
 {
-
 
 	if(uart_get_irq_status(UART0, UART_RXBUF_IRQ_STATUS))
 	{
@@ -138,10 +83,14 @@ void uart0_irq_handler(void)
 		uart0_recieve_irq();
 	}
 
-
 }
 
 
+/**
+ * @brief		This is main function
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ int main (void)    //must run in ramcode
 {
 	blc_pm_select_internal_32k_crystal();

@@ -26,10 +26,6 @@
 #include "spp.h"
 #include "vendor/common/blt_common.h"
 
-//module spp Tx / Rx fifo
-//MYFIFO_INIT(spp_rx_fifo, 72, 2);
-//MYFIFO_INIT(spp_tx_fifo, 72, 8);
-
 
 #define SPP_RXFIFO_SIZE		72
 #define SPP_RXFIFO_NUM		2
@@ -53,12 +49,6 @@ _attribute_data_retention_	my_fifo_t	spp_tx_fifo = {
 												0,
 												spp_tx_fifo_b,};
 
-volatile unsigned char rec_buff[20] __attribute__((aligned(4))) = {0};
-
-//RF Tx / Rx fifo
-//MYFIFO_INIT(blt_rxfifo, 64, 8);
-//MYFIFO_INIT(blt_txfifo, 40, 16);
-
 
 #define LL_RX_FIFO_SIZE		64
 #define LL_RX_FIFO_NUM		8
@@ -68,17 +58,6 @@ volatile unsigned char rec_buff[20] __attribute__((aligned(4))) = {0};
 
 _attribute_data_retention_	u8	app_ll_rxfifo[LL_RX_FIFO_SIZE * LL_RX_FIFO_NUM] = {0};
 _attribute_data_retention_  u8	app_ll_txfifo[LL_TX_FIFO_SIZE * LL_TX_FIFO_NUM] = {0};
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -98,14 +77,17 @@ _attribute_data_retention_	own_addr_type_t 	app_own_address_type = OWN_ADDRESS_P
 
 
 
-//////////////////////////////////////////////////////////////////////////////
-//	Adv Packet, Response Packet
-//////////////////////////////////////////////////////////////////////////////
+/**
+ * @brief	Adv Packet data
+ */
 const u8	tbl_advData[] = {
 	 0x05, 0x09, 'k', 'M', 'o', 'd',
 	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
 };
 
+/**
+ * @brief	Scan Response Packet data
+ */
 const u8	tbl_scanRsp [] = {
 		 0x07, 0x09, 'k', 'M', 'o', 'd', 'u', 'l',	//scan name " tmodul"
 	};
@@ -115,10 +97,15 @@ _attribute_data_retention_	u8 	ui_ota_is_working = 0;
 
 _attribute_data_retention_	u32	lowBattDet_tick   = 0;
 
-
-
 _attribute_data_retention_ u8 conn_update_cnt;
 
+
+/**
+ * @brief		response for the conn_request
+ * @param[in]
+ * @param[in]	none
+ * @return      none
+ */
 int app_conn_param_update_response(u8 id, u16  result)
 {
 #if 0
@@ -154,7 +141,11 @@ int app_conn_param_update_response(u8 id, u16  result)
 }
 
 
-
+/**
+ * @brief		enter in ota mode
+ * @param[in]	none
+ * @return      none
+ */
 #if (BLE_OTA_ENABLE)
 void entry_ota_mode(void)
 {
@@ -166,9 +157,14 @@ void entry_ota_mode(void)
 	#endif
 }
 
+
+/**
+ * @brief		show the ota result with led according to the input param
+ * @param[in]	0: ota success ; else ota fail
+ * @return      none
+ */
 void show_ota_result(int result)
 {
-
 	#if(1 && BLT_APP_LED_ENABLE)
 		gpio_set_output_en(GPIO_LED, 1);
 
@@ -188,14 +184,12 @@ void show_ota_result(int result)
 				irq_disable();
 				WATCHDOG_DISABLE;
 
-				write_reg8(0x40000, 0x33);
 				while(1){
 					gpio_write(GPIO_LED, 1);
 					sleep_us(200000);
 					gpio_write(GPIO_LED, 0);
 					sleep_us(200000);
 				}
-				write_reg8(0x40000, 0x44);
 			#endif
 
 		}
@@ -208,11 +202,6 @@ void show_ota_result(int result)
 
 #define MAX_INTERVAL_VAL		16
 
-
-
-
-
-
 _attribute_data_retention_	u32 tick_wakeup;
 _attribute_data_retention_	int	mcu_uart_working;
 _attribute_data_retention_	int	module_uart_working;
@@ -222,9 +211,15 @@ _attribute_data_retention_	int module_task_busy;
 _attribute_data_retention_	int	module_uart_data_flg;
 _attribute_data_retention_	u32 module_wakeup_module_tick;
 
-#define UART_TX_BUSY			( (spp_tx_fifo.rptr != spp_tx_fifo.wptr) || uart_tx_is_busy(UART0) )
+#define UART_TX_BUSY			((spp_tx_fifo.rptr != spp_tx_fifo.wptr) || uart_tx_is_busy(UART0) )
 #define UART_RX_BUSY			(spp_rx_fifo.rptr != spp_rx_fifo.wptr)
 
+
+/**
+ * @brief		obtain uart working status
+ * @param[in]	none
+ * @return      0 for idle  else for busy
+ */
 int app_module_busy ()
 {
 	mcu_uart_working = gpio_read(GPIO_WAKEUP_MODULE);  //mcu use GPIO_WAKEUP_MODULE to indicate the UART data transmission or receiving state
@@ -233,12 +228,19 @@ int app_module_busy ()
 	return module_task_busy;
 }
 
+
+/**
+ * @brief		stop sleep and enter in working mode
+ * @param[in]	none
+ * @return      none
+ */
 void app_suspend_exit ()
 {
 	GPIO_WAKEUP_MODULE_HIGH;  //module enter working state
 	bls_pm_setSuspendMask(SUSPEND_DISABLE);
 	tick_wakeup = clock_time () | 1;
 }
+
 
 int app_suspend_enter ()
 {
@@ -250,9 +252,13 @@ int app_suspend_enter ()
 	return 1;
 }
 
+/**
+ * @brief      power management code for application
+ * @param	   none
+ * @return     none
+ */
 void app_power_management ()
 {
-
 #if (BLE_MODULE_INDICATE_DATA_TO_MCU)
 	module_uart_working = UART_TX_BUSY || UART_RX_BUSY;
 
@@ -263,10 +269,8 @@ void app_power_management ()
 		GPIO_WAKEUP_MCU_LOW;
 	}
 #endif
-
-	// pullup GPIO_WAKEUP_MODULE: exit from suspend
-	// pulldown GPIO_WAKEUP_MODULE: enter suspend
-
+// pullup GPIO_WAKEUP_MODULE: exit from suspend
+// pulldown GPIO_WAKEUP_MODULE: enter suspend
 #if (BLE_MODULE_PM_ENABLE)
 
 	if (!app_module_busy() && !tick_wakeup)
@@ -285,13 +289,12 @@ void app_power_management ()
 		GPIO_WAKEUP_MODULE_LOW;
 		tick_wakeup = 0;
 	}
-
 #endif
 }
 
 #define UATRT_TIMNEOUT_US					   100 //100uS for 115200
 
-_attribute_data_retention_ volatile unsigned int  uart0_ndmairq_cnt=0;//Pre-4B for len
+_attribute_data_retention_ volatile unsigned int   uart0_ndmairq_cnt=0;//Pre-4B for len
 _attribute_data_retention_ volatile unsigned int   uart0_ndma_tick = 0;
 _attribute_data_retention_ volatile unsigned char  uart0_flag = 0;
 enum
@@ -300,8 +303,16 @@ enum
 	UART0_RECIEVE_START=1,
 };
 volatile unsigned int uart0_rx_buff_byte[16] __attribute__((aligned(4))) ={0x00};
+
+
+/**
+ * @brief      uart0 irq code for application
+ * @param	   none
+ * @return     none
+ */
 void uart0_recieve_irq(void)
 {
+	DBG_CHN0_HIGH;    //debug
 	if(uart0_flag == UART0_RECIEVE_IDLE)
 	{
 		uart0_ndmairq_cnt = 4;//recieve packet start
@@ -314,9 +325,16 @@ void uart0_recieve_irq(void)
 	{
 		uart0_flag = UART0_RECIEVE_START;
 	}
-
+	DBG_CHN0_LOW;
 	uart0_ndma_tick = clock_time();
 }
+
+
+/**
+ * @brief      this function for count data numbers
+ * @param	   none
+ * @return     none
+ */
 void uart0_recieve_process(void)
 {
 	if(uart0_flag == UART0_RECIEVE_START)
@@ -335,6 +353,12 @@ void uart0_recieve_process(void)
 	}
 }
 
+
+/**
+ * @brief		user initialization when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
 void user_init_normal(void)
 {
 	//random number generator must be initiated here( in the beginning of user_init_nromal)
@@ -408,7 +432,6 @@ void user_init_normal(void)
 
 
 	///////////////////// USER application initialization ///////////////////
-
 	bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) );
 	bls_ll_setScanRspData( (u8 *)tbl_scanRsp, sizeof(tbl_scanRsp));
 
@@ -420,7 +443,7 @@ void user_init_normal(void)
 								 MY_APP_ADV_CHANNEL,
 								 ADV_FP_NONE);
 
-	if(status != BLE_SUCCESS) { write_reg8(0x40002, 0x11); 	while(1); }  //debug: adv setting err
+	if(status != BLE_SUCCESS) { while(1); }  //debug: adv setting err
 
 
 	bls_ll_setAdvEnable(1);  //adv enable
@@ -433,14 +456,12 @@ void user_init_normal(void)
 	unsigned short div;
 	unsigned char bwpc;
 	uart_cal_div_and_bwpc(115200, sys_clk.pclk*1000*1000, &div, &bwpc);
-//	uart_set_dma_rx_timeout(UART0, bwpc, 12, UART_BW_MUL1);
 	uart_init(UART0, div, bwpc, UART_PARITY_NONE, UART_STOP_BIT_ONE);
 
 	//uart irq set
 	plic_interrupt_enable(IRQ19_UART0);
 	uart_tx_irq_trig_level(UART0, 0);
 	uart_rx_irq_trig_level(UART0, 1);
-
 	uart_set_irq_mask(UART0, UART_RX_IRQ_MASK);
 
 	extern int rx_from_uart_cb (void);
@@ -451,21 +472,20 @@ void user_init_normal(void)
 	blc_hci_registerControllerEventHandler(controller_event_handler);		//register event callback
 	bls_hci_mod_setEventMask_cmd(0xfffff);			//enable all 18 events,event list see ll.h
 
-
-
-
-
 #if (BLE_MODULE_PM_ENABLE)
 	blc_ll_initPowerManagement_module();        //pm module:      	 optional
 
-	#if (PM_DEEPSLEEP_RETENTION_ENABLE)
+	#if PM_NO_SUSPEND_ENABLE
+		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
+		blc_pm_setDeepsleepRetentionThreshold(3, 3);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 420 : 440);
+	#elif (PM_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(95, 95);
 		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(250);
 	#else
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 	#endif
-
 
 	//mcu can wake up module from suspend or deepsleep by pulling up GPIO_WAKEUP_MODULE
 	cpu_set_gpio_wakeup (GPIO_WAKEUP_MODULE, Level_High, 1);  // pad high wakeup deepsleep
@@ -477,7 +497,6 @@ void user_init_normal(void)
 	bls_pm_setSuspendMask (SUSPEND_DISABLE);
 #endif
 
-
 #if (BLE_OTA_ENABLE)
 	// OTA init
 	bls_ota_clearNewFwDataArea(); //must
@@ -487,69 +506,56 @@ void user_init_normal(void)
 }
 
 
+/**
+ * @brief		user initialization when MCU wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
 #if (PM_DEEPSLEEP_RETENTION_ENABLE)
 _attribute_ram_code_ void user_init_deepRetn(void)
 {
 	blc_ll_initBasicMCU();   //mandatory
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
-
 	blc_ll_recoverDeepRetention();
 
 	DBG_CHN0_HIGH;    //debug
-
 	irq_enable();
+	//uart config
+	uart_reset(UART0);
+	uart_set_pin(UART0_TX_PB2, UART0_RX_PB3 );// uart tx/rx pin set
+	unsigned short div;
+	unsigned char bwpc;
+	uart_cal_div_and_bwpc(115200, sys_clk.pclk*1000*1000, &div, &bwpc);
+	uart_init(UART0, div, bwpc, UART_PARITY_NONE, UART_STOP_BIT_ONE);
 
+	//uart irq set
+	plic_interrupt_enable(IRQ19_UART0);
+	uart_tx_irq_trig_level(UART0, 0);
+	uart_rx_irq_trig_level(UART0, 1);
 
-	////////////////// SPP initialization ///////////////////////////////////
-	//note: dma addr must be set first before any other uart initialization!
-
-	u8 *uart_rx_addr = (spp_rx_fifo_b + (spp_rx_fifo.wptr & (spp_rx_fifo.num-1)) * spp_rx_fifo.size);
-	uart_recbuff_init( (unsigned short *)uart_rx_addr, spp_rx_fifo.size);
-
-
-	uart_gpio_set(UART_TX_PB1, UART_RX_PB0);
-
-	uart_reset();  //will reset uart digital registers from 0x90 ~ 0x9f, so uart setting must set after this reset
-
-
-	DBG_CHN0_LOW;  //debug
-
-	//baud rate: 115200
-	#if (CLOCK_SYS_CLOCK_HZ == 16000000)
-		uart_init(9, 13, PARITY_NONE, STOP_BIT_ONE);
-	#elif (CLOCK_SYS_CLOCK_HZ == 24000000)
-		uart_init(12, 15, PARITY_NONE, STOP_BIT_ONE);
-	#endif
-
-	uart_dma_enable(1, 1); 	//uart data in hardware buffer moved by dma, so we need enable them first
-
-	irq_set_mask(FLD_IRQ_DMA_EN);
-	dma_chn_irq_enable(FLD_DMA_CHN_UART_RX | FLD_DMA_CHN_UART_TX, 1);   	//uart Rx/Tx dma irq enable
-
-	uart_irq_enable(0, 0);  	//uart Rx/Tx irq no need, disable them
+	uart_set_irq_mask(UART0, UART_RX_IRQ_MASK);
 
 	//mcu can wake up module from suspend or deepsleep by pulling up GPIO_WAKEUP_MODULE
 	cpu_set_gpio_wakeup (GPIO_WAKEUP_MODULE, Level_High, 1);  // pad high wakeup deepsleep
 
 	GPIO_WAKEUP_MODULE_LOW;
 
-
-
-
-	DBG_CHN0_HIGH;   //debug
+	DBG_CHN0_LOW;   //debug
 }
 #endif
 
-/////////////////////////////////////////////////////////////////////
-// main loop flow
-/////////////////////////////////////////////////////////////////////
+
+/**
+ * @brief		This is main_loop function
+ * @param[in]	none
+ * @return      none
+ */
 void main_loop (void)
 {
 	////////////////////////////////////// BLE entry /////////////////////////////////
 	blt_sdk_main_loop();
 
 	////////////////////////////////////// UI entry /////////////////////////////////
-
 #if (BATT_CHECK_ENABLE)
 	if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 500000) ){
 		lowBattDet_tick = clock_time();
@@ -561,7 +567,6 @@ void main_loop (void)
 		}
 	}
 #endif
-
 
 	//  add spp UI task
 	app_power_management ();

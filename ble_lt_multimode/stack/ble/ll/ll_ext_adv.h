@@ -41,7 +41,9 @@
 #define 		MAX_LENGTH_SECOND_ADV_PKT						264   //sizeof(rf_pkt_ext_adv_t) = 261
 
 
-
+/**
+ * @brief	Primary advertising packet format
+ */
 typedef struct{
 	u32 dma_len;
 
@@ -55,6 +57,7 @@ typedef struct{
 	u8	advA[6];			//address
 	u8	data[31];			//0-31 byte
 }rf_pkt_pri_adv_t;
+
 
 //NOTE: this data structure must 4 bytes aligned
 typedef struct
