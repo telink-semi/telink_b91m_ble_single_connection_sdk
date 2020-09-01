@@ -37,6 +37,7 @@
 
 
 #define FEATURE_PM_ENABLE								0
+#define FEATURE_PM_NO_SUSPEND_ENABLE					0
 #define FEATURE_DEEPSLEEP_RETENTION_ENABLE				0
 
 
@@ -328,7 +329,11 @@ void feature_sdle_test_init_normal(void)
 #if(FEATURE_PM_ENABLE)
 	blc_ll_initPowerManagement_module();
 
-	#if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
+	#if (FEATURE_PM_NO_SUSPEND_ENABLE)
+		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
+		blc_pm_setDeepsleepRetentionThreshold(3, 3);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(350);
+	#elif (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(50, 50);
 		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(200);

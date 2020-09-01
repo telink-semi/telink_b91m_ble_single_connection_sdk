@@ -28,7 +28,7 @@
 #include "application/keyboard/keyboard.h"
 #include "vendor/common/blt_soft_timer.h"
 #include "vendor/common/blt_common.h"
-
+#include "app_buffer.h"
 
 
 #if (FEATURE_TEST_MODE == TEST_WHITELIST)
@@ -37,38 +37,9 @@
 
 
 #define FEATURE_PM_ENABLE								0
+#define FEATURE_PM_NO_SUSPEND_ENABLE					0
 #define FEATURE_DEEPSLEEP_RETENTION_ENABLE				0
 
-
-
-
-#define RX_FIFO_SIZE	64
-#define RX_FIFO_NUM		8
-
-#define TX_FIFO_SIZE	40
-#define TX_FIFO_NUM		16
-
-
-
-
-
-
-_attribute_data_retention_  u8 		 	blt_rxfifo_b[RX_FIFO_SIZE * RX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_rxfifo = {
-												RX_FIFO_SIZE,
-												RX_FIFO_NUM,
-												0,
-												0,
-												blt_rxfifo_b,};
-
-
-_attribute_data_retention_  u8 		 	blt_txfifo_b[TX_FIFO_SIZE * TX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_txfifo = {
-												TX_FIFO_SIZE,
-												TX_FIFO_NUM,
-												0,
-												0,
-												blt_txfifo_b,};
 
 
 
@@ -165,7 +136,8 @@ void feature_whitelist_test_init_normal(void)
 	blc_ll_initBasicMCU();   //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
 
-
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
 
 	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
@@ -256,7 +228,11 @@ void feature_whitelist_test_init_normal(void)
 #if(FEATURE_PM_ENABLE)
 	blc_ll_initPowerManagement_module();
 
-	#if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
+	#if (FEATURE_PM_NO_SUSPEND_ENABLE)
+		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
+		blc_pm_setDeepsleepRetentionThreshold(3, 3);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(350);
+	#elif (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(50, 50);
 		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(200);

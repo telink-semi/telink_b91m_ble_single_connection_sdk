@@ -93,7 +93,7 @@ _attribute_ram_code_ void usb_endpoint_irq_handler(void)
  */
 int main (void)   //must on ramcode
 {
-//	blc_pm_select_internal_32k_crystal();
+	blc_pm_select_internal_32k_crystal();
 
 	sys_init(LDO_MODE);
 

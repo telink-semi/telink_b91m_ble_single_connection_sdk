@@ -78,7 +78,7 @@ extern "C" {
 
 
 
-#define FEATURE_TEST_MODE								TEST_EXTENDED_ADVERTISING
+#define FEATURE_TEST_MODE								TEST_CSA2
 
 
 

@@ -212,7 +212,7 @@ unsigned char clock_kick_32k_xtal(unsigned char xtal_times);
  * @param[in] none.
  * @return    none.
  */
-void clock_cal_24m_rc (void);
+_attribute_ram_code_sec_ void clock_cal_24m_rc (void);
 
 /**
  * @brief     This function performs to select 32K as the system clock source.

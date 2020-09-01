@@ -28,7 +28,7 @@
 #include "application/keyboard/keyboard.h"
 #include "vendor/common/blt_soft_timer.h"
 #include "vendor/common/blt_common.h"
-
+#include "app_buffer.h"
 
 
 #if (FEATURE_TEST_MODE == TEST_BLE_PHY)
@@ -36,6 +36,7 @@
 
 
 #define FEATURE_PM_ENABLE								0
+#define FEATURE_PM_NO_SUSPEND_ENABLE					0
 #define FEATURE_DEEPSLEEP_RETENTION_ENABLE				0
 
 
@@ -201,7 +202,8 @@ void feature_phytest_init_normal(void)
 
 
 
-
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
 
 
 

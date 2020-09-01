@@ -28,45 +28,15 @@
 #include "application/keyboard/keyboard.h"
 #include "vendor/common/blt_soft_timer.h"
 #include "vendor/common/blt_common.h"
-
+#include "app_buffer.h"
 #if (FEATURE_TEST_MODE == TEST_POWER_ADV)
 
 
 
 #define FEATURE_PM_ENABLE								0
+#define FEATURE_PM_NO_SUSPEND_ENABLE					0
 #define FEATURE_DEEPSLEEP_RETENTION_ENABLE				0
 
-
-
-#define RX_FIFO_SIZE	64
-#define RX_FIFO_NUM		8
-
-#define TX_FIFO_SIZE	40
-#define TX_FIFO_NUM		16
-
-
-MYFIFO_INIT(hci_rx_fifo, 72, 2);
-MYFIFO_INIT(hci_tx_fifo, 72, 8);
-
-
-
-
-_attribute_data_retention_  u8 		 	blt_rxfifo_b[RX_FIFO_SIZE * RX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_rxfifo = {
-												RX_FIFO_SIZE,
-												RX_FIFO_NUM,
-												0,
-												0,
-												blt_rxfifo_b,};
-
-
-_attribute_data_retention_  u8 		 	blt_txfifo_b[TX_FIFO_SIZE * TX_FIFO_NUM] = {0};
-_attribute_data_retention_	my_fifo_t	blt_txfifo = {
-												TX_FIFO_SIZE,
-												TX_FIFO_NUM,
-												0,
-												0,
-												blt_txfifo_b,};
 
 
 
@@ -125,7 +95,7 @@ void feature_adv_power_test_init_normal(void)
 	u8  mac_random_static[6];
 	//for 512K Flash, flash_sector_mac_address equals to 0x76000
 	//for 1M  Flash, flash_sector_mac_address equals to 0xFF000
-//	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
+	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
 
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
@@ -135,7 +105,8 @@ void feature_adv_power_test_init_normal(void)
 	blc_ll_initStandby_module(mac_public);				//mandatory
 
 
-
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
 
 	//when debugging, if long time deepSleep retention or suspend happens quickly after power on, it will make "ResetMCU" very hard, so add some time here
 	sleep_us(2000000);  //only for debug
@@ -307,7 +278,11 @@ void feature_adv_power_test_init_normal(void)
 #if(FEATURE_PM_ENABLE)
 	blc_ll_initPowerManagement_module();
 
-	#if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
+	#if (FEATURE_PM_NO_SUSPEND_ENABLE)
+		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
+		blc_pm_setDeepsleepRetentionThreshold(3, 3);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(350);
+	#elif (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(50, 50);
 		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(200);

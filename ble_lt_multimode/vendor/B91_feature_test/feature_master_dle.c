@@ -35,6 +35,7 @@
 #if (FEATURE_TEST_MODE == TEST_MDATA_LENGTH_EXTENSION)
 
 	#define FEATURE_PM_ENABLE								0
+	#define FEATURE_PM_NO_SUSPEND_ENABLE					0
 	#define FEATURE_DEEPSLEEP_RETENTION_ENABLE				0
 
 	//need define att handle same with slave(Here: we use 8258 feature_test/slave_dle demo as slave device)
