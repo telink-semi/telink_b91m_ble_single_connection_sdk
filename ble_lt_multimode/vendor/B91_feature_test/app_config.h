@@ -78,7 +78,7 @@ extern "C" {
 
 
 
-#define FEATURE_TEST_MODE								TEST_CSA2
+#define FEATURE_TEST_MODE								TEST_SCANNING_IN_ADV_AND_CONN_SLAVE_ROLE
 
 
 
@@ -284,7 +284,7 @@ typedef struct{
 }uart_data_t;
 
 
-
+#define UART_PRINT_DEBUG_ENABLE				1
 /////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
 #if (UART_PRINT_DEBUG_ENABLE)
     #if(FEATURE_TEST_MODE == TEST_MDATA_LENGTH_EXTENSION)
@@ -451,7 +451,7 @@ typedef enum
 /**
  *  @brief  Definition for gpio debug
  */
-#define DEBUG_GPIO_ENABLE							1
+#define DEBUG_GPIO_ENABLE							0
 
 #if(DEBUG_GPIO_ENABLE)
 

@@ -106,7 +106,6 @@ enum{
 	FLD_UART_TX_BUF_CNT		=  BIT_RNG(4,7),
 };
 
-#define reg_uart_status(i)       	REG_ADDR32(0x14008d+((i)*0x40))
 #define reg_uart_status1(i)			REG_ADDR8(0x14008d+((i)*0x40))
 enum{
 	FLD_UART_RBCNT 	     	=  BIT_RNG(0,2),

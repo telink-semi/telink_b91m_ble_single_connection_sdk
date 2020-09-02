@@ -46,6 +46,7 @@ enum{
 	FLD_RST0_UART0 		= 	BIT(2),
 	FLD_RST0_USB 		= 	BIT(3),
 	FLD_RST0_PWM 		= 	BIT(4),
+	//RSVD
 	FLD_RST0_UART1 		= 	BIT(6),
 	FLD_RST0_SWIRE 		= 	BIT(7),
 };
@@ -53,6 +54,7 @@ enum{
 
 #define reg_rst1					REG_ADDR8(0x1401e1)
 enum{
+	//RSVD
 	FLD_RST1_SYS_STIMER = 	BIT(1),
 	FLD_RST1_DMA 		=	BIT(2),
 	FLD_RST1_ALGM 		= 	BIT(3),
@@ -80,6 +82,8 @@ enum{
 	FLD_RST3_MSTCLK 	=	BIT(1),
 	FLD_RST3_LPCLK 		=	BIT(2),
 	FLD_RST3_ZB_CRYPT 	=	BIT(3),
+	FLD_RST3_MSPI 	    =	BIT(4),
+	FLD_RST3_CODEC  	=	BIT(5),
 	FLD_RST3_SARADC		= 	BIT(6),
 	FLD_RST3_ALG 		=	BIT(7),
 };
@@ -100,7 +104,6 @@ enum{
 #define reg_clk_en1					REG_ADDR8(0x1401e5)
 enum{
 	FLD_CLK1_SYS_TIMER_EN 	= 	BIT(1),
-	FLD_CLK1_DMA_EN 		= 	BIT(2),
 	FLD_CLK1_ALGM_EN 		= 	BIT(3),
 	FLD_CLK1_PKE_EN 		= 	BIT(4),
 	FLD_CLK1_MACHINETIME_EN = 	BIT(5),
@@ -115,7 +118,7 @@ enum{
 	FLD_CLK2_AUD_EN 		= 	BIT(1),
 	FLD_CLK2_TRNG_EN 		= 	BIT(2),
 	FLD_CLK2_MCU_EN 		= 	BIT(4),
-	FLD_CLK2_LM_EN 			= 	BIT(5),
+
 	FLD_CLK2_NPE_EN 		= 	BIT(6),
 	FLD_CLK2_EOC_EN 		= 	BIT(7),
 };

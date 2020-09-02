@@ -30,7 +30,7 @@
 #include "i2c.h"
 #include "spi.h"
 #include "pwm.h"
-#include "rf_pa.h"
+#include "pm.h"
 #include "timer.h"
 #include "compiler.h"
 #include "flash.h"
@@ -50,7 +50,7 @@
 #include "aes.h"
 
 #include "rf.h"
-#include "pm.h"
+#include "rf_pa.h"
 #include "lpc.h"
 #include "clock.h"
 #include "emi.h"

@@ -158,7 +158,7 @@ void analog_write_reg32(unsigned char addr, unsigned int data)
  * @param[in]  pdat - the value need to be write.
  * @return     none.
  */
-void analog_dma_read_reg32(dma_chn_e chn, unsigned char addr, void *pdat)
+void analog_read_reg32_dma(dma_chn_e chn, unsigned char addr, void *pdat)
 {
 	unsigned int r=core_interrupt_disable();
 	reg_ana_len = 0x04;
@@ -182,7 +182,7 @@ void analog_dma_read_reg32(dma_chn_e chn, unsigned char addr, void *pdat)
  * @param[in]  data - the value need to be write.
  * @return     none.
  */
-void analog_dma_write_reg32(dma_chn_e chn, unsigned char addr, void *pdat)
+void analog_write_reg32_dma(dma_chn_e chn, unsigned char addr, void *pdat)
 {
 	unsigned int r=core_interrupt_disable();
 	reg_ana_addr = addr;
@@ -302,7 +302,7 @@ _attribute_ram_code_sec_noinline_ void analog_read_buff(unsigned char addr, unsi
  * @param[in]  len - the length of buffer.
  * @return     none.
  */
-void analog_dma_write_buff(dma_chn_e chn, unsigned char addr, unsigned char * pdat, unsigned int len)
+void analog_write_buff_dma(dma_chn_e chn, unsigned char addr, unsigned char * pdat, unsigned int len)
 {
 	unsigned int r=core_interrupt_disable();
 	reg_ana_addr = addr;
@@ -331,7 +331,7 @@ void analog_dma_write_buff(dma_chn_e chn, unsigned char addr, unsigned char * pd
  * @param[in]  len - the length of read data.
  * @return     none.
  */
-void analog_dma_read_buff(dma_chn_e chn, unsigned char addr, unsigned char *pdat, unsigned int len)
+void analog_read_buff_dma(dma_chn_e chn, unsigned char addr, unsigned char *pdat, unsigned int len)
 {
 	unsigned int r=core_interrupt_disable();
 	reg_ana_len = len;
@@ -369,7 +369,7 @@ void analog_dma_read_buff(dma_chn_e chn, unsigned char addr, unsigned char *pdat
  * @param[in]  len - the length of read data.
  * @return     none.
  */
-void analog_dma_write_addr_data(dma_chn_e chn, void *pdat, int len)
+void analog_write_addr_data_dma(dma_chn_e chn, void *pdat, int len)
 {
 	unsigned int r=core_interrupt_disable();
 
@@ -390,7 +390,6 @@ void analog_dma_write_addr_data(dma_chn_e chn, void *pdat, int len)
     reg_ana_ctrl = 0x00;
     reg_ana_dma_ctl = 0;
     core_restore_interrupt(r);
-
 }
 
 

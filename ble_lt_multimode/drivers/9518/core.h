@@ -126,11 +126,18 @@ static inline u32 core_restore_interrupt(u32 en){
  * This macro must be used when the initialization phase is over and the interrupts
  * can start being handled by the system.
  */
-void core_interrupt_enable(void);
+/** @brief Enable interrupts globally in the system.
+ * This macro must be used when the initialization phase is over and the interrupts
+ * can start being handled by the system.
+ */
+static inline void core_interrupt_enable(void)
+{
+	set_csr(NDS_MSTATUS,1<<3);
+	set_csr(NDS_MIE,1<<11 | 1 << 7 | 1 << 3);
+}
 
 /*******************************      BLE Stack Use     ******************************/
 #define  irq_disable		core_interrupt_disable
 #define	 irq_enable			core_interrupt_enable
 #define  irq_restore(en)	core_restore_interrupt(en)
-
 #endif

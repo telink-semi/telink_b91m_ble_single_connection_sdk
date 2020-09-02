@@ -169,8 +169,41 @@ typedef enum {
 	IO_CAPABILITY_KEYBOARD_DISPLAY 		= 4,
 } io_capability_t;
 
+typedef struct {
+	u8 security_level;
+	u8 bonding_maxNum;
+	u8 bonding_mode;
+	u8 IO_capability;
 
+	u32 ecdh_debug_mode;	//1:debug_mode,0:ecdh public/private key pairs distribute
 
+	u8 MITM_protetion;
+	u8 oob_enable;
+	u8 paring_method;  		//paring_method
+	u8 keyPress_en;
+
+	u8 secure_conn; 		// final paring method is paring_method or not
+	u8 stk_method;  		// final available stk generate method
+	u8 tk_status;
+	u8 peerKey_mask;    	//determine which peer key to store   <0>: EncKey  <1>:IdKey   <2>:Sign, NOTE: not used now in code
+
+	u8 bonding_enable;
+	u8 paring_busy;
+	u8 key_distribute;
+	u8 save_key_flag;
+} smp_mng_t;
+
+extern _attribute_aligned_(4)	smp_mng_t        blc_smpMng;
+
+static inline  void	blc_smp_setParingBusy(u8 busy)
+{
+	blc_smpMng.paring_busy = busy;
+}
+
+static inline int	blc_smp_isParingBusy(void)
+{
+	return blc_smpMng.paring_busy;
+}
 
 /**
  * @brief      This function is used to set the maximum number of devices that can be bound.

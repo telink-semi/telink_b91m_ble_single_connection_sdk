@@ -26,16 +26,7 @@
 #include "core.h"
 #include "compiler.h"
 #include "plic.h"
-/** @brief Enable interrupts globally in the system.
- * This macro must be used when the initialization phase is over and the interrupts
- * can start being handled by the system.
- */
-_attribute_ram_code_sec_noinline_ void core_interrupt_enable(void)
-{
-	set_csr(NDS_MSTATUS,1<<3);
-	set_csr(NDS_MIE,1<<11 | 1 << 7 | 1 << 3);
 
-}
 
 
 

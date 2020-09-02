@@ -77,7 +77,7 @@ _attribute_ram_code_sec_noinline_ void analog_write_buff(unsigned char addr, uns
  * @param[in]  data - the value need to be write.
  * @return     none.
  */
-void analog_dma_write_reg32(dma_chn_e chn, unsigned char addr, void *pdat);
+void analog_write_reg32_dma(dma_chn_e chn, unsigned char addr, void *pdat);
 
 /**
  * @brief      This function serves to analog register write by word using dma.
@@ -86,7 +86,7 @@ void analog_dma_write_reg32(dma_chn_e chn, unsigned char addr, void *pdat);
  * @param[in]  pdat - the value need to be write.
  * @return     none.
  */
-void analog_dma_read_reg32(dma_chn_e chn, unsigned char addr,void *pdat);
+void analog_read_reg32_dma(dma_chn_e chn, unsigned char addr,void *pdat);
 
 /**
  * @brief      This function write buffer to analog register by dma channel.
@@ -96,7 +96,7 @@ void analog_dma_read_reg32(dma_chn_e chn, unsigned char addr,void *pdat);
  * @param[in]  len - the length of buffer.
  * @return     none.
  */
-void analog_dma_write_buff(dma_chn_e chn, unsigned char addr, unsigned char *pdat, unsigned int len);
+void analog_write_buff_dma(dma_chn_e chn, unsigned char addr, unsigned char *pdat, unsigned int len);
 
 /**
  * @brief      This function write buffer to analog register by dma channel.
@@ -111,7 +111,7 @@ void analog_dma_write_buff(dma_chn_e chn, unsigned char addr, unsigned char *pda
  * @param[in]  len - the length of read data.
  * @return     none.
  */
-void analog_dma_read_buff(dma_chn_e chn, unsigned char addr, unsigned char *pdat, unsigned int len);
+void analog_read_buff_dma(dma_chn_e chn, unsigned char addr, unsigned char *pdat, unsigned int len);
 
 /**
  * @brief      This function write buffer to analog register by dma channel.
@@ -133,4 +133,4 @@ void analog_dma_read_buff(dma_chn_e chn, unsigned char addr, unsigned char *pdat
  * @param[in]  len - the length of read data.
  * @return     none.
  */
-void analog_dma_write_addr_data(dma_chn_e chn, void *pdat, int len);
+void analog_write_addr_data_dma(dma_chn_e chn, void *pdat, int len);

@@ -34,13 +34,6 @@
  *                                         RF  global macro                                                           *
  *********************************************************************************************************************/
 
-/**
- * This define for ble debug the effect of rx_dly.
- * when this function turn on the time of rx_dly will shorten 6.3us
- */
-#define 	RF_RX_SHORT_MODE_EN			1
-
-
 #define 	rf_tx_packet_dma_len(rf_data_len)			(((rf_data_len)+3)/4)|(((rf_data_len) % 4)<<22)
 //--------------------------------------------FOR BLE---------------------------------------------------------------//
 // Those setting of offset according to ble packet format, so this setting for ble only.
@@ -261,7 +254,7 @@ static inline unsigned short rf_get_irq_status(rf_irq_e mask)
 *	@brief	  	This function serves to clear the Tx/Rx finish flag bit.
 *				After all packet data are sent, corresponding Tx finish flag bit
 *				will be set as 1.By reading this flag bit, it can check whether
-*				packet transmission is finished. After the check, it°Øs needed to
+*				packet transmission is finished. After the check, it‚Äôs needed to
 *				manually clear this flag bit so as to avoid misjudgment.
 *   @param      none
 *	@return	 	none
@@ -291,12 +284,9 @@ static inline void 	rf_tx_settle_us(unsigned short txstl_us)
  */
 static inline void rf_access_code_comm (unsigned int acc)
 {
-	reg_rf_access_0 = acc & 0xff;
-	reg_rf_access_1 = (acc>>8) & 0xff;
-	reg_rf_access_2 = (acc>>16) & 0xff;
-	reg_rf_access_3 = (acc>>24) & 0xff;
+	reg_rf_access_code = acc;
 	//The following two lines of code are for trigger access code in S2,S8 mode.It has no effect on other modes.
-	reg_rf_modem_mode_cfg_rx1_0 |= ~FLD_RF_LR_TRIG_MODE;
+	reg_rf_modem_mode_cfg_rx1_0 &= ~FLD_RF_LR_TRIG_MODE;
 	write_reg8(0x140c25,read_reg8(0x140c25)|0x01);
 }
 
@@ -305,8 +295,8 @@ static inline void rf_access_code_comm (unsigned int acc)
 *	@brief		this function is to enable/disable each access_code channel for
 *				RF Rx terminal.
 *	@param[in]	pipe  	Bit0~bit5 correspond to channel 0~5, respectively.
-*						0£∫Disable 1£∫Enable
-*						If °∞enable°± is set as 0x3f (i.e. 00111111),
+*						0ÔºöDisable 1ÔºöEnable
+*						If ‚Äúenable‚Äù is set as 0x3f (i.e. 00111111),
 *						all access_code channels (0~5) are enabled.
 *	@return	 	none
 */
@@ -320,8 +310,8 @@ static inline void rf_rx_acc_code_pipe_en(rf_channel_e pipe)
 *	@brief		this function is to select access_code channel for RF tx terminal.
 *	@param[in]	pipe  	Bit0~bit2 the value correspond to channel 0~5, respectively.
 *						if value > 5 enable channel 5.And only 1 channel can be selected everytime.
-*						0£∫Disable 1£∫Enable
-*						If °∞enable°± is set as 0x7 (i.e. 0111),
+*						0ÔºöDisable 1ÔºöEnable
+*						If ‚Äúenable‚Äù is set as 0x7 (i.e. 0111),
 *						the access_code channels (5) are enabled.
 *	@return	 	none
 */
@@ -353,18 +343,6 @@ static inline void rf_set_tx_rx_off(void)
 static inline void rf_set_tx_rx_off_auto_mode(void)
 {
 	write_reg8 (0x80140a00, 0x80);
-}
-
-
-/**
- * @brief   This function serves to reset function for RF.
- * @param   none
- * @return  none
- *******************need driver change
- */
-static inline void rf_reset_sn_nesn(void)
-{
-	REG_ADDR8(0x80140a01) =  0x01;
 }
 
 
@@ -413,7 +391,8 @@ static inline void rf_set_rx_maxlen(unsigned int byte_len)
 */
 static inline void rf_set_rx_buffer(unsigned int rx_addr)
 {
-	write_reg8  (0x80140a02, 0x45);
+	dma_set_dst_address(DMA1,convert_ram_addr_cpu2bus(rx_addr));
+	//reg_dma_dst_addr(DMA1) = convert_ram_addr_cpu2bus(rx_addr);
 }
 
 
@@ -731,7 +710,7 @@ _attribute_ram_code_sec_noinline_ void rf_set_rxmode(void);
 *	@brief	  	This function serves to start Rx of auto mode. In this mode,
 *				RF module stays in Rx status until a packet is received or it fails to receive packet when timeout expires.
 *				Timeout duration is set by the parameter "tick".
-*				The address to store received data is set by the function °∞addr°±.
+*				The address to store received data is set by the function ‚Äúaddr‚Äù.
 *	@param[in]	addr - The address to store received data.
 *	@param[in]	tick - Unit is us. It indicates timeout duration in Rx status.Max value: 0xffffff (16777215)
 *	@return	 	none
@@ -743,7 +722,7 @@ _attribute_ram_code_sec_noinline_ void rf_start_brx  (void* addr, unsigned int t
 *	@brief	  	This function serves to start tx of auto mode. In this mode,
 *				RF module stays in tx status until a packet is sent or it fails to sent packet when timeout expires.
 *				Timeout duration is set by the parameter "tick".
-*				The address to store send data is set by the function °∞addr°±.
+*				The address to store send data is set by the function ‚Äúaddr‚Äù.
 *	@param[in]	addr - The address to store send data.
 *	@param[in]	tick - Unit is us. It indicates timeout duration in Rx status.Max value: 0xffffff (16777215)
 *	@return	 	none
@@ -751,6 +730,12 @@ _attribute_ram_code_sec_noinline_ void rf_start_brx  (void* addr, unsigned int t
 _attribute_ram_code_sec_noinline_ void rf_start_btx (void* addr, unsigned int tick);
 
 /*******************************      BLE Stack Use     ******************************/
+ 
+ /**
+ * This define for ble debug the effect of rx_dly.
+ * when this function turn on the time of rx_dly will shorten 6.3us
+ */
+#define 	RF_RX_SHORT_MODE_EN			1
  
 /*
  * While rf rx dma fifo is moving data,audio dma fifo is also moving data.
@@ -829,6 +814,17 @@ static inline void rf_reset_baseband(void)
 static inline void rf_set_ble_access_code_value (unsigned int ac)
 {
 	write_reg32 (0x80140808, ac);
+}
+
+/**
+ * @brief   This function serves to reset function for RF.
+ * @param   none
+ * @return  none
+ *******************need driver change
+ */
+static inline void rf_reset_sn_nesn(void)
+{
+	REG_ADDR8(0x80140a01) =  0x01;
 }
 
 /**

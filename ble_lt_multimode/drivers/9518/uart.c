@@ -505,15 +505,12 @@ volatile unsigned char uart_send(uart_num_e uart_num, unsigned char * Addr, unsi
  */
 volatile unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * Addr, unsigned char len )
 {
-	if (reg_uart_status2(uart_num) & FLD_UART_TX_DONE )
-	{
-		dma_set_address(uart_dma_tx_chn[uart_num],(u32)convert_ram_addr_cpu2bus(Addr),reg_uart_data_buf_adr(uart_num));
-		dma_set_size(uart_dma_tx_chn[uart_num],len,DMA_WORD_WIDTH);
-		dma_chn_en(uart_dma_tx_chn[uart_num]);
-
-		return 1;
-	}
-	return 0;
+	while(!(reg_uart_status2(uart_num) & FLD_UART_TX_DONE));
+	dma_set_address(uart_dma_tx_chn[uart_num],(u32)convert_ram_addr_cpu2bus(Addr),reg_uart_data_buf_adr(uart_num));
+	dma_set_size(uart_dma_tx_chn[uart_num],len,DMA_WORD_WIDTH);
+	dma_chn_en(uart_dma_tx_chn[uart_num]);
+	while(reg_uart_status2(uart_num) & FLD_UART_TX_DONE);
+	return 1;
 }
 
 

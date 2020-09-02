@@ -1045,6 +1045,7 @@
 								<option id="nds.c.compiler.option.optimization.removesections.data.1801621366" name="Remove unused data sections (-fdata-sections)" superClass="nds.c.compiler.option.optimization.removesections.data" value="true" valueType="boolean"/>
 								<option id="nds.c.compiler.option.preprocessor.def.symbols.1448747803" name="Defined symbols (-D)" superClass="nds.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="CHIP_TYPE=CHIP_TYPE_9518"/>
+									<listOptionValue builtIn="false" value="MCU_STARTUP_B91=1"/>
 									<listOptionValue builtIn="false" value="__PROJECT_B91_MODULE__=1"/>
 								</option>
 								<option id="nds.c.compiler.option.include.paths.341215262" name="Include paths (-I)" superClass="nds.c.compiler.option.include.paths" valueType="includePath">
