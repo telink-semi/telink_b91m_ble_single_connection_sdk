@@ -41,15 +41,15 @@
 							<tool id="tool.nds32le-elf-mculib-v5f.c.compiler.base.295079866" name="Andes C Compiler" superClass="tool.nds32le-elf-mculib-v5f.c.compiler.base">
 								<option id="nds.c.compiler.option.debugging.level.1113286164" name="Debug Level" superClass="nds.c.compiler.option.debugging.level" value="nds.c.debugging.level.max" valueType="enumerated"/>
 								<option id="nds32le-elf-mculib-v5f.c.compiler.option.optimization.level.base.490587059" name="Optimization Level" superClass="nds32le-elf-mculib-v5f.c.compiler.option.optimization.level.base" value="nds.c.optimization.level.more" valueType="enumerated"/>
-								<option id="nds.c.compiler.option.optimization.lto.666933578" name="Link Time Optimization (-flto)" superClass="nds.c.compiler.option.optimization.lto" value="false" valueType="boolean"/>
+								<option id="nds.c.compiler.option.optimization.lto.666933578" name="Link Time Optimization (-flto)" superClass="nds.c.compiler.option.optimization.lto" value="true" valueType="boolean"/>
 								<option id="nds.c.compiler.option.optimization.removesections.function.815009568" name="Remove unused function sections (-ffunction-sections)" superClass="nds.c.compiler.option.optimization.removesections.function" value="true" valueType="boolean"/>
 								<option id="nds.c.compiler.option.optimization.removesections.data.956069668" name="Remove unused data sections (-fdata-sections)" superClass="nds.c.compiler.option.optimization.removesections.data" value="true" valueType="boolean"/>
 								<option id="nds.c.compiler.option.misc.other.147777796" name="Other flags" superClass="nds.c.compiler.option.misc.other" value="-c -fmessage-length=0 -fno-builtin -fomit-frame-pointer -fno-strict-aliasing -fshort-wchar -fuse-ld=bfd -fpack-struct" valueType="string"/>
 								<option id="nds.c.compiler.option.cmodel.1543062031" name="Code Model" superClass="nds.c.compiler.option.cmodel" value="nds.c.compiler.option.cmodel.medlow" valueType="enumerated"/>
 								<option id="nds.c.compiler.option.preprocessor.def.symbols.1376577559" name="Defined symbols (-D)" superClass="nds.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="CHIP_TYPE=CHIP_TYPE_9518"/>
 									<listOptionValue builtIn="false" value="__PROJECT_B91_FEATURE_TEST__=1"/>
 									<listOptionValue builtIn="false" value="MCU_STARTUP_B91=1"/>
-									<listOptionValue builtIn="false" value="CHIP_TYPE=CHIP_TYPE_9518"/>
 								</option>
 								<option id="nds.c.compiler.option.include.paths.1195241769" name="Include paths (-I)" superClass="nds.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
@@ -60,8 +60,8 @@
 								<option defaultValue="-O0" id="nds.c.link.option.optimization.level.177948729" name="Optimization Level" superClass="nds.c.link.option.optimization.level" value="-O2" valueType="string"/>
 								<option defaultValue="true" id="nds32le-elf-mculib-v5f.c.link.option.noshared.base.827341649" name="No shared libraries (-static)" superClass="nds32le-elf-mculib-v5f.c.link.option.noshared.base" valueType="boolean"/>
 								<option id="nds.c.linker.option.cmodel.52927975" name="Code Model" superClass="nds.c.linker.option.cmodel" value="" valueType="string"/>
-								<option id="nds.c.link.option.LTO.1985249629" name="Link Time Optimization (-flto)" superClass="nds.c.link.option.LTO" value="false" valueType="boolean"/>
-								<option id="nds.c.link.option.other.duplacitecompiler.1885432481" name="DuplaciteComplierOption" superClass="nds.c.link.option.other.duplacitecompiler" value="-g3 -mcpu=d25f -ffunction-sections -fdata-sections -fmessage-length=0 -fno-builtin -fomit-frame-pointer -fno-strict-aliasing -fshort-wchar -fuse-ld=bfd " valueType="string"/>
+								<option id="nds.c.link.option.LTO.1985249629" name="Link Time Optimization (-flto)" superClass="nds.c.link.option.LTO" value="true" valueType="boolean"/>
+								<option id="nds.c.link.option.other.duplacitecompiler.1885432481" name="DuplaciteComplierOption" superClass="nds.c.link.option.other.duplacitecompiler" value="-g3 -mcpu=d25f -ffunction-sections -fdata-sections -fmessage-length=0 -fno-builtin -fomit-frame-pointer -fno-strict-aliasing -fshort-wchar -fuse-ld=bfd -fpack-struct " valueType="string"/>
 								<option id="nds.c.link.option.removesections.450952190" name="Remove unused sections (-ffunction-sections or -fdata-sections)" superClass="nds.c.link.option.removesections" value="true" valueType="boolean"/>
 								<option defaultValue="" id="nds.c.link.option.ldscript.1207483362" name="Linker Script (-T)" superClass="nds.c.link.option.ldscript" value="../boot.link" valueType="string"/>
 								<option id="nds.c.link.option.nostart.2062284842" name="Do not use standard start files (-nostartfiles)" superClass="nds.c.link.option.nostart" value="true" valueType="boolean"/>
@@ -1057,7 +1057,7 @@
 								<option defaultValue="-O0" id="nds.c.link.option.optimization.level.1830775105" name="Optimization Level" superClass="nds.c.link.option.optimization.level" value="-O2" valueType="string"/>
 								<option defaultValue="true" id="nds32le-elf-mculib-v5f.c.link.option.noshared.base.497640915" name="No shared libraries (-static)" superClass="nds32le-elf-mculib-v5f.c.link.option.noshared.base" valueType="boolean"/>
 								<option id="nds.c.link.option.LTO.1589089469" name="Link Time Optimization (-flto)" superClass="nds.c.link.option.LTO" value="true" valueType="boolean"/>
-								<option id="nds.c.link.option.other.duplacitecompiler.970325032" name="DuplaciteComplierOption" superClass="nds.c.link.option.other.duplacitecompiler" value="-g3 -mcpu=d25f -ffunction-sections -fdata-sections -fmessage-length=0 -fno-builtin -fomit-frame-pointer -fno-strict-aliasing -fshort-wchar -fuse-ld=bfd " valueType="string"/>
+								<option id="nds.c.link.option.other.duplacitecompiler.970325032" name="DuplaciteComplierOption" superClass="nds.c.link.option.other.duplacitecompiler" value="-g3 -mcpu=d25f -ffunction-sections -fdata-sections -fmessage-length=0 -fno-builtin -fomit-frame-pointer -fno-strict-aliasing -fshort-wchar -fuse-ld=bfd -fpack-struct " valueType="string"/>
 								<option id="nds.c.link.option.removesections.1814781675" name="Remove unused sections (-ffunction-sections or -fdata-sections)" superClass="nds.c.link.option.removesections" value="true" valueType="boolean"/>
 								<option defaultValue="" id="nds.c.link.option.ldscript.1804766322" name="Linker Script (-T)" superClass="nds.c.link.option.ldscript" value="../boot.link" valueType="string"/>
 								<option id="nds.c.link.option.nostart.531647128" name="Do not use standard start files (-nostartfiles)" superClass="nds.c.link.option.nostart" value="true" valueType="boolean"/>

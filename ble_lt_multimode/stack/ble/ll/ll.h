@@ -148,7 +148,7 @@ void 		blc_ll_initStandby_module (u8 *public_adr);
  */
 ble_sts_t 	blc_ll_setRandomAddr(u8 *randomAddr);
 
-
+ble_sts_t   blc_ll_exchangeDataLength (u8 opcode, u16 maxTxOct);
 
 
 ble_sts_t 	blc_ll_readBDAddr(u8 *addr);
