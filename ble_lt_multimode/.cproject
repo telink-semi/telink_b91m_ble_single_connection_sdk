@@ -1011,7 +1011,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="lst" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.991521379.1943883724" name="B91_module" parent="config.nds.base">
+				<configuration artifactExtension="elf" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.991521379.1943883724" name="B91_module" parent="config.nds.base" postbuildStep="&quot;${workspace_loc:/${ProjName}}/tl_check_fw.bat&quot;   ${ConfigName}">
 					<folderInfo id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.991521379.1943883724." name="/" resourcePath="">
 						<toolChain id="nds.nds32le-elf-mculib-v5f.base.1198152503" name="nds32le-elf-mculib-v5f" superClass="nds.nds32le-elf-mculib-v5f.base">
 							<option id="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU.145038182" name="CPU" superClass="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU"/>
@@ -1085,7 +1085,7 @@
 								<option id="nds.objdump.option.disable.1966006510" name="Disable. (Do not auto-generate output file.)" superClass="nds.objdump.option.disable" value="false" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.objcopy.base.1810106009" name="Objcopy (object content copy)" superClass="tool.nds32le-elf-mculib-v5f.objcopy.base">
-								<option id="nds.objcopy.option.disable.1519162927" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="false" valueType="boolean"/>
+								<option id="nds.objcopy.option.disable.1519162927" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="true" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.size.base.184263795" name="Size (section size listing)" superClass="tool.nds32le-elf-mculib-v5f.size.base"/>
 							<tool id="tool.nds32le-elf-mculib-v5f.ldsag.base.1699781856" name="LdSaG Tool" superClass="tool.nds32le-elf-mculib-v5f.ldsag.base"/>

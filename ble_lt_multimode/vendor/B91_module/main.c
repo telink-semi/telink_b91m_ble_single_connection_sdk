@@ -126,7 +126,6 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 		user_init_normal();
 	}
 	irq_enable();
-
 	while (1) {
 		#if(MODULE_WATCHDOG_ENABLE)
 			wd_clear(); //clear watch dog
