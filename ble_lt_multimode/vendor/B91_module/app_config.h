@@ -60,7 +60,10 @@ extern "C" {
 #define USED_DEEP_ANA_REG                   DEEP_ANA_REG1 //u8,can save 8 bit info when deep
 #define	LOW_BATT_FLG					    BIT(0)
 
-
+#if(BLE_OTA_ENABLE)
+#define OTA_VERSION_FLASH_ADDR				0xEF000
+#define OTA_VERSION_NUMBER					0x01
+#endif
 
 #if (BATT_CHECK_ENABLE)
 //telink device: you must choose one gpio with adc function to output high level(voltage will equal to vbat), then use adc to measure high level voltage
@@ -72,10 +75,22 @@ extern "C" {
 #endif
 
 //////////////////// LED CONFIG (EVK board) ///////////////////////////
-#if (BLT_APP_LED_ENABLE)
+#if (1)
 	#define LED_ON_LEVAL 					1 			//gpio output high voltage to turn on led
-	#define	GPIO_LED						GPIO_PD5    //red
-	#define PD5_FUNC						AS_GPIO
+	#define	GPIO_LED_WHITE					GPIO_PB6
+	#define	GPIO_LED_GREEN					GPIO_PB5
+	#define	GPIO_LED_BLUE					GPIO_PB4
+	#define GPIO_LED_RED					GPIO_PB7
+
+	#define PB7_FUNC						AS_GPIO
+	#define PB6_FUNC						AS_GPIO
+	#define PB5_FUNC						AS_GPIO
+	#define PB4_FUNC						AS_GPIO
+
+	#define	PB7_OUTPUT_ENABLE				1
+	#define	PB6_OUTPUT_ENABLE				1
+	#define PB5_OUTPUT_ENABLE				1
+	#define	PB4_OUTPUT_ENABLE				1
 #endif
 
 
