@@ -178,7 +178,6 @@ void feature_soft_timer_test_init_normal(void)
 
 	u8  mac_public[6];
 	u8  mac_random_static[6];
-	//for 512K Flash, flash_sector_mac_address equals to 0x76000
 	//for 1M  Flash, flash_sector_mac_address equals to 0xFF000
 	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 

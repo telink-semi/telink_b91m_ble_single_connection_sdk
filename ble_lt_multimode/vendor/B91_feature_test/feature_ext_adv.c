@@ -50,13 +50,6 @@
 
 
 
-#define RX_FIFO_SIZE	64
-#define RX_FIFO_NUM		8
-
-#define TX_FIFO_SIZE	40
-#define TX_FIFO_NUM		16
-
-
 
 //////////////////////////////////////////////////////////////////////////////
 //	 Adv Packet, Response Packet

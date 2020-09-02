@@ -262,8 +262,8 @@ void proc_keyboard (u8 e, u8 *p, int n)
 #endif
 
 
-u32 A_slavepincode = 0;
-u8 A_pincodeflag =0;
+volatile u32 A_slavepincode = 0;
+volatile u8 A_pincodeflag = 0;
 //u8 A_slavepincode_1 = 0;
 //u8 A_slavepincode_2 = 0;
 //u8 A_slavepincode_3 = 0;
@@ -300,24 +300,29 @@ void feature_security_test_mainloop(void)
 
 	proc_keyboard (0,0, 0);
 
-	#if (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
-		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
-	#else
-		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
+	#if(FEATURE_PM_ENABLE)
+		#if FEATURE_PM_NO_SUSPEND_ENABLE
+			bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
+		#elif (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
+			bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
+		#else
+			bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
+		#endif
+
+		int user_task_flg = scan_pin_need || key_not_released;
+
+		if(user_task_flg){
+			bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
+			extern int  key_matrix_same_as_last_cnt;
+			if(key_matrix_same_as_last_cnt > 5){  //key matrix stable can optize
+				bls_pm_setManualLatency(3);
+			}
+			else{
+				bls_pm_setManualLatency(0);  //latency off: 0
+			}
+		}
 	#endif
 
-	int user_task_flg = scan_pin_need || key_not_released;
-
-	if(user_task_flg){
-		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
-		extern int  key_matrix_same_as_last_cnt;
-		if(key_matrix_same_as_last_cnt > 5){  //key matrix stable can optize
-			bls_pm_setManualLatency(3);
-		}
-		else{
-			bls_pm_setManualLatency(0);  //latency off: 0
-		}
-	}
 #endif
 }
 

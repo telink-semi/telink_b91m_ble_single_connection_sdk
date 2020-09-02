@@ -159,6 +159,9 @@ void feature_2m_coded_phy_conn_init_normal(void)
 
 
 	////// Controller Initialization  //////////
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
 	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
@@ -283,13 +286,13 @@ void feature_2m_coded_phy_conn_mainloop(void)
 
 		int AAA = phy_update_test_seq%4;
 		if(AAA == 0){
-			blc_ll_setPhy(BLS_CONN_HANDLE, PHY_TRX_PREFER, PHY_PREFER_CODED, PHY_PREFER_CODED, CODED_PHY_PREFER_S2);
+//			blc_ll_setPhy(BLS_CONN_HANDLE, PHY_TRX_PREFER, PHY_PREFER_CODED, PHY_PREFER_CODED, CODED_PHY_PREFER_S2);
 		}
 		else if(AAA == 1){
 			blc_ll_setPhy(BLS_CONN_HANDLE, PHY_TRX_PREFER, PHY_PREFER_2M, 	 PHY_PREFER_2M,    CODED_PHY_PREFER_NONE);
 		}
 		else if(AAA == 2){
-			blc_ll_setPhy(BLS_CONN_HANDLE, PHY_TRX_PREFER, PHY_PREFER_CODED, PHY_PREFER_CODED, CODED_PHY_PREFER_S8);
+//			blc_ll_setPhy(BLS_CONN_HANDLE, PHY_TRX_PREFER, PHY_PREFER_CODED, PHY_PREFER_CODED, CODED_PHY_PREFER_S8);
 		}
 		else{
 			blc_ll_setPhy(BLS_CONN_HANDLE, PHY_TRX_PREFER, PHY_PREFER_1M, 	 PHY_PREFER_1M,    CODED_PHY_PREFER_NONE);
@@ -298,6 +301,15 @@ void feature_2m_coded_phy_conn_mainloop(void)
 		phy_update_test_seq ++;
 	}
 
+#if(FEATURE_PM_ENABLE)
+	#if FEATURE_PM_NO_SUSPEND_ENABLE
+		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
+	#elif (FEATURE_DEEPSLEEP_RETENTION_ENABLE)
+		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
+	#else
+		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
+	#endif
+#endif
 }
 
 

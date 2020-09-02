@@ -97,102 +97,184 @@ extern "C" {
 
 #elif (FEATURE_TEST_MODE == TEST_SMP_SECURITY)
 
+	////////////////////////// BOARD SELECT ////////////////////////////////////////
+	#define EVK_BOARD							0    			//Ver:C1T213A20_V1_1
+	#define REMOTE_BOARD						1    			//Ver:provide later
+	#define	BOARD_SELECT						EVK_BOARD
+
 	#ifndef UART_PRINT_DEBUG_ENABLE
 	#define UART_PRINT_DEBUG_ENABLE  				1
 	#endif
 
-	//LED gpio cfg
-	#define		LED_ON_LEVAL						1 			//gpio output high voltage to turn on led
-	#define		GPIO_LED							GPIO_PC6
-	#define 	PC6_FUNC							AS_GPIO
+	#if (BOARD_SELECT == EVK_BOARD)
+		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
+		#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
 
-	//PB3 IRout 100K pulldown when  IR not working,  when IR begin, disable this 100K pulldown
-	#define			PULL_WAKEUP_SRC_PB3				PM_PIN_PULLDOWN_100K
+		#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
 
-	//////////////////////////// KEYSCAN/MIC  GPIO //////////////////////////////////
-	#define			MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
-	#define			MATRIX_COL_PULL					PM_PIN_PULLUP_10K
-	#define			KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+		#define			CR_VOL_UP				0xf0  ////
+		#define			CR_VOL_DN				0xf1
 
-	//repeat key
-	#define 		KB_REPEAT_KEY_ENABLE			0
-	#define			KB_REPEAT_KEY_INTERVAL_MS		200
-	#define 		KB_REPEAT_KEY_NUM				1
-	#define 		KB_MAP_REPEAT					{VK_1, }
+		/**
+		 *  @brief  Normal keyboard map
+		 */
+		#define		KB_MAP_NORMAL	{	CR_VOL_DN,		VK_1,	 \
+										CR_VOL_UP,		VK_2 }
 
-	#define			CR_VOL_UP						0xf0  ////
-	#define			CR_VOL_DN						0xf1
-	#define			CR_VOL_MUTE						0xf2
-	#define			CR_CHN_UP						0xf3
-	#define			CR_CHN_DN						0xf4  ////
-	#define			CR_POWER						0xf5
-	#define			CR_SEARCH						0xf6
-	#define			CR_RECORD						0xf7
-	#define			CR_PLAY							0xf8  ////
-	#define			CR_PAUSE						0xf9
-	#define			CR_STOP							0xfa
-	#define			CR_FAST_BACKWARD				0xfb
-	#define			CR_FAST_FORWARD					0xfc  ////
-	#define			CR_HOME							0xfd
-	#define			CR_BACK							0xfe
-	#define			CR_MENU							0xff
-	//key map
-	#define			KB_MAP_NORMAL	{\
-						VK_B,		CR_POWER,		VK_NONE,		VK_C,				CR_HOME,	 \
-						VK_NONE,	VK_NONE,		VK_NONE,		CR_VOL_UP,			CR_VOL_DN,	 \
-						VK_2,		VK_RIGHT,		CR_VOL_DN,		VK_3,				VK_1,	 \
-						VK_5,		VK_ENTER,		CR_VOL_UP,		VK_6,				VK_4,	 \
-						VK_8,		VK_DOWN,		VK_UP ,			VK_9,				VK_7,	 \
-						VK_0,		CR_BACK,		VK_LEFT,		CR_VOL_MUTE,		CR_MENU,	 }
 
-	#define  		KB_DRIVE_PINS  {GPIO_PD5, GPIO_PD2, GPIO_PD4, GPIO_PD6, GPIO_PD7}
-	#define  		KB_SCAN_PINS   {GPIO_PC5, GPIO_PA0, GPIO_PB2, GPIO_PA4, GPIO_PA3, GPIO_PD3}
 
-	//drive pin as gpio
-	#define	PD5_FUNC				AS_GPIO
-	#define	PD2_FUNC				AS_GPIO
-	#define	PD4_FUNC				AS_GPIO
-	#define	PD6_FUNC				AS_GPIO
-	#define	PD7_FUNC				AS_GPIO
-	//drive pin need 100K pulldown
-	#define	PULL_WAKEUP_SRC_PD5		MATRIX_ROW_PULL
-	#define	PULL_WAKEUP_SRC_PD2		MATRIX_ROW_PULL
-	#define	PULL_WAKEUP_SRC_PD4		MATRIX_ROW_PULL
-	#define	PULL_WAKEUP_SRC_PD6		MATRIX_ROW_PULL
-	#define	PULL_WAKEUP_SRC_PD7		MATRIX_ROW_PULL
-	//drive pin open input to read gpio wakeup level
-	#define PD5_INPUT_ENABLE		1
-	#define PD2_INPUT_ENABLE		1
-	#define PD4_INPUT_ENABLE		1
-	#define PD6_INPUT_ENABLE		1
-	#define PD7_INPUT_ENABLE		1
-	//scan pin as gpio
-	#define	PC5_FUNC				AS_GPIO
-	#define	PA0_FUNC				AS_GPIO
-	#define	PB2_FUNC				AS_GPIO
-	#define	PA4_FUNC				AS_GPIO
-	#define	PA3_FUNC				AS_GPIO
-	#define	PD3_FUNC				AS_GPIO
-	//scan  pin need 10K pullup
-	#define	PULL_WAKEUP_SRC_PC5		MATRIX_COL_PULL
-	#define	PULL_WAKEUP_SRC_PA0		MATRIX_COL_PULL
-	#define	PULL_WAKEUP_SRC_PB2		MATRIX_COL_PULL
-	#define	PULL_WAKEUP_SRC_PA4		MATRIX_COL_PULL
-	#define	PULL_WAKEUP_SRC_PA3		MATRIX_COL_PULL
-	#define	PULL_WAKEUP_SRC_PD3		MATRIX_COL_PULL
-	//scan pin open input to read gpio level
-	#define PC5_INPUT_ENABLE		1
-	#define PA0_INPUT_ENABLE		1
-	#define PB2_INPUT_ENABLE		1
-	#define PA4_INPUT_ENABLE		1
-	#define PA3_INPUT_ENABLE		1
-	#define PD3_INPUT_ENABLE		1
+		//////////////////// KEY CONFIG (EVK board) ///////////////////////////
+		#define  KB_DRIVE_PINS  {GPIO_PC2, GPIO_PC0}
+		#define  KB_SCAN_PINS   {GPIO_PC3, GPIO_PC1}
 
+		//drive pin as gpio
+		#define	PC2_FUNC				AS_GPIO
+		#define	PC0_FUNC				AS_GPIO
+
+		//drive pin need 100K pulldown
+		#define	PULL_WAKEUP_SRC_PC2		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PC0		MATRIX_ROW_PULL
+
+		//drive pin open input to read gpio wakeup level
+		#define PC2_INPUT_ENABLE		1
+		#define PC0_INPUT_ENABLE		1
+
+		//scan pin as gpio
+		#define	PC3_FUNC				AS_GPIO
+		#define	PC1_FUNC				AS_GPIO
+
+		//scan  pin need 10K pullup
+		#define	PULL_WAKEUP_SRC_PC3		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PC1		MATRIX_COL_PULL
+
+		//scan pin open input to read gpio level
+		#define PC3_INPUT_ENABLE		1
+		#define PC1_INPUT_ENABLE		1
+
+
+		// LED GPIO
+		/**
+		 *  @brief  Definition gpio for led
+		 */
+		#define GPIO_LED_BLUE		GPIO_PB4
+		#define GPIO_LED_GREEN		GPIO_PB5
+		#define GPIO_LED_WHITE		GPIO_PB6
+		#define PB6_FUNC				AS_GPIO
+		#define PB5_FUNC				AS_GPIO
+		#define PB4_FUNC				AS_GPIO
+		#define	PB6_OUTPUT_ENABLE		1
+		#define PB5_OUTPUT_ENABLE		1
+		#define	PB4_OUTPUT_ENABLE		1
+		#if (HARDWARE_BOARD_SELECT == HW_C1T219A20_V1_0_64_EVB)
+			#define GPIO_LED_RED		GPIO_PB7
+			#define PB7_FUNC			AS_GPIO
+			#define	PB7_OUTPUT_ENABLE		1
+		#elif (HARDWARE_BOARD_SELECT == HW_C1T217A20_V1_0_48_EVB)
+			#define GPIO_LED_RED		GPIO_PB2
+			#define PB2_FUNC			AS_GPIO
+			#define	PB2_OUTPUT_ENABLE		1
+		#elif (HARDWARE_BOARD_SELECT == HW_C1T213A20_V1_0_80_EVB)
+			#define GPIO_LED_RED		GPIO_PB7
+			#define PB7_FUNC			AS_GPIO
+			#define	PB7_OUTPUT_ENABLE		1
+		#endif
+		#define GPIO_LED				GPIO_LED_GREEN
+		#define	LED_ON_LEVAL			1 	//gpio output high voltage to turn on led
+
+	#elif(BOARD_SELECT == REMOTE_BOARD)
+		//LED gpio cfg
+		#define		LED_ON_LEVAL						1 			//gpio output high voltage to turn on led
+		#define		GPIO_LED							GPIO_PC6
+		#define 	PC6_FUNC							AS_GPIO
+
+		//PB3 IRout 100K pulldown when  IR not working,  when IR begin, disable this 100K pulldown
+		#define			PULL_WAKEUP_SRC_PB3				PM_PIN_PULLDOWN_100K
+
+		//////////////////////////// KEYSCAN/MIC  GPIO //////////////////////////////////
+		#define			MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
+		#define			MATRIX_COL_PULL					PM_PIN_PULLUP_10K
+		#define			KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+
+		//repeat key
+		#define 		KB_REPEAT_KEY_ENABLE			0
+		#define			KB_REPEAT_KEY_INTERVAL_MS		200
+		#define 		KB_REPEAT_KEY_NUM				1
+		#define 		KB_MAP_REPEAT					{VK_1, }
+
+		#define			CR_VOL_UP						0xf0  ////
+		#define			CR_VOL_DN						0xf1
+		#define			CR_VOL_MUTE						0xf2
+		#define			CR_CHN_UP						0xf3
+		#define			CR_CHN_DN						0xf4  ////
+		#define			CR_POWER						0xf5
+		#define			CR_SEARCH						0xf6
+		#define			CR_RECORD						0xf7
+		#define			CR_PLAY							0xf8  ////
+		#define			CR_PAUSE						0xf9
+		#define			CR_STOP							0xfa
+		#define			CR_FAST_BACKWARD				0xfb
+		#define			CR_FAST_FORWARD					0xfc  ////
+		#define			CR_HOME							0xfd
+		#define			CR_BACK							0xfe
+		#define			CR_MENU							0xff
+		//key map
+		#define			KB_MAP_NORMAL	{\
+							VK_B,		CR_POWER,		VK_NONE,		VK_C,				CR_HOME,	 \
+							VK_NONE,	VK_NONE,		VK_NONE,		CR_VOL_UP,			CR_VOL_DN,	 \
+							VK_2,		VK_RIGHT,		CR_VOL_DN,		VK_3,				VK_1,	 \
+							VK_5,		VK_ENTER,		CR_VOL_UP,		VK_6,				VK_4,	 \
+							VK_8,		VK_DOWN,		VK_UP ,			VK_9,				VK_7,	 \
+							VK_0,		CR_BACK,		VK_LEFT,		CR_VOL_MUTE,		CR_MENU,	 }
+
+		#define  		KB_DRIVE_PINS  {GPIO_PD5, GPIO_PD2, GPIO_PD4, GPIO_PD6, GPIO_PD7}
+		#define  		KB_SCAN_PINS   {GPIO_PC5, GPIO_PA0, GPIO_PB2, GPIO_PA4, GPIO_PA3, GPIO_PD3}
+
+		//drive pin as gpio
+		#define	PD5_FUNC				AS_GPIO
+		#define	PD2_FUNC				AS_GPIO
+		#define	PD4_FUNC				AS_GPIO
+		#define	PD6_FUNC				AS_GPIO
+		#define	PD7_FUNC				AS_GPIO
+		//drive pin need 100K pulldown
+		#define	PULL_WAKEUP_SRC_PD5		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PD2		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PD4		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PD6		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PD7		MATRIX_ROW_PULL
+		//drive pin open input to read gpio wakeup level
+		#define PD5_INPUT_ENABLE		1
+		#define PD2_INPUT_ENABLE		1
+		#define PD4_INPUT_ENABLE		1
+		#define PD6_INPUT_ENABLE		1
+		#define PD7_INPUT_ENABLE		1
+		//scan pin as gpio
+		#define	PC5_FUNC				AS_GPIO
+		#define	PA0_FUNC				AS_GPIO
+		#define	PB2_FUNC				AS_GPIO
+		#define	PA4_FUNC				AS_GPIO
+		#define	PA3_FUNC				AS_GPIO
+		#define	PD3_FUNC				AS_GPIO
+		//scan  pin need 10K pullup
+		#define	PULL_WAKEUP_SRC_PC5		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PA0		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PB2		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PA4		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PA3		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PD3		MATRIX_COL_PULL
+		//scan pin open input to read gpio level
+		#define PC5_INPUT_ENABLE		1
+		#define PA0_INPUT_ENABLE		1
+		#define PB2_INPUT_ENABLE		1
+		#define PA4_INPUT_ENABLE		1
+		#define PA3_INPUT_ENABLE		1
+		#define PD3_INPUT_ENABLE		1
+
+	#endif
 	#define	KB_MAP_NUM			    KB_MAP_NORMAL
 	#define	KB_MAP_FN			    KB_MAP_NORMAL
 
 	#define GPIO_WAKEUP_KEYPROC_CNT	3
-    #define LONG_PRESS_KEY_POWER_OPTIMIZE 1
+	#define LONG_PRESS_KEY_POWER_OPTIMIZE 1
 	#define IDLE_KEY	   			0
 	#define CONSUMER_KEY   	   		1
 	#define KEYBOARD_KEY   	   		2

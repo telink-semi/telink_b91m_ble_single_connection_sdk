@@ -130,6 +130,9 @@ void feature_2m_coded_phy_adv_init_normal(void)
 
 
 	////// Controller Initialization  //////////
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);				//mandatory
 
