@@ -67,9 +67,33 @@ typedef void (*blt_event_callback_t)(u8 e, u8 *p, int n);
 #define			BLT_EV_FLAG_SUSPEND_EXIT						15
 
 
+typedef struct {
+	u16		connEffectiveMaxRxOctets;
+	u16		connEffectiveMaxTxOctets;
+	u16 	connMaxRxOctets;
+	u16 	connMaxTxOctets;
+	u16		connRemoteMaxRxOctets;
+	u16 	connRemoteMaxTxOctets;
+	u16		supportedMaxRxOctets;
+	u16		supportedMaxTxOctets;
+
+	u8	 	connInitialMaxTxOctets;  //u8 is enough
+	u8		connMaxTxRxOctets_req;
+	u8		connRxDiff100;
+	u8		connTxDiff100;
+}ll_data_extension_t;
+
+extern _attribute_aligned_(4) ll_data_extension_t  bltData;
 
 
-
+static inline u8 blc_ll_get_connEffectiveMaxTxOctets(void)
+{
+	#if (LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION)
+		return bltData.connEffectiveMaxTxOctets;
+	#else
+		return 27;
+	#endif
+}
 
 /**
  * @brief	irq_handler for BLE stack, process system tick interrupt and RF interrupt

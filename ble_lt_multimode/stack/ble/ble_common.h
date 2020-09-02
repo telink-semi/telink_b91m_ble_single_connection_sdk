@@ -291,6 +291,57 @@ typedef enum{
 	L2CAP_CREDIT_BASED_RECONFIGURE_RSP 		= 0x1A,	//core_5.2
 }l2cap_sig_pkt_format;
 
+/******************************************** LINKLAYER ***************************************************************/
+
+/**
+ *  @brief  Definition for LL Control PDU Opcode
+ */																		// rf_len without MIC
+#define					LL_CONNECTION_UPDATE_REQ	0x00							// 12
+#define					LL_CHANNEL_MAP_REQ			0x01							//	8
+#define					LL_TERMINATE_IND			0x02							//	2
+
+#define					LL_ENC_REQ					0x03	// encryption			// 23
+#define					LL_ENC_RSP					0x04	// encryption			// 13
+#define					LL_START_ENC_REQ			0x05	// encryption			//	1
+#define					LL_START_ENC_RSP			0x06	// encryption			//	1
+
+#define					LL_UNKNOWN_RSP				0x07							//	2
+#define 				LL_FEATURE_REQ              0x08							//	9
+#define 				LL_FEATURE_RSP              0x09							//	9
+
+#define					LL_PAUSE_ENC_REQ			0x0A	// encryption			//	1
+#define					LL_PAUSE_ENC_RSP			0x0B	// encryption			//	1
+
+#define 				LL_VERSION_IND              0x0C							//	6
+#define 				LL_REJECT_IND         		0x0D							//	2
+#define 				LL_SLAVE_FEATURE_REQ        0x0E	//core_4.1				//	9
+#define 				LL_CONNECTION_PARAM_REQ		0x0F	//core_4.1				// 24
+#define 				LL_CONNECTION_PARAM_RSP		0x10	//core_4.1				// 24
+#define					LL_REJECT_IND_EXT			0x11	//core_4.1				//	3
+#define 				LL_PING_REQ					0x12    //core_4.1				//	1
+#define					LL_PING_RSP					0x13    //core_4.1				//	1
+#define 				LL_LENGTH_REQ				0x14    //core_4.2				//	9
+#define					LL_LENGTH_RSP				0x15    //core_4.2				//	9
+#define 				LL_PHY_REQ					0x16	//core_5.0				//	3
+#define 				LL_PHY_RSP					0x17	//core_5.0				//	3
+#define 				LL_PHY_UPDATE_IND			0x18	//core_5.0				//	5
+#define 				LL_MIN_USED_CHN_IND			0x19	//core_5.0				//	3
+
+#define 				LL_CTE_REQ					0x1A	//core_5.1				//	2
+#define 				LL_CTE_RSP					0x1B	//core_5.1				//	2
+#define 				LL_PERIODIC_SYNC_IND		0x1C	//core_5.1				// 35
+#define 				LL_CLOCK_ACCURACY_REQ		0x1D	//core_5.1				//	2
+#define 				LL_CLOCK_ACCURACY_RSP		0x1E	//core_5.1				//	2
+
+
+#define 				LL_CIS_REQ					0x1F	//core_5.2				//	36
+#define 				LL_CIS_RSP					0x20	//core_5.2				//	9
+#define 				LL_CIS_IND					0x21	//core_5.2				//  16
+#define 				LL_CIS_TERMINATE_IND		0x22	//core_5.2				//	4
+#define 				LL_POWER_CONTROL_REQ		0x23	//core_5.2				//	4
+#define 				LL_POWER_CONTROL_RSP		0x24	//core_5.2				//	5
+#define 				LL_POWER_CHANGE_IND			0x25	//core_5.2				//	5
+
 
 
 /******************************************** GAP ***************************************************************/

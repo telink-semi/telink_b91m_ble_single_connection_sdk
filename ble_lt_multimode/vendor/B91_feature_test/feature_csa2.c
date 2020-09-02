@@ -144,7 +144,8 @@ void feature_csa2_init_normal(void)
 	//for 1M  Flash, flash_sector_mac_address equals to 0xFF000
 	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
-
+	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
+	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
 
 	////// Controller Initialization  //////////
 	blc_ll_initBasicMCU();                      //mandatory
