@@ -1,4 +1,14 @@
 /*******************************      analog control registers: 0xb8      ******************************/
+/**	@page ANALOG
+ *
+ *	Introduction
+ *	===============
+ *	TLSR9518 analog support dma and normal mode, in each mode, support byte/halfword/word/buffer write and read. 
+ *
+ *	API Reference
+ *	===============
+ *	Header File: analog.h
+ */
 #pragma once
 
 #include "../../common/types.h"
@@ -6,6 +16,24 @@
 #include "compiler.h"
 #include "reg_include/register_9518.h"
 
+/**********************************************************************************************************************
+ *                                         global constants                                                           *
+ *********************************************************************************************************************/
+
+/**********************************************************************************************************************
+ *                                           global macro                                                             *
+ *********************************************************************************************************************/
+
+/**********************************************************************************************************************
+ *                                         global data type                                                           *
+ *********************************************************************************************************************/
+/**********************************************************************************************************************
+ *                                     global variable declaration                                                    *
+ *********************************************************************************************************************/
+
+/**********************************************************************************************************************
+ *                                      global function prototype                                                     *
+ *********************************************************************************************************************/
 
 /**
  * @brief      This function serves to analog register read by byte.
@@ -74,7 +102,7 @@ _attribute_ram_code_sec_noinline_ void analog_write_buff(unsigned char addr, uns
  * @brief      This function serves to analog register write by word using dma.
  * @param[in]  chn - the dma channel.
  * @param[in]  addr - address need to be write.
- * @param[in]  data - the value need to be write.
+ * @param[in]  pdat - the value addr need to be write.
  * @return     none.
  */
 void analog_write_reg32_dma(dma_chn_e chn, unsigned char addr, void *pdat);
@@ -116,8 +144,10 @@ void analog_read_buff_dma(dma_chn_e chn, unsigned char addr, unsigned char *pdat
 /**
  * @brief      This function write buffer to analog register by dma channel.
  * @param[in]  chn - the dma channel.
- * @param[in]  *pdat - the buffer need to be put data.
- * 				The array pdat should look like this:
+ * @param[in]  pdat - the buffer need to be put data,
+ * @par
+ * @code
+ * 			 	The array pdat should look like this,
  * 						------------------
  * 						| 	pdat  	 	 |
  * 						|----------------|
@@ -130,6 +160,7 @@ void analog_read_buff_dma(dma_chn_e chn, unsigned char addr, unsigned char *pdat
  * 				It means write data 0x11 to address 0x3a,
  * 						 write data 0x22 to address 0x3b,
  * 						 ......
+ * @endcode
  * @param[in]  len - the length of read data.
  * @return     none.
  */

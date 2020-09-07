@@ -62,7 +62,7 @@ _attribute_data_retention_  u8	app_ll_txfifo[LL_TX_FIFO_SIZE * LL_TX_FIFO_NUM] =
 
 
 
-#define     MY_APP_ADV_CHANNEL					BLT_ENABLE_ADV_37
+#define     MY_APP_ADV_CHANNEL					BLT_ENABLE_ADV_ALL
 #define 	MY_ADV_INTERVAL_MIN					ADV_INTERVAL_30MS
 #define 	MY_ADV_INTERVAL_MAX					ADV_INTERVAL_40MS
 

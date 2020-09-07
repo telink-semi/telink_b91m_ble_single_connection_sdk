@@ -6,23 +6,57 @@
  */
 #include "aes.h"
 #include "compiler.h"
+
+/**********************************************************************************************************************
+ *                                			  local constants                                                       *
+ *********************************************************************************************************************/
+
+
+/**********************************************************************************************************************
+ *                                           	local macro                                                        *
+ *********************************************************************************************************************/
+
+
+/**********************************************************************************************************************
+ *                                             local data type                                                     *
+ *********************************************************************************************************************/
+
+
+/**********************************************************************************************************************
+ *                                              global variable                                                       *
+ *********************************************************************************************************************/
 _attribute_aes_data_sec_ unsigned int aes_data_buff[8];
 unsigned int aes_base_addr = 0xc0000000;
+/**********************************************************************************************************************
+ *                                              local variable                                                     *
+ *********************************************************************************************************************/
 
+/**********************************************************************************************************************
+ *                                          local function prototype                                               *
+ *********************************************************************************************************************/
+/**
+ * @brief     This function refer to wait aes crypt done.
+ * @param[in] none.
+ * @return    none
+ */
+static inline void aes_wait_done(void);
+/**********************************************************************************************************************
+ *                                         global function implementation                                             *
+ *********************************************************************************************************************/
 /**
  * @brief     This function refer to crypt. AES module register must be used by word.
  * @param[in] Key - the key of encrypt.
- * @param[in] plaintext - the plaintext of encrypt.
+ * @param[in] data - the plaintext of encrypt.
  * @return    none
  */
-void aes_set_key_data(unsigned char *key, unsigned char* decrypttext)
+void aes_set_key_data(unsigned char *key, unsigned char* data)
 {
 	unsigned int temp;
 	reg_embase_addr = aes_base_addr;  //set the ceva base addr
 	for (unsigned char i = 0; i < 4; i++) {
 		temp = key[16-(4*i)-4]<<24 | key[16-(4*i)-3]<<16 | key[16-(4*i)-2]<<8 | key[16-(4*i)-1];
 		reg_aes_key(i) = temp;
-		temp = decrypttext[16-(4*i)-4]<<24 | decrypttext[16-(4*i)-3]<<16 | decrypttext[16-(4*i)-2]<<8 | decrypttext[16-(4*i)-1];
+		temp = data[16-(4*i)-4]<<24 | data[16-(4*i)-3]<<16 | data[16-(4*i)-2]<<8 | data[16-(4*i)-1];
 		aes_data_buff[i] = temp;
 	}
 
@@ -43,15 +77,7 @@ void aes_get_result(unsigned char *result)
 	}
 }
 
-/**
- * @brief     This function refer to wait aes crypt done.
- * @param[in] none.
- * @return    none
- */
-static inline void wait_aes_done(void)
-{
-	while(FLD_AES_START == (reg_aes_mode & FLD_AES_START));
-}
+
 
 /**
  * @brief     This function refer to encrypt. AES module register must be used by word.
@@ -68,7 +94,7 @@ int aes_encrypt(unsigned char *key, unsigned char* plaintext, unsigned char *res
 
     aes_set_mode(FLD_AES_START);      //cipher mode
 
-    wait_aes_done();
+    aes_wait_done();
 
     aes_get_result(result);
 
@@ -89,12 +115,15 @@ int aes_decrypt(unsigned char *key, unsigned char* decrypttext, unsigned char *r
 
     aes_set_mode(FLD_AES_START | FLD_AES_MODE);      //decipher mode
 
-    wait_aes_done();
+    aes_wait_done();
 
     aes_get_result(result);
 
 	return 1;
 }
+/**********************************************************************************************************************
+  *                    						local function implementation                                             *
+  *********************************************************************************************************************/
 /**
  * @brief     This function refer to set the base addr of data which use in CEVA module
  * @param[in] addr - the base addr of CEVA data.
@@ -103,3 +132,14 @@ int aes_decrypt(unsigned char *key, unsigned char* decrypttext, unsigned char *r
 void aes_set_em_base_addr(unsigned int addr){
 	aes_base_addr = addr;   //set the ceva base addr
 }
+
+/**
+ * @brief     This function refer to wait aes crypt done.
+ * @param[in] none.
+ * @return    none
+ */
+static inline void aes_wait_done(void)
+{
+	while(FLD_AES_START == (reg_aes_mode & FLD_AES_START));
+}
+

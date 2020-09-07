@@ -148,12 +148,8 @@ void eoc_irq_handler(void) __attribute__((weak, alias("default_irq_handler")));
  */
 _attribute_ram_code_sec_ __attribute__((weak)) void except_handler()
 {
-	unsigned int mcause = read_csr(NDS_MCAUSE);
-	unsigned int mepc = read_csr(NDS_MEPC);
-
 	while(1){
 		/* Unhandled Trap */
-		printf("Unhandled Trap : mcause = 0x%x, mepc = 0x%x\n", (unsigned int)mcause, (unsigned int)mepc);
 		for(volatile unsigned int i = 0; i < 0xffff; i++)
 		{
 			asm("nop");
@@ -183,6 +179,7 @@ void  entry_irq1(void)
 	NDS_FENCE_IORW;
 #else
 	stimer_irq_handler();
+	plic_interrupt_complete(IRQ1_SYSTIMER);
 #endif
 }
 
@@ -201,6 +198,7 @@ void  entry_irq2(void)
 	NDS_FENCE_IORW;
 #else
 	analog_irq_handler();
+	plic_interrupt_complete(IRQ2_ALG);
 #endif
 }
 
@@ -220,6 +218,7 @@ void  entry_irq3(void)
 	NDS_FENCE_IORW;
 #else
 	timer1_irq_handler();
+	plic_interrupt_complete(IRQ3_TIMER1);
 #endif
 }
 
@@ -238,6 +237,7 @@ void  entry_irq4(void)
 	NDS_FENCE_IORW;
 #else
 	timer0_irq_handler();
+	plic_interrupt_complete(IRQ4_TIMER0);
 #endif
 }
 
@@ -257,6 +257,7 @@ void  entry_irq5(void)
 	NDS_FENCE_IORW;
 #else
 	dma_irq_handler();
+	plic_interrupt_complete(IRQ5_DMA);
 #endif
 }
 
@@ -275,6 +276,7 @@ void  entry_irq6(void)
 	NDS_FENCE_IORW;
 #else
 	bmc_irq_handler();
+	plic_interrupt_complete(IRQ6_BMC);
 #endif
 }
 
@@ -294,6 +296,7 @@ void  entry_irq7(void)
 	NDS_FENCE_IORW;
 #else
 	usb_ctrl_ep_setup_irq_handler();
+	plic_interrupt_complete(IRQ7_USB_CTRL_EP_SETUP);
 #endif
 }
 
@@ -312,6 +315,7 @@ void  entry_irq8(void)
 	NDS_FENCE_IORW;
 #else
 	usb_ctrl_ep_data_irq_handler();
+	plic_interrupt_complete(IRQ8_USB_CTRL_EP_DATA);
 #endif
 }
 
@@ -330,6 +334,7 @@ void  entry_irq9(void)
 	NDS_FENCE_IORW;
 #else
 	usb_ctrl_ep_status_irq_handler();
+	plic_interrupt_complete(IRQ9_USB_CTRL_EP_STATUS);
 #endif
 }
 
@@ -349,6 +354,7 @@ void  entry_irq10(void)
 	NDS_FENCE_IORW;
 #else
 	usb_ctrl_ep_setinf_irq_handler();
+	plic_interrupt_complete(IRQ10_USB_CTRL_EP_SETINF);
 #endif
 }
 
@@ -367,6 +373,7 @@ void  entry_irq11(void)
 	NDS_FENCE_IORW;
 #else
 	usb_endpoint_irq_handler ();
+	plic_interrupt_complete(IRQ11_USB_ENDPOINT);
 #endif
 }
 
@@ -385,6 +392,7 @@ void  entry_irq12(void)
 	NDS_FENCE_IORW;
 #else
 	rf_dm_irq_handler();
+	plic_interrupt_complete(IRQ12_ZB_DM);
 #endif
 }
 
@@ -403,6 +411,7 @@ void  entry_irq13(void)
 	NDS_FENCE_IORW;
 #else
 	rf_ble_irq_handler();
+	plic_interrupt_complete(IRQ13_ZB_BLE);
 #endif
 }
 
@@ -422,6 +431,7 @@ void  entry_irq14(void)
 	NDS_FENCE_IORW;
 #else
 	rf_bt_irq_handler();
+	plic_interrupt_complete(IRQ14_ZB_BT);
 #endif
 }
 
@@ -440,6 +450,7 @@ void  entry_irq15(void)
 	NDS_FENCE_IORW;
 #else
 	rf_irq_handler();
+	plic_interrupt_complete(IRQ15_ZB_RT);
 #endif
 }
 
@@ -460,6 +471,7 @@ void  entry_irq16(void)
 	NDS_FENCE_IORW;
 #else
 	pwm_irq_handler();
+	plic_interrupt_complete(IRQ16_PWM);
 #endif
 }
 
@@ -478,6 +490,7 @@ void  entry_irq17(void)
 	NDS_FENCE_IORW;
 #else
 	pke_irq_handler();
+	plic_interrupt_complete(IRQ17_PKE);
 #endif
 }
 
@@ -498,6 +511,7 @@ void  entry_irq18(void)
 	NDS_FENCE_IORW;
 #else
 	uart1_irq_handler();
+	plic_interrupt_complete(IRQ18_UART1);
 #endif
 }
 
@@ -518,6 +532,7 @@ void  entry_irq19(void)
 	NDS_FENCE_IORW;
 #else
 	uart0_irq_handler();
+	plic_interrupt_complete(IRQ19_UART0);
 #endif
 }
 
@@ -537,6 +552,7 @@ void  entry_irq20(void)
 	NDS_FENCE_IORW;
 #else
 	audio_irq_handler();
+	plic_interrupt_complete(IRQ20_DFIFO);
 #endif
 }
 
@@ -555,6 +571,7 @@ void  entry_irq21(void)
 	NDS_FENCE_IORW;
 #else
 	i2c_irq_handler();
+	plic_interrupt_complete(IRQ21_I2C);
 #endif
 }
 
@@ -574,6 +591,7 @@ void  entry_irq22(void)
 	NDS_FENCE_IORW;
 #else
 	hspi_irq_handler();
+	plic_interrupt_complete(IRQ22_SPI_AHB);
 #endif
 }
 
@@ -593,6 +611,7 @@ void  entry_irq23(void)
 	NDS_FENCE_IORW;
 #else
 	pspi_irq_handler();
+	plic_interrupt_complete(IRQ23_SPI_APB);
 #endif
 }
 
@@ -612,6 +631,7 @@ void  entry_irq24(void)
 	NDS_FENCE_IORW;
 #else
 	usb_pwdn_irq_handler();
+	plic_interrupt_complete(IRQ24_USB_PWDN);
 #endif
 }
 
@@ -630,6 +650,7 @@ void  entry_irq25(void)
 	NDS_FENCE_IORW;
 #else
 	gpio_irq_handler();
+	plic_interrupt_complete(IRQ25_GPIO);
 #endif
 }
 
@@ -648,6 +669,7 @@ void  entry_irq26(void)
 	NDS_FENCE_IORW;
 #else
 	gpio_risc0_irq_handler();
+	plic_interrupt_complete(IRQ26_GPIO2RISC0);
 #endif
 }
 
@@ -667,6 +689,7 @@ void  entry_irq27(void)
 	NDS_FENCE_IORW;
 #else
 	gpio_risc1_irq_handler();
+	plic_interrupt_complete(IRQ27_GPIO2RISC1);
 #endif
 }
 
@@ -685,6 +708,7 @@ void  entry_irq28(void)
 	NDS_FENCE_IORW;
 #else
 	soft_irq_handler();
+	plic_interrupt_complete(IRQ28_SOFT);
 #endif
 }
 
@@ -704,6 +728,7 @@ void  entry_irq29(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus0_irq_handler();
+	plic_interrupt_complete(IRQ29_NPE_BUS0);
 #endif
 }
 /**
@@ -721,6 +746,7 @@ void  entry_irq30(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus1_irq_handler();
+	plic_interrupt_complete(IRQ30_NPE_BUS1);
 #endif
 }
 /**
@@ -738,6 +764,7 @@ void  entry_irq31(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus2_irq_handler();
+	plic_interrupt_complete(IRQ31_NPE_BUS2);
 #endif
 }
 /**
@@ -755,6 +782,7 @@ void  entry_irq32(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus3_irq_handler();
+	plic_interrupt_complete(IRQ32_NPE_BUS3);
 #endif
 }
 
@@ -773,6 +801,7 @@ void  entry_irq33(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus4_irq_handler();
+	plic_interrupt_complete(IRQ33_NPE_BUS4);
 #endif
 }
 /**
@@ -790,6 +819,7 @@ void  entry_irq34(void)
 	NDS_FENCE_IORW;
 #else
 	usb_250us_irq_handler();
+	plic_interrupt_complete(IRQ34_USB_250US);
 #endif
 }
 /**
@@ -807,6 +837,7 @@ void  entry_irq35(void)
 	NDS_FENCE_IORW;
 #else
 	usb_reset_irq_handler();
+	plic_interrupt_complete(IRQ35_USB_RESET);
 #endif
 }
 /**
@@ -824,6 +855,7 @@ void  entry_irq36(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus7_irq_handler();
+	plic_interrupt_complete(IRQ36_NPE_BUS7);
 #endif
 }
 /**
@@ -841,6 +873,7 @@ void  entry_irq37(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus8_irq_handler();
+	plic_interrupt_complete(IRQ37_NPE_BUS8);
 #endif
 }
 
@@ -880,6 +913,7 @@ void  entry_irq42(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus13_irq_handler();
+	plic_interrupt_complete(IRQ42_NPE_BUS13);
 #endif
 }
 /**
@@ -897,6 +931,7 @@ void  entry_irq43(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus14_irq_handler();
+	plic_interrupt_complete(IRQ43_NPE_BUS14);
 #endif
 }
 
@@ -915,6 +950,7 @@ void  entry_irq44(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus15_irq_handler();
+	plic_interrupt_complete(IRQ44_NPE_BUS15);
 #endif
 }
 _attribute_ram_code_sec_noinline_ void  entry_irq45(void) __attribute__ ((interrupt ("machine") , aligned(4)));
@@ -937,6 +973,7 @@ void  entry_irq46(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus17_irq_handler();
+	plic_interrupt_complete(IRQ46_NPE_BUS17);
 #endif
 }
 
@@ -973,6 +1010,7 @@ void  entry_irq50(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus21_irq_handler();
+	plic_interrupt_complete(IRQ50_NPE_BUS21);
 #endif
 }
 /**
@@ -990,6 +1028,7 @@ void  entry_irq51(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus22_irq_handler();
+	plic_interrupt_complete(IRQ51_NPE_BUS22);
 #endif
 }
 /**
@@ -1007,6 +1046,7 @@ void  entry_irq52(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus23_irq_handler();
+	plic_interrupt_complete(IRQ52_NPE_BUS23);
 #endif
 }
 /**
@@ -1024,6 +1064,7 @@ void  entry_irq53(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus24_irq_handler();
+	plic_interrupt_complete(IRQ53_NPE_BUS24);
 #endif
 }
 /**
@@ -1041,6 +1082,7 @@ void  entry_irq54(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus25_irq_handler();
+	plic_interrupt_complete(IRQ54_NPE_BUS25);
 #endif
 }
 /**
@@ -1058,6 +1100,7 @@ void  entry_irq55(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus26_irq_handler();
+	plic_interrupt_complete(IRQ55_NPE_BUS26);
 #endif
 }
 /**
@@ -1075,6 +1118,7 @@ void  entry_irq56(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus27_irq_handler();
+	plic_interrupt_complete(IRQ56_NPE_BUS27);
 #endif
 }
 /**
@@ -1092,6 +1136,7 @@ void  entry_irq57(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus28_irq_handler();
+	plic_interrupt_complete(IRQ57_NPE_BUS28);
 #endif
 }
 /**
@@ -1109,6 +1154,7 @@ void  entry_irq58(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus29_irq_handler();
+	plic_interrupt_complete(IRQ58_NPE_BUS29);
 #endif
 }
 /**
@@ -1126,6 +1172,7 @@ void  entry_irq59(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus30_irq_handler();
+	plic_interrupt_complete(IRQ59_NPE_BUS30);
 #endif
 }
 /**
@@ -1143,6 +1190,7 @@ void  entry_irq60(void)
 	NDS_FENCE_IORW;
 #else
 	npe_bus31_irq_handler();
+	plic_interrupt_complete(IRQ60_NPE_BUS31);
 #endif
 }
 /**
@@ -1160,6 +1208,7 @@ void  entry_irq61(void)
 	NDS_FENCE_IORW;
 #else
 	npe_comb_irq_handler();
+	plic_interrupt_complete(IRQ61_NPE_COMB);
 #endif
 }
 /**
@@ -1177,6 +1226,7 @@ void  entry_irq62(void)
 	NDS_FENCE_IORW;
 #else
 	pm_irq_handler();
+	plic_interrupt_complete(IRQ62_PM_TM);
 #endif
 }
 /**
@@ -1194,6 +1244,7 @@ void  entry_irq63(void)
 	NDS_FENCE_IORW;
 #else
 	eoc_irq_handler();
+	plic_interrupt_complete(IRQ63_EOC);
 #endif
 }
 

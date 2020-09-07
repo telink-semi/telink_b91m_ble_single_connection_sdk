@@ -225,7 +225,7 @@ void main_loop (void)
 //	rf_set_ble_crc_adv ();
 //	rf_set_ble_access_code_value(BLE_ACCESS_CODE);
 
-	rf_set_tx_dma(2,2);
+	rf_set_tx_dma(2,32);
 
 	u8 rf_data_len = sizeof (rf_packet_dbg_adv_t) - 4;
 	u32 rf_tx_dma_len = RF_TX_PAKET_DMA_LEN(rf_data_len);//4 bytes align
@@ -531,7 +531,7 @@ void ble_manual_tx_test(void){
 //	rf_set_ble_crc_adv ();
 //	rf_set_ble_access_code_value(BLE_ACCESS_CODE);
 
-	rf_set_tx_dma(2,2);
+	rf_set_tx_dma(2,32);
 
 	#if (0 && RF_TX_IRQ_EN)
 		core_interrupt_enable();
@@ -578,7 +578,7 @@ void ble_stx_test(void){
 	rf_set_ble_crc_adv ();
 
 
-	rf_set_tx_dma(2,5);
+	rf_set_tx_dma(2,80);
 
 	#if (0 && RF_TX_IRQ_EN)
 		core_interrupt_enable();
@@ -648,7 +648,7 @@ void ble_btx_tx_test(void){
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
-	rf_set_tx_dma(2,5);
+	rf_set_tx_dma(2,80);
 	u8 rf_data_len = sizeof (rf_packet_dbg_adv_t) - 4;
 	u32 rf_tx_dma_len = RF_TX_PAKET_DMA_LEN(rf_data_len);//4 bytes align
 	debug_pkt_adv.dma_len = rf_tx_dma_len;
@@ -769,7 +769,7 @@ void ble_brx_rx_test(void){
 //	rf_set_ble_crc_adv ();
 	rf_access_code_comm(BLE_ACCESS_CODE);
 	rf_set_rx_dma((u8*)(blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE),3,0x05);
-	rf_set_tx_dma(2,5);
+	rf_set_tx_dma(2,80);
 	u8 rf_data_len = 2;//empty pkt
 	u32 rf_tx_dma_len = RF_TX_PAKET_DMA_LEN(rf_data_len);//4 bytes align
 	blt_tx_empty_packet[3] = (rf_tx_dma_len >> 24) & 0xff;

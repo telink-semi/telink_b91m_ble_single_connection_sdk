@@ -99,9 +99,10 @@ static int opus_custom_encoder_init_arch(CELTEncoder *st, const CELTMode *mode,
    if (st==NULL || mode==NULL)
       return OPUS_ALLOC_FAIL;
 #ifdef ANDES_INTRINSIC
-   nds_set_q7(0,(char*)&st->ENCODER_RESET_START,
-			  opus_custom_encoder_get_size(st->mode, OPUS_ENC_CHANNELS)-
-			  ((char*)&st->ENCODER_RESET_START - (char*)st));
+//   nds_set_q7(0,(char*)&st->ENCODER_RESET_START,
+//			  opus_custom_encoder_get_size(st->mode, OPUS_ENC_CHANNELS)-
+//			  ((char*)&st->ENCODER_RESET_START - (char*)st));
+   nds_set_q7(0,(char*)st, opus_custom_encoder_get_size(mode, OPUS_ENC_CHANNELS));//nds_set_q7:clear char array
 #else
    OPUS_CLEAR((char*)st, opus_custom_encoder_get_size(mode, OPUS_ENC_CHANNELS));
 #endif

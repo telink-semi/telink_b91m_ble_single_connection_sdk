@@ -371,9 +371,6 @@ _attribute_ram_code_sec_noinline_ void flash_write_status_ram(unsigned short dat
 #else
 	unsigned int r= core_interrupt_disable();
 #endif
-
-	unsigned char result;
-
 	mspi_stop_xip();
 	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
 	flash_send_cmd(FLASH_WRITE_STATUS_CMD);
@@ -405,7 +402,7 @@ _attribute_text_sec_ void flash_write_status(unsigned short data){
  */
 _attribute_ram_code_sec_noinline_ unsigned short flash_read_status_ram(void){
 
-	unsigned char status =0;
+	unsigned short status =0;
 #if SUPPORT_PFT_ARCH
 	reg_irq_threshold = 1;
 #else

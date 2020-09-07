@@ -56,6 +56,8 @@ sys_clk_st sys_clk = {
 	.pclk = 24,
 	.mspi_clk = 24,
 };
+_attribute_data_retention_sec_ unsigned char tl_24mrc_cal;
+clk_32k_type_e g_clk_32k_src;
 /**********************************************************************************************************************
  *                                              local variable                                                     *
  *********************************************************************************************************************/
@@ -68,8 +70,6 @@ sys_clk_st sys_clk = {
  *                                         global function implementation                                             *
  *********************************************************************************************************************/
 
-_attribute_data_retention_sec_ unsigned char tl_24mrc_cal;
-clk_32k_type_e g_clk_32k_src;
 
 /**
  * @brief   This function serves to set 32k clock source.

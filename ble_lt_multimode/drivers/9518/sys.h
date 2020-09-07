@@ -106,11 +106,10 @@
 /**
  * @brief 	Power type for different application
  */
- //different with driver, use in many app, change last to avoid 
 typedef enum{
-	LDO_MODE 		=0x00,	/**< LDO mode */
-	DCDC_LDO_MODE	=0x01,	/**< DCDC_LDO mode */
-	DCDC_MODE		=0x03,	/**< DCDC mode (16pin is not suported this mode. */
+	LDO_1P4_LDO_1P8 	= 0x00,	/**< 1.4V-LDO & 1.8V-LDO mode */
+	DCDC_1P4_LDO_1P8	= 0x01,	/**< 1.4V-DCDC & 1.8V-LDO mode */
+	DCDC_1P4_DCDC_1P8	= 0x03,	/**< 1.4V-DCDC & 1.8V-DCDC mode */
 }power_mode_e;
 
 /**
@@ -176,6 +175,13 @@ static inline _Bool clock_time_exceed(unsigned int ref, unsigned int us)
 }
 
 /**
+ * @brief   	This function serves to initialize system.
+ * @param[in]	power_mode - power mode(LDO/DCDC/LDO_DCDC)
+ * @return  	none
+ */
+//void sys_init(power_mode_e power_mode);
+
+/**
  * @brief      This function performs a series of operations of writing digital or analog registers
  *             according to a command table
  * @param[in]  pt - pointer to a command table containing several writing commands
@@ -200,7 +206,10 @@ void delay_us(u32 microsec);
 void delay_ms(u32 millisec);
 
 
-
+/*
+ * @brief     This function performs to get system timer tick.
+ * @return    system timer tick value.
+**/
 static inline u32 clock_time(void)
 {
 
@@ -210,6 +219,5 @@ static inline u32 clock_time(void)
 /*******************************      BLE Stack Use     ******************************/
 #define sleep_us(x)					delay_us(x)
 #define sleep_ms(x)					delay_ms(x)
-
 
 #endif

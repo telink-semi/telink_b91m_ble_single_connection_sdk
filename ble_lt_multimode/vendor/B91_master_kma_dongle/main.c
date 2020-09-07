@@ -95,7 +95,7 @@ int main (void)   //must on ramcode
 {
 	blc_pm_select_internal_32k_crystal();
 
-	sys_init(LDO_MODE);
+	sys_init(LDO_1P4_LDO_1P8);
 
 #if (CLOCK_SYS_CLOCK_HZ == 16000000)
 	clock_init(PLL_CLK_192M, PAD_PLL_DIV, PLL_DIV12_TO_CCLK, CCLK_DIV1_TO_HCLK,  HCLK_DIV1_TO_PCLK, PLL_DIV4_TO_MSPI_CLK);

@@ -23,7 +23,7 @@
  * @version  A001
  *
  *******************************************************************************************************/
-#ifdef MCU_STARTUP_B91_DLM
+#if 0	/*default is close*/
     .section .vectors, "ax"
 
     //.org  and linker's relaxation (-flto) cannot be used at the same time

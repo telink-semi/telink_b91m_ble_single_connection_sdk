@@ -3,23 +3,41 @@
 #include "analog.h"
 #include "compiler.h"
 #include "plic.h"
+/**********************************************************************************************************************
+ *                                			  local constants                                                       *
+ *********************************************************************************************************************/
+
+
+/**********************************************************************************************************************
+ *                                           	local macro                                                        *
+ *********************************************************************************************************************/
+
+
+/**********************************************************************************************************************
+ *                                             local data type                                                     *
+ *********************************************************************************************************************/
+
+
+/**********************************************************************************************************************
+ *                                              global variable                                                       *
+ *********************************************************************************************************************/
 
 
 
 dma_config_st analog_tx_dma_config={
-	.dst_req_sel 		= DMA_REQ_ALGM_TX,//tx req
+	.dst_req_sel 		= DMA_REQ_ALGM_TX,    /* < tx req  */
 	.src_req_sel 		= 0,
 	.dst_addr_ctrl		= DMA_ADDR_FIX,
-	.src_addr_ctrl	 	= DMA_ADDR_INCREMENT,//increment
-	.dstmode		 	= DMA_HANDSHAKE_MODE,//handshake
+	.src_addr_ctrl	 	= DMA_ADDR_INCREMENT, /* < increment */
+	.dstmode		 	= DMA_HANDSHAKE_MODE,	/* < handshake */
 	.srcmode			= DMA_NORMAL_MODE,
 	.dstwidth 			= DMA_CTR_WORD_WIDTH,
 	.srcwidth 			= DMA_CTR_WORD_WIDTH,
-	.src_burst_size 	= 0,//must 0
+	.src_burst_size 	= 0,	/* < must 0 */
 	.read_num_en		= 0,
 	.priority 			= 0,
 	.write_num_en		= 0,
-	.auto_en 			= 0,//must 0
+	.auto_en 			= 0,   	/* < must 0 */
 };
 dma_config_st analog_rx_dma_config={
 	.dst_req_sel 		= 0,//tx req
@@ -28,25 +46,33 @@ dma_config_st analog_rx_dma_config={
 	.src_addr_ctrl 		= DMA_ADDR_FIX,
 	.dstmode 			= DMA_NORMAL_MODE,
 	.srcmode 			= DMA_HANDSHAKE_MODE,
-	.dstwidth 			= DMA_CTR_WORD_WIDTH,//must word
-	.srcwidth 			= DMA_CTR_WORD_WIDTH,////must word
+	.dstwidth 			= DMA_CTR_WORD_WIDTH,	/* < must word */
+	.srcwidth 			= DMA_CTR_WORD_WIDTH,	/* < must word */
 	.src_burst_size 	= 0,
 	.read_num_en 		= 0,
 	.priority 			= 0,
 	.write_num_en 		= 0,
 	.auto_en 			= 0,//must 0
 };
-
-
+/**********************************************************************************************************************
+ *                                              local variable                                                     *
+ *********************************************************************************************************************/
+/**********************************************************************************************************************
+ *                                          local function prototype                                               *
+ *********************************************************************************************************************/
 
 
 /**
  * @brief      This function serves to judge whether analog write/read is busy .
  * @return     none.
  */
-static inline void analog_wait(){
-	while(reg_ana_ctrl & FLD_ANA_BUSY){}
-}
+static inline void analog_wait();
+/**********************************************************************************************************************
+ *                                         global function implementation                                             *
+ *********************************************************************************************************************/
+
+
+
 
 
 /**
@@ -390,6 +416,18 @@ void analog_write_addr_data_dma(dma_chn_e chn, void *pdat, int len)
     reg_ana_ctrl = 0x00;
     reg_ana_dma_ctl = 0;
     core_restore_interrupt(r);
+
+}
+
+/**********************************************************************************************************************
+  *                    						local function implementation                                             *
+  *********************************************************************************************************************/
+/**
+ * @brief      This function serves to judge whether analog write/read is busy .
+ * @return     none.
+ */
+static inline void analog_wait(){
+	while(reg_ana_ctrl & FLD_ANA_BUSY){}
 }
 
 

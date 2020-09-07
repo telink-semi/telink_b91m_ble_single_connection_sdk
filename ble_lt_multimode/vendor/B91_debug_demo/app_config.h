@@ -555,10 +555,6 @@
 	#define PA1_OUTPUT_ENABLE					1
 	#define PB1_OUTPUT_ENABLE					1
 	#define PB3_OUTPUT_ENABLE					1
-	#define PD7_OUTPUT_ENABLE					1
-	#define PD6_OUTPUT_ENABLE					1
-	#define PD5_OUTPUT_ENABLE					1
-	#define PD4_OUTPUT_ENABLE					1
 #endif
 
 
@@ -598,18 +594,6 @@
 	#define DBG_CHN11_LOW		gpio_write(GPIO_CHN11, 0)
 	#define DBG_CHN11_HIGH		gpio_write(GPIO_CHN11, 1)
 	#define DBG_CHN11_TOGGLE	gpio_toggle(GPIO_CHN11)
-	#define DBG_CHN12_LOW		gpio_write(GPIO_CHN12, 0)
-	#define DBG_CHN12_HIGH		gpio_write(GPIO_CHN12, 1)
-	#define DBG_CHN12_TOGGLE	gpio_toggle(GPIO_CHN12)
-	#define DBG_CHN13_LOW		gpio_write(GPIO_CHN13, 0)
-	#define DBG_CHN13_HIGH		gpio_write(GPIO_CHN13, 1)
-	#define DBG_CHN13_TOGGLE	gpio_toggle(GPIO_CHN13)
-	#define DBG_CHN14_LOW		gpio_write(GPIO_CHN14, 0)
-	#define DBG_CHN14_HIGH		gpio_write(GPIO_CHN14, 1)
-	#define DBG_CHN14_TOGGLE	gpio_toggle(GPIO_CHN14)
-	#define DBG_CHN15_LOW		gpio_write(GPIO_CHN15, 0)
-	#define DBG_CHN15_HIGH		gpio_write(GPIO_CHN15, 1)
-	#define DBG_CHN15_TOGGLE	gpio_toggle(GPIO_CHN15)
 #else
 	#define DBG_CHN0_LOW
 	#define DBG_CHN0_HIGH
@@ -647,18 +631,6 @@
 	#define DBG_CHN11_LOW
 	#define DBG_CHN11_HIGH
 	#define DBG_CHN11_TOGGLE
-	#define DBG_CHN12_LOW
-	#define DBG_CHN12_HIGH
-	#define DBG_CHN12_TOGGLE
-	#define DBG_CHN13_LOW
-	#define DBG_CHN13_HIGH
-	#define DBG_CHN13_TOGGLE
-	#define DBG_CHN14_LOW
-	#define DBG_CHN14_HIGH
-	#define DBG_CHN14_TOGGLE
-	#define DBG_CHN15_LOW
-	#define DBG_CHN15_HIGH
-	#define DBG_CHN15_TOGGLE
 #endif  //end of DEBUG_GPIO_ENABLE
 
 #include "../common/default_config.h"

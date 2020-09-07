@@ -23,6 +23,16 @@
  * @version  A001
  *
  *******************************************************************************************************/
+/**	@page CLOCK
+ *
+ *	Introduction
+ *	===============
+ *	TLSR9518 clock setting. 
+ *
+ *	API Reference
+ *	===============
+ *	Header File: clock.h
+ */
 
 #ifndef CLOCK_H_
 #define CLOCK_H_
@@ -194,9 +204,9 @@ _attribute_ram_code_sec_noinline_ void clock_init(sys_pll_clk_e pll,
 		sys_pll_div_to_mspi_clk_e mspi_clk_div);
 
 /**
- * @brief   This function serves to set 32k clock source.
- * @param[in]   variable of 32k type.
- * @return  none.
+ * @brief   	This function serves to set 32k clock source.
+ * @param[in]   src - variable of 32k type.
+ * @return  	none.
  */
 void clock_32k_init(clk_32k_type_e src);
 
@@ -208,29 +218,26 @@ void clock_32k_init(clk_32k_type_e src);
 unsigned char clock_kick_32k_xtal(unsigned char xtal_times);
 
 /**
- * @brief     This function performs to select 24M as the system clock source.
- * @param[in] none.
- * @return    none.
+ * @brief     	This function performs to select 24M as the system clock source.
+ * @return		none.
  */
 _attribute_ram_code_sec_ void clock_cal_24m_rc (void);
 
 /**
  * @brief     This function performs to select 32K as the system clock source.
- * @param[in] none.
  * @return    none.
  */
 void clock_cal_32k_rc (void);
 
 /**
  * @brief  This function serves to get the 32k tick.
- * @param  none.
  * @return none.
  */
 _attribute_ram_code_sec_  unsigned int clock_get_32k_tick (void);
 
 /**
  * @brief  This function serves to set the 32k tick.
- * @param  none.
+ * @param  tick - the value of to be set to 32k.
  * @return none.
  */
 _attribute_ram_code_sec_ void clock_set_32k_tick(unsigned int tick);

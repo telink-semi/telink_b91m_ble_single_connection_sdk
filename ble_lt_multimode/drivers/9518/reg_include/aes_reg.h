@@ -37,6 +37,15 @@ typedef enum{
 
 #define reg_embase_addr     		REG_ADDR32(0x140b04)
 
+#define	reg_aes_irq_mask			REG_ADDR32(0x16000c)
+#define reg_aes_irq_status			REG_ADDR32(0x160010)
+#define reg_aes_clr_irq_status		REG_ADDR32(0x160018)
+/**
+ *  @brief  Define AES IRQ
+ */
+typedef enum{
+	CRYPT_IRQ		= BIT(7),
+}aes_irq_e;
 #define reg_aes_key(v)     		REG_ADDR32(0x1600b4+(v*4))
 
 #define reg_aes_ptr     		REG_ADDR32(0x1600c4)

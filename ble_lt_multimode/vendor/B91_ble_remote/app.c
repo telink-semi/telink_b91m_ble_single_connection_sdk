@@ -433,19 +433,6 @@ void user_init_normal(void)
 
 
 
-
-	u8 status = bls_ll_setAdvParam(  ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
-									 ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
-									 0,  NULL,
-									 BLT_ENABLE_ADV_ALL,
-									 ADV_FP_NONE);
-
-	if(status != BLE_SUCCESS)
-	{
-		while(1);
-	}  //debug: adv setting err
-
-
 	bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) );
 	bls_ll_setScanRspData( (u8 *)tbl_scanRsp, sizeof(tbl_scanRsp));
 

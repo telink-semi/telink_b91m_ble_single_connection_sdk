@@ -404,7 +404,7 @@ void rf_emi_tx_burst_setup(rf_mode_e rf_mode,rf_power_level_e power_level,signed
 	unsigned char i = 0;
 	unsigned char tx_data = 0;
 	write_reg8(0x10083c,0x10); // print buffer size set
-	rf_set_tx_dma(2,2);
+	rf_set_tx_dma(2,128);
 	rf_set_chn(rf_chn);
 	rf_mode_init();
 	switch(rf_mode)
