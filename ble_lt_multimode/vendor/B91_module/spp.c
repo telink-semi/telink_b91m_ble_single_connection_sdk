@@ -90,8 +90,6 @@ int controller_event_handler(u32 h, u8 *para, int n)
 				rf_packet_ll_updateConnPara_t p;
 				tmemcpy((u8*)&p.winSize, para, 11);
 
-//				printf("Receive Master's LL_Connect_Update_Req pkt.\n");
-//				printf("Connection interval:%dus.\n", p.interval*1250);
 			}
 			break;
 
@@ -110,8 +108,7 @@ int controller_event_handler(u32 h, u8 *para, int n)
 				//Master send SIG_Connection_Param_Update_Rsp pkt,and the reply result is 0x0000. When connection event counter value is equal
 				//to the instant, a callback event BLT_EV_FLAG_CONN_PARA_UPDATE will generate. The connection interval at this time should be the
 				//currently updated and valid connection interval!
-//				printf("Update param event occur.\n");
-//				printf("Current Connection interval:%dus.\n", bls_ll_getConnectionInterval() * 1250);
+
 			}
 			break;
 

@@ -630,7 +630,7 @@ void key_change_proc_2(void)
 	u8 key_value;
 	u8 key_buf[8] = {0,0,0,0,0,0,0,0};
 
-//	printf("key0:%x,key1:%x,key2:%x\n", key0, key1, key2);
+
 
 	key_not_released = 1;
 	if (kb_event.cnt == 3)   //three key press
@@ -639,7 +639,7 @@ void key_change_proc_2(void)
 		{
 			key_long_press_type = KEY_LONG_PRESS_LEFT_BACK_MENU;
 			key_long_press_tick = clock_time();
-			printf("LEFT_BACK_MENU\n");
+			//LEFT_BACK_MENU
 		}
 	}
 	else if (kb_event.cnt == 2)   //two key press, do  not process
@@ -985,8 +985,6 @@ int amazon_0xF2_client_to_server_receivedata(rf_packet_att_write_t *p)
 
 	if(len > 0)
 	{
-		printf("Rx_0xF2: %d\n", len);
-		array_printf(&p->value, len);
 		u8 rx_data[len];
 		memcpy(rx_data, &p->value, len);
 
@@ -1003,7 +1001,6 @@ int amazon_0xF2_client_to_server_receivedata(rf_packet_att_write_t *p)
 			if(ui_mic_enable)
 			{  //if voice on, voice off
 				ui_enable_mic (0);
-				printf("ui_mic_enable: %d\n", ui_mic_enable);
 			}
 		}
 	}
@@ -1019,7 +1016,6 @@ void amazon_audio_start(void)
 {
 #if (BLE_AUDIO_ENABLE)
 	voice_press_proc();
-	printf("ui_mic_enable: %d\n", ui_mic_enable);
 #endif
 }
 
@@ -1041,7 +1037,7 @@ void ui_loop(void)
 		{  // Max 15 Second
 			app_disable_slave_latency_tick = 0;
 			app_disable_slave_latency_sustaintime_second = 0;
-			printf("SL ON\n");
+			//SL ON
 		}
 		else
 		{
@@ -1069,7 +1065,7 @@ void ui_loop(void)
 					triggerAdvertisingInConnSlaveRole();
 		        	blt_soft_timer_add(&advertisingInConnSlave_stop_delay, ADV_IN_CONN_SLAVE_TIME_MAX * Timing_CLOCK_1S);
 		    		device_led_setup(led_cfg[LED_SHINE_ADV_IND]);
-					printf("AdvertisingInConnSlave_start\n");
+					//AdvertisingInConnSlave_start
 				}
 				else
 				{
@@ -1088,7 +1084,7 @@ void ui_loop(void)
 			if(clock_time_exceed(key_long_press_tick, KEY_LONG_PRESS_TIME_MAX * Timing_CLOCK_1S))
 			{
 				key_long_press_type = KEY_LONG_PRESS_NONE;
-				printf("Factory Reset\n");
+				//Factory Reset
 
 				if(device_in_connection_state == 0)// none connection
 				{
@@ -1097,11 +1093,11 @@ void ui_loop(void)
 					if(blc_smp_param_getCurrentBondingDeviceNumber())   //at least 1 bonding device exist
 					{
 						bls_smp_eraseAllParingInformation();
-						printf("None Connect Delete bond device info\n");
+						//None Connect Delete bond device info
 					}
 					else
 					{
-						printf("None Connect No bond device info\n");
+						//None Connect No bond device info
 					}
 
 					triggerAdvertisingInDisconnPaired();
@@ -1122,7 +1118,7 @@ s32 advertisingInConnSlave_stop_delay(void)
 	advertisingInConnSlave_flag = 0;
 	bls_ll_setAdvEnable(0);   //disable adv
 	blc_ll_removeAdvertisingFromConnSLaveRole();
-	printf("AdvertisingInConnSlave_stop\n");
+	//AdvertisingInConnSlave_stop
 
 	return -1;
 }
@@ -1159,7 +1155,7 @@ void terminateConn_factory_reset(void)
 s32 terminateConn_factory_reset_delete_bondDevice_delay(void)
 {
 	bls_smp_eraseAllParingInformation();
-	printf("TerminateConnect Delete bond device info\n");
+	//TerminateConnect Delete bond device info
 
 	triggerAdvertisingInDisconnPaired();
 

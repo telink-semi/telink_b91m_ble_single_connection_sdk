@@ -110,16 +110,16 @@ int app_conn_param_update_response(u8 id, u16  result)
 {
 #if 0
 	if(result == CONN_PARAM_UPDATE_ACCEPT){
-		printf("SIG: the LE master Host has accepted the connection parameters.\n");
+		/*SIG: the LE master Host has accepted the connection parameters.*/
 		conn_update_cnt = 0;
 	}
 	else if(result == CONN_PARAM_UPDATE_REJECT)
 	{
-		printf("SIG: the LE master Host has rejected the connection parameters..\n");
-		printf("Current Connection interval:%dus.\n", bls_ll_getConnectionInterval() * 1250 );
+		/*SIG: the LE master Host has rejected the connection parameters.*/
+
 		conn_update_cnt++;
 		if(conn_update_cnt < 4){
-			printf("Slave sent update connPara req!\n");
+			/*Slave sent update connPara req!*/
 		}
 		if(conn_update_cnt == 1){
 			bls_l2cap_requestConnParamUpdate (8, 16, 0, 400);//18.75ms iOS
@@ -132,7 +132,7 @@ int app_conn_param_update_response(u8 id, u16  result)
 		}
 		else{
 			conn_update_cnt = 0;
-			printf("Slave Connection Parameters Update table all tested and failed!\n");
+			/*Slave Connection Parameters Update table all tested and failed!*/
 		}
 	}
 #endif

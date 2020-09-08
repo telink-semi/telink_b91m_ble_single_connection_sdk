@@ -169,8 +169,6 @@ static u32 cur_conn_device_hdl; //conn_handle
 
 						blc_gatt_pushWriteComand(cur_conn_device_hdl, SPP_HANDLE_DATA_C2S, write_pkt_buf, len);
 
-						printf("c2s:write data: %d\n", len);
-						array_printf(write_pkt_buf, len);
 					}
 				}
 				else if(key0 == BTN_UNPAIR)
@@ -229,7 +227,6 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 
 			mtuExchange_started_flg = 1;   //set MTU size exchange flag here
 
-			printf("Final MTU size:%d\n", final_MTU_size);
 		}
 		else if(pAtt->opcode == ATT_OP_HANDLE_VALUE_NOTI)  //slave handle notify
 		{
@@ -238,8 +235,6 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 				u8 len = pAtt->l2capLen - 3;
 				if(len > 0)
 				{
-					printf("RF_RX len: %d\ns2c:notify data: %d\n", pAtt->rf_len, len);
-					array_printf(pAtt->dat, len);
 				}
 			}
 		}
@@ -261,7 +256,7 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 				//with CONN_PARAM_UPDATE_ACCEPT; if not accpet,should send  CONN_PARAM_UPDATE_REJECT
 				blc_l2cap_SendConnParamUpdateResponse(conn_handle, req->id, CONN_PARAM_UPDATE_ACCEPT);  //send SIG Connection Param Update Response
 
-				printf("send SIG Connection Param Update accept\n");
+				/*send SIG Connection Param Update accept*/
 
 				//if accept, master host should mark this, add will send  update conn param req on link layer later set a flag here, then send update conn param req in mainloop
 				host_update_conn_param_req = clock_time() | 1 ; //in case zero value
@@ -272,7 +267,7 @@ int app_l2cap_handler (u16 conn_handle, u8 *raw_pkt)
 			else
 			{
 				blc_l2cap_SendConnParamUpdateResponse(conn_handle, req->id, CONN_PARAM_UPDATE_REJECT);  //send SIG Connection Param Update Response
-				printf("send SIG Connection Param Update reject\n");
+				/*send SIG Connection Param Update reject*/
 			}
 		}
 	}
@@ -320,7 +315,6 @@ int controller_event_callback (u32 h, u8 *p, int n)
 			else{
 			}
 
-			printf("----- terminate rsn: 0x%x -----\n", pd->reason);
 
 			//led show none connection state
 			if(master_connected_led_on){
@@ -357,7 +351,7 @@ int controller_event_callback (u32 h, u8 *p, int n)
 
 				if (pCon->status == BLE_SUCCESS)	// status OK
 				{
-					printf("----- connected -----\n");
+					/*----- connected -----*/
 
 					//led show connection state
 					master_connected_led_on = 1;
@@ -392,9 +386,8 @@ int controller_event_callback (u32 h, u8 *p, int n)
 			else if (subEvt_code == HCI_SUB_EVT_LE_DATA_LENGTH_CHANGE)
 			{
 				hci_le_dataLengthChangeEvt_t* dle_param = (hci_le_dataLengthChangeEvt_t*)p;
-				printf("----- DLE exchange: -----\n");
-				printf("Effective Max Rx Octets: %d\n", dle_param->maxRxOct);
-				printf("Effective Max Tx Octets: %d\n", dle_param->maxTxOct);
+				/*----- DLE exchange: -----*/
+
 
 				dle_started_flg = 1;
 			}
@@ -516,7 +509,7 @@ void feature_mdle_test_mainloop(void)
 		mtuExchange_check_tick = clock_time() | 1;
 
 		if(!mtuExchange_started_flg){  //master do not send MTU exchange request in time
-			printf("After conn 200ms, if not receive S's MTU exchange pkt, M send MTU exchange req to S.\n");
+			/*After conn 200ms, if not receive S's MTU exchange pkt, M send MTU exchange req to S*/
 			blc_att_requestMtuSizeExchange(cur_conn_device_hdl, MTU_SIZE_SETTING);
 		}
 	}
@@ -525,7 +518,7 @@ void feature_mdle_test_mainloop(void)
 		mtuExchange_check_tick = 0;
 
 		if(!dle_started_flg){ //master do not send data length request in time
-			printf("Master initiated the DLE.\n");
+			/*Master initiated the DLE.*/
 			blc_ll_exchangeDataLength(LL_LENGTH_REQ , DLE_TX_SUPPORTED_DATA_LEN);
 		}
 	}

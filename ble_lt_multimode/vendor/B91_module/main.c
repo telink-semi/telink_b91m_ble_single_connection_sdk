@@ -45,8 +45,6 @@ void rf_irq_handler(void)
 {
 	DBG_CHN10_HIGH;
 
-	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_rf);
-
 	irq_blt_sdk_handler ();
 
 	DBG_CHN10_LOW;
@@ -61,7 +59,6 @@ _attribute_ram_code_
 void stimer_irq_handler(void)
 {
 	DBG_CHN9_HIGH;
-	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_sysTimer);
 
 	irq_blt_sdk_handler ();
 

@@ -68,11 +68,7 @@ int module_onReceiveData(rf_packet_att_write_t *p)
 	u8 len = p->l2capLen - 3;
 	if(len > 0)
 	{
-		printf("RF_RX len: %d\nc2s:write data: %d\n", p->rf_len, len);
-//		array_printf(&p->value, len);
 
-		printf("s2c:notify data: %d\n", len);
-//		array_printf(&p->value, len);
 #if 1
 		blc_gatt_pushHandleValueNotify(BLS_CONN_HANDLE, 0x11, &p->value, len);  //this API can auto handle MTU size
 #else
@@ -97,7 +93,6 @@ int module_onReceiveData(rf_packet_att_write_t *p)
  */
 void	task_connect (u8 e, u8 *p, int n)
 {
-	printf("----- connected -----\n");
 	connect_event_occurTick = clock_time()|1;
 
 	bls_l2cap_requestConnParamUpdate (8, 8, 19, 200);  //interval=10ms latency=19 timeout=2s
@@ -116,7 +111,6 @@ void	task_connect (u8 e, u8 *p, int n)
  */
 void	task_terminate (u8 e, u8 *p, int n)
 {
-	printf("----- terminate rsn: 0x%x -----\n", *p);
 	connect_event_occurTick = 0;
 	mtuExchange_check_tick = 0;
 
@@ -132,13 +126,6 @@ void	task_terminate (u8 e, u8 *p, int n)
 void	task_dle_exchange (u8 e, u8 *p, int n)
 {
 	ll_data_extension_t* dle_param = (ll_data_extension_t*)p;
-	printf("----- DLE exchange: -----\n");
-	printf("connEffectiveMaxRxOctets: %d\n", dle_param->connEffectiveMaxRxOctets);
-	printf("connEffectiveMaxTxOctets: %d\n", dle_param->connEffectiveMaxTxOctets);
-	printf("connMaxRxOctets: %d\n", dle_param->connMaxRxOctets);
-	printf("connMaxTxOctets: %d\n", dle_param->connMaxTxOctets);
-	printf("connRemoteMaxRxOctets: %d\n", dle_param->connRemoteMaxRxOctets);
-	printf("connRemoteMaxTxOctets: %d\n", dle_param->connRemoteMaxTxOctets);
 
 	app_test_data_tick = clock_time() | 1;
 	dle_started_flg = 1;
@@ -175,20 +162,19 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 	{
 		case GAP_EVT_SMP_PARING_BEAGIN:
 		{
-			printf("----- Pairing begin -----\n");
+
 		}
 		break;
 
 		case GAP_EVT_SMP_PARING_SUCCESS:
 		{
 			gap_smp_paringSuccessEvt_t* p = (gap_smp_paringSuccessEvt_t*)para;
-			printf("Pairing success:bond flg %s\n", p->bonding ?"true":"false");
 
 			if(p->bonding_result){
-				printf("save smp key succ\n");
+				/*save smp key succ*/
 			}
 			else{
-				printf("save smp key failed\n");
+				/*save smp key failed*/
 			}
 		}
 		break;
@@ -196,14 +182,12 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		case GAP_EVT_SMP_PARING_FAIL:
 		{
 			gap_smp_paringFailEvt_t* p = (gap_smp_paringFailEvt_t*)para;
-			printf("----- Pairing failed:rsn:0x%x -----\n", p->reason);
 		}
 		break;
 
 		case GAP_EVT_SMP_CONN_ENCRYPTION_DONE:
 		{
 			gap_smp_connEncDoneEvt_t* p = (gap_smp_connEncDoneEvt_t*)para;
-			printf("----- Connection encryption done -----\n");
 
 			if(p->re_connect == SMP_STANDARD_PAIR){  //first paring
 
@@ -217,7 +201,6 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		case GAP_EVT_ATT_EXCHANGE_MTU:
 		{
 			gap_gatt_mtuSizeExchangeEvt_t *pEvt = (gap_gatt_mtuSizeExchangeEvt_t *)para;
-			printf("MTU Peer MTU(%d)/Effect ATT MTU(%d).\n", pEvt->peer_MTU, pEvt->effective_MTU);
 			final_MTU_size = pEvt->effective_MTU;
 			mtuExchange_started_flg = 1;   //set MTU size exchange flag here
 		}
@@ -383,7 +366,7 @@ void feature_sdle_test_mainloop(void)
 		mtuExchange_check_tick = clock_time() | 1;
 		if(!mtuExchange_started_flg){  //master do not send MTU exchange request in time
 			blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
-			printf("After conn 1.5s, S send  MTU size req to the Master.\n");
+			/*After conn 1.5s, S send  MTU size req to the Master.*/
 		}
 	}
 
@@ -392,7 +375,7 @@ void feature_sdle_test_mainloop(void)
 		mtuExchange_check_tick = 0;
 
 		if(!dle_started_flg){ //master do not send data length request in time
-			printf("Master hasn't initiated the DLE yet, S send DLE req to the Master.\n");
+			/*Master hasn't initiated the DLE yet, S send DLE req to the Master.*/
 			blc_ll_exchangeDataLength(LL_LENGTH_REQ , DLE_TX_SUPPORTED_DATA_LEN);
 		}
 	}
@@ -403,7 +386,6 @@ void feature_sdle_test_mainloop(void)
 		{
 			app_test_data_tick = clock_time() | 1;
 			app_test_data[0]++;
-			printf("ValueNotify:%d\n", MTU_SIZE_SETTING-3);
 		}
 	}
 }
