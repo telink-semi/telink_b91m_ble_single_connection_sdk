@@ -246,7 +246,6 @@ int module_onReceiveData(rf_packet_att_write_t *p)
 	u8 len = p->l2capLen - 3;
 	if(len > 0)
 	{
-		array_printf(&p->opcode, p->l2capLen);
 
 		bls_att_pushNotifyData(0x11, &p->value, len);
 	}
@@ -324,7 +323,7 @@ void	my_att_init (void)
  */
 void	task_connect (u8 e, u8 *p, int n)
 {
-	printf("connected\n");
+
 }
 
 volatile u8 A_dis_conn_rsn;
@@ -338,7 +337,7 @@ volatile u8 A_dis_conn_rsn;
  */
 void	task_terminate (u8 e, u8 *p, int n)
 {
-	printf("terminate rsn: 0x%x\n", *p);
+
 }
 
 
@@ -385,8 +384,6 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 	{
 		case GAP_EVT_SMP_PARING_BEAGIN:
 		{
-			printf("Pairing begin\n");
-
 			#if (SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MDSI || SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MISI || \
 				 SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MISI || SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI)
 				digital_key_cnt = 0;//clr
@@ -397,13 +394,12 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		case GAP_EVT_SMP_PARING_SUCCESS:
 		{
 			gap_smp_paringSuccessEvt_t* p = (gap_smp_paringSuccessEvt_t*)para;
-			printf("Pairing success:bond flg %s\n", p->bonding ?"true":"false");
 
 			if(p->bonding_result){
-				printf("save smp key succ\n");
+				/*save smp key succ*/
 			}
 			else{
-				printf("save smp key failed\n");
+				/*save smp key failed*/
 			}
 		}
 		break;
@@ -411,14 +407,12 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		case GAP_EVT_SMP_PARING_FAIL:
 		{
 			gap_smp_paringFailEvt_t* p = (gap_smp_paringFailEvt_t*)para;
-			printf("Pairing failed:rsn:0x%x\n", p->reason);
 		}
 		break;
 
 		case GAP_EVT_SMP_CONN_ENCRYPTION_DONE:
 		{
 			gap_smp_connEncDoneEvt_t* p = (gap_smp_connEncDoneEvt_t*)para;
-			printf("Connection encryption done\n");
 
 			if(p->re_connect == SMP_STANDARD_PAIR){  //first paring
 
@@ -433,20 +427,18 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		{
 			char pc[7];
 			u32 pinCode = *(u32*)para;
-			sprintf(pc, "%d", pinCode);
-			printf("TK display:%s\n", pc);
 		}
 		break;
 
 		case GAP_EVT_SMP_TK_REQUEST_PASSKEY:
 		{
-			printf("TK Request passkey\n");
+
 		}
 		break;
 
 		case GAP_EVT_SMP_TK_REQUEST_OOB:
 		{
-			printf("TK Request OOB\n");
+
 		}
 		break;
 
@@ -454,8 +446,6 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		{
 			char pc[7];
 			u32 pinCode = *(u32*)para;
-			sprintf(pc, "%d", pinCode);
-			printf("TK numeric comparison:%s\n", pc);
 		}
 		break;
 

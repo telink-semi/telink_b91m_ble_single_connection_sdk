@@ -159,11 +159,6 @@ void user_init_normal(void)
 	#endif
 
 
-#if (UDB_DEBUG_EN)
-	myudb_usb_init (0x120,&uart_txfifo);		//0x120: usb sub-id
-	usb_set_pin_en ();
-#endif
-
 }
 
 /**
@@ -252,60 +247,6 @@ void main_loop (void)
 {
 
 	main_idle_loop ();
-
-#if (UDB_DEBUG_EN)
-	myudb_usb_handle_irq ();
-
-	#if (0)  //demo
-		static u32 tick_str = 0;
-		static u32 test_cnt1 = 0;
-		static u32 test_cnt2 = 0;
-
-		static u32 tick_logEvt = 0;
-		static u32 tick_logTask = 0;
-		static u32 tick_data = 0;
-
-		DBG_CHN6_HIGH;
-		if(clock_time_exceed(tick_str, 500*1000)){
-			tick_str = clock_time();
-			test_cnt1 ++;
-			my_dump_str_data (1, "test_cnt:", &test_cnt1, 4);
-		}
-		DBG_CHN6_LOW;
-
-		DBG_CHN7_HIGH;
-		if(clock_time_exceed(tick_logEvt, 9*1000)){
-			tick_logEvt = clock_time();
-			log_tick(1, SLEV_timestamp);
-			log_event(1, SLEV_test_event);
-		}
-		DBG_CHN7_LOW;
-
-
-		DBG_CHN8_HIGH;
-		if(clock_time_exceed(tick_logTask, 13*1000)){
-			tick_logTask = clock_time();
-
-			log_task(1, SL01_test_task, 1);
-			sleep_us(1000);
-			log_task(1, SL01_test_task, 0);
-		}
-		DBG_CHN8_LOW;
-
-
-		DBG_CHN9_HIGH;
-		if(clock_time_exceed(tick_data, 7*1000)){
-			tick_data = clock_time();
-			test_cnt2 ++;
-			log_tick(1, SLEV_timestamp);
-			log_b8 (1, SL08_test_1B, test_cnt2);
-			log_b16 (1, SL16_test_2B, test_cnt2);
-		}
-		DBG_CHN9_LOW;
-
-	#endif
-
-#endif
 
 	if (main_service)
 	{

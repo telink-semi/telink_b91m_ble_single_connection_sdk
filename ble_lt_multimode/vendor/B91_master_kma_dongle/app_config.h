@@ -101,17 +101,6 @@
 #endif
 
 
-#define UART_PRINT_DEBUG_ENABLE				0
-/////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
-#if (UART_PRINT_DEBUG_ENABLE)
-	//the baud rate should not bigger than 1M(system timer clock is constant 16M)
-	#define PRINT_BAUD_RATE             					1000000		//1000000
-	#define DEBUG_INFO_TX_PIN           					GPIO_PA0
-	#define PULL_WAKEUP_SRC_PA0         					PM_PIN_PULLUP_10K
-	#define PA0_OUTPUT_ENABLE         						1
-	#define PA0_DATA_OUT                                    1 			//must
-	#include "../../application/print/u_printf.h"
-#endif
 
 
 #if BLT_APP_LED_ENABLE

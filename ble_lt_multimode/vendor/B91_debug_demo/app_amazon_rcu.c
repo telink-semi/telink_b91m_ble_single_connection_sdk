@@ -232,7 +232,7 @@ void triggerAdvertisingInDisconnPaired(void)
 	advertise_begin_tick = clock_time();
 	bls_ll_setAdvEnable(1);  //must: set adv enable
 
-	printf("triggerAdvertisingInDisconnPaired\n");
+	/*triggerAdvertisingInDisconnPaired*/
 }
 
 
@@ -260,8 +260,7 @@ void 	ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 	}
 
-    printf("---terminate---\n");
-	printf("--ERR:%x--\n", *p);
+
 
 #if (BLE_REMOTE_PM_ENABLE)
 	 //user has push terminate pkt to ble TX buffer before deepsleep
@@ -318,7 +317,7 @@ void	task_connect (u8 e, u8 *p, int n)
 
 	establishConn_advertisingInDisconnPaired();
 
-    printf("---connect---\n");
+
 
 }
 
@@ -386,7 +385,7 @@ void blt_pm_proc(void)
 			else if(idle_state_enter_suspend_tick && clock_time_exceed(idle_state_enter_suspend_tick, Timing_CLOCK_500mS))
 			{
 				idle_state_enter_suspend_tick = 0;
-				printf("IDLE_Enter_DEEPSLEEP\n");
+				/*IDLE_Enter_DEEPSLEEP*/
 				bls_pm_setWakeupSource(PM_WAKEUP_PAD);  //gpio pad wakeup suspend/deepsleep
 				cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
 			}
@@ -435,7 +434,7 @@ void blt_pm_proc(void)
 				if( blc_ll_getCurrentState() == BLS_LINK_STATE_ADV && !sendTerminate_before_enterDeep && \
 					clock_time_exceed(advertise_begin_tick , ADV_IDLE_ENTER_DEEP_TIME * 1000000))
 				{
-					printf("ADV_Timeout_Enter_DEEPSLEEP\n");
+					/*ADV_Timeout_Enter_DEEPSLEEP*/
 					cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
 				}
 				#if BLE_LONG_CONNECT_ENTER_DEEPSLEEP_ENABLE

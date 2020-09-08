@@ -143,8 +143,6 @@ int controller_event_callback (u32 h, u8 *p, int n)
 
 				event_adv_report_t *pa = (event_adv_report_t *)p;
 				s8 rssi = (s8)pa->data[pa->len];//rssi has already plus 110.
-				printf("LE advertising report (rssi:%ddb, len:%d):\n", rssi, pa->len+11);
-				array_printf(p, (pa->len + 11));
 
 				#if (DBG_ADV_REPORT_ON_RAM)
 					if(pa->len > 31){
@@ -200,7 +198,6 @@ void feature_linklayer_state_test_init_normal(void)
 
 #if (FEATURE_TEST_MODE == TEST_ADVERTISING_ONLY)
 
-	printf("\n\rtst adv only\n");
 	blc_ll_initAdvertising_module();
 
 	/**
@@ -233,7 +230,6 @@ void feature_linklayer_state_test_init_normal(void)
 	bls_ll_setAdvEnable(1);  //adv enable
 
 #elif (FEATURE_TEST_MODE == TEST_SCANNING_ONLY)
-	printf("\n\rtst scan only\n");
 	blc_ll_initScanning_module();
 	blc_hci_le_setEventMask_cmd(HCI_LE_EVT_MASK_ADVERTISING_REPORT);
 	blc_hci_registerControllerEventHandler(controller_event_callback);
@@ -254,7 +250,7 @@ void feature_linklayer_state_test_init_normal(void)
 	blc_ll_setScanEnable (BLC_SCAN_ENABLE, DUP_FILTER_DISABLE);
 
 #elif (FEATURE_TEST_MODE == TEST_ADVERTISING_IN_CONN_SLAVE_ROLE)
-	printf("\n\rtst adv in conn slave role\n");
+
 	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
@@ -320,7 +316,6 @@ void feature_linklayer_state_test_init_normal(void)
 	bls_app_registerEventCallback (BLT_EV_FLAG_TERMINATE, &task_terminate);
 
 #elif (FEATURE_TEST_MODE == TEST_SCANNING_IN_ADV_AND_CONN_SLAVE_ROLE)
-	printf("\n\rtst scan in adv and conn slave role\n");
 	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 

@@ -45,8 +45,6 @@ void rf_irq_handler(void)
 
 	DBG_CHN9_HIGH;
 
-	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_rf);
-
 	irq_blt_sdk_handler ();
 
 	DBG_CHN9_LOW;
@@ -60,7 +58,6 @@ void stimer_irq_handler(void)
 
 	DBG_CHN11_HIGH;
 
-	log_event_irq(BLE_IRQ_DBG_EN, SLEV_irq_sysTimer);
 
 	irq_blt_sdk_handler ();
 
@@ -96,8 +93,6 @@ int main (void)   //must on ramcode
 	gpio_init(1);
 
 	user_init_normal();
-
-	printf("{Enter main loop\n");
 
 	irq_enable();
 

@@ -37,22 +37,6 @@
 
 
 
-
-#define	UDB_DEBUG_EN						0
-
-
-#if (UDB_DEBUG_EN)
-	#define PA5_FUNC						AS_USB_DM
-	#define PA6_FUNC						AS_USB_DP
-	#define PA5_INPUT_ENABLE				1
-	#define PA6_INPUT_ENABLE				1
-
-	#define BLE_ADV_DBG_EN					1
-	#define BLE_IRQ_DBG_EN					1
-#endif
-
-
-
 #if 1 //(SAMPLE_BOARD_SELECT == EVK_C1T139A30_V1P2)
 	#if (TEST_CONN_CURRENT_ENABLE) //test current, disable keyboard
 			#define	UI_KEYBOARD_ENABLE						0

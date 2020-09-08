@@ -140,7 +140,6 @@ void key_change_proc(void)
 			key_type = CONSUMER_KEY;
 			u16 consumer_key = vk_consumer_map[key_value & 0x0f];
 			bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
-			printf("CK:0x%x pressed\n", consumer_key);
 
 			#if (SMP_TEST_MODE == SMP_TEST_SC_NUMERIC_COMPARISON)
 				//NOTICE:smp NC confirm (vol-)"YES" or (vol+)"NO"
@@ -148,13 +147,13 @@ void key_change_proc(void)
 					if(blc_smpMng.tk_status & TK_ST_NUMERIC_COMPARE){
 						if(consumer_key == MKEY_VOL_DN){
 							blc_smp_setNumericComparisonResult(1);// YES
-							printf("confirmed YES\n");
+							/*confirmed YES*/
 
 							led_onoff(LED_ON_LEVAL);
 						}
 						else if(consumer_key == MKEY_VOL_UP){
 							blc_smp_setNumericComparisonResult(0);// NO
-							printf("confirmed NO\n");
+							/*confirmed NO*/
 
 							led_onoff(LED_ON_LEVAL);
 						}
@@ -167,7 +166,6 @@ void key_change_proc(void)
 			key_type = KEYBOARD_KEY;
 			key_buf[2] = key_value;
 			bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
-			printf("KK:0x%x pressed\n", key_value);
 
 			#if (SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MDSI || SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MISI || \
 				 SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MISI || SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI)
@@ -178,7 +176,6 @@ void key_change_proc(void)
 							int i;
 							for(i = 0; i<10; i++){
 								if(vk_dig_map[i] == key_value){
-									printf("%d\n", i);
 									tk_input[digital_key_cnt++] = i;
 									break;
 								}
@@ -194,7 +191,6 @@ void key_change_proc(void)
 								digital_key_cnt = 0;
 								u32 pincode = tk_input[0]*100000 + tk_input[1]*10000 + \
 											  tk_input[2]*1000 + tk_input[3]*100 + tk_input[4]*10 + tk_input[5];
-								printf("TK 6-dig value:%d\n", pincode);
 								blc_smp_setTK_by_PasskeyEntry(pincode);
 							}
 						}
@@ -210,13 +206,13 @@ void key_change_proc(void)
 		{
 			u16 consumer_key = 0;
 			bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
-			printf("CK:released\n");
+			/*CK:released*/
 		}
 		else if(key_type == KEYBOARD_KEY)
 		{
 			key_buf[2] = 0;
 			bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
-			printf("KK:released\n");
+			/*KK:released*/
 		}
 
 		led_onoff(!LED_ON_LEVAL);
@@ -349,7 +345,6 @@ void feature_security_test_mainloop(void)
  */
 void	task_connect (u8 e, u8 *p, int n)
 {
-	printf("connected\n");
 }
 
 volatile u8 A_dis_conn_rsn;
@@ -363,7 +358,6 @@ volatile u8 A_dis_conn_rsn;
  */
 void	task_terminate (u8 e, u8 *p, int n)
 {
-	printf("terminate rsn: 0x%x\n", *p);
 }
 
 
@@ -416,7 +410,6 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 	{
 		case GAP_EVT_SMP_PARING_BEAGIN:
 		{
-			printf("Pairing begin\n");
 
 			#if (SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MDSI || SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MISI || \
 				 SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MISI || SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI)
@@ -428,13 +421,12 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		case GAP_EVT_SMP_PARING_SUCCESS:
 		{
 			gap_smp_paringSuccessEvt_t* p = (gap_smp_paringSuccessEvt_t*)para;
-			printf("Pairing success:bond flg %s\n", p->bonding ?"true":"false");
 
 			if(p->bonding_result){
-				printf("save smp key succ\n");
+				/*save smp key succ*/
 			}
 			else{
-				printf("save smp key failed\n");
+				/*save smp key failed*/
 			}
 		}
 		break;
@@ -442,14 +434,12 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		case GAP_EVT_SMP_PARING_FAIL:
 		{
 			gap_smp_paringFailEvt_t* p = (gap_smp_paringFailEvt_t*)para;
-			printf("Pairing failed:rsn:0x%x\n", p->reason);
 		}
 		break;
 
 		case GAP_EVT_SMP_CONN_ENCRYPTION_DONE:
 		{
 			gap_smp_connEncDoneEvt_t* p = (gap_smp_connEncDoneEvt_t*)para;
-			printf("Connection encryption done\n");
 
 			if(p->re_connect == SMP_STANDARD_PAIR){  //first paring
 
@@ -464,20 +454,16 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		{
 			char pc[7];
 			u32 pinCode = *(u32*)para;
-			sprintf(pc, "%d", pinCode);
-			printf("TK display:%s\n", pc);
 		}
 		break;
 
 		case GAP_EVT_SMP_TK_REQUEST_PASSKEY:
 		{
-			printf("TK Request passkey\n");
 		}
 		break;
 
 		case GAP_EVT_SMP_TK_REQUEST_OOB:
 		{
-			printf("TK Request OOB\n");
 		}
 		break;
 
@@ -485,8 +471,6 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		{
 			char pc[7];
 			u32 pinCode = *(u32*)para;
-			sprintf(pc, "%d", pinCode);
-			printf("TK numeric comparison:%s\n", pc);
 		}
 		break;
 

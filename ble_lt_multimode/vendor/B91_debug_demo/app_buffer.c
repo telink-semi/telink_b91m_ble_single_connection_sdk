@@ -36,18 +36,4 @@ _attribute_data_retention_  u8	app_ll_txfifo[LL_TX_FIFO_SIZE * LL_TX_FIFO_NUM] =
 
 
 
-
-
-#if (UDB_DEBUG_EN)
-	#define	UART_TX_FIFO_SIZE			272
-	#define	UART_TX_FIFO_NUM			32
-
-	u8 		 	uart_txfifo_b[UART_TX_FIFO_SIZE * UART_TX_FIFO_NUM];
-	my_fifo_t	uart_txfifo = {
-														UART_TX_FIFO_SIZE,
-														UART_TX_FIFO_NUM,
-														0,
-														0,
-														uart_txfifo_b,};
-#endif
 #endif//end of  (TEST_MODE == AMAZON_RCU_TEST)

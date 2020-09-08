@@ -78,9 +78,6 @@ void user_init()
 	gpio_set_gpio_en(GPIO_LED_BLUE);
 	gpio_set_output_en(GPIO_LED_BLUE, 1);
 
-	printf("  \n");								// caution: The first byte will be error
-	printf("\n Copyright (c) %d \n",2020);
-	printf("\n Telink semiconductor (%s)Ltd, Co \n","shanghai");
 }
 u32 mainloop_tick = 0;
 /////////////////////////////////////////////////////////////////////
@@ -88,7 +85,6 @@ u32 mainloop_tick = 0;
 /////////////////////////////////////////////////////////////////////
 void main_loop (void)
 {
-	printf(" delay 1000 ms:%d \n",mainloop_tick);
 	mainloop_tick++;
 	gpio_toggle(GPIO_LED_BLUE);
 	delay_ms(1000);
@@ -235,12 +231,10 @@ void main_loop (void)
 	while(1){
 		tx_begin_tick = clock_time();
 		debug_pkt_adv.data[0] ++;
-//		printf("Tx packet: %d \n",debug_pkt_adv.data[0]);
-//		array_printf((u8*)&debug_pkt_adv,sizeof (rf_packet_dbg_adv_t));
+
 		rf_tx_pkt ((void *)&debug_pkt_adv);
 		delay_us(2000);  //2mS is enough for packet sending
 //		if(rf_get_irq_status(FLD_RF_IRQ_TX)){
-//			printf("Tx success: %d \n",debug_pkt_adv.data[0]);
 //			rf_clr_irq_status(FLD_RF_IRQ_TX);
 //			gpio_toggle(GPIO_LED_GREEN);
 //			DBG_CHN0_TOGGLE;
@@ -367,7 +361,7 @@ void rf_irq_handler(void)
 		u8 * raw_pkt = (u8 *) (blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE);
 		blt_rx_wptr = ( blt_rx_wptr + 1) & 3;
 		AA_rx_irq_cnt ++;
-		printf("AA_rx_irq_cnt:%d \n",AA_rx_irq_cnt);
+
 		write_reg8(0x1004f5,0x40);//dma rx rptr ++
 		#if (FIX_RF_DMA_REWRITE)
 			if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
@@ -377,10 +371,9 @@ void rf_irq_handler(void)
 		{
 			DBG_CHN1_TOGGLE;
 			AA_rx_crc_ok_cnt ++;
-			printf("AA_rx_crc_ok_cnt:%d \n",AA_rx_crc_ok_cnt);
+
 			gpio_toggle(GPIO_LED_WHITE);
-			printf("Rx success: %d \n",raw_pkt[12]);
-			array_printf(raw_pkt,BLE_LL_BUFF_SIZE);
+
 		}
 		#if (!FIX_RF_DMA_REWRITE)//todo by sihui
 			raw_pkt[0] = 1;
@@ -400,14 +393,14 @@ void rf_irq_handler(void)
 		DBG_CHN0_TOGGLE;
 		u8 * raw_pkt = (u8 *) (blt_rxbuffer + (rx_rptr & 3) * BLE_LL_BUFF_SIZE);
 		AA_rx_irq_cnt ++;
-		printf("AA_rx_irq_cnt:%d \n",AA_rx_irq_cnt);
+
 		if(brx_mode_flag ){
 			if(dma_rx_wptr_last != rx_wptr){//new packet,sn/nesn correct.
 				dma_rx_wptr_last = rx_wptr;
 				write_reg8(0x1004f5,0x40);//dma rx rptr ++
 			}
 		}
-		printf("rx_rptr:%d \n",read_reg8(0x1004f5));
+
 		#if (FIX_RF_DMA_REWRITE)
 			if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
 		#else
@@ -416,9 +409,9 @@ void rf_irq_handler(void)
 		{
 			DBG_CHN1_TOGGLE;
 			AA_rx_crc_ok_cnt ++;
-			printf("AA_rx_crc_ok_cnt:%d \n",AA_rx_crc_ok_cnt);
+
 			gpio_toggle(GPIO_LED_WHITE);
-			array_printf(raw_pkt,BLE_LL_BUFF_SIZE);
+
 			blt_timeStamp = read_reg32(0x140850);//timestamp
 
 			if(!brx_mode_flag){
@@ -450,13 +443,12 @@ void rf_irq_handler(void)
 		DBG_CHN0_TOGGLE;
 		u8 * raw_pkt = (u8 *) (blt_rxbuffer + (rx_rptr & 3) * BLE_LL_BUFF_SIZE);
 		AA_rx_irq_cnt ++;
-		printf("AA_rx_irq_cnt:%d \n",AA_rx_irq_cnt);
+
 		if(dma_rx_wptr_last != rx_wptr){//new packet,sn/nesn correct.
 			dma_rx_wptr_last = rx_wptr;
 			write_reg8(0x1004f5,0x40);//dma rx rptr ++
 		}
-		printf("rx_rptr:%d \n",read_reg8(0x1004f5));
-		array_printf(blt_rxbuffer,320);
+
 		#if (FIX_RF_DMA_REWRITE)
 			if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
 		#else
@@ -465,9 +457,8 @@ void rf_irq_handler(void)
 		{
 			DBG_CHN1_TOGGLE;
 			AA_rx_crc_ok_cnt ++;
-			printf("AA_rx_crc_ok_cnt:%d \n",AA_rx_crc_ok_cnt);
 			gpio_toggle(GPIO_LED_WHITE);
-//			array_printf(raw_pkt,BLE_LL_BUFF_SIZE);
+
 		}
 		#if (!FIX_RF_DMA_REWRITE)//todo by sihui
 			raw_pkt[0] = 1;
@@ -482,7 +473,7 @@ void rf_irq_handler(void)
 		DBG_CHN0_TOGGLE;
 		u8 * raw_pkt = (u8 *) blt_rxbuffer ;
 		AA_rx_irq_cnt ++;
-		printf("AA_rx_irq_cnt:%d \n",AA_rx_irq_cnt);
+
 		#if (FIX_RF_DMA_REWRITE)
 			if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
 		#else
@@ -491,10 +482,9 @@ void rf_irq_handler(void)
 		{
 			DBG_CHN1_TOGGLE;
 			AA_rx_crc_ok_cnt ++;
-			printf("AA_rx_crc_ok_cnt:%d \n",AA_rx_crc_ok_cnt);
+
 			gpio_toggle(GPIO_LED_WHITE);
-			printf("Rx success: %d \n",raw_pkt[12]);
-			array_printf(raw_pkt,BLE_LL_BUFF_SIZE);
+
 		}
 		#if (!FIX_RF_DMA_REWRITE)//todo by sihui
 			raw_pkt[0] = 1;  //must
@@ -547,12 +537,12 @@ void ble_manual_tx_test(void){
 	while(1){
 		tx_begin_tick = clock_time();
 		debug_pkt_adv.data[0] ++;
-		printf("Tx packet: %d \n",debug_pkt_adv.data[0]);
-		array_printf((u8*)&debug_pkt_adv,sizeof (rf_packet_dbg_adv_t));
+
+
 		rf_tx_pkt ((void *)&debug_pkt_adv);
 		delay_us(2000);  //2mS is enough for packet sending
 		if(rf_get_irq_status(FLD_RF_IRQ_TX)){
-			printf("Tx success: %d \n",debug_pkt_adv.data[0]);
+
 			rf_clr_irq_status(FLD_RF_IRQ_TX);
 			gpio_toggle(GPIO_LED_GREEN);
 			DBG_CHN0_TOGGLE;
@@ -604,15 +594,14 @@ void ble_stx_test(void){
 
 		rf_set_ble_chn(TEST_CHN);
 
-//		printf("STx packet: %d \n",debug_pkt_adv.data[0]);
-//		array_printf((u8*)&debug_pkt_adv,sizeof (rf_packet_dbg_adv_t));
+
 
 		rf_start_stx((void *)&debug_pkt_adv, clock_time() + 100);
 
 		delay_us(2000);  //2mS is enough for packet sending
 		if(rf_get_irq_status(FLD_RF_IRQ_TX)){
 			stx_ok_cnt++;
-			printf("STx success: %d \n",stx_ok_cnt);
+
 			rf_clr_irq_status(FLD_RF_IRQ_TX);
 			gpio_toggle(GPIO_LED_RED);
 			DBG_CHN0_TOGGLE;
@@ -666,7 +655,6 @@ void ble_btx_tx_test(void){
 		u8 wptr = read_reg8(0x100500);
 		tx_begin_tick = clock_time();
 		STOP_RF_STATE_MACHINE;//STOP SM
-		printf("BTX tx wptr: %d\n",wptr);
 		debug_pkt_adv.data[0] ++;
 		rf_set_ble_chn (TEST_CHN);  //2402
 
@@ -680,7 +668,6 @@ void ble_btx_tx_test(void){
 
 
 		stx_ok_cnt++;
-		printf("BTx success: %d \n",stx_ok_cnt);
 
 		gpio_toggle(GPIO_LED_RED);
 		DBG_CHN0_TOGGLE;
@@ -719,7 +706,7 @@ void ble_manual_rx_test(void){
 		if(rf_get_irq_status(FLD_RF_IRQ_RX))
 		{
 			u8 * raw_pkt = (u8 *) (blt_rxbuffer);
-			printf("Enter Rx irq: \n");
+
 			AA_rx_irq_cnt ++;
 			#if (FIX_RF_DMA_REWRITE)
 				if ( RF_BLE_RF_PAYLOAD_LENGTH_OK(raw_pkt) && RF_BLE_RF_PACKET_CRC_OK(raw_pkt) )
@@ -729,8 +716,7 @@ void ble_manual_rx_test(void){
 			{
 				AA_rx_crc_ok_cnt ++;
 				gpio_toggle(GPIO_LED_WHITE);
-				printf("Rx success: %d \n",raw_pkt[12]);
-				array_printf(raw_pkt,BLE_LL_BUFF_SIZE);
+
 			}
 			#if (!FIX_RF_DMA_REWRITE)//todo by sihui
 				raw_pkt[0] = 1;
@@ -782,7 +768,7 @@ void ble_brx_rx_test(void){
 	plic_interrupt_enable(IRQ15_ZB_RT);
 	rf_set_irq_mask(FLD_RF_IRQ_RX);
 #endif
-	array_printf(&blt_tx_empty_packet,6);
+
 	brx_mode_flag = 0;
 //enter manual RX first, get peer TX device timeStamp
 
@@ -824,7 +810,7 @@ void ble_brx_rx_test(void){
 		AA_rx_set_number ++;
 		AA_rx_miss_cnt = AA_rx_set_number - AA_rx_crc_ok_cnt;
 		AA_rx_miss_rate = (AA_rx_miss_cnt * 1000)/AA_rx_set_number;
-		printf("AA_rx_miss_rate: %d \n",AA_rx_miss_rate);
+
 		//stop CRX
 		core_interrupt_disable();
 		STOP_RF_STATE_MACHINE;   //stop FSM
@@ -872,7 +858,7 @@ void ble_srx_test(void){
 		{
 			u8 * raw_pkt = (u8 *) (blt_rxbuffer + blt_rx_wptr * BLE_LL_BUFF_SIZE);
 			blt_rx_wptr = ( blt_rx_wptr + 1) & 3;
-			printf("Enter Rx irq: \n");
+
 			AA_rx_irq_cnt ++;
 			write_reg8(0x1004f5,0x40);
 			#if (FIX_RF_DMA_REWRITE)
@@ -883,8 +869,7 @@ void ble_srx_test(void){
 			{
 				AA_rx_crc_ok_cnt ++;
 				gpio_toggle(GPIO_LED_WHITE);
-				printf("Rx success: %d \n",raw_pkt[12]);
-				array_printf(blt_rxbuffer,320);
+
 			}
 			#if (!FIX_RF_DMA_REWRITE)//todo by sihui
 				raw_pkt[0] = 1;
