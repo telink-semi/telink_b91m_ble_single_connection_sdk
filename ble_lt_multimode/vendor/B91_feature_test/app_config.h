@@ -102,9 +102,6 @@ extern "C" {
 	#define REMOTE_BOARD						1    			//Ver:provide later
 	#define	BOARD_SELECT						EVK_BOARD
 
-	#ifndef UART_PRINT_DEBUG_ENABLE
-	#define UART_PRINT_DEBUG_ENABLE  				1
-	#endif
 
 	#if (BOARD_SELECT == EVK_BOARD)
 		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
@@ -280,9 +277,7 @@ extern "C" {
 	#define KEYBOARD_KEY   	   		2
 	#define IR_KEY   	   			3
 #elif (FEATURE_TEST_MODE == TEST_GATT_SECURITY)
-	#ifndef UART_PRINT_DEBUG_ENABLE
-	#define UART_PRINT_DEBUG_ENABLE  				1
-	#endif
+
 #elif (FEATURE_TEST_MODE == TEST_MDATA_LENGTH_EXTENSION)
 	#define BLE_HOST_SMP_ENABLE				0  //1 for standard security management
 	#define BLE_HOST_SIMPLE_SDP_ENABLE		0  //simple service discovery
@@ -333,13 +328,8 @@ extern "C" {
 	//Clock
 	#define CLOCK_SYS_CLOCK_HZ  			16000000
 
-	#ifndef UART_PRINT_DEBUG_ENABLE
-	#define UART_PRINT_DEBUG_ENABLE  				1
-	#endif
 #elif (FEATURE_TEST_MODE == TEST_SDATA_LENGTH_EXTENSION)
-	#ifndef UART_PRINT_DEBUG_ENABLE
-	#define UART_PRINT_DEBUG_ENABLE  				1
-	#endif
+
 #endif
 
 /////////////////// Clock  /////////////////////////////////
