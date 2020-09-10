@@ -1,25 +1,48 @@
 /********************************************************************************************************
- * @file     usbkb.c 
+ * @file	usbkb.c
  *
- * @brief    for TLSR chips
+ * @brief	This is the source file for B91
  *
- * @author	 public@telink-semi.com;
- * @date     Sep. 30, 2010
+ * @author	Ble Group
+ * @date	2019
  *
- * @par      Copyright (c) Telink Semiconductor (Shanghai) Co., Ltd.
- *           All rights reserved.
- *           
- *			 The information contained herein is confidential and proprietary property of Telink 
- * 		     Semiconductor (Shanghai) Co., Ltd. and is available under the terms 
- *			 of Commercial License Agreement between Telink Semiconductor (Shanghai) 
- *			 Co., Ltd. and the licensee in separate contract or the terms described here-in. 
- *           This heading MUST NOT be removed from this file.
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ *          All rights reserved.
+ *          
+ *          Redistribution and use in source and binary forms, with or without
+ *          modification, are permitted provided that the following conditions are met:
+ *          
+ *              1. Redistributions of source code must retain the above copyright
+ *              notice, this list of conditions and the following disclaimer.
+ *          
+ *              2. Unless for usage inside a TELINK integrated circuit, redistributions 
+ *              in binary form must reproduce the above copyright notice, this list of 
+ *              conditions and the following disclaimer in the documentation and/or other
+ *              materials provided with the distribution.
+ *          
+ *              3. Neither the name of TELINK, nor the names of its contributors may be 
+ *              used to endorse or promote products derived from this software without 
+ *              specific prior written permission.
+ *          
+ *              4. This software, with or without modification, must only be used with a
+ *              TELINK integrated circuit. All other usages are subject to written permission
+ *              from TELINK and different commercial license may apply.
  *
- * 			 Licensees are granted free, non-transferable use of the information in this 
- *			 file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided. 
- *           
+ *              5. Licensee shall be solely responsible for any claim to the extent arising out of or 
+ *              relating to such deletion(s), modification(s) or alteration(s).
+ *         
+ *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
+ *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *         
  *******************************************************************************************************/
-
 #include "../../tl_common.h"
 
 #if(1)
@@ -90,7 +113,7 @@ static u32 usbkb_data_report_time;
 
 void usbkb_add_frame (rf_packet_keyboard_t *packet_kb)
 {
-	u8 new_data_num = packet_kb->pno;  //¸ù¾Ýpno »ñµÃ×îÐÂÊý¾ÝµÄ¸öÊý
+	u8 new_data_num = packet_kb->pno;  //pno ÝµÄ¸
 	for(u8 i=0;i<new_data_num;i++)
 	{
 			tmemcpy4((int*)(&kb_dat_buff[usbkb_wptr]), (int*)(&packet_kb->data[i*sizeof(kb_data_t)]), sizeof(kb_data_t));
@@ -141,8 +164,8 @@ static void usbkb_release_media_key(void){
 }
 
 static void usbkb_release_keys(void){
-	// ²»Òªµ÷»»usbkb_release_sys_key ºÍusbkb_release_normal_key µÄË³Ðò£¬
-	// ÕâÊÇÎªÁËÈÃ usbkb_release_sys_key,  usbkb_release_media_key ÖÐ¼äÓÐÒ»¶¨ÑÓÊ±
+	// Òªusbkb_release_sys_key usbkb_release_normal_key Ë³
+	// Îª usbkb_release_sys_key,  usbkb_release_media_key Ð¼Ò»Ê±
 	usbkb_release_sys_key();
 	usbkb_release_normal_key();
 	usbkb_release_media_key();
@@ -155,7 +178,7 @@ void usbkb_release_check(){
 
 }
 
-//  normal_keycode ÀïÃæ·µ»ØÆÕÍ¨°´¼ü
+//  normal_keycode æ·µÍ¨
 int usbkb_separate_key_types(u8 *keycode, u8 cnt, u8 *normal_key, u8 *ext_key){
     STATIC_ASSERT(KB_RETURN_KEY_MAX <= KEYBOARD_REPORT_KEY_MAX);
     assert(cnt <= KB_RETURN_KEY_MAX);
@@ -349,7 +372,7 @@ void usbkb_hid_report(kb_data_t *data){
 
 
 	if(data->cnt > 0){
-		//  keycode·ÖÀà´¦Àí
+		//  keycodeà´¦
 	    normal_key_cnt = usbkb_separate_key_types(data->keycode, data->cnt, normal_keycode, &ext_key);
 	}
 
