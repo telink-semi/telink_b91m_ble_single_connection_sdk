@@ -76,7 +76,7 @@ _attribute_data_retention_	own_addr_type_t 	app_own_address_type = OWN_ADDRESS_P
 #define LL_RX_FIFO_NUM		8
 
 #define LL_TX_FIFO_SIZE		48
-#define LL_TX_FIFO_NUM		17  //only 9 and 17 and 33 can be used, TODO: test 33
+#define LL_TX_FIFO_NUM		17  //only 9 and 17  can be used
 
 _attribute_data_retention_	u8	app_ll_rxfifo[LL_RX_FIFO_SIZE * LL_RX_FIFO_NUM] = {0};
 _attribute_data_retention_  u8	app_ll_txfifo[LL_TX_FIFO_SIZE * LL_TX_FIFO_NUM] = {0};

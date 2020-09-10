@@ -223,7 +223,7 @@ extern const rf_power_level_e rf_power_Level_list[30];
 static inline unsigned char rf_receiving_flag(void)
 {
 	//if the value of [2:0] of the reg_0x140840 isn't 0 , it means that the RF is in the receiving packet phase.(confirmed by junwen)
-	return ((read_reg8(0x140840)&0x07) != 0);
+	return ((read_reg8(0x140840)&0x07) > 1);
 }
 
 
@@ -626,7 +626,7 @@ void rf_set_power_level (rf_power_level_e level);
  * @param[in]   idx 	 the RF power types.
  * @return  	none.
  */
-void rf_set_power_level_index(rf_power_level_index_e idx);
+_attribute_ram_code_sec_noinline_ void rf_set_power_level_index(rf_power_level_index_e idx);
 
 
 /**
@@ -780,8 +780,8 @@ static inline void 	rf_tx_settle_adjust(unsigned short txstl_us)
 */
 static inline void rf_reset_baseband(void)
 {
-	REG_ADDR8(0x801404e3) = BIT(0);		//rf_reset_baseband
-	REG_ADDR8(0x801404e3) = 0;			//release reset signal
+	REG_ADDR8(0x801404e3) = 0;		//rf_reset_baseband,rf reg need re-setting
+	REG_ADDR8(0x801404e3) = BIT(0);			//release reset signal
 }
 
 /**

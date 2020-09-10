@@ -200,11 +200,24 @@ typedef struct {
 
 extern _attribute_aligned_(4)	smp_mng_t        blc_smpMng;
 
+/**
+ * @brief      This function is used to set the flag in SMP pairing process.
+ * @param[in]  busy - Set the SMP pairing flag.
+ * 					  1:is pair busy
+ * 					  0:isn't pair busy
+ * @return     none.
+ */
 static inline  void	blc_smp_setParingBusy(u8 busy)
 {
 	blc_smpMng.paring_busy = busy;
 }
 
+/**
+ * @brief      This function is used to set the flag in SMP pairing process.
+ * @param[in]  none.
+ * @return     1:is pair busy
+ * 			   0:isn't pair busy
+ */
 static inline int	blc_smp_isParingBusy(void)
 {
 	return blc_smpMng.paring_busy;

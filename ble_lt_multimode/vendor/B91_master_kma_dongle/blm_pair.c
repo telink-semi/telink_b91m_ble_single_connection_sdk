@@ -259,7 +259,7 @@ void	user_bond_slave_flash_clean (void)
 
 void	user_master_host_pairing_flash_init(void)
 {
-	u8 *pf = (u8 *)(FLASH_R_BASE_ADDR | FLASH_ADR_PARING);
+	u8 *pf = (u8 *)(FLASH_R_BASE_ADDR | FLASH_ADR_PARING); //must using "0x20000000 | address" when reading flash data by address pointer
 	for (user_bond_slave_flash_cfg_idx=0; user_bond_slave_flash_cfg_idx<4096; user_bond_slave_flash_cfg_idx+=8)
 	{ //traversing 8 bytes area in sector 0x11000 to find all the valid slave mac adr
 		if( pf[user_bond_slave_flash_cfg_idx] == ADR_BOND_MARK ){  //valid adr

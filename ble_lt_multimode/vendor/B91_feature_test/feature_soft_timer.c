@@ -43,13 +43,6 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-/*
- * app_soft_timer.c
- *
- *  Created on: 2018-10-10
- *      Author: Administrator
- */
-
 #include "app.h"
 #include <stack/ble/ble.h>
 #include "tl_common.h"

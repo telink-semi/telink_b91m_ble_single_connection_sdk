@@ -69,6 +69,7 @@ void blt_firmware_signature_check(void)
 
 		firmware_encrypt_based_on_uid (flash_uid, signature_enc_key);
 
+		/* must using "0x20000000 | address" when reading flash data by address pointer */
 		if(tmemcmp(signature_enc_key, (u8*)(FLASH_R_BASE_ADDR | (flash_sector_calibration + CALIB_OFFSET_FIRMWARE_SIGNKEY)), 16)){  //signature not match
 			while(1);   //user can change the code here to stop firmware running
 		}

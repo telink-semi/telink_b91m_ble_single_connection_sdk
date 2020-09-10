@@ -129,15 +129,14 @@ extern "C" {
 #define GPIO_WAKEUP_MODULE_HIGH				gpio_setup_up_down_resistor(GPIO_WAKEUP_MODULE, PM_PIN_PULLUP_10K);
 #define GPIO_WAKEUP_MODULE_LOW				gpio_setup_up_down_resistor(GPIO_WAKEUP_MODULE, PM_PIN_PULLDOWN_100K);
 
-#define GPIO_WAKEUP_MCU						GPIO_PD0   //module wakeup mcu
-#define	PD0_FUNC							AS_GPIO
-#define PD0_INPUT_ENABLE					1
-#define	PD0_OUTPUT_ENABLE					1
-#define	PD0_DATA_OUT						0
+#define GPIO_WAKEUP_MCU						GPIO_PB4   //module wakeup mcu
+#define	PB4_FUNC							AS_GPIO
+#define PB4_INPUT_ENABLE					1
+#define	PB4_OUTPUT_ENABLE					1
+#define	PB4_DATA_OUT						0
 #define GPIO_WAKEUP_MCU_HIGH				do{gpio_set_output_en(GPIO_WAKEUP_MCU, 1); gpio_write(GPIO_WAKEUP_MCU, 1);}while(0)
 #define GPIO_WAKEUP_MCU_LOW					do{gpio_set_output_en(GPIO_WAKEUP_MCU, 1); gpio_write(GPIO_WAKEUP_MCU, 0);}while(0)
 #define GPIO_WAKEUP_MCU_FLOAT				do{gpio_set_output_en(GPIO_WAKEUP_MCU, 0); gpio_write(GPIO_WAKEUP_MCU, 0);}while(0)
-
 
 
 

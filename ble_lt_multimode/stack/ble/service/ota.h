@@ -58,9 +58,20 @@ enum{
  	OTA_RF_PACKET_TIMEOUT,	//timeout between RF packet
 };
 
-
+/**
+ * @brief	Telink defined OTA start Callback Declaration
+ */
 typedef void (*ota_startCb_t)(void);
+
+/**
+ * @brief	Telink defined OTA version Callback Declaration
+ */
 typedef void (*ota_versionCb_t)(void);
+
+/**
+ * @brief		Telink defined OTA result indicate Callback Declaration
+ * @param[in]   result - OTA result
+ */
 typedef void (*ota_resIndicateCb_t)(int result);
 
 
@@ -142,8 +153,16 @@ unsigned short crc16 (unsigned char *pD, int len);
 
 
 
-
+/**
+ * @brief		Telink defined OTA write callback
+ * @param[in]   *p - rf_packet_att_write_t/rf_packet_att_executeWriteReq_t
+ */
 extern int otaWrite(void * p);
+
+/**
+ * @brief		Telink defined OTA read callback
+ * @param[in]   *p - rf_packet_att_readBlob_t
+ */
 extern int otaRead(void * p);
 
 

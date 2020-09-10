@@ -885,6 +885,7 @@ void usb_init_interrupt() {
 
 	reg_usb_edp_en = 0xff;//todo by zhangchong
 
+	reg_usb_irq_mask |= BIT(0);     //set USB IRQ reset mask
 }
 
 void usb_init() {

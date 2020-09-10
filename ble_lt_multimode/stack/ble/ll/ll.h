@@ -154,19 +154,54 @@ void 		blc_ll_initStandby_module (u8 *public_adr);
  */
 ble_sts_t 	blc_ll_setRandomAddr(u8 *randomAddr);
 
+/**
+ * @brief      this function is used to exchange data length
+ * @param[in]  opcode -  LL_LENGTH_RSP/LL_LENGTH_REQ
+ * 			   maxTxOct - Maximum TX packet length
+ * @return     status, 0x00:  succeed
+ * 					   other: failed
+ */
 ble_sts_t   blc_ll_exchangeDataLength (u8 opcode, u16 maxTxOct);
 
-
+/**
+ * @brief      this function is used to read MAC address
+ * @param[in]  *addr -  The address where the read value(MAC address) prepare to write.
+ * @return     status, 0x00:  succeed
+ * 					   other: failed
+ */
 ble_sts_t 	blc_ll_readBDAddr(u8 *addr);
 
-
+/**
+ * @brief      this function is used to get LE stack current state
+ * @param[in]  none.
+ * @return     blt_state:
+ * 					BLS_LINK_STATE_IDLE
+ * 					BLS_LINK_STATE_ADV
+ * 					BLS_LINK_STATE_SCAN
+ * 					BLS_LINK_STATE_INIT
+ * 					BLS_LINK_STATE_CONN
+ */
 u8 			blc_ll_getCurrentState(void);
 
+/**
+ * @brief      this function is used to get the most recent average RSSI
+ * @param[in]  none.
+ * @return     bltParam.ll_recentAvgRSSI
+ */
 u8 			blc_ll_getLatestAvgRSSI(void);
 
-
+/**
+ * @brief      this function is used to pend Controller event
+ * @param[in]  none.
+ * @return     blc_tlkEvent_pending
+ */
 bool		blc_ll_isControllerEventPending(void);
 
+/**
+ * @brief      this function is used to get TX FIFO Number of current state
+ * @param[in]  none.
+ * @return     total_fifo_num
+ */
 u8  		blc_ll_getTxFifoNumber (void);
 
 

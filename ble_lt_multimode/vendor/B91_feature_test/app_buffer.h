@@ -64,7 +64,7 @@
 	#define LL_RX_FIFO_NUM		8
 
 	#define LL_TX_FIFO_SIZE		48
-	#define LL_TX_FIFO_NUM		17  //only 9 and 17 and 33 can be used, TODO: test 33
+	#define LL_TX_FIFO_NUM		17  //only 9 and 17  can be used
 
 	#define MTU_SIZE_SETTING   			 23
 	#define DLE_TX_SUPPORTED_DATA_LEN    27
@@ -118,7 +118,7 @@
 	#define LL_RX_FIFO_NUM		8
 
 	#define LL_TX_FIFO_SIZE		48
-	#define LL_TX_FIFO_NUM		17  //only 9 and 17 and 33 can be used, TODO: test 33
+	#define LL_TX_FIFO_NUM		17  //only 9 and 17  can be used
 
 	#define MTU_SIZE_SETTING   			 23
 	#define DLE_TX_SUPPORTED_DATA_LEN    27

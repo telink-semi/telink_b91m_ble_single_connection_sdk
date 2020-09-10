@@ -78,7 +78,7 @@ _attribute_data_retention_	my_fifo_t	spp_tx_fifo = {
 #define LL_RX_FIFO_NUM		8
 
 #define LL_TX_FIFO_SIZE		48
-#define LL_TX_FIFO_NUM		17  //only 9 and 17 and 33 can be used, TODO: test 33
+#define LL_TX_FIFO_NUM		17  //only 9 and 17  can be used
 
 _attribute_data_retention_	u8	app_ll_rxfifo[LL_RX_FIFO_SIZE * LL_RX_FIFO_NUM] = {0};
 _attribute_data_retention_  u8	app_ll_txfifo[LL_TX_FIFO_SIZE * LL_TX_FIFO_NUM] = {0};
@@ -252,6 +252,25 @@ int app_module_busy ()
 	return module_task_busy;
 }
 
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_ADV_DURATION_TIMEOUT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
+void 	app_switch_to_indirect_adv(u8 e, u8 *p, int n)
+{
+
+	bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
+						ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
+						0,  NULL,
+						BLT_ENABLE_ADV_ALL,
+						ADV_FP_NONE);
+
+	bls_ll_setAdvEnable(1);  //must: set adv enable
+}
+
 
 /**
  * @brief		stop sleep and enter in working mode
@@ -299,7 +318,9 @@ void app_power_management ()
 
 	if (!app_module_busy() && !tick_wakeup)
 	{
-		#if (PM_DEEPSLEEP_RETENTION_ENABLE)
+		#if (PM_NO_SUSPEND_ENABLE)
+			bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
+		#elif (PM_DEEPSLEEP_RETENTION_ENABLE)
 			bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		#else
 			bls_pm_setSuspendMask(SUSPEND_ADV | SUSPEND_CONN);
@@ -336,7 +357,6 @@ volatile unsigned int uart0_rx_buff_byte[16] __attribute__((aligned(4))) ={0x00}
  */
 void uart0_recieve_irq(void)
 {
-	DBG_CHN0_HIGH;    //debug
 	if(uart0_flag == UART0_RECIEVE_IDLE)
 	{
 		uart0_ndmairq_cnt = 4;//recieve packet start
@@ -349,7 +369,6 @@ void uart0_recieve_irq(void)
 	{
 		uart0_flag = UART0_RECIEVE_START;
 	}
-	DBG_CHN0_LOW;
 	uart0_ndma_tick = clock_time();
 }
 
@@ -365,14 +384,12 @@ void uart0_recieve_process(void)
 	{
 		if(clock_time_exceed(uart0_ndma_tick,UATRT_TIMNEOUT_US))//recieve timeout && 1 packet end
 		{
-			uart0_flag = UART0_RECIEVE_IDLE;
-
 			//add len
 			uart0_ndmairq_cnt -= 4;
 			u8* p = my_fifo_wptr(&spp_rx_fifo);
 			tmemcpy(p,(u8 *)&uart0_ndmairq_cnt,4);
-
 			my_fifo_next(&spp_rx_fifo);
+			uart0_flag = UART0_RECIEVE_IDLE;
 		}
 	}
 }
@@ -434,41 +451,48 @@ void user_init_normal(void)
 	extern void my_att_init ();
 	my_att_init (); //gatt initialization
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);  	//l2cap initialization
-	blc_l2cap_registerConnUpdateRspCb(app_conn_param_update_response);         //register sig process handler
-	//Smp Initialization may involve flash write/erase(when one sector stores too much information,
-	//   is about to exceed the sector threshold, this sector must be erased, and all useful information
-	//   should re_stored) , so it must be done after battery check
-	#if (BLE_SECURITY_ENABLE)
-		//defalut smp4.0, just work
-		blc_smp_peripheral_init();
 
-		#if (0) //default close
-			//host(GAP/SMP/GATT/ATT) event process: register host event callback and set event mask
-			blc_gap_registerHostEventHandler( app_host_event_callback );
-			blc_gap_setEventMask( GAP_EVT_MASK_SMP_PARING_BEAGIN 			|  \
-								  GAP_EVT_MASK_SMP_PARING_SUCCESS   		|  \
-								  GAP_EVT_MASK_SMP_PARING_FAIL				|  \
-								  GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE );
-		#endif
-	#else
-		blc_smp_setSecurityLevel(No_Security);
-	#endif
+	blc_l2cap_registerConnUpdateRspCb(app_conn_param_update_response);
+	////////////////// config adv packet /////////////////////
+#if (BLE_SECURITY_ENABLE)
+	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+	smp_param_save_t  bondInfo;
+	if(bond_number)   //at least 1 bonding device exist
+	{
+		bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
+
+	}
+
+	if(bond_number)   //set direct adv
+	{
+		//set direct adv
+		u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+										ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+										bondInfo.peer_addr_type,  bondInfo.peer_addr,
+										MY_APP_ADV_CHANNEL,
+										ADV_FP_NONE);
+		if(status != BLE_SUCCESS) { while(1); }  //debug: adv setting err
+
+		//it is recommended that direct adv only last for several seconds, then switch to indirect adv
+		bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE, 1);
+		bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &app_switch_to_indirect_adv);
+
+	}
+	else   //set indirect adv
+#endif
+	{
+		u8 status = bls_ll_setAdvParam(  ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
+										 ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
+										 0,  NULL,
+										 BLT_ENABLE_ADV_ALL,
+										 ADV_FP_NONE);
+		if(status != BLE_SUCCESS) {  }  //debug: adv setting err
+	}
 
 
 	///////////////////// USER application initialization ///////////////////
 	bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) );
 	bls_ll_setScanRspData( (u8 *)tbl_scanRsp, sizeof(tbl_scanRsp));
-
-
-	////////////////// config adv packet /////////////////////
-	u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
-								 ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
-								 0,  NULL,
-								 MY_APP_ADV_CHANNEL,
-								 ADV_FP_NONE);
-
-	if(status != BLE_SUCCESS) { while(1); }  //debug: adv setting err
-
 
 	bls_ll_setAdvEnable(1);  //adv enable
 
@@ -484,8 +508,11 @@ void user_init_normal(void)
 
 	//uart irq set
 	plic_interrupt_enable(IRQ19_UART0);
+	plic_set_priority(IRQ19_UART0,1);
+
 	uart_tx_irq_trig_level(UART0, 0);
 	uart_rx_irq_trig_level(UART0, 1);
+
 	uart_set_irq_mask(UART0, UART_RX_IRQ_MASK);
 
 	extern int rx_from_uart_cb (void);
@@ -555,6 +582,8 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 
 	//uart irq set
 	plic_interrupt_enable(IRQ19_UART0);
+	plic_set_priority(IRQ19_UART0,1);
+
 	uart_tx_irq_trig_level(UART0, 0);
 	uart_rx_irq_trig_level(UART0, 1);
 

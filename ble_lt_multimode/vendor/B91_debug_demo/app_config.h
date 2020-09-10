@@ -54,7 +54,7 @@
 #define AMAZON_RCU_TEST						5
 #define IRQ_PRIORITY_TEST					6
 
-#define TEST_MODE							RF_TEST
+#define TEST_MODE							IRQ_PRIORITY_TEST
 
 
 

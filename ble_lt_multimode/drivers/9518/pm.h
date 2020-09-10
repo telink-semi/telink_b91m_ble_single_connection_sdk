@@ -35,6 +35,15 @@
 #define PM_TIM_RECOVER_MODE			    	1
 #endif
 
+/**
+ * @brief analog register 0x7f will not be cleared when watch dog reboot,
+ * The software must ensure that the bit(0) of the ana_0x7f register cannot be 0
+ * before reboot(Avoid being misjudged as retention back).
+ */
+#ifndef WDT_REBOOT_RESET_ANA7F_WORK_AROUND
+#define WDT_REBOOT_RESET_ANA7F_WORK_AROUND	1
+#endif
+
 
 #define PM_LONG_SLEEP_WAKEUP_EN			    0 //if user need to make MCU sleep for a long time that is more than 268s, this macro need to be enabled and use "pm_long_sleep_wakeup" function
 

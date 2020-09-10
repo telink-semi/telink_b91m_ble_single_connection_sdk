@@ -73,7 +73,12 @@ ble_sts_t 	blc_ll_createConnectionCancel (void);
 
 
 
-
+/**
+ * @brief      This function is is used to create the timeout for current connection.
+ * @param	   timeout_ms - The length of time, the unit is ms
+ * @return     Status - 0x00: succeeded;
+ * 						0x01-0xFF: failed
+ */
 ble_sts_t   blc_ll_setCreateConnectionTimeout (u32 timeout_ms);
 
 

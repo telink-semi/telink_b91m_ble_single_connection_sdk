@@ -53,7 +53,7 @@
 #define LL_RX_FIFO_NUM		8
 
 #define LL_TX_FIFO_SIZE		48
-#define LL_TX_FIFO_NUM		17  //only 9 and 17 and 33 can be used, TODO: test 33
+#define LL_TX_FIFO_NUM		17  //only 9 and 17  can be used
 
 
 
