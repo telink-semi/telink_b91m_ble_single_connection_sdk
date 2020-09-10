@@ -1,30 +1,30 @@
 /********************************************************************************************************
- * @file     hspi.h
+ * @file	spi.h
  *
- * @brief    This is the header file for TLSR9518
+ * @brief	This is the header file for B91
  *
- * @author	 peng.sun@telink-semi.com;
- * @date     May 8, 2020
+ * @author	Ble Group
+ * @date	2019
  *
- * @par      Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd.
- *          All rights reserved.
+ * @par		Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd.
+ *			All rights reserved.
  *
- *          The information contained herein is confidential property of Telink
+ *			The information contained herein is confidential property of Telink
  *          Semiconductor (Shanghai) Co., Ltd. and is available under the terms
  *          of Commercial License Agreement between Telink Semiconductor (Shanghai)
  *          Co., Ltd. and the licensee or the terms described here-in. This heading
  *          MUST NOT be removed from this file.
  *
+ *          Licensee shall not delete, modify or alter (or permit any third party to delete, modify, or  
+ *          alter) any information contained herein in whole or in part except as expressly authorized  
+ *          by Telink semiconductor (shanghai) Co., Ltd. Otherwise, licensee shall be solely responsible  
+ *          for any claim to the extent arising out of or relating to such deletion(s), modification(s)  
+ *          or alteration(s).
+ *
  *          Licensees are granted free, non-transferable use of the information in this
  *          file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
- * @par      History:
- *			 1.initial release(OCT. 26 2020)
  *
- * @version  A001
- *        
  *******************************************************************************************************/
-
-
 #ifndef SPI_H
 #define SPI_H
 
@@ -594,7 +594,7 @@ static inline void hspi_xip_addr_offset(u32 addr_offset)
 }
 
 /**
- * @brief     This function servers to set xip read transfer mode。
+ * @brief     This function servers to set xip read transfer mode
  * @param[in] rd_mode: read mode in enum hspi_tans_mode_e
  * @return  none
  */
@@ -605,7 +605,7 @@ static inline void hspi_xip_read_transmode(u8 rd_mode)
 }
 
 /**
- * @brief     This function servers to set xip write transfer mode。
+ * @brief     This function servers to set xip write transfer mode
  * @param[in] wr_mode - write mode in enum hspi_tans_mode_e
  * @return  none
  */
@@ -898,7 +898,7 @@ void spi_master_init(spi_sel_e spi_sel, u8 div_clock, spi_mode_type_e mode);
  *           MODE2:  CPHA = 1, CPOL = 0;
  *           MODE3:  CPHA = 1,  CPOL = 1;
  * @return  none
- *note  spi_clock_in ＋ (spi_slave_clock frequency)/3
+ *note  spi_clock_in  (spi_slave_clock frequency)/3
  */
 void spi_slave_init(spi_sel_e spi_sel, spi_mode_type_e mode);
 
@@ -911,14 +911,14 @@ void spi_slave_init(spi_sel_e spi_sel, spi_mode_type_e mode);
 void spi_set_dummy_cnt(spi_sel_e spi_sel, u8 dummy_cnt);
 
 /**
- * @brief     This function servers to set slave address hspi only 。
+ * @brief     This function servers to set slave address hspi only 
  * @param[in] addr - address of slave
  * @return  none
  */
 void hspi_set_address(u32 addr);
 
 /**
- * @brief     This function servers to set spi transfer mode。
+ * @brief     This function servers to set spi transfer mode
  * @param[in] spi_sel - the spi module.
  * @param[in] mode -transfer mode.
  * @return  none
@@ -927,34 +927,34 @@ void spi_set_transmode(spi_sel_e spi_sel, spi_tans_mode_e mode);
 
 
 /**
- * @brief     This function servers to set normal mode。
+ * @brief     This function servers to set normal mode
  * @param[in] spi_sel - the spi module.
  * @return  none
  */
 void spi_set_normal_mode(spi_sel_e spi_sel);
 
 /**
- * @brief     This function servers to set dual mode。
+ * @brief     This function servers to set dual mode
  * @param[in] spi_sel - the spi module.
  * @return  none
  */
 void spi_set_dual_mode(spi_sel_e spi_sel);
 
 /**
- * @brief     This function servers to set quad mode。
+ * @brief     This function servers to set quad mode
  * @return  none
  */
 void hspi_set_quad_mode();
 
 /**
- * @brief     This function servers to set 3line mode。
+ * @brief     This function servers to set 3line mode
  * @param[in] spi_sel - the spi module.
  * @return  none
  */
 void spi_set_3line_mode(spi_sel_e spi_sel);
 
 /**
- * @brief     This function servers to set hspi io  mode。
+ * @brief     This function servers to set hspi io  mode
  * @param[in] spi_sel - the spi module.
  * @param[in] mode - single/dual/quad /3line.
  * @return  nonee
@@ -962,7 +962,7 @@ void spi_set_3line_mode(spi_sel_e spi_sel);
 void spi_set_io_mode(spi_sel_e spi_sel, spi_io_mode_e mode);
 
 /**
- * @brief     This function servers to config normal mode。
+ * @brief     This function servers to config normal mode
  * @param[in] spi_sel - the spi module.
  * @param[in] mode - nomal ,mode 3line
  * @return  none
@@ -970,14 +970,14 @@ void spi_set_io_mode(spi_sel_e spi_sel, spi_io_mode_e mode);
 void spi_master_config(spi_sel_e spi_sel, spi_nomal_3line_mode_e mode);
 
 /**
- * @brief     This function servers to config hspi special mode。
+ * @brief     This function servers to config hspi special mode
  * @param[in] config - the pointer of pin special config struct.
  * @return  none
  */
 void hspi_master_config_plus(hspi_config_st *config);
 
 /**
- * @brief     This function servers to config pspi special mode。
+ * @brief     This function servers to config pspi special mode
  * @param[in] config - the pointer of pin special config struct.
  * @return  none
  */
