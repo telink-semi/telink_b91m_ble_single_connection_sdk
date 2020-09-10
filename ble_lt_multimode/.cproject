@@ -49,7 +49,6 @@
 								<option id="nds.c.compiler.option.preprocessor.def.symbols.1376577559" name="Defined symbols (-D)" superClass="nds.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="CHIP_TYPE=CHIP_TYPE_9518"/>
 									<listOptionValue builtIn="false" value="__PROJECT_B91_FEATURE_TEST__=1"/>
-									<listOptionValue builtIn="false" value="MCU_STARTUP_B91=1"/>
 								</option>
 								<option id="nds.c.compiler.option.include.paths.1195241769" name="Include paths (-I)" superClass="nds.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}}&quot;"/>
@@ -209,7 +208,6 @@
 							<tool id="tool.nds32le-elf-mculib-v5f.c.compiler.base.102779910" name="Andes C Compiler" superClass="tool.nds32le-elf-mculib-v5f.c.compiler.base">
 								<option id="nds.c.compiler.option.preprocessor.def.symbols.1312424680" name="Defined symbols (-D)" superClass="nds.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="CHIP_TYPE=CHIP_TYPE_9518"/>
-									<listOptionValue builtIn="false" value="MCU_STARTUP_B91=1"/>
 									<listOptionValue builtIn="false" value="__PROJECT_B91_DEBUG_DEMO__=1"/>
 								</option>
 								<option id="nds.c.compiler.option.debugging.level.1141285355" name="Debug Level" superClass="nds.c.compiler.option.debugging.level" value="nds.c.debugging.level.max" valueType="enumerated"/>
@@ -371,7 +369,6 @@
 								<option id="nds.c.compiler.option.optimization.removesections.data.600116666" name="Remove unused data sections (-fdata-sections)" superClass="nds.c.compiler.option.optimization.removesections.data" value="true" valueType="boolean"/>
 								<option id="nds.c.compiler.option.preprocessor.def.symbols.337096118" name="Defined symbols (-D)" superClass="nds.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="CHIP_TYPE=CHIP_TYPE_9518"/>
-									<listOptionValue builtIn="false" value="MCU_STARTUP_B91=1"/>
 									<listOptionValue builtIn="false" value="__PROJECT_B91_MASTER_KMA_DONGLE__=1"/>
 								</option>
 								<option id="nds.c.compiler.option.include.paths.1876382154" name="Include paths (-I)" superClass="nds.c.compiler.option.include.paths" valueType="includePath">
@@ -543,7 +540,6 @@
 								<option id="nds.c.compiler.option.optimization.lto.2091600329" name="Link Time Optimization (-flto)" superClass="nds.c.compiler.option.optimization.lto" value="true" valueType="boolean"/>
 								<option id="nds.c.compiler.option.preprocessor.def.symbols.533250587" name="Defined symbols (-D)" superClass="nds.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__PROJECT_B91_HCI__=1"/>
-									<listOptionValue builtIn="false" value="MCU_STARTUP_B91=1"/>
 									<listOptionValue builtIn="false" value="CHIP_TYPE=CHIP_TYPE_9518"/>
 								</option>
 								<option id="nds.c.compiler.option.include.paths.1213927233" name="Include paths (-I)" superClass="nds.c.compiler.option.include.paths" valueType="includePath">
@@ -714,7 +710,6 @@
 								<option id="nds.c.compiler.option.optimization.lto.1980874648" name="Link Time Optimization (-flto)" superClass="nds.c.compiler.option.optimization.lto" value="true" valueType="boolean"/>
 								<option id="nds.c.compiler.option.preprocessor.def.symbols.206205270" name="Defined symbols (-D)" superClass="nds.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__PROJECT_B91_BLE_REMOTE__=1"/>
-									<listOptionValue builtIn="false" value="MCU_STARTUP_B91=1"/>
 									<listOptionValue builtIn="false" value="CHIP_TYPE=CHIP_TYPE_9518"/>
 								</option>
 								<option id="nds.c.compiler.option.include.paths.1260348566" name="Include paths (-I)" superClass="nds.c.compiler.option.include.paths" valueType="includePath">
@@ -890,7 +885,6 @@
 								<option id="nds.c.compiler.option.optimization.lto.2040472677" name="Link Time Optimization (-flto)" superClass="nds.c.compiler.option.optimization.lto" value="true" valueType="boolean"/>
 								<option id="nds.c.compiler.option.preprocessor.def.symbols.2093071864" name="Defined symbols (-D)" superClass="nds.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="CHIP_TYPE=CHIP_TYPE_9518"/>
-									<listOptionValue builtIn="false" value="MCU_STARTUP_B91=1"/>
 									<listOptionValue builtIn="false" value="__PROJECT_B91_BLE_SAMPLE__=1"/>
 								</option>
 								<option id="nds.c.compiler.option.include.paths.2137569256" name="Include paths (-I)" superClass="nds.c.compiler.option.include.paths" valueType="includePath">
@@ -1045,7 +1039,6 @@
 								<option id="nds.c.compiler.option.optimization.removesections.data.1801621366" name="Remove unused data sections (-fdata-sections)" superClass="nds.c.compiler.option.optimization.removesections.data" value="true" valueType="boolean"/>
 								<option id="nds.c.compiler.option.preprocessor.def.symbols.1448747803" name="Defined symbols (-D)" superClass="nds.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="CHIP_TYPE=CHIP_TYPE_9518"/>
-									<listOptionValue builtIn="false" value="MCU_STARTUP_B91=1"/>
 									<listOptionValue builtIn="false" value="__PROJECT_B91_MODULE__=1"/>
 								</option>
 								<option id="nds.c.compiler.option.include.paths.341215262" name="Include paths (-I)" superClass="nds.c.compiler.option.include.paths" valueType="includePath">
