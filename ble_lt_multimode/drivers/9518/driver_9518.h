@@ -42,12 +42,10 @@
 #include "flash.h"
 #include "usbhw.h"
 #include "watchdog.h"
-#include "s7816.h"
 #include "nds_intrinsic.h"
 #include "mdec.h"
 
 #include "trng.h"
-#include "npe.h"
 #include "sys.h"
 #include "pke.h"
 #include "plic.h"

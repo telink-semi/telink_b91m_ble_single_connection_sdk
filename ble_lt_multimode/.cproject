@@ -14,7 +14,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="elf" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.105987010" name="B91_feature_test" parent="config.nds.base">
+				<configuration artifactExtension="elf" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.105987010" name="B91_feature_test" parent="config.nds.base" postbuildStep="&quot;${workspace_loc:/${ProjName}}/tl_check_fw.bat&quot;   ${ConfigName}">
 					<folderInfo id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.105987010." name="/" resourcePath="">
 						<toolChain id="nds.nds32le-elf-mculib-v5f.base.1887933447" name="nds32le-elf-mculib-v5f" superClass="nds.nds32le-elf-mculib-v5f.base">
 							<option id="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU.1988992115" name="CPU" superClass="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU"/>
@@ -88,7 +88,7 @@
 								<option id="nds.objdump.option.disable.38125061" name="Disable. (Do not auto-generate output file.)" superClass="nds.objdump.option.disable" value="false" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.objcopy.base.347345682" name="Objcopy (object content copy)" superClass="tool.nds32le-elf-mculib-v5f.objcopy.base">
-								<option id="nds.objcopy.option.disable.959384038" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="false" valueType="boolean"/>
+								<option id="nds.objcopy.option.disable.959384038" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="true" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.size.base.66699907" name="Size (section size listing)" superClass="tool.nds32le-elf-mculib-v5f.size.base"/>
 							<tool id="tool.nds32le-elf-mculib-v5f.ldsag.base.1136490957" name="LdSaG Tool" superClass="tool.nds32le-elf-mculib-v5f.ldsag.base"/>
@@ -114,7 +114,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="lst" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.991521379" name="B91_master_kma_dongle" parent="config.nds.base">
+				<configuration artifactExtension="elf" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.991521379" name="B91_master_kma_dongle" parent="config.nds.base" postbuildStep="&quot;${workspace_loc:/${ProjName}}/tl_check_fw.bat&quot;   ${ConfigName}">
 					<folderInfo id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.991521379." name="/" resourcePath="">
 						<toolChain id="nds.nds32le-elf-mculib-v5f.base.1757790350" name="nds32le-elf-mculib-v5f" superClass="nds.nds32le-elf-mculib-v5f.base">
 							<option id="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU.1333670004" name="CPU" superClass="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU"/>
@@ -187,7 +187,7 @@
 								<option id="nds.objdump.option.disable.1655902110" name="Disable. (Do not auto-generate output file.)" superClass="nds.objdump.option.disable" value="false" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.objcopy.base.2068937295" name="Objcopy (object content copy)" superClass="tool.nds32le-elf-mculib-v5f.objcopy.base">
-								<option id="nds.objcopy.option.disable.1591983362" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="false" valueType="boolean"/>
+								<option id="nds.objcopy.option.disable.1591983362" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="true" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.size.base.1950184270" name="Size (section size listing)" superClass="tool.nds32le-elf-mculib-v5f.size.base"/>
 							<tool command="$(ANDESIGHT_ROOT)/utils/nds_ldsag --version=v5" id="tool.nds32le-elf-mculib-v5f.ldsag.base.1823146488" name="LdSaG Tool" superClass="tool.nds32le-elf-mculib-v5f.ldsag.base">
@@ -217,7 +217,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="lst" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.1671662551.1015712691" name="B91_hci" parent="config.nds.base">
+				<configuration artifactExtension="elf" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.1671662551.1015712691" name="B91_hci" parent="config.nds.base" postbuildStep="&quot;${workspace_loc:/${ProjName}}/tl_check_fw.bat&quot;   ${ConfigName}">
 					<folderInfo id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.1671662551.1015712691." name="/" resourcePath="">
 						<toolChain id="nds.nds32le-elf-mculib-v5f.base.669502041" name="nds32le-elf-mculib-v5f" superClass="nds.nds32le-elf-mculib-v5f.base">
 							<option id="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU.1111567831" name="CPU" superClass="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU"/>
@@ -283,7 +283,7 @@
 								<option id="nds.c.link.option.virtualhosting.130960892" name="Virtual Hosting (-mvh)" superClass="nds.c.link.option.virtualhosting" value="false" valueType="boolean"/>
 								<option id="nds.c.link.option.ldflags.1498142473" name="Linker flags" superClass="nds.c.link.option.ldflags" value=" " valueType="string"/>
 								<option id="nds.c.link.option.LTO.1554172258" name="Link Time Optimization (-flto)" superClass="nds.c.link.option.LTO" value="true" valueType="boolean"/>
-								<option id="nds.c.link.option.other.duplacitecompiler.437565539" name="DuplaciteComplierOption" superClass="nds.c.link.option.other.duplacitecompiler" value="-g3 -mcpu=d25f -ffunction-sections -fdata-sections -fmessage-length=0 -fno-builtin -fomit-frame-pointer -fno-strict-aliasing -fshort-wchar -fuse-ld=bfd " valueType="string"/>
+								<option id="nds.c.link.option.other.duplacitecompiler.437565539" name="DuplaciteComplierOption" superClass="nds.c.link.option.other.duplacitecompiler" value="-g3 -mcpu=d25f -ffunction-sections -fdata-sections -fmessage-length=0 -fno-builtin -fomit-frame-pointer -fno-strict-aliasing -fshort-wchar -fuse-ld=bfd -fpack-struct " valueType="string"/>
 								<option id="nds.c.link.option.libs.803629507" name="Libraries (-l)" superClass="nds.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="lt_9518"/>
@@ -307,7 +307,7 @@
 								<option id="nds.objdump.option.disable.918144761" name="Disable. (Do not auto-generate output file.)" superClass="nds.objdump.option.disable" value="false" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.objcopy.base.986851053" name="Objcopy (object content copy)" superClass="tool.nds32le-elf-mculib-v5f.objcopy.base">
-								<option id="nds.objcopy.option.disable.925568960" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="false" valueType="boolean"/>
+								<option id="nds.objcopy.option.disable.925568960" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="true" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.size.base.709695421" name="Size (section size listing)" superClass="tool.nds32le-elf-mculib-v5f.size.base"/>
 							<tool command="$(ANDESIGHT_ROOT)/utils/nds_ldsag --version=v5" id="tool.nds32le-elf-mculib-v5f.ldsag.base.2065811956" name="LdSaG Tool" superClass="tool.nds32le-elf-mculib-v5f.ldsag.base">
@@ -460,7 +460,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactExtension="lst" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.984054979.129917995" name="B91_ble_sample" parent="config.nds.base">
+				<configuration artifactExtension="elf" artifactName="${ConfigName}" buildArtefactType="nds.buildArtefactType.exe" buildProperties="org.eclipse.cdt.build.core.buildArtefactType=nds.buildArtefactType.exe,org.eclipse.cdt.build.core.buildType=org.eclipse.cdt.build.core.buildType.debug" cleanCommand="rm -rf" description="" id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.984054979.129917995" name="B91_ble_sample" parent="config.nds.base" postbuildStep="&quot;${workspace_loc:/${ProjName}}/tl_check_fw.bat&quot;   ${ConfigName}">
 					<folderInfo id="config.nds32le-elf-mculib-v5.exe.debug.28004847.1438473168.984054979.129917995." name="/" resourcePath="">
 						<toolChain id="nds.nds32le-elf-mculib-v5f.base.1157077720" name="nds32le-elf-mculib-v5f" superClass="nds.nds32le-elf-mculib-v5f.base">
 							<option id="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU.1052183656" name="CPU" superClass="nds32le-elf-mculib-v5f.managedbuild.option.toolchain.NDS_CPU"/>
@@ -550,7 +550,7 @@
 								<option id="nds.objdump.option.disable.1055582488" name="Disable. (Do not auto-generate output file.)" superClass="nds.objdump.option.disable" value="false" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.objcopy.base.1976426317" name="Objcopy (object content copy)" superClass="tool.nds32le-elf-mculib-v5f.objcopy.base">
-								<option id="nds.objcopy.option.disable.828601604" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="false" valueType="boolean"/>
+								<option id="nds.objcopy.option.disable.828601604" name="Disable. (Do not auto-generate output file.)" superClass="nds.objcopy.option.disable" value="true" valueType="boolean"/>
 							</tool>
 							<tool id="tool.nds32le-elf-mculib-v5f.size.base.1330603209" name="Size (section size listing)" superClass="tool.nds32le-elf-mculib-v5f.size.base"/>
 							<tool command="$(ANDESIGHT_ROOT)/utils/nds_ldsag --version=v5" id="tool.nds32le-elf-mculib-v5f.ldsag.base.371625122" name="LdSaG Tool" superClass="tool.nds32le-elf-mculib-v5f.ldsag.base">

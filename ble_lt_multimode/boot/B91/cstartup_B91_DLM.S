@@ -58,10 +58,10 @@ _NMI_HANDLER:
     .org 0x26
     //.short (0x0003)           //READ:    cmd:1x, addr:1x, data:1x, dummy:0
     //.short (0x070B)           //FREAD:   cmd:1x, addr:1x, data:1x, dummy:8
-    //.short (0x173B)           //DREAD:   cmd:1x, addr:1x, data:2x, dummy:8
+    .short (0x173B)           //DREAD:   cmd:1x, addr:1x, data:2x, dummy:8
     //.short (0x53BB)           //X2READ:  cmd:1x, addr:2x, data:2x, dummy:4
     //.short (0x276B)           //QREAD:   cmd:1x, addr:1x, data:4x, dummy:8
-    .short (0x65EB)             //X4READ:  cmd:1x, addr:4x, data:4x, dummy:6
+    //.short (0x65EB)             //X4READ:  cmd:1x, addr:4x, data:4x, dummy:6
     .option pop
     .align 2
 
