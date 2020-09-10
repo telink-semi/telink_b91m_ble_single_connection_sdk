@@ -474,6 +474,25 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		}
 		break;
 
+		case GAP_EVT_SMP_SECURITY_PROCESS_DONE:
+		{
+			gap_smp_connEncDoneEvt_t* p = (gap_smp_connEncDoneEvt_t*)para;
+			if( p->connHandle & BLM_CONN_HANDLE){  //master connection
+				#if (BLE_MASTER_SMP_ENABLE)
+					if(master_smp_pending == p->connHandle){
+						master_smp_pending = 0;
+					}
+				#endif
+
+				#if (BLE_MASTER_SIMPLE_SDP_ENABLE)  //SMP finish
+					if(master_sdp_pending == p->connHandle){  //SDP is pending
+						app_register_service(&app_service_discovery);  //start SDP now
+					}
+				#endif
+			}
+
+		}
+
 		case GAP_EVT_SMP_TK_DISPALY:
 		{
 			char pc[7];
@@ -668,7 +687,8 @@ void feature_security_test_init_normal(void)
 						  GAP_EVT_MASK_SMP_PARING_SUCCESS   		|  \
 						  GAP_EVT_MASK_SMP_PARING_FAIL				|  \
 						  GAP_EVT_MASK_SMP_TK_DISPALY				|  \
-						  GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE );
+						  GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE     |  \
+						  GAP_EVT_MASK_SMP_SECURITY_PROCESS_DONE);
 
 #elif ( SMP_TEST_MODE == SMP_TEST_SC_NUMERIC_COMPARISON  )
 
