@@ -47,7 +47,6 @@
 #include "mdec.h"
 
 #include "trng.h"
-#include "npe.h"
 #include "sys.h"
 #include "pke.h"
 #include "plic.h"
