@@ -1,12 +1,12 @@
 /********************************************************************************************************
  * @file	USBController.h
  *
- * @brief	This is the header file for B91
+ * @brief	for TLSR chips
  *
- * @author	Ble Group
- * @date	2019
+ * @author	BLE GROUP
+ * @date	2020.06
  *
- * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
  *          
  *          Redistribution and use in source and binary forms, with or without
