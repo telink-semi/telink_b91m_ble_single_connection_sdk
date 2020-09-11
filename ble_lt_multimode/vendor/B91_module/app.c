@@ -453,6 +453,14 @@ void user_init_normal(void)
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);  	//l2cap initialization
 
 	blc_l2cap_registerConnUpdateRspCb(app_conn_param_update_response);
+	//Smp Initialization may involve flash write/erase(when one sector stores too much information,
+	//   is about to exceed the sector threshold, this sector must be erased, and all useful information
+	//   should re_stored) , so it must be done after battery check
+	#if (BLE_SECURITY_ENABLE)
+		blc_smp_peripheral_init();
+	#else
+		blc_smp_setSecurityLevel(No_Security);
+	#endif
 	////////////////// config adv packet /////////////////////
 #if (BLE_SECURITY_ENABLE)
 	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
