@@ -462,7 +462,7 @@ void user_init_normal(void)
 		blc_smp_setSecurityLevel(No_Security);
 	#endif
 	////////////////// config adv packet /////////////////////
-#if (BLE_SECURITY_ENABLE)
+#if (0)
 	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
 	smp_param_save_t  bondInfo;
 	if(bond_number)   //at least 1 bonding device exist
@@ -538,6 +538,7 @@ void user_init_normal(void)
 		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(3, 3);
 		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 420 : 440);
+		blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW32K);
 	#elif (PM_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(95, 95);
