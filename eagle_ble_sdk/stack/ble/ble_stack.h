@@ -1,5 +1,5 @@
 /********************************************************************************************************
- * @file	attr_stack.h
+ * @file	ble_stack.h
  *
  * @brief	for TLSR chips
  *
@@ -43,74 +43,11 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#ifndef STACK_BLE_ATTR_ATTR_STACK_H_
-#define STACK_BLE_ATTR_ATTR_STACK_H_
+#ifndef BLE_STACK_H_
+#define BLE_STACK_H_
 
 
 
 
 
-
-
-#define ATT_MTU_SIZE                        23  //!< Minimum ATT MTU size
-
-
-
-
-//TELINK MTU no longer than 256, so 1 byte is enough
-typedef struct{
-	u8 init_MTU;
-	u8 effective_MTU;
-	u8 Data_pending_time;    //10ms unit
-	u8 Data_permission_check;
-}att_para_t;
-extern att_para_t bltAtt;
-
-
-
-
-
-
-extern u16	blt_indicate_handle;
-
-
-
-
-
-
-
-
-/************************* Stack Interface, user can not use!!! ***************************/
-extern u32 att_service_discover_tick;
-
-u8 * l2cap_att_handler(u16 connHandle, u8 * p);
-
-static inline u16  blc_att_getEffectiveMtuSize(u16 connHandle)
-{
-	return bltAtt.effective_MTU;
-}
-
-
-
-void blt_att_procHoldAttributeCommand(void);
-
-
-
-
-
-
-
-
-
-
-
-
-
-u8 blc_gatt_requestServiceAccess(u16 connHandle, int gatt_perm);
-
-
-
-
-
-
-#endif /* STACK_BLE_ATTR_ATTR_STACK_H_ */
+#endif /* BLE_STACK_H_ */
