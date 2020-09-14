@@ -48,7 +48,12 @@
 #ifndef LL_MASTER_H_
 #define LL_MASTER_H_
 
-
+/**
+ * @brief      This function servers for obtaining l2cap data
+ * @param[in]  conn - connect handle
+ * @param[in]  *raw_pkt - data pointer of l2cap
+ * @return     data pointer of l2cap
+ */
 rf_packet_l2cap_t * blm_l2cap_packet_pack (u16 conn, u8 * raw_pkt);
 
 

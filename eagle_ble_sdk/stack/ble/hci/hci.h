@@ -137,6 +137,9 @@ extern u32		hci_le_eventMask_2;
 
 
 // Controller event handler
+/**
+ * @brief	this function is used to register HCI Event handler Callback function
+ */
 typedef int (*hci_event_handler_t) (u32 h, u8 *para, int n);
 extern hci_event_handler_t		blc_hci_event_handler;
 
@@ -152,16 +155,44 @@ extern hci_event_handler_t		blc_hci_event_handler;
 
 
 /******************************* Stack Interface Begin, user can not use!!! ********************************************/
-int blc_acl_from_btusb ();
 
-
+/**
+ * @brief      this function is used to get data by USB in RX mode for HCI Layer
+ * @param[in]  none.
+ * @return     0
+ */
 int blc_hci_rx_from_usb (void);
-int blc_hci_tx_to_usb (void);
-int blc_hci_tx_to_btusb (void);
 
+/**
+ * @brief      this function is used to send data by USB in TX mode for HCI Layer
+ * @param[in]  none.
+ * @return     0
+ */
+int blc_hci_tx_to_usb (void);
+
+
+/**
+ * @brief      this function is used to process HCI data
+ * @param[in]  *p - the pointer of HCI data
+ * @param[in]  n - the length of HCI data
+ * @return     0
+ */
 int blc_hci_handler (u8 *p, int n);
+
+/**
+ * @brief      this function is used to report HCI events
+ * @param[in]  h - HCI Event type
+ * @param[in]  *para - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 int blc_hci_send_event (u32 h, u8 *para, int n);
 
+/**
+ * @brief      this function is used to process HCI events
+ * @param[in]  none.
+ * @return     0
+ */
 int blc_hci_proc (void);
 
 /******************************* Stack Interface End *******************************************************************/
@@ -173,17 +204,56 @@ int blc_hci_proc (void);
 
 
 /******************************* User Interface  Begin *****************************************************************/
+/**
+ * @brief      this function is used to set HCI EVENT mask
+ * @param[in]  evtMask  -  HCI　EVENT　mask
+ * @return     0
+ */
 ble_sts_t	blc_hci_setEventMask_cmd(u32 evtMask);      //eventMask: BT/EDR
+
+/**
+ * @brief      this function is used to set HCI LE EVENT mask
+ * @param[in]  evtMask  -  HCI　LE EVENT　mask(BIT<0-31>)
+ * @return     0
+ */
 ble_sts_t	blc_hci_le_setEventMask_cmd(u32 evtMask);   //eventMask: LE event  0~31
+
+/**
+ * @brief      this function is used to set HCI LE EVENT mask
+ * @param[in]  evtMask  -  HCI　LE EVENT　mask(BIT<32-63>)
+ * @return     0
+ */
 ble_sts_t 	blc_hci_le_setEventMask_2_cmd(u32 evtMask_2);   //eventMask: LE event 32~63
 
+/**
+ * @brief      this function is used to register HCI event handler callback function
+ * @param[in]  handler - hci_event_handler_t
+ * @return     none.
+ */
 void 		blc_hci_registerControllerEventHandler (hci_event_handler_t  handler);
 
-
-
+/**
+ * @brief      this function is used to register HCI TX or RX handler callback function
+ * @param[in]  *prx - blc_hci_rx_handler
+ * @param[in]  *ptx - blc_hci_tx_handler
+ * @return     none.
+ */
 void 		blc_register_hci_handler (void *prx, void *ptx);
 
+/**
+ * @brief      this function is used to send ACL data to HOST
+ * @param[in]  handle - connect handle
+ * @param[in]  *p - the pointer of l2cap data
+ * @return     0
+ */
 int 		blc_hci_sendACLData2Host (u16 handle, u8 *p);
 
+/**
+ * @brief      this function is used to send data
+ * @param[in]  h - HCI Event type
+ * @param[in]  *para - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     0,-1
+ */
 int 		blc_hci_send_data (u32 h, u8 *para, int n);
 /******************************* User Interface  End  ******************************************************************/

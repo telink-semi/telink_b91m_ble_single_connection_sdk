@@ -109,7 +109,11 @@ typedef struct {
 
 extern _attribute_aligned_(4) ll_data_extension_t  bltData;
 
-
+/**
+ * @brief	This function is used to obtain the effective maximum TX data length
+ * @param	none
+ * @return	bltData.connEffectiveMaxTxOctets
+ */
 static inline u8 blc_ll_get_connEffectiveMaxTxOctets(void)
 {
 	#if (LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION)
@@ -225,7 +229,7 @@ u8  		blc_ll_getTxFifoNumber (void);
 
 
 /**
- * @brief		this function is used to register LinkLayer Event Callback fucntion
+ * @brief		this function is used to register LinkLayer Event Callback function
  * @param[in]	e -
  * @param[in]	p -
  * @return		none

@@ -64,7 +64,7 @@
 
 
 #ifndef SECURE_CONNECTION_ENABLE
-#define SECURE_CONNECTION_ENABLE							0
+#define SECURE_CONNECTION_ENABLE							1
 #endif
 
 

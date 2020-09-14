@@ -93,7 +93,7 @@
 /** @} End GAP_ATT_PERMISSIONS_BITMAPS */
 
 
-/** @addtogroup GATT_Characteristic_Property GATT characteristic properties
+/** @ add to group GATT_Characteristic_Property GATT characteristic properties
  * @{
  */
 #define CHAR_PROP_BROADCAST              0x01 //!< permit broadcasts of the Characteristic Value
@@ -125,60 +125,175 @@ typedef struct attribute
 
 
 
-
+/**
+ * @brief	This function is used to define ATT MTU size exchange callback
+ */
 typedef int (*att_mtuSizeExchange_callback_t)(u16, u16);
+
+/**
+ * @brief	This function is used to define ATT Handle value confirm callback
+ */
 typedef int (*att_handleValueConfirm_callback_t)(void);
 
 
-
+/**
+ * @brief	This function is used to set effective ATT MTU size
+ * @param	connHandle - connect handle
+ * @param	effective_mtu - bltAtt.effective_MTU
+ * @return	none.
+ */
 void  blt_att_setEffectiveMtuSize(u16 connHandle, u8 effective_mtu);
 
+/**
+ * @brief	This function is used to reset effective ATT MTU size
+ * @param	connHandle - connect handle
+ * @return	none.
+ */
 void  blt_att_resetEffectiveMtuSize(u16 connHandle);
 
 
-
+/**
+ * @brief	This function is used to push notify data
+ * @param	attHandle - ATT handle
+ * @param	*p - the pointer of notify data
+ * @param	len - the length of notify data
+ * @return	0: success
+ * 			other: fail
+ */
 ble_sts_t  	bls_att_pushNotifyData (u16 attHandle, u8 *p, int len);
+
+/**
+ * @brief	This function is used to push indicate data
+ * @param	attHandle - ATT handle
+ * @param	*p - the pointer of indicate data
+ * @param	len - the length of indicate data
+ * @return	0: success
+ * 			other: fail
+ */
 ble_sts_t	 bls_att_pushIndicateData (u16 attHandle, u8 *p, int len);
+
+/**
+ * @brief	This function is used to set ATT table
+ * @param	*p - the pointer of attribute table
+ * @return	none.
+ */
 void		 bls_att_setAttributeTable (u8 *p);
 
 
 
 //mtu size
+/**
+ * @brief	This function is used to set RX MTU size
+ * @param	mtu_size - ATT MTU size
+ * @return	0: success
+ * 			other: fail
+ */
 ble_sts_t  blc_att_setRxMtuSize(u16 mtu_size);
 
+/**
+ * @brief	This function is used to request MTU size exchange
+ * @param	connHandle - connect handle
+ * @param	mtu_size - ATT MTU size
+ * @return	0: success
+ * 			other: fail
+ */
 ble_sts_t	 blc_att_requestMtuSizeExchange (u16 connHandle, u16 mtu_size);
+
+/**
+ * @brief	This function is used to response MTU size exchange
+ * @param	mtu_size - ATT MTU size
+ * @return	0: success
+ * 			other: fail
+ */
 ble_sts_t	 blc_att_responseMtuSizeExchange (u16 connHandle, u16 mtu_size);
 
 
-
-
-ble_sts_t	blc_att_requestMtuSizeExchange (u16 connHandle, u16 mtu_size);
-ble_sts_t	blc_att_responseMtuSizeExchange (u16 connHandle, u16 mtu_size);
-
-
-
-
-
-
-
-
-
-
-		// 0x04: ATT_OP_FIND_INFO_REQ
+// 0x04: ATT_OP_FIND_INFO_REQ
+/**
+ * @brief	This function is used to find attribute information for request
+ * @param	*dat - the data of request
+ * @param	start_attHandle - the start of ATT handle
+ * @param	end_attHandle - the end of ATT handle
+ * @return	none.
+ */
 void 	att_req_find_info(u8 *dat, u16 start_attHandle, u16 end_attHandle);
-		// 0x06: ATT_OP_FIND_BY_TYPE_VALUE_REQ
+
+// 0x06: ATT_OP_FIND_BY_TYPE_VALUE_REQ
+/**
+ * @brief	This function is used to find attribute by type value for request
+ * @param	*dat - the data of request
+ * @param	start_attHandle - the start of ATT handle
+ * @param	end_attHandle - the end of ATT handle
+ * @param	*uuid - the uuid of attribute
+ * @param	attr_value - the value of attribute
+ * @param	len - the length of attribute
+ * @return	none.
+ */
 void 	att_req_find_by_type (u8 *dat, u16 start_attHandle, u16 end_attHandle, u8 *uuid, u8* attr_value, int len);
-		// 0x08: ATT_OP_READ_BY_TYPE_REQ
+
+// 0x08: ATT_OP_READ_BY_TYPE_REQ
+/**
+ * @brief	This function is used to read attribute by type value for request
+ * @param	*dat - the data of request
+ * @param	start_attHandle - the start of ATT handle
+ * @param	end_attHandle - the end of ATT handle
+ * @param	*uuid - the uuid of attribute
+ * @param	uuid_len - the length of UUID
+ * @return	none.
+ */
 void 	att_req_read_by_type (u8 *dat, u16 start_attHandle, u16 end_attHandle, u8 *uuid, int uuid_len);
-		// 0x0a: ATT_OP_READ_REQ
+
+// 0x0a: ATT_OP_READ_REQ
+/**
+ * @brief	This function is used to read attribute value for request
+ * @param	*dat - the data of request
+ * @param	attHandle -  ATT handle
+ * @return	none.
+ */
 void 	att_req_read (u8 *dat, u16 attHandle);
-		// 0x0c: ATT_OP_READ_BLOB_REQ
+
+// 0x0c: ATT_OP_READ_BLOB_REQ
+/**
+ * @brief	This function is used to read part of attribute value for request
+ * @param	*dat - the data of request
+ * @param	attHandle -  ATT handle
+ * @param	offset -  the offset of ATT attribute value
+ * @return	none.
+ */
 void 	att_req_read_blob (u8 *dat, u16 attHandle, u16 offset);
-		// 0x10: ATT_OP_READ_BY_GROUP_TYPE_REQ
+
+// 0x10: ATT_OP_READ_BY_GROUP_TYPE_REQ
+/**
+ * @brief	This function is used to read attribute by group for request
+ * @param	*dat - the data of request
+ * @param	start_attHandle - the start of ATT handle
+ * @param	end_attHandle - the end of ATT handle
+ * @param	*uuid - the uuid of attribute
+ * @param	uuid_len - the length of UUID
+ * @return	none.
+ */
 void 	att_req_read_by_group_type (u8 *dat, u16 start_attHandle, u16 end_attHandle, u8 *uuid, int uuid_len);
-		// 0x12: ATT_OP_WRITE_REQ
+
+// 0x12: ATT_OP_WRITE_REQ
+/**
+ * @brief	This function is used to write attribute value for request
+ * @param	*dat - the data of request
+ * @param	attHandle -  ATT handle
+ * @param	*buf -  the data of ATT handle
+ * @param	len -  the length of buffer
+ * @return	none.
+ */
 void 	att_req_write (u8 *dat, u16 attHandle, u8 *buf, int len);
-		// 0x52: ATT_OP_WRITE_CMD
+
+// 0x52: ATT_OP_WRITE_CMD
+/**
+ * @brief	This function is used to write command for request
+ * @param	*dat - the data of request
+ * @param	attHandle -  ATT handle
+ * @param	*buf -  the data of ATT handle
+ * @param	len -  the length of buffer
+ * @return	none.
+ */
 void 	att_req_write_cmd (u8 *dat, u16 attHandle, u8 *buf, int len);
 
 

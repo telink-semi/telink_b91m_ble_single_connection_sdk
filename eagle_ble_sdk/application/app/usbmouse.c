@@ -69,7 +69,7 @@ static u32 usbmouse_data_report_time;
 
 void usbmouse_add_frame (rf_packet_mouse_t *packet_mouse){
 
-	u8 new_data_num = packet_mouse->pno;  //pno ݵĸ
+	u8 new_data_num = packet_mouse->pno;
 	for(u8 i=0;i<new_data_num;i++)
 	{
 			tmemcpy4((int*)(&mouse_dat_buff[usbmouse_wptr]), (int*)(&packet_mouse->data[i*sizeof(mouse_data_t)]), sizeof(mouse_data_t));

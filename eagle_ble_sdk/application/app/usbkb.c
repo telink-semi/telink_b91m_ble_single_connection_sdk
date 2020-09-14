@@ -113,7 +113,7 @@ static u32 usbkb_data_report_time;
 
 void usbkb_add_frame (rf_packet_keyboard_t *packet_kb)
 {
-	u8 new_data_num = packet_kb->pno;  //pno ݵĸ
+	u8 new_data_num = packet_kb->pno;  //根据pno 获得最新数据的个数
 	for(u8 i=0;i<new_data_num;i++)
 	{
 			tmemcpy4((int*)(&kb_dat_buff[usbkb_wptr]), (int*)(&packet_kb->data[i*sizeof(kb_data_t)]), sizeof(kb_data_t));
@@ -164,8 +164,8 @@ static void usbkb_release_media_key(void){
 }
 
 static void usbkb_release_keys(void){
-	// Ҫusbkb_release_sys_key usbkb_release_normal_key ˳
-	// Ϊ usbkb_release_sys_key,  usbkb_release_media_key мһʱ
+	// 不要调换usbkb_release_sys_key 和usbkb_release_normal_key 的顺序，
+	// 这是为了让 usbkb_release_sys_key,  usbkb_release_media_key 中间有一定延时
 	usbkb_release_sys_key();
 	usbkb_release_normal_key();
 	usbkb_release_media_key();
@@ -178,7 +178,7 @@ void usbkb_release_check(){
 
 }
 
-//  normal_keycode 淵ͨ
+//  normal_keycode 里面返回普通按键
 int usbkb_separate_key_types(u8 *keycode, u8 cnt, u8 *normal_key, u8 *ext_key){
     STATIC_ASSERT(KB_RETURN_KEY_MAX <= KEYBOARD_REPORT_KEY_MAX);
     assert(cnt <= KB_RETURN_KEY_MAX);
@@ -372,7 +372,7 @@ void usbkb_hid_report(kb_data_t *data){
 
 
 	if(data->cnt > 0){
-		//  keycodeദ
+		//  keycode分类处理
 	    normal_key_cnt = usbkb_separate_key_types(data->keycode, data->cnt, normal_keycode, &ext_key);
 	}
 

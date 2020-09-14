@@ -94,23 +94,63 @@ typedef struct {
 	USB_Descriptor_Endpoint_t iso_out1;
 } BTUSB_Descriptor_Configuration_t;
 
+/**
+ * @brief	This function is used to obtain USB language descriptor
+ * @param	none
+ * @return	the address of language_desc struct
+ */
 u8* btusb_usbdesc_get_language(void);
+
+/**
+ * @brief	This function is used to obtain USB vendor descriptor
+ * @param	none
+ * @return	the address of vendor_desc struct
+ */
 u8* btusb_usbdesc_get_vendor(void);
+
+/**
+ * @brief	This function is used to obtain USB product descriptor
+ * @param	none
+ * @return	the address of product_desc struct
+ */
 u8* btusb_usbdesc_get_product(void);
+
+/**
+ * @brief	This function is used to obtain USB serial descriptor
+ * @param	none
+ * @return	the address of serial_desc struct
+ */
 u8* btusb_usbdesc_get_serial(void);
+
+/**
+ * @brief	This function is used to obtain USB device descriptor
+ * @param	none
+ * @return	the address of device_desc struct
+ */
 u8* btusb_usbdesc_get_device(void);
+
+/**
+ * @brief	This function is used to obtain USB configuration descriptor
+ * @param	none
+ * @return	the address of configuration_desc_cdc or configuration_desc struct
+ */
 u8* btusb_usbdesc_get_configuration(void);
+
+/**
+ * @brief	This function is used to obtain the size of USB configuration descriptor
+ * @param	none
+ * @return	the size of configuration_desc_cdc or configuration_desc struct
+ */
 int btusb_usbdesc_get_configuration_size(void);
 
+/**
+ * @brief	This function is used to set CDC device enable
+ * @param	en- enable CDC device
+ * @return	none.
+ */
 void btusb_select_cdc_device (int en);
 
 ///////////////////////////////////////////////////////////////////////////////
-//typedef void (*usb_bulk_out_callback_t)(u8 *p, int n, int offset);
-
-void myusb_bulk_drv_init (void *p);	//initialization
-int myusb_bulk_in (u8 *p, int n);		//send status
-int myusb_bulk_proc ();				//called in main loop
-void myusb_bulk_out_command (u8 *p, int n, int offset);
 
 #define CMD_GET_VERSION                 0 //0x00
 #define CMD_SELECT_DPIMPL               16//0x10

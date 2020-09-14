@@ -80,15 +80,35 @@ ble_sts_t 	blc_ll_setScanParameter (scan_type_t scan_type, u16 scan_interval, u1
 ble_sts_t 	blc_ll_setScanEnable (scan_en_t scan_enable, dupFilter_en_t filter_duplicate);
 
 
-
-
-
-
-
-
+/**
+ * @brief      This function is used to add scan state in advertise state of slave role.
+ * @param[in]  none.
+ * @return     Status - 0x00: BLE success; 0x01-0xFF: fail
+ */
 ble_sts_t    blc_ll_addScanningInAdvState(void);
+
+
+/**
+ * @brief      This function is used to remove scan state in advertise state of slave role.
+ * @param[in]  none.
+ * @return      Status - 0x00: BLE success; 0x01-0xFF: fail
+ */
 ble_sts_t    blc_ll_removeScanningFromAdvState(void);
+
+
+/**
+ * @brief      This function is used to add scan state in connect state of slave role.
+ * @param[in]  none.
+ * @return     Status - 0x00: BLE success; 0x01-0xFF: fail
+ */
 ble_sts_t    blc_ll_addScanningInConnSlaveRole(void);
+
+
+/**
+ * @brief      This function is used to remove scan state in connect state of slave role.
+ * @param[in]  none.
+ * @return      Status - 0x00: BLE success; 0x01-0xFF: fail
+ */
 ble_sts_t    blc_ll_removeScanningFromConnSLaveRole(void);
 
 

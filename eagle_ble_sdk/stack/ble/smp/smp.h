@@ -149,6 +149,8 @@
 /** @} end of group SMP TK status */
 
 
+#define	MASTER_SMP_EVENT							1
+
 //See the Core_v5.0(Vol 3/Part C/10.2, Page 2067) for more information.
 typedef enum {
 	LE_Security_Mode_1_Level_1 = BIT(0),  No_Authentication_No_Encryption			= BIT(0), No_Security = BIT(0),

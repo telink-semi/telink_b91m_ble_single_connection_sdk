@@ -141,17 +141,63 @@ extern void tn_p256_keypair (unsigned char *s, unsigned char *x, unsigned char *
 extern void tn_p256_dhkey (unsigned char *r, unsigned char *s, unsigned char * x, unsigned char *y);
 
 extern void tn_aes_128(unsigned char *key, unsigned char *plaintext, unsigned char *result);
+
+/**
+ * @brief	RFC-44931 defines the Cipher-based Message Authentication Code (CMAC)
+ * 			that uses AES-128 as the block cipher function, also known as AES-CMAC.
+ * @return	none.
+ */
 extern void tn_aes_cmac ( unsigned char *key, unsigned char *input, int length,
                   unsigned char *mac );
+
+/**
+ * @brief	This function is used to compute confirm value by function f4
+ * @return	0
+ */
 extern int tn_crypto_f4 (unsigned char *r, unsigned char u[32], unsigned char v[32], unsigned char x[16], unsigned char z);
+
+/**
+ * @brief	This function is used to generate the numeric comparison values during authentication
+ * 			stage 1 of the LE Secure Connections pairing process by function g2
+ * @return	0
+ */
 extern unsigned int tn_crypto_g2 (unsigned char u[32], unsigned char v[32], unsigned char x[16], unsigned char y[16]);
+
+/**
+ * @brief	This function is used to generate derived keying material in order to create the LTK
+ * 			and keys for the commitment function f6 by function f5
+ * @return	0
+ */
 extern int tn_crypto_f5 (unsigned char *mac, unsigned char *ltk, unsigned char w[32], unsigned char n1[16], unsigned char n2[16],
 				  unsigned char a1[7], unsigned char a2[7]);
+
+/**
+ * @brief	This function is used to generate check values during authentication stage 2 of the
+ * 			LE Secure Connections pairing process by function f6
+ * @return	0
+ */
 extern int tn_crypto_f6 (unsigned char *e, unsigned char w[16], unsigned char n1[16], unsigned char n2[16],
 				  unsigned char r[16], unsigned char iocap[3], unsigned char a1[7], unsigned char a2[7]);
+
+/**
+ * @brief	This function is used to convert keys of a given size from one key type to another
+ * 			key type with equivalent strength
+ * @return	0
+ */
 extern int tn_crypto_h6 (unsigned char *r, unsigned char key[16], unsigned char id[4]);
 
+/**
+ * @brief	This function is used to test secure connection crypto function
+ * @return	0: success
+ * 			1: fail
+ */
 extern int test_crypto_func ();
+
+/**
+ * @brief	This function is used to test secure connection dhkey function
+ * @return	0: success
+ * 			1: fail
+ */
 extern int test_dhkey ();
 
 #endif 

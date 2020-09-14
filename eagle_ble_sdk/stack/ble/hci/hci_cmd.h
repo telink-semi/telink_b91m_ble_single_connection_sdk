@@ -874,6 +874,12 @@ typedef struct
 
 
 
+/**
+ * @brief       this function is used to set PHY type for connection
+ * @param[in]   *para -  Command Parameters for "7.8.49 LE Set PHY command"
+ * @return      0 : success
+ * 				other : fail
+ */
 ble_sts_t blc_hci_le_setPhy(hci_le_setPhyCmd_param_t* para);
 
 
