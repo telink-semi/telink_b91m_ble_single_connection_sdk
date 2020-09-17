@@ -130,7 +130,7 @@ int uart_putc(char byte) //GPIO simulate uart print func
 
 	//REG_ADDR8(0x582+((DEBUG_INFO_TX_PIN>>8)<<3)) &= ~(DEBUG_INFO_TX_PIN & 0xff) ;//Enable output
 
-	unsigned int  pcTxReg = (0x140303 + 8*((DEBUG_INFO_TX_PIN>>8)<<3));//register GPIO output
+	unsigned int  pcTxReg = (0x140303 + ((DEBUG_INFO_TX_PIN>>8)<<3));//register GPIO output
 	unsigned char tmp_bit0 = read_reg8(pcTxReg) & (~(DEBUG_INFO_TX_PIN & 0xff));
 	unsigned char tmp_bit1 = read_reg8(pcTxReg) | (DEBUG_INFO_TX_PIN & 0xff);
 	unsigned char bit[10] = {0};
