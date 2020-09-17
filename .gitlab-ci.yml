@@ -1,26 +1,17 @@
 stages:
   - fossid
-  - clean-fossid
-
 
 fossid:
   tags:
     - FOSSID
   stage: fossid
   script:
+    - date
+    - pwd
+    - ls
     - fossid_check.sh
+    - date
   artifacts:
     paths:
     - fossid*.txt
   when: manual
-
-clean-fossid:
-  stage: clean-fossid
-  tags:
-    - FOSSID
-  script:
-    - rm -rf * .git .git*
-    - ls -a
-    - ls -a ..
-  when: always
-  
