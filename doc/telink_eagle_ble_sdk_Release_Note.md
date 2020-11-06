@@ -1,12 +1,3 @@
-## V1.0.0-Beta-patch0001
-### Bug Fixes
-
-* Optimize reconnection (affect GATT permission, whitelist and other functions)
-
-### Bug Fixes
-
-* 对BLE回连进行优化 (涉及GATT权限，白名单与其他一些功能)
-
 ## V1.0.0-Beta
 ### Features
 
