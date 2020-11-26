@@ -45,23 +45,13 @@
  *******************************************************************************************************/
 #pragma once
 
-#if (__PROJECT_B91_BLE_REMOTE__)
-	#include "../B91_ble_remote/app_config.h"
-#elif (__PROJECT_B91_BLE_SAMPLE__)
+#if (__PROJECT_B91_BLE_SAMPLE__)
 	#include "../B91_ble_sample/app_config.h"
 #elif (__PROJECT_B91_MODULE__ )
 	#include "../B91_module/app_config.h"
-#elif (__PROJECT_B91_HCI__)
-	#include "../B91_hci/app_config.h"
 #elif (__PROJECT_B91_FEATURE_TEST__)
 	#include "../B91_feature/app_config.h"
-#elif(__PROJECT_B91_MASTER_KMA_DONGLE__)
-	#include "../B91_master_kma_dongle/app_config.h"
-#elif(__PROJECT_B91_INTERNAL_TEST__)
-	#include "../B91_internal_test/app_config.h"
-#elif(__PROJECT_B91_DEBUG_DEMO__)
-	#include "../B91_debug_demo/app_config.h"
 #else
-	#include "../common/default_config.h"
+
 #endif
 

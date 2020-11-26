@@ -49,7 +49,7 @@
 #include	"adpcm.h"
 #include 	"gl_audio.h"
 
-#include    "../../vendor/B91_feature/feature_audio/app_att.h"
+//#include    "../../vendor/B91_feature/feature_audio/app_att.h"
 
 #if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_GOOGLE)
 
