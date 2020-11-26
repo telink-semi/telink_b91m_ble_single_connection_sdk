@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_ui.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -46,6 +46,7 @@
 #include "tl_common.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
+
 #include "application/keyboard/keyboard.h"
 #include "application/usbstd/usbkeycode.h"
 #include "app_att.h"
@@ -56,6 +57,7 @@
 
 
 _attribute_data_retention_	int 	key_not_released;
+_attribute_data_retention_	u8 		ota_is_working = 0;
 
 extern u32	latest_user_event_tick;
 
@@ -64,6 +66,51 @@ extern u32	latest_user_event_tick;
 _attribute_data_retention_	u8 		key_type;
 
 
+
+
+#if (BLE_SLAVE_OTA_ENABLE)
+/**
+ * @brief      this function is used to register the function for OTA start.
+ * @param[in]  none
+ * @return     none
+ */
+void app_enter_ota_mode(void)
+{
+	ota_is_working = 1;
+	bls_ota_setTimeout(30 * 1000 * 1000); //set OTA timeout  30 seconds
+
+	#if(1 && UI_LED_ENABLE)  //this is only for debug
+	gpio_write(GPIO_LED_WHITE, 1);
+	#endif
+}
+
+
+/**
+ * @brief      this function is used to register the function for OTA end.
+ * @param[in]  result - OTA result
+ * @return     none
+ */
+void app_ota_end_result(int result)
+{
+	#if(1 && UI_LED_ENABLE)  //this is only for debug
+	if(result == OTA_SUCCESS){  //led for debug: OTA success
+		gpio_write(GPIO_LED_BLUE, 1);
+		sleep_ms(500);
+		gpio_write(GPIO_LED_BLUE, 0);
+		sleep_ms(500);
+		gpio_write(GPIO_LED_BLUE, 1);
+		sleep_ms(500);
+		gpio_write(GPIO_LED_BLUE, 0);
+		sleep_ms(500);
+	}
+	else{  //OTA fail
+		gpio_write(GPIO_LED_BLUE, 1);
+		sleep_ms(200);
+		gpio_write(GPIO_LED_BLUE, 0);
+	}
+	#endif
+}
+#endif
 
 
 
@@ -157,7 +204,6 @@ _attribute_data_retention_		static u32 keyScanTick = 0;
  * @param[in]  n - data length of event
  * @return     none
  */
-_attribute_ram_code_
 void proc_keyboard (u8 e, u8 *p, int n)
 {
 	if(clock_time_exceed(keyScanTick, 8000)){
@@ -170,16 +216,10 @@ void proc_keyboard (u8 e, u8 *p, int n)
 	kb_event.keycode[0] = 0;
 	int det_key = kb_scan_key (0, 1);
 
-
-
 	if (det_key){
 		key_change_proc();
 	}
-
 }
-
-
-extern u32	scan_pin_need;
 
 
 
@@ -260,7 +300,7 @@ extern u32	scan_pin_need;
 	u8 vc_detect_button(int read_key)
 	{
 		u8 btn_changed, i;
-		tmemset(&vc_event,0,sizeof(vc_data_t));			//clear vc_event
+		memset(&vc_event,0,sizeof(vc_data_t));			//clear vc_event
 		//vc_event.btn_press = 0;
 
 		for(i=0; i<MAX_BTN_SIZE; i++){
@@ -295,6 +335,15 @@ extern u32	scan_pin_need;
 	 */
 	void proc_button (u8 e, u8 *p, int n)
 	{
+		static u32 button_det_tick;
+		if(clock_time_exceed(button_det_tick, 10*1000))
+		{
+			button_det_tick = clock_time();
+		}
+		else{
+			return;
+		}
+
 		int det_key = vc_detect_button (1);
 
 		if (det_key)  //key change: press or release

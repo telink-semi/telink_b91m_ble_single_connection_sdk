@@ -49,13 +49,9 @@
 
 #include "spp.h"
 #include "vendor/common/blt_common.h"
+#include "battery_check.h"
+#include "app_buffer.h"
 
-
-#define SPP_RXFIFO_SIZE		72
-#define SPP_RXFIFO_NUM		2
-
-#define SPP_TXFIFO_SIZE		72
-#define SPP_TXFIFO_NUM		8
 
 _attribute_data_retention_  u8 		 	spp_rx_fifo_b[SPP_RXFIFO_SIZE * SPP_RXFIFO_NUM] = {0};
 _attribute_data_retention_	my_fifo_t	spp_rx_fifo = {
@@ -74,16 +70,6 @@ _attribute_data_retention_	my_fifo_t	spp_tx_fifo = {
 												spp_tx_fifo_b,};
 
 
-#define LL_RX_FIFO_SIZE		64
-#define LL_RX_FIFO_NUM		8
-
-#define LL_TX_FIFO_SIZE		48
-#define LL_TX_FIFO_NUM		17  //only 9 and 17  can be used
-
-_attribute_data_retention_	u8	app_ll_rxfifo[LL_RX_FIFO_SIZE * LL_RX_FIFO_NUM] = {0};
-_attribute_data_retention_  u8	app_ll_txfifo[LL_TX_FIFO_SIZE * LL_TX_FIFO_NUM] = {0};
-
-
 
 
 #define     MY_APP_ADV_CHANNEL					BLT_ENABLE_ADV_ALL
@@ -99,7 +85,14 @@ _attribute_data_retention_  u8	app_ll_txfifo[LL_TX_FIFO_SIZE * LL_TX_FIFO_NUM] =
 _attribute_data_retention_	own_addr_type_t 	app_own_address_type = OWN_ADDRESS_PUBLIC;
 
 
+#if UART_DMA_USE
 
+#define UART_DMA_CHANNEL_RX  DMA2
+#define UART_DMA_CHANNEL_TX  DMA3
+
+volatile _attribute_data_retention_ unsigned char uart_dma_send_flag = 0;
+
+#endif
 
 /**
  * @brief	Adv Packet data
@@ -235,7 +228,11 @@ _attribute_data_retention_	int module_task_busy;
 _attribute_data_retention_	int	module_uart_data_flg;
 _attribute_data_retention_	u32 module_wakeup_module_tick;
 
+#if UART_DMA_USE
+#define UART_TX_BUSY			((spp_tx_fifo.rptr != spp_tx_fifo.wptr) || uart_dma_send_flag)
+#else
 #define UART_TX_BUSY			((spp_tx_fifo.rptr != spp_tx_fifo.wptr) || uart_tx_is_busy(UART0) )
+#endif
 #define UART_RX_BUSY			(spp_rx_fifo.rptr != spp_rx_fifo.wptr)
 
 
@@ -279,6 +276,10 @@ void 	app_switch_to_indirect_adv(u8 e, u8 *p, int n)
  */
 void app_suspend_exit ()
 {
+#if UART_DMA_USE
+	u8* p = spp_rx_fifo.p + (spp_rx_fifo.wptr & (spp_rx_fifo.num-1)) * spp_rx_fifo.size;
+	uart_receive_dma(UART0,(unsigned char *)p, (unsigned int)spp_rx_fifo.size);
+#endif
 	GPIO_WAKEUP_MODULE_HIGH;  //module enter working state
 	bls_pm_setSuspendMask(SUSPEND_DISABLE);
 	tick_wakeup = clock_time () | 1;
@@ -318,9 +319,7 @@ void app_power_management ()
 
 	if (!app_module_busy() && !tick_wakeup)
 	{
-		#if (PM_NO_SUSPEND_ENABLE)
-			bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
-		#elif (PM_DEEPSLEEP_RETENTION_ENABLE)
+		#if (PM_DEEPSLEEP_RETENTION_ENABLE)
 			bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		#else
 			bls_pm_setSuspendMask(SUSPEND_ADV | SUSPEND_CONN);
@@ -357,6 +356,32 @@ volatile unsigned int uart0_rx_buff_byte[16] __attribute__((aligned(4))) ={0x00}
  */
 void uart0_recieve_irq(void)
 {
+
+#if UART_DMA_USE
+    if(uart_get_irq_status(UART0,UART_TXDONE))
+	{
+    	uart_dma_send_flag=0;
+	    uart_clr_tx_done(UART0);
+	}
+
+    if(uart_get_irq_status(UART0,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can noly used in A1-SOC.
+    {
+    	/************************cll rx_irq****************************/
+    	uart_clr_irq_status(UART0,UART_CLR_RX);
+    	u8* w = spp_rx_fifo.p + (spp_rx_fifo.wptr & (spp_rx_fifo.num-1)) * spp_rx_fifo.size;
+    	if(w[0]!=0)
+    	{
+    		my_fifo_next(&spp_rx_fifo);
+    		u8* p = spp_rx_fifo.p + (spp_rx_fifo.wptr & (spp_rx_fifo.num-1)) * spp_rx_fifo.size;
+    		uart_receive_dma(UART0,(unsigned char *)p, (unsigned int)spp_rx_fifo.size);
+    	}
+
+    	if((uart_get_irq_status(UART0,UART_RX_ERR)))
+    	{
+    		uart_clr_irq_status(UART0,UART_CLR_RX);
+    	}
+    }
+#else
 	if(uart0_flag == UART0_RECIEVE_IDLE)
 	{
 		uart0_ndmairq_cnt = 4;//recieve packet start
@@ -370,6 +395,7 @@ void uart0_recieve_irq(void)
 		uart0_flag = UART0_RECIEVE_START;
 	}
 	uart0_ndma_tick = clock_time();
+#endif
 }
 
 
@@ -387,7 +413,7 @@ void uart0_recieve_process(void)
 			//add len
 			uart0_ndmairq_cnt -= 4;
 			u8* p = my_fifo_wptr(&spp_rx_fifo);
-			tmemcpy(p,(u8 *)&uart0_ndmairq_cnt,4);
+			memcpy(p,(u8 *)&uart0_ndmairq_cnt,4);
 			my_fifo_next(&spp_rx_fifo);
 			uart0_flag = UART0_RECIEVE_IDLE;
 		}
@@ -400,12 +426,11 @@ void uart0_recieve_process(void)
  * @param[in]	none
  * @return      none
  */
-void user_init_normal(void)
+_attribute_no_inline_ void user_init_normal(void)
 {
-	//random number generator must be initiated here( in the beginning of user_init_nromal)
-	//when deepSleep retention wakeUp, no need initialize again
+	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
-
 
 	/*****************************************************************************************
 	 Note: battery check must do before any flash write/erase operation, cause flash write/erase
@@ -416,19 +441,27 @@ void user_init_normal(void)
 				So these initialization must be done after  battery check
 	*****************************************************************************************/
 	#if (BATT_CHECK_ENABLE)  //battery check must do before OTA relative operation
-		if(analog_read_reg8(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
-			app_battery_power_check(VBAT_ALRAM_THRES_MV + 200);  //2.2 V
+		u8 battery_check_returnVaule = 0;
+		if(analog_read(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
+			do{
+				battery_check_returnVaule = app_battery_power_check(VBAT_ALRAM_THRES_MV + 200);  //2.2 V
+			}while(battery_check_returnVaule);
 		}
 		else{
-			app_battery_power_check(VBAT_ALRAM_THRES_MV);  //2.0 V
+			do{
+				battery_check_returnVaule = app_battery_power_check(VBAT_ALRAM_THRES_MV);  //2.0 V
+			}while(battery_check_returnVaule);
 		}
 	#endif
 
-////////////////// BLE stack initialization ////////////////////////////////////
+
+//////////////////////////// BLE stack Initialization  Begin //////////////////////////////////
+	/* for 1M   Flash, flash_sector_mac_address equals to 0xFF000
+	 * for 2M   Flash, flash_sector_mac_address equals to 0x1FF000*/
 	u8  mac_public[6];
 	u8  mac_random_static[6];
-	//for 1M   Flash, flash_sector_mac_address equals to 0xFF000
 	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
+
 
 	#if(BLE_DEVICE_ADDRESS_TYPE == BLE_DEVICE_ADDRESS_PUBLIC)
 		app_own_address_type = OWN_ADDRESS_PUBLIC;
@@ -436,15 +469,29 @@ void user_init_normal(void)
 		app_own_address_type = OWN_ADDRESS_RANDOM;
 		blc_ll_setRandomAddr(mac_random_static);
 	#endif
-	////// Controller Initialization  //////////
+
+
+	//////////// Controller Initialization  Begin /////////////////////////
 	blc_ll_initBasicMCU();                      //mandatory
-	blc_ll_initStandby_module(mac_public);				//mandatory
+	blc_ll_initStandby_module(mac_public);		//mandatory
 	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
-	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
-	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+
+	blc_ll_setAclConnMaxOctetsNumber(ACL_CONN_MAX_RX_OCTETS, ACL_CONN_MAX_TX_OCTETS);
+
+	blc_ll_initAclConnTxFifo(app_acl_txfifo, ACL_TX_FIFO_SIZE, ACL_TX_FIFO_NUM);
+	blc_ll_initAclConnRxFifo(app_acl_rxfifo, ACL_RX_FIFO_SIZE, ACL_RX_FIFO_NUM);
+
+	u8 check_status = blc_controller_check_appBufferInitialization();
+	if(check_status != BLE_SUCCESS){
+		/* here user should set some log to know which application buffer incorrect */
+		write_log32(0x88880000 | check_status);
+		while(1);
+	}
+	//////////// Controller Initialization  End /////////////////////////
+
 
 	////// Host Initialization  //////////
 	blc_gap_peripheral_init();    //gap initialization
@@ -506,6 +553,31 @@ void user_init_normal(void)
 
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
+#if UART_DMA_USE
+	unsigned short div;
+	unsigned char bwpc;
+	uart_reset(UART0);
+	uart_set_pin(UART0_TX_PB2 ,UART0_RX_PB3 );// uart tx/rx pin set
+	uart_cal_div_and_bwpc(115200, sys_clk.pclk*1000*1000, &div, &bwpc);
+	uart_set_dma_rx_timeout(UART0, bwpc, 12, UART_BW_MUL1);
+	uart_init(UART0, div, bwpc, UART_PARITY_NONE, UART_STOP_BIT_ONE);
+
+	uart_clr_irq_mask(UART0, UART_RX_IRQ_MASK | UART_TX_IRQ_MASK | UART_TXDONE_MASK|UART_RXDONE_MASK);
+	core_interrupt_enable();
+
+	uart_set_tx_dma_config(UART0, UART_DMA_CHANNEL_TX);
+	uart_set_rx_dma_config(UART0, UART_DMA_CHANNEL_RX);
+
+	uart_clr_tx_done(UART0);
+	uart_set_irq_mask(UART0, UART_RXDONE_MASK);
+
+	uart_set_irq_mask(UART0, UART_TXDONE_MASK);
+	plic_interrupt_enable(IRQ19_UART0);
+
+	u8 *uart_rx_addr = (spp_rx_fifo_b + (spp_rx_fifo.wptr & (spp_rx_fifo.num-1)) * spp_rx_fifo.size);
+	uart_receive_dma(UART0,(unsigned char *)uart_rx_addr, (unsigned int)spp_rx_fifo.size);
+
+#else
 	//uart config
 	uart_reset(UART0);
 	uart_set_pin(UART0_TX_PB2, UART0_RX_PB3 );// uart tx/rx pin set
@@ -522,7 +594,7 @@ void user_init_normal(void)
 	uart_rx_irq_trig_level(UART0, 1);
 
 	uart_set_irq_mask(UART0, UART_RX_IRQ_MASK);
-
+#endif
 	extern int rx_from_uart_cb (void);
 	extern int tx_to_uart_cb (void);
 	blc_register_hci_handler(rx_from_uart_cb, tx_to_uart_cb);				//customized uart handler
@@ -534,15 +606,10 @@ void user_init_normal(void)
 #if (BLE_MODULE_PM_ENABLE)
 	blc_ll_initPowerManagement_module();        //pm module:      	 optional
 
-	#if PM_NO_SUSPEND_ENABLE
-		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
-		blc_pm_setDeepsleepRetentionThreshold(3, 3);
-		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 420 : 440);
-		blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW32K);
-	#elif (PM_DEEPSLEEP_RETENTION_ENABLE)
+	#if (PM_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
-		blc_pm_setDeepsleepRetentionThreshold(95, 95);
-		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(250);
+	    blc_pm_setDeepsleepRetentionThreshold(95, 95);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(350);
 	#else
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 	#endif
@@ -582,6 +649,31 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 	DBG_CHN0_HIGH;    //debug
 	irq_enable();
 	//uart config
+
+#if UART_DMA_USE
+	unsigned short div;
+	unsigned char bwpc;
+	uart_reset(UART0);
+	uart_set_pin(UART0_TX_PB2 ,UART0_RX_PB3 );// uart tx/rx pin set
+	uart_cal_div_and_bwpc(115200, sys_clk.pclk*1000*1000, &div, &bwpc);
+	uart_set_dma_rx_timeout(UART0, bwpc, 12, UART_BW_MUL1);
+	uart_init(UART0, div, bwpc, UART_PARITY_NONE, UART_STOP_BIT_ONE);
+
+	uart_clr_irq_mask(UART0, UART_RX_IRQ_MASK | UART_TX_IRQ_MASK | UART_TXDONE_MASK|UART_RXDONE_MASK);
+	core_interrupt_enable();
+
+	uart_set_tx_dma_config(UART0, UART_DMA_CHANNEL_TX);
+	uart_set_rx_dma_config(UART0, UART_DMA_CHANNEL_RX);
+
+	uart_clr_tx_done(UART0);
+	uart_set_irq_mask(UART0, UART_RXDONE_MASK);
+
+	uart_set_irq_mask(UART0, UART_TXDONE_MASK);
+	plic_interrupt_enable(IRQ19_UART0);
+
+	u8 *uart_rx_addr = (spp_rx_fifo_b + (spp_rx_fifo.wptr & (spp_rx_fifo.num-1)) * spp_rx_fifo.size);
+	uart_receive_dma(UART0,(unsigned char *)uart_rx_addr, (unsigned int)spp_rx_fifo.size);
+#else
 	uart_reset(UART0);
 	uart_set_pin(UART0_TX_PB2, UART0_RX_PB3 );// uart tx/rx pin set
 	unsigned short div;
@@ -597,7 +689,7 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 	uart_rx_irq_trig_level(UART0, 1);
 
 	uart_set_irq_mask(UART0, UART_RX_IRQ_MASK);
-
+#endif
 	//mcu can wake up module from suspend or deepsleep by pulling up GPIO_WAKEUP_MODULE
 	cpu_set_gpio_wakeup (GPIO_WAKEUP_MODULE, Level_High, 1);  // pad high wakeup deepsleep
 
@@ -613,7 +705,7 @@ _attribute_ram_code_ void user_init_deepRetn(void)
  * @param[in]	none
  * @return      none
  */
-void main_loop (void)
+_attribute_no_inline_ void main_loop (void)
 {
 	////////////////////////////////////// BLE entry /////////////////////////////////
 	blt_sdk_main_loop();
@@ -634,7 +726,11 @@ void main_loop (void)
 	//  add spp UI task
 	app_power_management ();
 
+
+#if !UART_DMA_USE
 	uart0_recieve_process();
+#endif
+
 
 	spp_restart_proc();
 }

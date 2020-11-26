@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbmouse.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,15 +43,16 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#include "../../tl_common.h"
+
+#include "tl_common.h"
+
 #if(USB_MOUSE_ENABLE)
 
 #include "usbmouse.h"
 #include "usbkb.h"
-#include "../usbstd/usb.h"
-#include "../../drivers/9518/usbhw.h"
-//#include "../../drivers/9518/usbhw_i.h"
-#include "../rf_frame.h"
+#include "application/usbstd/usb.h"
+#include "application/rf_frame.h"
+
 
 #ifndef	USB_MOUSE_REPORT_SMOOTH
 #define	USB_MOUSE_REPORT_SMOOTH	0
@@ -72,7 +73,8 @@ void usbmouse_add_frame (rf_packet_mouse_t *packet_mouse){
 	u8 new_data_num = packet_mouse->pno;
 	for(u8 i=0;i<new_data_num;i++)
 	{
-			tmemcpy4((int*)(&mouse_dat_buff[usbmouse_wptr]), (int*)(&packet_mouse->data[i*sizeof(mouse_data_t)]), sizeof(mouse_data_t));
+//			tmemcpy4((int*)(&mouse_dat_buff[usbmouse_wptr]), (int*)(&packet_mouse->data[i*sizeof(mouse_data_t)]), sizeof(mouse_data_t));
+			memcpy((s8*)(&mouse_dat_buff[usbmouse_wptr]), (s8*)(&packet_mouse->data[i*sizeof(mouse_data_t)]), sizeof(mouse_data_t));
 			BOUND_INC_POW2(usbmouse_wptr,USBMOUSE_BUFF_DATA_NUM);
 			if(usbmouse_wptr == usbmouse_rptr)
 			{
@@ -130,7 +132,6 @@ int usbmouse_hid_report(u8 report_id, u8 *data, int cnt){
 	//unsigned short crc;
 	//unsigned int crch;
 
-    assert(cnt<8);
 
 	if(usbhw_is_ep_busy(USB_EDP_MOUSE)){
 
@@ -138,7 +139,7 @@ int usbmouse_hid_report(u8 report_id, u8 *data, int cnt){
 		pData[0] = DAT_TYPE_MOUSE;
 		pData[1] = report_id;
 		pData[2] = cnt;
-		tmemcpy(pData + 4, data, cnt);
+		memcpy(pData + 4, data, cnt);
 
 		int fifo_use = (usb_ff_wptr - usb_ff_rptr) & (USB_FIFO_NUM*2-1);
 		if (fifo_use > USB_FIFO_NUM) {

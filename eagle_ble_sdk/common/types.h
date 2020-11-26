@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	types.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,8 +43,6 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#ifndef COMMON_TYPES_H_
-#define COMMON_TYPES_H_
 
 #pragma once
 
@@ -121,4 +119,3 @@ typedef u32 arg_t;
 typedef u32 status_t;
 
 
-#endif /* COMMON_TYPES_H_ */

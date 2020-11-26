@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_ui.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -46,13 +46,30 @@
 #ifndef VENDOR_B91_BLE_SAMPLE_APP_UI_H_
 #define VENDOR_B91_BLE_SAMPLE_APP_UI_H_
 
-
+#include "app_config.h"
 
 #if (UI_KEYBOARD_ENABLE)
 
-
-extern u32	scan_pin_need;
 extern int 	key_not_released;
+extern	u8 	ota_is_working;
+
+
+#if (BLE_SLAVE_OTA_ENABLE)
+/**
+ * @brief      this function is used to register the function for OTA start.
+ * @param[in]  none
+ * @return     none
+ */
+void app_enter_ota_mode(void);
+
+
+/**
+ * @brief      this function is used to register the function for OTA end.
+ * @param[in]  result - OTA result
+ * @return     none
+ */
+void app_ota_end_result(int result);
+#endif
 
 
 /**

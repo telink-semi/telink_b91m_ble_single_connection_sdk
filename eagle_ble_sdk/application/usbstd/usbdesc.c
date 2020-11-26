@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbdesc.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,9 +43,10 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#include "../usbstd/usbdesc.h"
-#include "../../tl_common.h"
-#include "../../drivers.h"
+
+#include <application/usbstd/usbdesc.h>
+#include "tl_common.h"
+#include "drivers.h"
 
 #if (USB_MOUSE_ENABLE)
 #include <application/app/usbmouse_i.h>
@@ -638,7 +639,7 @@ const USB_Descriptor_Configuration_t
 				{	{	sizeof(USB_Audio_Descriptor_Format_t)
 						+ sizeof(USB_Audio_SampleFreq_t), DTYPE_CSInterface},
 					AUDIO_DSUBTYPE_CSInterface_FormatType, USB_AUDIO_FORMAT_PCM, // FormatType
-					MIC_CHANNLE_COUNT, // Channels
+					MIC_CHANNEL_COUNT, // Channels
 					2, // SubFrameSize
 					MIC_RESOLUTION_BIT, // BitsResolution
 					1 // TotalDiscreteSampleRates

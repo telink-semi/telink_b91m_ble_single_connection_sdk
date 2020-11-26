@@ -81,7 +81,15 @@
 #define		CFG_ADR_CALIBRATION_1M_FLASH						0xFE000
 #endif
 
+/**************************** 2 M Flash *******************************/
+#ifndef		CFG_ADR_MAC_2M_FLASH
+#define		CFG_ADR_MAC_2M_FLASH		   						0x1FF000
+#endif
 
+
+#ifndef		CFG_ADR_CALIBRATION_2M_FLASH
+#define		CFG_ADR_CALIBRATION_2M_FLASH						0x1FE000
+#endif
 
 /** Calibration Information FLash Address Offset of  CFG_ADR_CALIBRATION_xx_FLASH ***/
 #define		CALIB_OFFSET_CAP_INFO								0x0
@@ -126,11 +134,11 @@ static inline void blc_app_loadCustomizedParameters(void)
 {
 	 if(!blt_miscParam.ext_cap_en)
 	 {
-		 //customize freq_offset adjust cap value, if not customized, default ana_81 is 0xd0
-		 //for 512K Flash, flash_sector_calibration equals to 0x77000
+		 //customize freq_offset adjust cap value, if not customized, default ana_8A is 0x60
 		 //for 1M  Flash, flash_sector_calibration equals to 0xFE000
 		 if(flash_sector_calibration){
-			 u8 cap_frqoft = *(unsigned char*) (flash_sector_calibration + CALIB_OFFSET_CAP_INFO);
+			 u8 cap_frqoft;
+			 flash_read_page(flash_sector_calibration + CALIB_OFFSET_CAP_INFO, 1, &cap_frqoft);
 			 if( cap_frqoft != 0xff ){
 				 analog_write_reg8(0x8A, (analog_read_reg8(0x8A) & 0xc0)|(cap_frqoft & 0x3f));
 			 }

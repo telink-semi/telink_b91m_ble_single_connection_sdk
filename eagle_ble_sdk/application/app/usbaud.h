@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbaud.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -45,11 +45,9 @@
  *******************************************************************************************************/
 #pragma once
 
-#include "../usbstd/HIDClassCommon.h"
-#include "../usbstd/HIDReportData.h"
-#include "../../tl_common.h"
-//#include "../common/types.h"
-//#include "../common/assert.h"
+#include <application/usbstd/HIDClassCommon.h>
+#include <application/usbstd/HIDReportData.h>
+#include "tl_common.h"
 
 /* Enable C linkage for C++ Compilers: */
 #if defined(__cplusplus)

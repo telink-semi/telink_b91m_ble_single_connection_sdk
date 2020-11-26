@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	HIDClassDevice.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06

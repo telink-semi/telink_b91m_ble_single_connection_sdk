@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbcdc.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,19 +43,12 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#include "../../tl_common.h"
 
 #if(USB_CDC_ENABLE)
 
 #include "usbcdc.h"
-#include "../../drivers/9518/usbhw.h"
-//#include "../../drivers/9518/usbhw_i.h"
-#include "../drivers/usb.h"
-#include "../os/ev.h"
-//#include "../os/sys.h"
-#include "../os/ev_queue.h"
-#include "../os/ev_buffer.h"
-
+#include "application/usbstd/usb.h"
+#include "application/rf_frame.h"
 
 
 void usbcdc_write32(u32 value);

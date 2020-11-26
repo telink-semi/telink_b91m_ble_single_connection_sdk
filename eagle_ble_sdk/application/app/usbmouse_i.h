@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbmouse_i.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,21 +43,25 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
+
 #pragma once
 
-#include <application/app/usbmouse.h>
+#include "usbmouse.h"
+#include "application/usbstd/usb.h"
+#include "vendor/common/default_config.h"
 
-#include "../usbstd/usb.h"
-#include "../../drivers/9518/usbhw.h"
-//#include "../../drivers/9518/usbhw_i.h"
-#include "../../vendor/common/default_config.h"
+
 /** HID class report descriptor. This is a special descriptor constructed with values from the
  *  USBIF HID class specification to describe the reports and capabilities of the HID device. This
  *  descriptor is parsed by the host and its contents used to determine what data (and in what encoding)
  *  the device will send, and what it may be sent back from the host. Refer to the HID specification for
  *  more details on HID report descriptors.
  */
-
+/* debug note: */
+/*
+ 0x85, 0x01, //Report ID (1) keyboard
+ 0x85, 0x02, //report ID 02 mouse
+ */
 static const USB_Descriptor_HIDReport_Datatype_t mouse_report_desc[] = {
 #if 0
 

@@ -117,6 +117,8 @@ int device_led_setup(led_cfg_t led_cfg)
 
 		return 1;
 	}
+#else
+	return 0;
 #endif
 }
 
@@ -132,7 +134,7 @@ void led_proc(void)
 		if(clock_time_exceed(device_led.startTick,device_led.onTime_ms*1000)){
 			device_led_on_off(0);
 			if(device_led.offTime_ms){ //offTime not zero
-				device_led.startTick += device_led.onTime_ms*CLOCK_16M_SYS_TIMER_CLK_1MS;
+				device_led.startTick += device_led.onTime_ms*SYSTEM_TIMER_TICK_1MS;
 			}
 			else{
 				device_led.repeatCount = 0;
@@ -143,7 +145,7 @@ void led_proc(void)
 		if(clock_time_exceed(device_led.startTick,device_led.offTime_ms*1000)){
 			if(--device_led.repeatCount){
 				device_led_on_off(1);
-				device_led.startTick += device_led.offTime_ms*CLOCK_16M_SYS_TIMER_CLK_1MS;
+				device_led.startTick += device_led.offTime_ms*SYSTEM_TIMER_TICK_1MS;
 			}
 		}
 	}

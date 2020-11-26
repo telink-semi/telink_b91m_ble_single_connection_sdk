@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	CDCClassCommon.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,11 +43,12 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
+
 #pragma once
 
 /* Includes: */
-#include "../usbstd/stdDescriptors.h"
-#include "../../tl_common.h"
+#include "application/usbstd/stdDescriptors.h"
+#include "tl_common.h"
 
 /* Enable C linkage for C++ Compilers: */
 #if defined(__cplusplus)

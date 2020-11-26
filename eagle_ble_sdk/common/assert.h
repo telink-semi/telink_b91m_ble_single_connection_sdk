@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	assert.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,16 +43,12 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#ifndef COMMON_ASSERT_H_
-#define COMMON_ASSERT_H_
-
 #pragma once
 
 #include "config/user_config.h"			//   for  __DEBUG__
 
 ///////////////////////////////////////////////////////////////////////////////////
 #if (__DEBUG__)
-#include "printf.h"
 
 #define assert(expression)  \
   do{if(!(expression)) __assert (expression, __FILE__, __LINE__)}while(0)
@@ -105,4 +101,4 @@
 #define NOTE(x)
 #endif
 
-#endif /* COMMON_ASSERT_H_ */
+

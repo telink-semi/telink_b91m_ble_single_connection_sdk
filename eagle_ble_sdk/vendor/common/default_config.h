@@ -45,13 +45,8 @@
  *******************************************************************************************************/
 #pragma once
 
-/* Enable C linkage for C++ Compilers: */
-#if defined(__cplusplus)
-extern "C" {
-#endif
 
-
-#include "../../config.h"
+#include "config.h"
 
 //////////// product  Infomation  //////////////////////////////
 #ifndef ID_VENDOR
@@ -72,18 +67,6 @@ extern "C" {
 #endif
 
 
-
-
-
-#ifndef MODULE_WATCHDOG_ENABLE
-#define MODULE_WATCHDOG_ENABLE	0
-#endif
-
-
-
-#ifndef WATCHDOG_INIT_TIMEOUT
-#define WATCHDOG_INIT_TIMEOUT		200		//  in ms
-#endif
 
 
 #ifndef PM_DEEPSLEEP_RETENTION_ENABLE
@@ -172,8 +155,8 @@ extern "C" {
 #ifndef USB_MASS_STORAGE_ENABLE
 #define USB_MASS_STORAGE_ENABLE  	0
 #endif
-#ifndef MIC_CHANNLE_COUNT
-#define MIC_CHANNLE_COUNT  			2
+#ifndef MIC_CHANNEL_COUNT
+#define MIC_CHANNEL_COUNT  			2
 #endif
 
 #ifndef USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE
@@ -198,10 +181,4 @@ extern "C" {
 #define USB_KEYBOARD_RELEASE_TIMEOUT    (450000) // in us
 #define USB_MOUSE_RELEASE_TIMEOUT       (200000) // in us
 #define USB_SOMATIC_RELEASE_TIMEOUT     (200000) // in us
-
-
-/* Disable C linkage for C++ Compilers: */
-#if defined(__cplusplus)
-}
-#endif
 

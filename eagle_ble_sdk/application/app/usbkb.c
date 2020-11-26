@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbkb.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,22 +43,12 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#include "../../tl_common.h"
 
-#if(1)
-
-
-
-
-#include "../../drivers.h"
 #include "usbkb.h"
 #include "usbmouse.h"
-#include "../usbstd/usb.h"
-//#include "../usbstd/usbhw.h"
-//#include "../usbstd/usbhw_i.h"
-#include "../usbstd/usbkeycode.h"
-
-#include "../rf_frame.h"
+#include "application/usbstd/usb.h"
+#include "application/usbstd/usbkeycode.h"
+#include "application/rf_frame.h"
 
 
 u8 usb_fifo[USB_FIFO_NUM][USB_FIFO_SIZE];
@@ -110,22 +100,6 @@ u8  usbkb_wptr, usbkb_rptr;
 static u32 usbkb_not_released;
 static u32 usbkb_data_report_time;
 
-
-void usbkb_add_frame (rf_packet_keyboard_t *packet_kb)
-{
-	u8 new_data_num = packet_kb->pno;  //根据pno 获得最新数据的个数
-	for(u8 i=0;i<new_data_num;i++)
-	{
-			tmemcpy4((int*)(&kb_dat_buff[usbkb_wptr]), (int*)(&packet_kb->data[i*sizeof(kb_data_t)]), sizeof(kb_data_t));
-			BOUND_INC_POW2(usbkb_wptr,USBKB_BUFF_DATA_NUM);
-			if(usbkb_wptr == usbkb_wptr)
-			{
-					break;
-			}
-	}
-}
-
-
 void usbkb_report_frame(void)
 {
 	if(usbkb_wptr != usbkb_rptr){
@@ -164,8 +138,6 @@ static void usbkb_release_media_key(void){
 }
 
 static void usbkb_release_keys(void){
-	// 不要调换usbkb_release_sys_key 和usbkb_release_normal_key 的顺序，
-	// 这是为了让 usbkb_release_sys_key,  usbkb_release_media_key 中间有一定延时
 	usbkb_release_sys_key();
 	usbkb_release_normal_key();
 	usbkb_release_media_key();
@@ -178,10 +150,8 @@ void usbkb_release_check(){
 
 }
 
-//  normal_keycode 里面返回普通按键
+
 int usbkb_separate_key_types(u8 *keycode, u8 cnt, u8 *normal_key, u8 *ext_key){
-    STATIC_ASSERT(KB_RETURN_KEY_MAX <= KEYBOARD_REPORT_KEY_MAX);
-    assert(cnt <= KB_RETURN_KEY_MAX);
 
     int normal_cnt = 0;
     foreach(i, cnt){
@@ -201,7 +171,7 @@ int usbkb_hid_report_normal(u8 ctrl_key, u8 *keycode){
 		u8 *pData = (u8 *)&usb_fifo[usb_ff_wptr++ & (USB_FIFO_NUM - 1)];
 		pData[0] = DAT_TYPE_KB;
 		pData[1] = ctrl_key;
-		tmemcpy(pData + 2, keycode, 6);
+		memcpy(pData + 2, keycode, 6);
 
 		int fifo_use = (usb_ff_wptr - usb_ff_rptr) & (USB_FIFO_NUM*2-1);
 		if (fifo_use > USB_FIFO_NUM) {
@@ -282,7 +252,6 @@ static inline void usbkb_report_sys_key(u8 ext_key){
 
 static inline void usbkb_report_media_key(u8 ext_key){
 	if(ext_key >= VK_MEDIA_START && ext_key < VK_MEDIA_END){
-		STATIC_ASSERT(VK_EXT_LEN <= MOUSE_REPORT_DATA_LEN);
 
 		u8 ext_keycode[MOUSE_REPORT_DATA_LEN] = {0};
 
@@ -338,11 +307,9 @@ int kb_is_data_same(kb_data_t *a, kb_data_t *b){
 }
 
 static inline int usbkb_check_repeat_and_save(kb_data_t *data){
-    assert(data);
 	static kb_data_t last_data;
 	int same = kb_is_data_same(&last_data, data);
 	if(!same){
-		STATIC_ASSERT(sizeof(last_data) == 8);
 	    ((u32*) (&last_data))[0] = ((u32*) (data))[0];
 	    ((u32*) (&last_data))[1] = ((u32*) (data))[1];
 	}
@@ -351,7 +318,6 @@ static inline int usbkb_check_repeat_and_save(kb_data_t *data){
 
 
 void usbkb_hid_report(kb_data_t *data){
-    assert(data);
     u8 ext_key = VK_EXT_END, normal_key_cnt = 0;
     u8 normal_keycode[KEYBOARD_REPORT_KEY_MAX] = {0};
 
@@ -372,7 +338,6 @@ void usbkb_hid_report(kb_data_t *data){
 
 
 	if(data->cnt > 0){
-		//  keycode分类处理
 	    normal_key_cnt = usbkb_separate_key_types(data->keycode, data->cnt, normal_keycode, &ext_key);
 	}
 
@@ -429,4 +394,3 @@ int usb_hid_report_fifo_proc(void)
 }
 
 
-#endif

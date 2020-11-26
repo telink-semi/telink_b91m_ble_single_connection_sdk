@@ -6,42 +6,24 @@
  * @author	BLE GROUP
  * @date	2020.06
  *
- * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
- *          All rights reserved.
- *          
- *          Redistribution and use in source and binary forms, with or without
- *          modification, are permitted provided that the following conditions are met:
- *          
- *              1. Redistributions of source code must retain the above copyright
- *              notice, this list of conditions and the following disclaimer.
- *          
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions 
- *              in binary form must reproduce the above copyright notice, this list of 
- *              conditions and the following disclaimer in the documentation and/or other
- *              materials provided with the distribution.
- *          
- *              3. Neither the name of TELINK, nor the names of its contributors may be 
- *              used to endorse or promote products derived from this software without 
- *              specific prior written permission.
- *          
- *              4. This software, with or without modification, must only be used with a
- *              TELINK integrated circuit. All other usages are subject to written permission
- *              from TELINK and different commercial license may apply.
+ * @par		Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd.
+ *			All rights reserved.
  *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or 
- *              relating to such deletion(s), modification(s) or alteration(s).
- *         
- *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
- *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *         
+ *			The information contained herein is confidential property of Telink
+ *          Semiconductor (Shanghai) Co., Ltd. and is available under the terms
+ *          of Commercial License Agreement between Telink Semiconductor (Shanghai)
+ *          Co., Ltd. and the licensee or the terms described here-in. This heading
+ *          MUST NOT be removed from this file.
+ *
+ *          Licensee shall not delete, modify or alter (or permit any third party to delete, modify, or  
+ *          alter) any information contained herein in whole or in part except as expressly authorized  
+ *          by Telink semiconductor (shanghai) Co., Ltd. Otherwise, licensee shall be solely responsible  
+ *          for any claim to the extent arising out of or relating to such deletion(s), modification(s)  
+ *          or alteration(s).
+ *
+ *          Licensees are granted free, non-transferable use of the information in this
+ *          file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
+ *
  *******************************************************************************************************/
 /*
  * hci_const.h
@@ -305,6 +287,7 @@
 #define HCI_CMD_LE_LONG_TERM_KEY_REQUESTED_NEGATIVE_REPLY            0x1B
 #define HCI_CMD_LE_READ_SUPPORTED_STATES                             0x1C
 #define HCI_CMD_LE_RECEIVER_TEST                                     0x1D
+#define HCI_CMD_LE_RECEIVER_TEST_V1                                  (HCI_CMD_LE_RECEIVER_TEST)
 #define HCI_CMD_LE_TRANSMITTER_TEST                                  0x1E
 #define HCI_CMD_LE_TEST_END                                          0x1F
 //core_4.0 end
@@ -333,6 +316,7 @@
 #define HCI_CMD_LE_SET_DEFAULT_PHY              					 0x31//LE Set Default PHY Command - [5] 7.8.48
 #define HCI_CMD_LE_SET_PHY                      					 0x32//LE Set PHY Command - [5] 7.8.49
 #define HCI_CMD_LE_ENHANCED_RECEIVER_TEST                			 0x33//LE Enhanced Receiver Test Command - [5] 7.8.50
+#define	HCI_CMD_LE_RECEIVER_TEST_V2									 HCI_CMD_LE_ENHANCED_RECEIVER_TEST //LE Receiver Test command - [5] 7.8.28
 #define HCI_CMD_LE_ENHANCED_TRANSMITTER_TEST               			 0x34//LE Enhanced Transmitter Test Command - [5] 7.8.51
 #define HCI_CMD_LE_SET_ADVERTISING_SET_RANDOM_ADDRESS         		 0x35//LE Set Advertising Set Random Address Command - [5] 7.8.52
 #define HCI_CMD_LE_SET_EXTENDED_ADVERTISING_PARAMETERS            	 0x36//LE Set Extended Advertising Parameters Command - [5] 7.8.53
@@ -421,7 +405,7 @@
 #define HCI_CMD_VENDOR_OPCODE_OGF									 0xFC  //0x3f <<2 = 0xFC
 //-- OCF --
 #define HCI_TELINK_READ_REG											 0x01
-#define HCI_TELINK_WRTIE_REG										 0x02
+#define HCI_TELINK_WRITE_REG										 0x02
 #define HCI_TELINK_SET_TX_PWR										 0x03
 #define HCI_TELINK_REBOOT_MCU										 0x04
 #define HCI_TELINK_SET_RXTX_DATA_LEN								 0x40

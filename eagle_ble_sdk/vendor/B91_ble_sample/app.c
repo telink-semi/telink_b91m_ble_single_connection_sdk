@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -47,12 +47,13 @@
 #include "drivers.h"
 #include "stack/ble/ble.h"
 
-#include "vendor/common/blt_led.h"
-#include "vendor/common/blt_common.h"
 #include "app_config.h"
+#include "app.h"
 #include "app_ui.h"
 #include "app_att.h"
 #include "app_buffer.h"
+#include "application/keyboard/keyboard.h"
+#include "battery_check.h"
 
 #define 	ADV_IDLE_ENTER_DEEP_TIME			60  //60 s
 #define 	CONN_IDLE_ENTER_DEEP_TIME			60  //60 s
@@ -116,7 +117,7 @@ _attribute_data_retention_	u32	latest_user_event_tick;
  */
 _attribute_ram_code_ void  ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
 {
-	if( blc_ll_getCurrentState() == BLS_LINK_STATE_CONN && ((u32)(bls_pm_getSystemWakeupTick() - clock_time())) > 80 * CLOCK_16M_SYS_TIMER_CLK_1MS){  //suspend time > 30ms.add gpio wakeup
+	if( blc_ll_getCurrentState() == BLS_LINK_STATE_CONN && ((u32)(bls_pm_getSystemWakeupTick() - clock_time())) > 80 * SYSTEM_TIMER_TICK_1MS){  //suspend time > 30ms.add gpio wakeup
 		bls_pm_setWakeupSource(PM_WAKEUP_PAD);  //gpio pad wakeup suspend/deepsleep
 	}
 }
@@ -222,8 +223,8 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 #endif
 
 	advertise_begin_tick = clock_time();
-
 }
+
 
 
 
@@ -254,9 +255,7 @@ void blt_pm_proc(void)
 
 #if(BLE_APP_PM_ENABLE)
 
-	#if PM_NO_SUSPEND_ENABLE
-		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
-	#elif (PM_DEEPSLEEP_RETENTION_ENABLE)
+	#if (PM_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 	#else
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
@@ -266,7 +265,7 @@ void blt_pm_proc(void)
 
 	//do not care about keyScan/button_detect power here, if you care about this, please refer to "8258_ble_remote" demo
 	#if (!TEST_CONN_CURRENT_ENABLE && UI_KEYBOARD_ENABLE)
-		if(scan_pin_need || key_not_released)
+		if(scan_pin_need || key_not_released || ota_is_working)
 		{
 			bls_pm_setSuspendMask (SUSPEND_DISABLE);
 		}
@@ -307,16 +306,63 @@ void blt_pm_proc(void)
 }
 
 
+#if (BATT_CHECK_ENABLE)  //battery check must do before OTA relative operation
+
+_attribute_data_retention_	u32	lowBattDet_tick   = 0;
+
+_attribute_ram_code_ void user_init_battery_power_check(void)
+{
+	/*****************************************************************************************
+	 Note: battery check must do before any flash write/erase operation, cause flash write/erase
+		   under a low or unstable power supply will lead to error flash operation
+
+		   Some module initialization may involve flash write/erase, include: OTA initialization,
+				SMP initialization, ..
+				So these initialization must be done after  battery check
+	*****************************************************************************************/
+
+		#if(BAT_LEAKAGE_PROTECT_EN)
+		do{
+			u8 analog_deep = analog_read_reg8(USED_DEEP_ANA_REG);
+			u16 bat_deep_thres = BAT_DEEP_THRES_MV;
+			u16 bat_suspend_thres = BAT_SUSPEND_THRES_MV;
+			if(analog_deep & LOW_BATT_FLG){
+				if(analog_deep & LOW_BATT_SUSPEND_FLG){//<1.8v
+					bat_deep_thres += 200;
+					bat_suspend_thres += 100;
+				}
+				else{//1.8--2.0v
+					bat_deep_thres += 200;
+				}
+			}
+			app_battery_power_check(bat_deep_thres,bat_suspend_thres);
+
+			wd_clear(); //clear watch dog
+
+			if(analog_deep & LOW_BATT_SUSPEND_FLG){
+				sleep_us(100000);
+			}
+		}while(analog_read_reg8(USED_DEEP_ANA_REG) & LOW_BATT_SUSPEND_FLG);
+		#else
+			if(analog_read(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
+				app_battery_power_check(BAT_DEEP_THRES_MV + 200);
+			}
+			else{
+				app_battery_power_check(BAT_DEEP_THRES_MV);
+			}
+		#endif
 
 
+}
 
+#endif
 
 /**
  * @brief		user initialization when MCU power on or wake_up from deepSleep mode
  * @param[in]	none
  * @return      none
  */
-void user_init_normal(void)
+_attribute_no_inline_ void user_init_normal(void)
 {
 	/* random number generator must be initiated here( in the beginning of user_init_nromal).
 	 * When deepSleep retention wakeUp, no need initialize again */
@@ -346,18 +392,21 @@ void user_init_normal(void)
 	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
-//	blc_ll_initPowerManagement_module();        //pm module:      	 optional
 
 
-	blc_ll_initTxFifo(app_ll_txfifo, LL_TX_FIFO_SIZE, LL_TX_FIFO_NUM);
-	blc_ll_initRxFifo(app_ll_rxfifo, LL_RX_FIFO_SIZE, LL_RX_FIFO_NUM);
+	blc_ll_setAclConnMaxOctetsNumber(ACL_CONN_MAX_RX_OCTETS, ACL_CONN_MAX_TX_OCTETS);
+
+	blc_ll_initAclConnTxFifo(app_acl_txfifo, ACL_TX_FIFO_SIZE, ACL_TX_FIFO_NUM);
+	blc_ll_initAclConnRxFifo(app_acl_rxfifo, ACL_RX_FIFO_SIZE, ACL_RX_FIFO_NUM);
+
+	u8 check_status = blc_controller_check_appBufferInitialization();
+	if(check_status != BLE_SUCCESS){
+		/* here user should set some log to know which application buffer incorrect */
+		write_log32(0x88880000 | check_status);
+		while(1);
+	}
 	//////////// Controller Initialization  End /////////////////////////
 
-
-
-	//////////// HCI Initialization  Begin /////////////////////////
-
-	//////////// HCI Initialization  End   /////////////////////////
 
 
 	//////////// Host Initialization  Begin /////////////////////////
@@ -367,12 +416,14 @@ void user_init_normal(void)
 	extern void my_att_init ();
 	my_att_init (); //gatt initialization
 
+
 	/* L2CAP Initialization */
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);
 
 	/* SMP Initialization may involve flash write/erase(when one sector stores too much information,
 	 *   is about to exceed the sector threshold, this sector must be erased, and all useful information
 	 *   should re_stored) , so it must be done after battery check */
+	//blc_smp_setParingMethods (LE_Secure_Connection);
 	#if (APP_SECURITY_ENABLE)
 		blc_smp_peripheral_init();
 	#else
@@ -384,7 +435,7 @@ void user_init_normal(void)
 
 
 	////////////////// config adv packet /////////////////////
-	#if (APP_SECURITY_ENABLE)
+	#if (APP_SECURITY_ENABLE && APP_DIRECT_ADV_ENABLE)
 		u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
 		smp_param_save_t  bondInfo;
 		if(bond_number)   //at least 1 bonding device exist
@@ -443,15 +494,11 @@ void user_init_normal(void)
 #if(BLE_APP_PM_ENABLE)
 	blc_ll_initPowerManagement_module();
 
-	#if PM_NO_SUSPEND_ENABLE
-		bls_pm_setSuspendMask ( DEEPSLEEP_RETENTION_ADV | DEEPSLEEP_RETENTION_CONN);
-		blc_pm_setDeepsleepRetentionThreshold(3, 3);
-		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 320 : 350);
-	#elif (PM_DEEPSLEEP_RETENTION_ENABLE)
+	#if (PM_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(95, 95);
-		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 220 : 240);
-		//blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW32K); //default use 16k deep retention
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 320 : 350);
+		//blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW64K); //default use 32k deep retention
 	#else
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 	#endif
@@ -481,8 +528,24 @@ void user_init_normal(void)
 #endif
 
 
-//	advertise_begin_tick = clock_time();
+#if (BLE_SLAVE_OTA_ENABLE)
+	////////////////// OTA relative ////////////////////////
+	bls_ota_clearNewFwDataArea(); //must
+	bls_ota_set_VersionFlashAddr_and_VersionNumber(OTA_VERSION_FLASH_ADDR, OTA_VERSION_NUMBER); //must
+	bls_ota_registerStartCmdCb(app_enter_ota_mode);
+	bls_ota_registerResultIndicateCb(app_ota_end_result);  //debug
+#endif
 
+
+	advertise_begin_tick = clock_time();
+
+
+
+
+#if (APP_DUMP_EN)
+	my_usb_init(0x120, &print_fifo);
+	usb_set_pin_en ();
+#endif
 
 }
 
@@ -528,13 +591,39 @@ _attribute_ram_code_ void user_init_deepRetn(void)
  * @param[in]	none
  * @return      none
  */
-void main_loop (void)
+_attribute_no_inline_ void main_loop (void)
 {
 	////////////////////////////////////// BLE entry /////////////////////////////////
 	blt_sdk_main_loop();
 
 
 	////////////////////////////////////// UI entry /////////////////////////////////
+#if (BATT_CHECK_ENABLE)
+	if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 500000) ){
+		lowBattDet_tick = clock_time();
+		#if(BAT_LEAKAGE_PROTECT_EN)
+
+		u8 analog_deep = analog_read_reg8(USED_DEEP_ANA_REG);
+		u16 bat_deep_thres = BAT_DEEP_THRES_MV;
+		u16 bat_suspend_thres = BAT_SUSPEND_THRES_MV;
+		if(analog_deep & LOW_BATT_FLG){
+			if(analog_deep & LOW_BATT_SUSPEND_FLG){//<1.8v
+				bat_deep_thres += 200;
+				bat_suspend_thres += 100;
+			}
+			else{//1.8--2.0v
+				bat_deep_thres += 200;
+			}
+		}
+		app_battery_power_check(bat_deep_thres,bat_suspend_thres);
+
+		#else
+			app_battery_power_check(BAT_DEEP_THRES_MV);  //2000 mV low battery
+		#endif
+	}
+#endif
+
+
 	#if (UI_KEYBOARD_ENABLE)
 			proc_keyboard (0,0, 0);
 	#elif (UI_BUTTON_ENABLE)
@@ -542,10 +631,8 @@ void main_loop (void)
 			if(!button_detect_en && clock_time_exceed(0, 1000000)){
 				button_detect_en = 1;
 			}
-			if(button_detect_en && clock_time_exceed(button_detect_tick, 5000))
-			{
-				button_detect_tick = clock_time();
-				proc_button(0, 0, 0);  //button triggers pair & unpair  and OTA
+			if(button_detect_en){
+				proc_button(0, 0, 0);
 			}
 	#endif
 
@@ -561,6 +648,12 @@ void main_loop (void)
 			}
 	#endif
 
+
+
+
+	#if (APP_DUMP_EN)
+		myudb_usb_handle_irq ();
+	#endif
 }
 
 

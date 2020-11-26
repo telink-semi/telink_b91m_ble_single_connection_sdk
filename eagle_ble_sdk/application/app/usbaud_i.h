@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbaud_i.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,15 +43,14 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
+
 #pragma once
 
 
 #include "drivers.h"
 #include "usbaud.h"
-#include "../usbstd/AudioClassCommon.h"
-#include "../../drivers/9518/usbhw.h"
-//#include "../../drivers/9518/usbhw_i.h"
-#include "../../common/config/user_config.h"
+#include "application/usbstd/AudioClassCommon.h"
+#include "application/usbstd/usb.h"
 
 
 #if 0
@@ -117,7 +116,7 @@ static const USB_Descriptor_HIDReport_Datatype_t usbaud_report_desc[] = {
 
 #endif
 
-//USB HID报告描述符的定义
+//Definition of USB HID report descriptor
 static const USB_Descriptor_HIDReport_Datatype_t usbaud_report_desc[] = {
 		0x05, 0x0c, 0x09, 0x01, 0xa1, 0x01,
 		0x85, 0x01, 0x15, 0x00, 0x25, 0x01, 0x09, 0xcd, 0x09, 0xb5, 0x09, 0xb6,

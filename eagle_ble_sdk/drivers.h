@@ -45,5 +45,11 @@
  *******************************************************************************************************/
 #pragma once
 
-#include "drivers/9518/driver_9518.h"
+#include "drivers/B91/driver_B91.h"
+#include "drivers/B91/ext_driver/driver_ext.h"
+#include "types.h"
+
 #include "common/assert.h"
+
+
+#define write_log32(err_code)   write_sram32(0x00012, err_code)

@@ -54,7 +54,7 @@
 #elif (__PROJECT_B91_HCI__)
 	#include "../B91_hci/app_config.h"
 #elif (__PROJECT_B91_FEATURE_TEST__)
-	#include "../B91_feature_test/app_config.h"
+	#include "../B91_feature/app_config.h"
 #elif(__PROJECT_B91_MASTER_KMA_DONGLE__)
 	#include "../B91_master_kma_dongle/app_config.h"
 #elif(__PROJECT_B91_INTERNAL_TEST__)

@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbcdc_i.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,13 +43,12 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
+
 #pragma once
 
 #include "usbcdc.h"
-
-#include "../usbstd/usb.h"
-#include "../../drivers/9518/usbhw.h"
-//#include "../../drivers/9518/usbhw_i.h"
+#include "drivers.h"
+#include "application/usbstd/usb.h"
 
 
 

@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	main.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -44,16 +44,11 @@
  *         
  *******************************************************************************************************/
 #include "tl_common.h"
-#include "../common/blt_common.h"
+#include "app_config.h"
+#include "gpio_default.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
-#include "app_config.h"
-#include "app_att.h"
-
-extern void user_init_deepRetn();
-extern void user_init_normal();
-extern void main_loop (void);
-
+#include "app.h"
 
 
 /**
@@ -64,15 +59,11 @@ extern void main_loop (void);
 _attribute_ram_code_
 void rf_irq_handler(void)
 {
-
-	DBG_CHN10_HIGH;
+	DBG_CHN14_HIGH;
 
 	irq_blt_sdk_handler ();
 
-	DBG_CHN10_LOW;
-	/*Must ensure the order of execution of complete and
-	 * subsequent mret instructions(insert fence instruction)*/
-
+	DBG_CHN14_LOW;
 }
 
 
@@ -85,14 +76,11 @@ void rf_irq_handler(void)
 _attribute_ram_code_
 void stimer_irq_handler(void)
 {
-
-	DBG_CHN11_HIGH;
+	DBG_CHN15_HIGH;
 
 	irq_blt_sdk_handler ();
 
-	DBG_CHN11_LOW;
-
-
+	DBG_CHN15_LOW;
 }
 
 
@@ -109,7 +97,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
 
-	sys_init(LDO_1P4_LDO_1P8);
+	sys_init(LDO_1P4_LDO_1P8,VBAT_V_GREATER_THAN_3V6);
 
 	/* detect if MCU is wake_up from deep retention mode */
 	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
@@ -126,31 +114,43 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	CCLK_64M_HCLK_32M_PCLK_16M;
 #endif
 
-	rf_drv_init(RF_MODE_BLE_1M);
+	rf_drv_ble_init();
 
 	gpio_init(!deepRetWakeUp);
 
+
+	if(!deepRetWakeUp){//read flash size
+		#if (BATT_CHECK_ENABLE)
+			user_init_battery_power_check();
+		#endif
+		blc_readFlashSize_autoConfigCustomFlashSector();
+		#if (FLASH_FIRMWARE_CHECK_ENABLE)
+			//user can use flash_fw_check() to check whether firmware in flash is modified.
+			//Advice user to do it only when power on.
+			if(flash_fw_check(0xffffffff)){ //if retrun 0, flash fw crc check ok. if retrun 1, flash fw crc check fail
+				while(1);				    //Users can process according to the actual application.
+			}
+		#endif
+		#if FIRMWARES_SIGNATURE_ENABLE
+			blt_firmware_signature_check();
+		#endif
+	}
+
 	/* load customized freq_offset cap value. */
-	//blc_app_loadCustomizedParameters();  //note: to be tested
+	blc_app_loadCustomizedParameters();
 
 	if( deepRetWakeUp ){ //MCU wake_up from deepSleep retention mode
 		user_init_deepRetn ();
 	}
 	else{ //MCU power_on or wake_up from deepSleep mode
-		/* read flash size only in power_on or deepSleep */
-		//blc_readFlashSize_autoConfigCustomFlashSector();
 		user_init_normal();
 	}
 
 	irq_enable();
 
 	while (1) {
-		#if(MODULE_WATCHDOG_ENABLE)
-			wd_clear(); //clear watch dog
-		#endif
 		main_loop ();
 	}
-
 	return 0;
 }
 

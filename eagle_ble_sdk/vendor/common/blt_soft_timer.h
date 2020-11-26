@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	blt_soft_timer.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,16 +43,12 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-/*
- * blt_soft_timer.h
- *
- *  Created on: 2016-10-28
- *      Author: Administrator
- */
-
 #ifndef BLT_SOFT_TIMER_H_
 #define BLT_SOFT_TIMER_H_
 
+
+
+#include "vendor/common/user_config.h"
 
 //user define
 #ifndef BLT_SOFTWARE_TIMER_ENABLE
@@ -75,8 +71,8 @@
 #define		TIME_COMPARE_BIG(t1,t2)   ( (u32)((t1) - (t2)) < BIT(30)  )
 
 
-#define		BLT_TIMER_SAFE_MARGIN_PRE	  (CLOCK_16M_SYS_TIMER_CLK_1US<<7)  //128 us
-#define		BLT_TIMER_SAFE_MARGIN_POST	  (CLOCK_16M_SYS_TIMER_CLK_1S<<2)   // 4S
+#define		BLT_TIMER_SAFE_MARGIN_PRE	  (SYSTEM_TIMER_TICK_1US<<7)  //128 us
+#define		BLT_TIMER_SAFE_MARGIN_POST	  (SYSTEM_TIMER_TICK_1S<<2)   // 4S
 
 /**
  * @brief		This function is used to check the current time is what the timer expects or not

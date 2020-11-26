@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_buffer.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -52,9 +52,21 @@
 
 
 
+/********************* ACL connection LinkLayer TX & RX data FIFO allocation, Begin ********************************/
+_attribute_data_retention_	u8	app_acl_rxfifo[ACL_RX_FIFO_SIZE * ACL_RX_FIFO_NUM] = {0};
+_attribute_data_retention_  u8	app_acl_txfifo[ACL_TX_FIFO_SIZE * ACL_TX_FIFO_NUM] = {0};
+/******************** ACL connection LinkLayer TX & RX data FIFO allocation, End ***********************************/
 
-_attribute_data_retention_	u8	app_ll_rxfifo[LL_RX_FIFO_SIZE * LL_RX_FIFO_NUM] = {0};
-_attribute_data_retention_  u8	app_ll_txfifo[LL_TX_FIFO_SIZE * LL_TX_FIFO_NUM] = {0};
 
 
 
+
+
+
+/********************* USB_DEBUG_LOG FIFO allocation, Begin *******************************/
+
+#if (APP_DUMP_EN)
+	MYFIFO_INIT_IRAM(print_fifo, 288, 32);
+#endif
+
+/******************** USB_DEBUG_LOG FIFO allocation, End ***********************************/

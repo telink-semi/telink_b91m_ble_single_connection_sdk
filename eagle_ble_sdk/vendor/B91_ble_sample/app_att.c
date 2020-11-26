@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_att.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -44,8 +44,9 @@
  *         
  *******************************************************************************************************/
 #include "tl_common.h"
-
+#include "drivers.h"
 #include "stack/ble/ble.h"
+
 #include "app_att.h"
 
 /**
@@ -68,8 +69,6 @@ static const u16 clientCharacterCfgUUID = GATT_UUID_CLIENT_CHAR_CFG;
 static const u16 extReportRefUUID = GATT_UUID_EXT_REPORT_REF;
 
 static const u16 reportRefUUID = GATT_UUID_REPORT_REF;
-
-static const u16 characterPresentFormatUUID = GATT_UUID_CHAR_PRESENT_FORMAT;
 
 static const u16 userdesc_UUID	= GATT_UUID_CHAR_USER_DESC;
 
@@ -95,7 +94,7 @@ static const u16 my_appearance = GAP_APPEARE_UNKNOWN;
 
 static const u16 my_gattServiceUUID = SERVICE_UUID_GENERIC_ATTRIBUTE;
 
-static const gap_periConnectParams_t my_periConnParameters = {20, 40, 0, 1000};
+static const gap_periConnectParams_t my_periConnParameters = {8, 11, 0, 1000};
 
 static u16 serviceChangeVal[2] = {0};
 
@@ -108,47 +107,45 @@ static const u8 my_PnPtrs [] = {0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00};
 //////////////////////// Battery /////////////////////////////////////////////////
 static const u16 my_batServiceUUID        = SERVICE_UUID_BATTERY;
 static const u16 my_batCharUUID       	  = CHARACTERISTIC_UUID_BATTERY_LEVEL;
-static u8 batteryValueInCCC[2];
+static u8 batteryValueInCCC[2] = {0,0};
 static u8 my_batVal[1] 	= {99};
 
 //////////////////////// HID /////////////////////////////////////////////////////
 
 static const u16 my_hidServiceUUID        = SERVICE_UUID_HUMAN_INTERFACE_DEVICE;
 
-static const u16 hidServiceUUID           = SERVICE_UUID_HUMAN_INTERFACE_DEVICE;
 static const u16 hidProtocolModeUUID      = CHARACTERISTIC_UUID_HID_PROTOCOL_MODE;
 static const u16 hidReportUUID            = CHARACTERISTIC_UUID_HID_REPORT;
 static const u16 hidReportMapUUID         = CHARACTERISTIC_UUID_HID_REPORT_MAP;
 static const u16 hidbootKeyInReportUUID   = CHARACTERISTIC_UUID_HID_BOOT_KEY_INPUT;
 static const u16 hidbootKeyOutReportUUID  = CHARACTERISTIC_UUID_HID_BOOT_KEY_OUTPUT;
-static const u16 hidbootMouseInReportUUID = CHARACTERISTIC_UUID_HID_BOOT_MOUSE_INPUT;
 static const u16 hidinformationUUID       = CHARACTERISTIC_UUID_HID_INFORMATION;
 static const u16 hidCtrlPointUUID         = CHARACTERISTIC_UUID_HID_CONTROL_POINT;
 static const u16 hidIncludeUUID           = GATT_UUID_INCLUDE;
 
-static const u8 protocolMode 			  = DFLT_HID_PROTOCOL_MODE;
+static u8 protocolMode 			  = DFLT_HID_PROTOCOL_MODE;
 
 // Key in Report characteristic variables
 static u8 reportKeyIn[8];
-static u8 reportKeyInCCC[2];
+static u8 reportKeyInCCC[2] = {0,0};
 // HID Report Reference characteristic descriptor, key input
-static const u8 reportRefKeyIn[2] =
+static u8 reportRefKeyIn[2] =
              { HID_REPORT_ID_KEYBOARD_INPUT, HID_REPORT_TYPE_INPUT };
 
 // Key out Report characteristic variables
 static u8 reportKeyOut[1];
-static const u8 reportRefKeyOut[2] =
+static u8 reportRefKeyOut[2] =
              { HID_REPORT_ID_KEYBOARD_INPUT, HID_REPORT_TYPE_OUTPUT };
 
 // Consumer Control input Report
 static u8 reportConsumerControlIn[2];
-static u8 reportConsumerControlInCCC[2];
-static const u8 reportRefConsumerControlIn[2] =
+static u8 reportConsumerControlInCCC[2] = {0,0};
+static u8 reportRefConsumerControlIn[2] =
 			 { HID_REPORT_ID_CONSUME_CONTROL_INPUT, HID_REPORT_TYPE_INPUT };
 
 // Boot Keyboard Input Report
 static u8 bootKeyInReport;
-static u8 bootKeyInReportCCC[2];
+static u8 bootKeyInReportCCC[2] = {0,0};
 
 // Boot Keyboard Output Report
 static u8 bootKeyOutReport;
@@ -236,13 +233,11 @@ static const u8 reportMap[] =
 static u16 extServiceUUID;
 
 
-/////////////////////////////////////////////////////////
-static const  u8 my_OtaUUID[16]					    = TELINK_SPP_DATA_OTA;
-static const  u8 my_OtaServiceUUID[16]				= TELINK_OTA_UUID_SERVICE;
-static u8 my_OtaData 						        = 0x00;
+//////////////////////// OTA //////////////////////////////////
+static const  u8 my_OtaServiceUUID[16]				= WRAPPING_BRACES(TELINK_OTA_UUID_SERVICE);
+static const  u8 my_OtaUUID[16]						= WRAPPING_BRACES(TELINK_SPP_DATA_OTA);
+static 		  u8 my_OtaData 						= 0x00;
 
-static const u8  my_MicName[] = {'M', 'i', 'c'};
-static const u8  my_SpeakerName[] = {'S', 'p', 'e', 'a', 'k', 'e', 'r'};
 static const u8  my_OtaName[] = {'O', 'T', 'A'};
 
 

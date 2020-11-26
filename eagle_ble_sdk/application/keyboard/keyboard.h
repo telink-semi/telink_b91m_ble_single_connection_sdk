@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	keyboard.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,9 +43,10 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
+
 #pragma once
 
-#include "../../drivers.h"
+#include "drivers.h"
 
 #define KB_RETURN_KEY_MAX	6
 

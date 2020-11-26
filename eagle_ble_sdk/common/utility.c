@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	utility.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,66 +43,10 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#include "../tl_common.h"
-#include "../drivers.h"
+
+#include "tl_common.h"
+#include "drivers.h"
 #include "utility.h"
-
-
-
-
-
-/****************************************************************************
- * @fn          addrExtCmp
- *
- * @brief       Compare two extended addresses.
- *
- * input parameters
- *
- * @param       pAddr1        - Pointer to first address.
- * @param       pAddr2        - Pointer to second address.
- *
- * output parameters
- *
- * @return      TRUE if addresses are equal, FALSE otherwise
- */
-u8 addrExtCmp(const u8 * pAddr1, const u8 * pAddr2)
-{
-  u8 i;
-
-  for (i = 8; i != 0; i--)
-  {
-    if (*pAddr1++ != *pAddr2++)
-    {
-      return FALSE;
-    }
-  }
-  return TRUE;
-}
-
-
-
-void freeTimerEvent(void **arg)
-{
-    if ( *arg != NULL ) {
-#if (__DEBUG_BUFM__)
-		if ( SUCCESS != ev_buf_free((u8*)*arg) ) {
-			while(1);
-		}
-#else
-		ev_buf_free((u8*)*arg);
-#endif
-        *arg = NULL;
-    }
-}
-
-void freeTimerTask(void **arg)
-{
-    if ( *arg == NULL ) {
-        return;
-    }
-//    EV_SCHEDULE_HIGH_TASK((ev_task_callback_t)freeTimerEvent, (void*)arg);
-}
-
 
 
 // general swap/endianess utils
@@ -155,11 +99,6 @@ void swap128(u8 dst[16], const u8 src[16])
     swapX(src, dst, 16);
 }
 
-void net_store_16(u8 *buffer, u16 pos, u16 value)
-{
-    buffer[pos++] = value >> 8;
-    buffer[pos++] = value;
-}
 
 
 void flip_addr(u8 *dest, u8 *src){
@@ -169,11 +108,6 @@ void flip_addr(u8 *dest, u8 *src){
     dest[3] = src[2];
     dest[4] = src[1];
     dest[5] = src[0];
-}
-
-void store_16(u8 *buffer, u16 pos, u16 value){
-    buffer[pos++] = value;
-    buffer[pos++] = value >> 8;
 }
 
 
@@ -190,6 +124,15 @@ void my_fifo_init (my_fifo_t *f, int s, u8 n, u8 *p)
 u8* my_fifo_wptr (my_fifo_t *f)
 {
 	if (((f->wptr - f->rptr) & 255) < f->num)
+	{
+		return f->p + (f->wptr & (f->num-1)) * f->size;
+	}
+	return 0;
+}
+
+u8* my_fifo_wptr_v2 (my_fifo_t *f)
+{
+	if (((f->wptr - f->rptr) & 255) < f->num - 3) //keep 3 fifo left for others evt
 	{
 		return f->p + (f->wptr & (f->num-1)) * f->size;
 	}
@@ -215,7 +158,7 @@ int my_fifo_push (my_fifo_t *f, u8 *p, int n)
 	u8 *pd = f->p + (f->wptr++ & (f->num-1)) * f->size;
 	*pd++ = n & 0xff;
 	*pd++ = (n >> 8) & 0xff;
-	tmemcpy (pd, p, n);
+	memcpy (pd, p, n);
 	return 0;
 }
 

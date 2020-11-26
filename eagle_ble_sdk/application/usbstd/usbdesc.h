@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbdesc.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,14 +43,14 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
+
 #pragma once
 
-#include "../usbstd/AudioClassCommon.h"
-#include "../usbstd/CDCClassCommon.h"
-#include "../usbstd/HIDClassCommon.h"
-#include "../usbstd/PrinterClassCommon.h"
-#include "../usbstd/USBController.h"
-#include "../../common/config/user_config.h"
+#include <application/usbstd/AudioClassCommon.h>
+#include <application/usbstd/CDCClassCommon.h>
+#include <application/usbstd/HIDClassCommon.h>
+#include <application/usbstd/PrinterClassCommon.h>
+#include <application/usbstd/USBController.h>
 
 /* Enable C linkage for C++ Compilers: */
 #if defined(__cplusplus)
@@ -118,7 +118,7 @@ enum {
 };
 
 #if(USB_MIC_ENABLE)
-#define USB_MIC_CHANNELS_LEN   (MIC_CHANNLE_COUNT*(MIC_SAMPLE_RATE*MIC_RESOLUTION_BIT/1000/8))
+#define USB_MIC_CHANNELS_LEN   (MIC_CHANNEL_COUNT*(MIC_SAMPLE_RATE*MIC_RESOLUTION_BIT/1000/8))
 #endif
 
 enum {

@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbaud.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,15 +43,12 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#include "../../common/config/user_config.h"
 
-#include "../../drivers.h"
-
+#include "drivers.h"
 #include "usbaud.h"
-//#include "../usbstd/usbhw.h"
-//#include "../usbstd/usbhw_i.h"
-#include "../usbstd/usb.h"
-#include "../usbstd/audioClassCommon.h"
+#include "application/usbstd/usb.h"
+#include "application/usbstd/AudioClassCommon.h"
+#include "application/rf_frame.h"
 
 /*************************************************
  * g_audio_hid_chg:
@@ -65,7 +62,6 @@
 static speaker_setting_t speaker_setting;
 static mic_setting_t mic_setting;
 void usbaud_set_audio_mode(int iso_en, int mono_en) {
-    assert(USB_EDP_MIC < 8);
 	SET_FLD(reg_usb_ep_ctrl(USB_EDP_MIC), FLD_USB_EP_EOF_ISO | FLD_USB_EP_MONO);
 }
 
@@ -113,7 +109,6 @@ u8 usbaud_handle_report(u8 c) {
 	if (USB_REPORT_NO_EVENT == c) {
 		return USB_REPORT_NO_EVENT;
 	}
-    assert(USB_EDP_AUDIO < 8);
 	if(reg_usb_ep_ctrl(USB_EDP_AUDIO) & FLD_USB_EP_BUSY)
 		return c;
 
@@ -300,7 +295,7 @@ int usbaud_handle_get_mic_cmd(int req, int type) {
 	return 0;
 }
 void usbaud_init(void) {
-	if (USB_MIC_ENABLE && 1 == MIC_CHANNLE_COUNT) {
+	if (USB_MIC_ENABLE && 1 == MIC_CHANNEL_COUNT) {
 		usbaud_set_audio_mode(1, 1);
 	}
 #if (USB_SPEAKER_ENABLE)

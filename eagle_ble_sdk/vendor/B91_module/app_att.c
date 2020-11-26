@@ -63,11 +63,9 @@ typedef struct
 
 static const u16 clientCharacterCfgUUID = GATT_UUID_CLIENT_CHAR_CFG;
 
-static const u16 extReportRefUUID = GATT_UUID_EXT_REPORT_REF;
+//static const u16 extReportRefUUID = GATT_UUID_EXT_REPORT_REF;
 
-static const u16 reportRefUUID = GATT_UUID_REPORT_REF;
-
-static const u16 characterPresentFormatUUID = GATT_UUID_CHAR_PRESENT_FORMAT;
+//static const u16 reportRefUUID = GATT_UUID_REPORT_REF;
 
 static const u16 userdesc_UUID	= GATT_UUID_CHAR_USER_DESC;
 
@@ -113,15 +111,15 @@ static const u8 my_PnPtrs [] = {0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00};
 
 
 //////////////////////// OTA  ////////////////////////////////////////////////////
-static const  u8 my_OtaUUID[16]					    = TELINK_SPP_DATA_OTA;
-static const  u8 my_OtaServiceUUID[16]				= TELINK_OTA_UUID_SERVICE;
-static u8 my_OtaData 						        = 0x00;
-static const  u8 my_OtaName[] 						= {'O', 'T', 'A'};
+static const  u8 my_OtaServiceUUID[16]				= WRAPPING_BRACES(TELINK_OTA_UUID_SERVICE);
+static const  u8 my_OtaUUID[16]						= WRAPPING_BRACES(TELINK_SPP_DATA_OTA);
+static 		  u8 my_OtaData 						= 0x00;
+static const u8  my_OtaName[] = {'O', 'T', 'A'};
 
 ////////////////////// SPP ////////////////////////////////////
-static const u8 TelinkSppServiceUUID[16]	      	    = TELINK_SPP_UUID_SERVICE;
-static const u8 TelinkSppDataServer2ClientUUID[16]      = TELINK_SPP_DATA_SERVER2CLIENT;
-static const u8 TelinkSppDataClient2ServerUUID[16]      = TELINK_SPP_DATA_CLIENT2SERVER;
+static const u8 TelinkSppServiceUUID[16]	      	    = WRAPPING_BRACES(TELINK_SPP_UUID_SERVICE);
+static const u8 TelinkSppDataServer2ClientUUID[16]      = WRAPPING_BRACES(TELINK_SPP_DATA_SERVER2CLIENT);
+static const u8 TelinkSppDataClient2ServerUUID[16]      = WRAPPING_BRACES(TELINK_SPP_DATA_CLIENT2SERVER);
 
 
 // Spp data from Server to Client characteristic variables
@@ -261,8 +259,8 @@ static const attribute_t my_Attributes[] = {
 
 ble_sts_t bls_att_setDeviceName(u8* pName,u8 len)
 {
-	tmemset(ble_devName, 0, MAX_DEV_NAME_LEN );
-	tmemcpy(ble_devName, pName, len < MAX_DEV_NAME_LEN ? len : MAX_DEV_NAME_LEN);
+	memset(ble_devName, 0, MAX_DEV_NAME_LEN );
+	memcpy(ble_devName, pName, len < MAX_DEV_NAME_LEN ? len : MAX_DEV_NAME_LEN);
 
 	return BLE_SUCCESS;
 }

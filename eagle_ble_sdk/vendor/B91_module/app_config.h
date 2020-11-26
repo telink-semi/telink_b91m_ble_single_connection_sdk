@@ -45,38 +45,40 @@
  *******************************************************************************************************/
 #pragma once
 
-/* Enable C linkage for C++ Compilers: */
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
-
 
 
 /////////////////// MODULE /////////////////////////////////
 #define BLE_MODULE_PM_ENABLE				1
-#define PM_NO_SUSPEND_ENABLE				1
 #define PM_DEEPSLEEP_RETENTION_ENABLE		1
-#define TEST_CONN_CURRENT_ENABLE            0 //test connection current, disable UI to have a pure power
 #define BLE_OTA_ENABLE						1
 #define TELIK_SPP_SERVICE_ENABLE			1
 #define BLE_MODULE_INDICATE_DATA_TO_MCU		1
-#define BATT_CHECK_ENABLE       			0   //enable or disable battery voltage detection
+#define BATT_CHECK_ENABLE       			1   //enable or disable battery voltage detection
 #define BLT_APP_LED_ENABLE					0
 
-//firmware check
-#define FIRMWARES_SIGNATURE_ENABLE          0
+#define UART_DMA_USE						1
+
+
+/**
+ *  @brief  flash firmware check
+ */
+#define FLASH_FIRMWARE_CHECK_ENABLE			0
+
+
+/**
+ *  @brief  firmware signature check
+ */
+#define FIRMWARES_SIGNATURE_ENABLE			0
+
 
 
 //////////////// SMP SETTING  //////////////////////////////
 #define BLE_SECURITY_ENABLE 			   	1
 
 ////////////////////////UART INIT///////////////////////////
-#define PB2_FUNC							AS_UART0_TX
 #define PB2_OUTPUT_ENABLE					1
 #define PB2_INPUT_ENABLE					0
 
-#define PB3_FUNC							AS_UART0_RX
 #define PB3_OUTPUT_ENABLE					0
 #define PB3_INPUT_ENABLE					1
 
@@ -90,12 +92,19 @@ extern "C" {
 #endif
 
 #if (BATT_CHECK_ENABLE)
-//telink device: you must choose one gpio with adc function to output high level(voltage will equal to vbat), then use adc to measure high level voltage
-	//use PB7 output high level, then adc measure this high level voltage
-	#define GPIO_VBAT_DETECT				GPIO_PB7
-	#define PB7_FUNC						AS_GPIO
-	#define PB7_INPUT_ENABLE				0
-	#define ADC_INPUT_PCHN					B7P    //corresponding  ADC_InputPchTypeDef in adc.h
+#define VBAT_CHANNEL_EN						0
+
+#if VBAT_CHANNEL_EN
+	/**		The battery voltage sample range is 1.8~3.5V    **/
+#else
+	/** 	if the battery voltage > 3.6V, should take some external voltage divider	**/
+	#define GPIO_BAT_DETECT					GPIO_PB0
+	#define PB0_FUNC						AS_GPIO
+	#define PB0_INPUT_ENABLE				0
+	#define PB0_OUTPUT_ENABLE				0
+	#define PB0_DATA_OUT					0
+	#define ADC_INPUT_PIN_CHN				ADC_GPIO_PB0
+#endif
 #endif
 
 //////////////////// LED CONFIG (EVK board) ///////////////////////////
@@ -129,11 +138,11 @@ extern "C" {
 #define GPIO_WAKEUP_MODULE_HIGH				gpio_setup_up_down_resistor(GPIO_WAKEUP_MODULE, PM_PIN_PULLUP_10K);
 #define GPIO_WAKEUP_MODULE_LOW				gpio_setup_up_down_resistor(GPIO_WAKEUP_MODULE, PM_PIN_PULLDOWN_100K);
 
-#define GPIO_WAKEUP_MCU						GPIO_PB4   //module wakeup mcu
-#define	PB4_FUNC							AS_GPIO
-#define PB4_INPUT_ENABLE					1
-#define	PB4_OUTPUT_ENABLE					1
-#define	PB4_DATA_OUT						0
+#define GPIO_WAKEUP_MCU						GPIO_PA1   //module wakeup mcu
+#define	PA1_FUNC							AS_GPIO
+#define PA1_INPUT_ENABLE					1
+#define	PA1_OUTPUT_ENABLE					1
+#define	PA1_DATA_OUT						0
 #define GPIO_WAKEUP_MCU_HIGH				do{gpio_set_output_en(GPIO_WAKEUP_MCU, 1); gpio_write(GPIO_WAKEUP_MCU, 1);}while(0)
 #define GPIO_WAKEUP_MCU_LOW					do{gpio_set_output_en(GPIO_WAKEUP_MCU, 1); gpio_write(GPIO_WAKEUP_MCU, 0);}while(0)
 #define GPIO_WAKEUP_MCU_FLOAT				do{gpio_set_output_en(GPIO_WAKEUP_MCU, 0); gpio_write(GPIO_WAKEUP_MCU, 0);}while(0)
@@ -142,7 +151,7 @@ extern "C" {
 
 
 /////////////////// Clock  /////////////////////////////////
-#define CLOCK_SYS_CLOCK_HZ  				32000000
+#define CLOCK_SYS_CLOCK_HZ  				16000000
 
 enum{
 	CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,
@@ -152,15 +161,27 @@ enum{
 
 
 
-/////////////////// watchdog  //////////////////////////////
-#define MODULE_WATCHDOG_ENABLE				0
-#define WATCHDOG_INIT_TIMEOUT				500  //ms
-
-
 
 
 /////////////////////HCI UART variables///////////////////////////////////////
-#define UART_DATA_LEN    					68   // data max 252
+/*----------------------------------------------*
+*	SPP TX FIFO  = 2 Bytes LEN + n Bytes Data.	*
+*												*
+*	T_txdata_buf = 4 Bytes LEN + n Bytes Data.	*
+*												*
+*	SPP_TXFIFO_SIZE = 2 + n.					*
+*												*
+*	UART_DATA_LEN = n.							*
+*												*
+*	UART_DATA_LEN = SPP_TXFIFO_SIZE - 2.		*
+*-----------------------------------------------*/
+#define SPP_RXFIFO_SIZE		72
+#define SPP_RXFIFO_NUM		2
+
+#define SPP_TXFIFO_SIZE		72
+#define SPP_TXFIFO_NUM		8
+
+#define UART_DATA_LEN    	(SPP_TXFIFO_SIZE - 2)   // data max 252
 typedef struct{
     unsigned int len; // data max 252
     unsigned char data[UART_DATA_LEN];
@@ -345,10 +366,4 @@ typedef enum
 
 /////////////////// set default   ////////////////
 
-#include "../common/default_config.h"
-
-/* Disable C linkage for C++ Compilers: */
-#if defined(__cplusplus)
-}
-#endif
-
+#include "vendor/common/default_config.h"

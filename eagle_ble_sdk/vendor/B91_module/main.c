@@ -44,6 +44,7 @@
  *         
  *******************************************************************************************************/
 #include "app_config.h"
+#include "gpio_default.h"
 #include "../../drivers.h"
 
 #include "tl_common.h"
@@ -92,13 +93,17 @@ void stimer_irq_handler(void)
  */
 void uart0_irq_handler(void)
 {
-
+#if UART_DMA_USE
+	extern void uart0_recieve_irq(void);
+	uart0_recieve_irq();
+#else
 	if(uart_get_irq_status(UART0, UART_RXBUF_IRQ_STATUS))
 	{
 		extern void uart0_recieve_irq(void);
 
 		uart0_recieve_irq();
 	}
+#endif
 }
 
 /**
@@ -111,7 +116,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
 
-	sys_init(LDO_1P4_LDO_1P8);
+	sys_init(LDO_1P4_LDO_1P8,VBAT_V_GREATER_THAN_3V6);
 
 	/* detect if MCU is wake_up from deep retention mode */
 	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
@@ -128,25 +133,36 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	CCLK_64M_HCLK_32M_PCLK_16M;
 #endif
 
-	rf_drv_init(RF_MODE_BLE_1M);
+	rf_drv_ble_init();
 
 	gpio_init(!deepRetWakeUp);
 
-	/* load customized freq_offset cap value. */
-	//blc_app_loadCustomizedParameters();  //note: to be tested
+	if(!deepRetWakeUp){//read flash size
+		blc_readFlashSize_autoConfigCustomFlashSector();
+		#if (FLASH_FIRMWARE_CHECK_ENABLE)
+			//user can use flash_fw_check() to check whether firmware in flash is modified.
+			//Advice user to do it only when power on.
+			if(flash_fw_check(0xffffffff)){ //if retrun 0, flash fw crc check ok. if retrun 1, flash fw crc check fail
+				while(1);				    //Users can process according to the actual application.
+			}
+		#endif
+		#if FIRMWARES_SIGNATURE_ENABLE
+			blt_firmware_signature_check();
+		#endif
+	}
+
+	blc_app_loadCustomizedParameters();  //load customized freq_offset cap value
+
 	if( deepRetWakeUp ){ //MCU wake_up from deepSleep retention mode
+#if (PM_DEEPSLEEP_RETENTION_ENABLE)
 		user_init_deepRetn ();
+#endif
 	}
 	else{ //MCU power_on or wake_up from deepSleep mode
-		/* read flash size only in power_on or deepSleep */
-		//blc_readFlashSize_autoConfigCustomFlashSector();
 		user_init_normal();
 	}
 	irq_enable();
 	while (1) {
-		#if(MODULE_WATCHDOG_ENABLE)
-			wd_clear(); //clear watch dog
-		#endif
 		main_loop ();
 	}
 

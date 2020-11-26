@@ -112,7 +112,7 @@ int controller_event_handler(u32 h, u8 *para, int n)
 			{
 				//Slave received Master's LL_Connect_Update_Req pkt.
 				rf_packet_ll_updateConnPara_t p;
-				tmemcpy((u8*)&p.winSize, para, 11);
+				memcpy((u8*)&p.winSize, para, 11);
 
 			}
 			break;
@@ -154,6 +154,7 @@ int controller_event_handler(u32 h, u8 *para, int n)
 			break;
 		}
 	}
+	return 0;
 }
 
 int app_host_event_callback (u32 h, u8 *para, int n)
@@ -162,13 +163,13 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 
 	switch(event)
 	{
-		case GAP_EVT_SMP_PARING_BEAGIN:
+		case GAP_EVT_SMP_PAIRING_BEAGIN:
 		{
 
 		}
 		break;
 
-		case GAP_EVT_SMP_PARING_SUCCESS:
+		case GAP_EVT_SMP_PAIRING_SUCCESS:
 		{
 			gap_smp_paringSuccessEvt_t* p = (gap_smp_paringSuccessEvt_t*)para;
 
@@ -181,9 +182,9 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		}
 		break;
 
-		case GAP_EVT_SMP_PARING_FAIL:
+		case GAP_EVT_SMP_PAIRING_FAIL:
 		{
-			gap_smp_paringFailEvt_t* p = (gap_smp_paringFailEvt_t*)para;
+			//gap_smp_paringFailEvt_t* p = (gap_smp_paringFailEvt_t*)para;
 		}
 		break;
 
@@ -202,8 +203,8 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 
 		case GAP_EVT_SMP_TK_DISPALY:
 		{
-			char pc[7];
-			u32 pinCode = *(u32*)para;
+			//char pc[7];
+			//u32 pinCode = *(u32*)para;
 		}
 		break;
 
@@ -221,8 +222,8 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 
 		case GAP_EVT_SMP_TK_NUMERIC_COMPARE:
 		{
-			char pc[7];
-			u32 pinCode = *(u32*)para;
+			//char pc[7];
+			//u32 pinCode = *(u32*)para;
 		}
 		break;
 
@@ -246,7 +247,12 @@ int rx_from_uart_cb (void)//UART data send to Master,we will handler the data as
 
 	if (rx_len)
 	{
+#if UART_DMA_USE
+		bls_uart_handler(&p[0], rx_len - 4);
+#else
 		bls_uart_handler(&p[4], rx_len - 4);
+#endif
+
 		my_fifo_pop(&spp_rx_fifo);
 	}
 
@@ -260,7 +266,6 @@ int bls_uart_handler (u8 *p, int n)
 	spp_cmd_t *pCmd =  (spp_cmd_t *)p;
 	u16 spp_cmd = pCmd->cmdId;
 	u8 *cmdPara = pCmd->param;
-
 
 	u8	retPara[20] = {0};
 	spp_event_t *pEvt =  (spp_event_t *)&retPara;
@@ -339,6 +344,7 @@ int bls_uart_handler (u8 *p, int n)
 	// set device name: 13 ff 0a 00  01 02 03 04 05 06 07 08 09 0a
 	else if (spp_cmd == SPP_CMD_SET_DEV_NAME)
 	{
+		extern ble_sts_t bls_att_setDeviceName(u8* pName,u8 len);
 		pEvt->param[0] = bls_att_setDeviceName(cmdPara,p[2]);
 	}
 	// get connection parameter: 14 ff 00 00
@@ -448,7 +454,7 @@ int spp_send_data (u32 header, spp_event_t * pEvt)
 		*p++ = sppEvt_len;
 		*p++ = sppEvt_len >> 8;
 		#if 1
-			tmemcpy (p, (u8 *)pEvt, pEvt->paramLen + 2);
+		memcpy (p, (u8 *)pEvt, pEvt->paramLen + 2);
 			p += pEvt->paramLen + 2;
 		#else
 			*p++ = pEvt->token;
@@ -456,7 +462,7 @@ int spp_send_data (u32 header, spp_event_t * pEvt)
 			*p++ = pEvt->eventId;
 			*p++ = pEvt->eventId>>8;
 			if(pEvt->paramLen - 2 > 0){
-				tmemcpy (p, pEvt->param, pEvt->paramLen - 2);
+				memcpy (p, pEvt->param, pEvt->paramLen - 2);
 				p += pEvt->paramLen - 2;
 			}
 		#endif
@@ -466,13 +472,20 @@ int spp_send_data (u32 header, spp_event_t * pEvt)
 	return 0;
 }
 
+extern unsigned char uart_dma_send_flag;
+
 uart_data_t T_txdata_buf;
 int tx_to_uart_cb (void)
 {
 	u8 *p = my_fifo_get (&spp_tx_fifo);
+#if UART_DMA_USE
+	if (p && !uart_dma_send_flag)
+#else
 	if (p && !uart_tx_is_busy (UART0))
+#endif
+
 	{
-		tmemcpy(&T_txdata_buf.data, p + 2, p[0]+p[1]*256);
+		memcpy(&T_txdata_buf.data, p + 2, p[0]+p[1]*256);
 		T_txdata_buf.len = p[0]+p[1]*256 ;
 
 
@@ -487,11 +500,18 @@ int tx_to_uart_cb (void)
 #endif
 
 
-
+#if UART_DMA_USE
+		if (uart_send_dma(UART0,(u8 *)(&T_txdata_buf.data),T_txdata_buf.len))
+		{
+			my_fifo_pop (&spp_tx_fifo);
+			uart_dma_send_flag=1;
+		}
+#else
 		if (uart_send(UART0,(u8 *)(&T_txdata_buf.data),T_txdata_buf.len))
 		{
 			my_fifo_pop (&spp_tx_fifo);
 		}
+#endif
 	}
 	return 0;
 }

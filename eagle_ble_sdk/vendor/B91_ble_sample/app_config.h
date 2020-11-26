@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_config.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -52,21 +52,57 @@
  *  @brief  Feature select in bLE Sample project
  */
 #define BLE_APP_PM_ENABLE					1
-#define PM_NO_SUSPEND_ENABLE				1
 #define PM_DEEPSLEEP_RETENTION_ENABLE		1
 #define TEST_CONN_CURRENT_ENABLE            0 //test connection current, disable UI to have a pure power
 #define APP_SECURITY_ENABLE      			1
+#define APP_DIRECT_ADV_ENABLE				1
+#define BLE_SLAVE_OTA_ENABLE				0
+#define BATT_CHECK_ENABLE					0
 
 
 
+/**
+ *  @brief  flash firmware check
+ */
+#define FLASH_FIRMWARE_CHECK_ENABLE			0
 
-#if 1 //(SAMPLE_BOARD_SELECT == EVK_C1T139A30_V1P2)
-	#if (TEST_CONN_CURRENT_ENABLE) //test current, disable keyboard
-			#define	UI_KEYBOARD_ENABLE						0
-	#else
-			#define	UI_KEYBOARD_ENABLE						1
-	#endif
 
+/**
+ *  @brief  firmware signature check
+ */
+#define FIRMWARES_SIGNATURE_ENABLE			0
+
+
+
+/**
+ *  @brief  DEBUG  Configuration
+ */
+#define UART_PRINT_DEBUG_ENABLE  			0
+#define DEBUG_GPIO_ENABLE					0
+#define JTAG_DEBUG_EN						0
+#define APP_DUMP_EN							0
+
+
+
+/**
+ *  @brief  UI Configuration
+ */
+#define UI_LED_ENABLE          	 			1
+#define UI_BUTTON_ENABLE					0
+#if (TEST_CONN_CURRENT_ENABLE) //test current, disable keyboard
+		#define	UI_KEYBOARD_ENABLE			0
+#else
+		#define	UI_KEYBOARD_ENABLE			1
+#endif
+
+#if (BLE_SLAVE_OTA_ENABLE)
+	#define OTA_VERSION_FLASH_ADDR				0xEF000
+	#define OTA_VERSION_NUMBER					0x01
+#endif
+
+
+
+#if 1 										//SAMPLE SELECT EVK BOARD
 
 	#if (UI_KEYBOARD_ENABLE)   // if test pure power, kyeScan GPIO setting all disabled
 			//---------------  KeyMatrix PB2/PB3/PB4/PB5 -----------------------------
@@ -84,8 +120,8 @@
 			/**
 			 *  @brief  Normal keyboard map
 			 */
-			#define		KB_MAP_NORMAL	{	CR_VOL_DN,		VK_1,	 \
-											CR_VOL_UP,		VK_2 }
+			#define		KB_MAP_NORMAL	{	{CR_VOL_DN,		VK_1},	 \
+											{CR_VOL_UP,		VK_2}, }
 
 
 
@@ -116,47 +152,31 @@
 			//scan pin open input to read gpio level
 			#define PC3_INPUT_ENABLE		1
 			#define PC1_INPUT_ENABLE		1
-
-
-
-			#define		KB_MAP_NUM		KB_MAP_NORMAL
-			#define		KB_MAP_FN		KB_MAP_NORMAL
-
-
 	#endif
-#define     UI_LED_ENABLE           1
-#if UI_LED_ENABLE
-	/**
-	 *  @brief  Definition gpio for led
-	 */
-	#define	GPIO_LED_WHITE			GPIO_PB6
-	#define	GPIO_LED_GREEN			GPIO_PB5
-	#define	GPIO_LED_BLUE			GPIO_PB4
-#if (HARDWARE_BOARD_SELECT == HW_C1T219A20_V1_0_64_EVB)
-	#define GPIO_LED_RED			GPIO_PB7
-#elif (HARDWARE_BOARD_SELECT == HW_C1T217A20_V1_0_48_EVB)
-	#define GPIO_LED_RED			GPIO_PB2
-#elif (HARDWARE_BOARD_SELECT == HW_C1T213A20_V1_0_80_EVB)
-	#define GPIO_LED_RED			GPIO_PB7
-#endif
-	#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
 
-	#define PB7_FUNC				AS_GPIO
-	#define PB6_FUNC				AS_GPIO
-	#define PB5_FUNC				AS_GPIO
-	#define PB4_FUNC				AS_GPIO
+	#if (UI_LED_ENABLE)
+		/**
+		 *  @brief  Definition gpio for led
+		 */
+		#define	GPIO_LED_WHITE			GPIO_PB6
+		#define	GPIO_LED_GREEN			GPIO_PB5
+		#define	GPIO_LED_BLUE			GPIO_PB4
+		#define GPIO_LED_RED			GPIO_PB7
+		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
 
-	#define	PB7_OUTPUT_ENABLE		1
-	#define	PB6_OUTPUT_ENABLE		1
-	#define PB5_OUTPUT_ENABLE		1
-	#define	PB4_OUTPUT_ENABLE		1
-#endif
-#elif (SAMPLE_BOARD_SELECT == DONGLE_C1T139A3_V2P0A)
+		#define PB7_FUNC				AS_GPIO
+		#define PB6_FUNC				AS_GPIO
+		#define PB5_FUNC				AS_GPIO
+		#define PB4_FUNC				AS_GPIO
+
+		#define	PB7_OUTPUT_ENABLE		1
+		#define	PB6_OUTPUT_ENABLE		1
+		#define PB5_OUTPUT_ENABLE		1
+		#define	PB4_OUTPUT_ENABLE		1
+	#endif
+#else													//SAMPLE SELECT DONGLE BOARD
 	#undef  PM_DEEPSLEEP_RETENTION_ENABLE
-	#define PM_DEEPSLEEP_RETENTION_ENABLE					0    //dongle demo no need deepSleepRetention
-
-	#define	UI_BUTTON_ENABLE								1
-	#define UI_LED_ENABLE									1
+	#define PM_DEEPSLEEP_RETENTION_ENABLE				0    //dongle demo no need deepSleepRetention
 
 	#if (UI_BUTTON_ENABLE)
 			//---------------  Button -------------------------------
@@ -204,24 +224,31 @@
 
 
 
-#ifndef	UI_KEYBOARD_ENABLE
-#define UI_KEYBOARD_ENABLE									0
-#endif
-
-#ifndef	UI_BUTTON_ENABLE
-#define UI_BUTTON_ENABLE									0
-#endif
-
-
-
 
 /////////////////// DEEP SAVE FLG //////////////////////////////////
 #define USED_DEEP_ANA_REG                   DEEP_ANA_REG1 //u8,can save 8 bit info when deep
-#define CONN_DEEP_FLG	                    BIT(0) //if 1: conn deep, 0: adv deep
+#define	LOW_BATT_FLG					    BIT(0) //if 1: low battery
+#define CONN_DEEP_FLG	                    BIT(1) //if 1: conn deep, 0: adv deep
+#define IR_MODE_DEEP_FLG	 				BIT(2) //if 1: IR mode, 0: BLE mode
+#define LOW_BATT_SUSPEND_FLG				BIT(3) //if 1 : low battery, < 1.8v
 
 
 
+#if (BATT_CHECK_ENABLE)
+#define VBAT_CHANNEL_EN						0
 
+#if VBAT_CHANNEL_EN
+	/**		The battery voltage sample range is 1.8~3.5V    **/
+#else
+	/** 	if the battery voltage > 3.6V, should take some external voltage divider	**/
+	#define GPIO_BAT_DETECT				GPIO_PB0
+	#define PB0_FUNC						AS_GPIO
+	#define PB0_INPUT_ENABLE				0
+	#define PB0_OUTPUT_ENABLE				0
+	#define PB0_DATA_OUT					0
+	#define ADC_INPUT_PIN_CHN				ADC_GPIO_PB0
+#endif
+#endif
 
 
 /////////////////// Clock  /////////////////////////////////
@@ -239,24 +266,39 @@ enum{
 	CLOCK_SYS_CLOCK_1US = (CLOCK_SYS_CLOCK_1S / 1000000),
 };
 
+#if (JTAG_DEBUG_EN)//2-wire jtag mode
+
+#define PE6_FUNC			AS_TMS
+#define PE7_FUNC			AS_TCK
+
+#define PE6_INPUT_ENABLE	1
+#define PE7_INPUT_ENABLE	1
+
+#endif
+
+#if (APP_DUMP_EN)
+	#define PA5_FUNC						AS_USB_DM
+	#define PA6_FUNC						AS_USB_DP
+	#define PA5_INPUT_ENABLE				1
+	#define PA6_INPUT_ENABLE				1
+#endif
 
 
-/////////////////// watchdog  //////////////////////////////
-#define MODULE_WATCHDOG_ENABLE		0
-#define WATCHDOG_INIT_TIMEOUT		500  //ms
-
-
-
-
-
-
+/////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
+#if (UART_PRINT_DEBUG_ENABLE)
+	//the baud rate should not bigger than 115200 when MCU clock is 16M)
+	//the baud rate should not bigger than 1000000 when MCU clock is 24M)
+	#define PRINT_BAUD_RATE             		115200
+	#define DEBUG_INFO_TX_PIN           		GPIO_PC6
+	#define PULL_WAKEUP_SRC_PC6         		PM_PIN_PULLUP_10K
+	#define PC6_OUTPUT_ENABLE         			1
+	#define PC6_DATA_OUT                     	1 //must
+#endif
 
 
 /**
  *  @brief  Definition for gpio debug
  */
-#define DEBUG_GPIO_ENABLE							0
-
 #if(DEBUG_GPIO_ENABLE)
 
 
@@ -275,6 +317,11 @@ enum{
 	#define GPIO_CHN11							GPIO_PB3
 
 
+	#define GPIO_CHN12							GPIO_PC7
+	#define GPIO_CHN13							GPIO_PC6
+	#define GPIO_CHN14							GPIO_PC5
+	#define GPIO_CHN15							GPIO_PC4
+
 
 	#define PE1_OUTPUT_ENABLE					1
 	#define PE2_OUTPUT_ENABLE					1
@@ -289,6 +336,10 @@ enum{
 	#define PA1_OUTPUT_ENABLE					1
 	#define PB1_OUTPUT_ENABLE					1
 	#define PB3_OUTPUT_ENABLE					1
+	#define PC7_OUTPUT_ENABLE					1
+	#define PC6_OUTPUT_ENABLE					1
+	#define PC5_OUTPUT_ENABLE					1
+	#define PC4_OUTPUT_ENABLE					1
 
 
 	#define DBG_CHN0_LOW		gpio_write(GPIO_CHN0, 0)
@@ -327,6 +378,18 @@ enum{
 	#define DBG_CHN11_LOW		gpio_write(GPIO_CHN11, 0)
 	#define DBG_CHN11_HIGH		gpio_write(GPIO_CHN11, 1)
 	#define DBG_CHN11_TOGGLE	gpio_toggle(GPIO_CHN11)
+	#define DBG_CHN12_LOW		gpio_write(GPIO_CHN12, 0)
+	#define DBG_CHN12_HIGH		gpio_write(GPIO_CHN12, 1)
+	#define DBG_CHN12_TOGGLE	gpio_toggle(GPIO_CHN12)
+	#define DBG_CHN13_LOW		gpio_write(GPIO_CHN13, 0)
+	#define DBG_CHN13_HIGH		gpio_write(GPIO_CHN13, 1)
+	#define DBG_CHN13_TOGGLE	gpio_toggle(GPIO_CHN13)
+	#define DBG_CHN14_LOW		gpio_write(GPIO_CHN14, 0)
+	#define DBG_CHN14_HIGH		gpio_write(GPIO_CHN14, 1)
+	#define DBG_CHN14_TOGGLE	gpio_toggle(GPIO_CHN14)
+	#define DBG_CHN15_LOW		gpio_write(GPIO_CHN15, 0)
+	#define DBG_CHN15_HIGH		gpio_write(GPIO_CHN15, 1)
+	#define DBG_CHN15_TOGGLE	gpio_toggle(GPIO_CHN15)
 #else
 	#define DBG_CHN0_LOW
 	#define DBG_CHN0_HIGH
@@ -364,8 +427,20 @@ enum{
 	#define DBG_CHN11_LOW
 	#define DBG_CHN11_HIGH
 	#define DBG_CHN11_TOGGLE
+	#define DBG_CHN12_LOW
+	#define DBG_CHN12_HIGH
+	#define DBG_CHN12_TOGGLE
+	#define DBG_CHN13_LOW
+	#define DBG_CHN13_HIGH
+	#define DBG_CHN13_TOGGLE
+	#define DBG_CHN14_LOW
+	#define DBG_CHN14_HIGH
+	#define DBG_CHN14_TOGGLE
+	#define DBG_CHN15_LOW
+	#define DBG_CHN15_HIGH
+	#define DBG_CHN15_TOGGLE
 #endif  //end of DEBUG_GPIO_ENABLE
 
 
 
-#include "../common/default_config.h"
+#include "vendor/common/default_config.h"

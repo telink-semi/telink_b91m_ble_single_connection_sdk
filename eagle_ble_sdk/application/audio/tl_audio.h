@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	tl_audio.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -46,7 +46,7 @@
 #ifndef TL_AUDIO_H_
 #define TL_AUDIO_H_
 
-#include "../../tl_common.h"
+#include "tl_common.h"
 #include "audio_config.h"
 
 

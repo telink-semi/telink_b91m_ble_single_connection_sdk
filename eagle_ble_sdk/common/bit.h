@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	bit.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,9 +43,6 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#ifndef COMMON_BIT_H_
-#define COMMON_BIT_H_
-
 #pragma once
 
 
@@ -265,4 +262,3 @@
 #endif
 
 
-#endif /* COMMON_BIT_H_ */

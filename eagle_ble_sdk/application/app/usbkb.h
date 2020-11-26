@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usbkb.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,14 +43,13 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
+
 #pragma once
-#include "../usbstd/HIDClassCommon.h"
-#include "../usbstd/HIDReportData.h"
-#include "../../tl_common.h"
-#include "../../drivers.h"
-//#include "../common/types.h"
-//#include "../common/static_assert.h"
-//#include "../mcu/clock_i.h"
+
+#include <application/usbstd/HIDClassCommon.h>
+#include <application/usbstd/HIDReportData.h>
+#include "tl_common.h"
+#include "drivers.h"
 
 /* Enable C linkage for C++ Compilers: */
 #if defined(__cplusplus)

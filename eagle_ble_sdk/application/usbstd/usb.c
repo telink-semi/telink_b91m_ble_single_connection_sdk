@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	usb.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,8 +43,9 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#include "../../tl_common.h"
-#include "../../drivers.h"
+
+#include "tl_common.h"
+#include "drivers.h"
 
 //#define MODULE_USB_ENABLE  1
 //#define FLOW_NO_OS         0
@@ -62,40 +63,35 @@
 
 #include "usb.h"
 #include "usbdesc.h"
-#include "../usbstd/StdRequestType.h"
-#include "../../drivers/9518/usbhw.h"
-//#include "../../drivers/9518/usbhw_i.h"
+#include "application/usbstd/StdRequestType.h"
 
 
 #if (USB_MOUSE_ENABLE)
-#include "../app/usbmouse_i.h"
+#include "application/app/usbmouse_i.h"
 #endif
 
 #if (USB_KEYBOARD_ENABLE)
-#include "../app/usbkb_i.h"
+#include "application/app/usbkb_i.h"
 #endif
 
 #if (USB_SOMATIC_ENABLE)
-#include "../app/usbsomatic_i.h"
+#include "application/app/usbsomatic_i.h"
 #include "somatic_sensor.h"
 #endif
 
 #if (USB_SPEAKER_ENABLE || USB_MIC_ENABLE)
-#include "../app/usbaud_i.h"
+#include "application/app/usbaud_i.h"
 #endif
 
 #ifdef WIN32
 #include <stdio.h>
 #endif
 
-
-
-
 extern u8 keyboard_interface_number, mouse_interface_number;
 
 u8		host_keyboard_status;
 u8		host_cmd[8];
-u8		host_cmd_paring_ok = 0;
+u8		host_cmd_pairing_ok = 0;
 static USB_Request_Hdr_t control_request;
 static u8 * g_response = 0;
 static u16 g_response_len = 0;
@@ -382,7 +378,7 @@ void usb_handle_out_class_intf_req(int data_request) {
 			break;
 		case HID_REPORT_CUSTOM:
 #if (USB_CUSTOM_HID_REPORT)
-		{	//Paring, EMI-TX, EMI-RX
+		{	//pairing, EMI-TX, EMI-RX
 			if (data_request) {
 				int i=0;
 				usbhw_reset_ctrl_ep_ptr (); //address
@@ -513,7 +509,7 @@ void usb_handle_in_class_intf_req() {
 					usbhw_write_ctrl_ep_data (0x04);
 					usbhw_write_ctrl_ep_data (0x58);
 					usbhw_write_ctrl_ep_data (0x00);
-					usbhw_write_ctrl_ep_data (host_cmd_paring_ok ? 0xa1 : 0x00);  //For binding OK
+					usbhw_write_ctrl_ep_data (host_cmd_pairing_ok ? 0xa1 : 0x00);  //For binding OK
 					usbhw_write_ctrl_ep_data (0x00);
 					usbhw_write_ctrl_ep_data (0x00);
 					usbhw_write_ctrl_ep_data (0x08);
@@ -600,14 +596,13 @@ void usb_handle_set_intf() {
 #if (USB_SPEAKER_ENABLE || USB_MIC_ENABLE)
 	u8 value_l = (control_request.Value) & 0xff;
 	u8 intf_index = (control_request.Index) & 0x07;
-	//assert(intf_index < USB_INTF_MAX);
 	usb_alt_intf[intf_index] = value_l;
 
 #if (USB_MIC_ENABLE)
 	if(USB_INTF_MIC == intf_index && value_l){
 //		usbhw_reset_ep_ptr(USB_EDP_MIC);
 //		reg_usb_ep_ptr(USB_EDP_MIC) = USB_MIC_CHANNELS_LEN;
-//		reg_usb_ep_ctrl(USB_EDP_MIC) = (MIC_CHANNLE_COUNT == 2 ? 0x81 : 0xc1);
+//		reg_usb_ep_ctrl(USB_EDP_MIC) = (MIC_CHANNEL_COUNT == 2 ? 0x81 : 0xc1);
 		reg_usb_ep_ptr(USB_EDP_MIC) = 0;
 		reg_usb_ep_ctrl(USB_EDP_MIC) = BIT(0);		//ACK first packet
 	}
@@ -617,7 +612,7 @@ void usb_handle_set_intf() {
 	if(USB_INTF_SPEAKER == intf_index && value_l){
 //		usbhw_reset_ep_ptr(USB_EDP_MIC);
 //		reg_usb_ep_ptr(USB_EDP_MIC) = USB_MIC_CHANNELS_LEN;
-//		reg_usb_ep_ctrl(USB_EDP_MIC) = (MIC_CHANNLE_COUNT == 2 ? 0x81 : 0xc1);
+//		reg_usb_ep_ctrl(USB_EDP_MIC) = (MIC_CHANNEL_COUNT == 2 ? 0x81 : 0xc1);
 		reg_usb_ep_ptr(USB_EDP_SPEAKER) = 0;
 		reg_usb_ep_ctrl(USB_EDP_SPEAKER) = BIT(0);		//ACK first packet
 	}
@@ -629,7 +624,6 @@ void usb_handle_set_intf() {
 #if (USB_SPEAKER_ENABLE || USB_MIC_ENABLE)
 void usb_handle_get_intf() {
 	u8 intf_index = (control_request.Index) & 0x07;
-	//assert(intf_index < USB_INTF_MAX);
 
 	usbhw_write_ctrl_ep_data(usb_alt_intf[intf_index]);
 

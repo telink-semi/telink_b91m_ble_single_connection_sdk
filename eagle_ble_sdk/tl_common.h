@@ -52,18 +52,27 @@
 #include "common/types.h"
 #include "common/bit.h"
 #include "common/utility.h"
-#include "common/static_assert.h"
-#include "common/assert.h"
-
 
 #include "vendor/common/user_config.h"
 #include "config.h"
 
-#include "common/string.h"
+#include "common/assert.h"
+
+
+
+#include <string.h>
 
 #include "common/usb_dbg/myudb.h"
 #include "common/usb_dbg/log_def_stack.h"
 
-#include "application/print/u_printf.h"
+#include "application/print/printf.h"
+
+#include "vendor/common/blt_common.h"
+#include "vendor/common/blt_fw_sign.h"
+#include "vendor/common/blt_led.h"
+#include "vendor/common/blt_soft_timer.h"
+#include "vendor/common/custom_pair.h"
+#include "vendor/common/flash_fw_check.h"
+
 
 #endif /* TL_COMMON_H_ */

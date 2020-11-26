@@ -64,28 +64,32 @@ _attribute_data_retention_	u32 flash_sector_calibration = CFG_ADR_CALIBRATION_1M
  * @param[in]	none
  * @return      none
  */
-void blc_readFlashSize_autoConfigCustomFlashSector(void)
+_attribute_no_inline_ void blc_readFlashSize_autoConfigCustomFlashSector(void)
 {
-//	u8 temp_buf[4];
-//	flash_read_mid(temp_buf);
-//	u8	flash_cap = temp_buf[2];
-//
-//	if(flash_cap == FLASH_SIZE_512K){
-//		flash_sector_mac_address = CFG_ADR_MAC_512K_FLASH;
-//		flash_sector_calibration = CFG_ADR_CALIBRATION_512K_FLASH;
-//	}
-//	else if(flash_cap == FLASH_SIZE_1M){
+	u8 temp_buf[4];
+	flash_read_mid(temp_buf);
+	u8	flash_cap = temp_buf[2];
+
+	if(flash_cap == FLASH_SIZE_512K){
+		flash_sector_mac_address = CFG_ADR_MAC_512K_FLASH;
+		flash_sector_calibration = CFG_ADR_CALIBRATION_512K_FLASH;
+	}
+	else if(flash_cap == FLASH_SIZE_1M){
 		flash_sector_mac_address = CFG_ADR_MAC_1M_FLASH;
 		flash_sector_calibration = CFG_ADR_CALIBRATION_1M_FLASH;
-//	}
-//	else{
-//		//This SDK do not support flash size other than 512K/1M
-//		//If code stop here, please check your Flash
-//		while(1);
-//	}
-//
-//
-//	flash_set_capacity(flash_cap);
+	}
+	else if(flash_cap == FLASH_SIZE_2M){
+		flash_sector_mac_address = CFG_ADR_MAC_2M_FLASH;
+		flash_sector_calibration = CFG_ADR_CALIBRATION_2M_FLASH;
+	}
+	else{
+		//This SDK do not support flash size other than 1M/2M
+		//If code stop here, please check your Flash
+		while(1);
+	}
+
+
+	flash_set_capacity(flash_cap);
 }
 
 
@@ -122,8 +126,8 @@ void blc_initMacAddress(int flash_addr, u8 *mac_public, u8 *mac_random_static)
 	generateRandomNum(5, value_rand);
 
 	u8 ff_six_byte[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-	if ( tmemcmp(mac_read, ff_six_byte, 6) ) {
-		tmemcpy(mac_public, mac_read, 6);  //copy public address from flash
+	if ( memcmp(mac_read, ff_six_byte, 6) ) {
+		memcpy(mac_public, mac_read, 6);  //copy public address from flash
 	}
 	else{  //no public address on flash
 		mac_public[0] = value_rand[0];
@@ -151,7 +155,7 @@ void blc_initMacAddress(int flash_addr, u8 *mac_public, u8 *mac_random_static)
 
 	u16 high_2_byte = (mac_read[6] | mac_read[7]<<8);
 	if(high_2_byte != 0xFFFF){
-		tmemcpy( (u8 *)(mac_random_static + 3), (u8 *)(mac_read + 6), 2);
+		memcpy( (u8 *)(mac_random_static + 3), (u8 *)(mac_read + 6), 2);
 	}
 	else{
 		mac_random_static[3] = value_rand[3];
