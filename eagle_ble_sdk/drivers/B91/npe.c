@@ -1,36 +1,36 @@
 /********************************************************************************************************
- * @file	register_9518.h
+ * @file	npe.c
  *
- * @brief	This is the header file for B91
+ * @brief	This is the source file for B91
  *
- * @author	D.M.H
+ * @author	Driver Group
  * @date	2019
  *
  * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
- *          
+ *
  *          Redistribution and use in source and binary forms, with or without
  *          modification, are permitted provided that the following conditions are met:
- *          
+ *
  *              1. Redistributions of source code must retain the above copyright
  *              notice, this list of conditions and the following disclaimer.
- *          
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions 
- *              in binary form must reproduce the above copyright notice, this list of 
+ *
+ *              2. Unless for usage inside a TELINK integrated circuit, redistributions
+ *              in binary form must reproduce the above copyright notice, this list of
  *              conditions and the following disclaimer in the documentation and/or other
  *              materials provided with the distribution.
- *          
- *              3. Neither the name of TELINK, nor the names of its contributors may be 
- *              used to endorse or promote products derived from this software without 
+ *
+ *              3. Neither the name of TELINK, nor the names of its contributors may be
+ *              used to endorse or promote products derived from this software without
  *              specific prior written permission.
- *          
+ *
  *              4. This software, with or without modification, must only be used with a
  *              TELINK integrated circuit. All other usages are subject to written permission
  *              from TELINK and different commercial license may apply.
  *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or 
+ *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
  *              relating to such deletion(s), modification(s) or alteration(s).
- *         
+ *
  *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -41,30 +41,29 @@
  *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *         
+ *
  *******************************************************************************************************/
-#ifndef  REGISTER_9518_H
-#define  REGISTER_9518_H
+#include "npe.h"
 
-#include "gpio_reg.h"
-#include "soc.h"
-#include "analog_reg.h"
-#include "audio_reg.h"
-#include "uart_reg.h"
-#include "timer_reg.h"
-#include "dma_reg.h"
-#include "usb_reg.h"
-#include "pwm_reg.h"
-#include "spi_reg.h"
-#include "i2c_reg.h"
-#include "mspi_reg.h"
-#include "rf_reg.h"
-#include "trng_reg.h"
-#include "npe_reg.h"
-#include "pke_reg.h"
-#include "plic_reg.h"
-#include "uart_reg.h"
-#include "stimer_reg.h"
-#include "aes_reg.h"
-#include "mdec_reg.h"
-#endif
+
+/**
+We don't know the meaning of the register, so let's them together
+ */
+
+void npe_set_reg(void)
+{
+	reg_npe_0x84=0xffff;
+	reg_npe_0x74=0x03000000;
+	reg_npe_0x80=0x100;
+	reg_npe_0x40=0x100;
+
+}
+/**
+npe set config
+ */
+void npe_set_config(unsigned int desc_pointer )
+{
+	reg_npe_0x6c=desc_pointer;
+
+	npe_set_reg();
+}
