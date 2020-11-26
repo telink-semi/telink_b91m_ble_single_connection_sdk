@@ -310,7 +310,7 @@ void audio_mic_off()//
 			if(app_audio_key_start(1) == APP_AUDIO_ENABLE){
 				audio_stick = clock_time()|1;
 				ui_enable_mic(1);
-				google_voice_para(1);
+				google_handle_init(AUDIO_GOOGLE_CTL_DP_H,HID_CONSUME_REPORT_INPUT_DP_H);
 			}
 		}
 	}
@@ -320,7 +320,6 @@ void audio_mic_off()//
 		if(ui_mic_enable){
 			if(app_audio_key_start(0) == APP_AUDIO_DISABLE){
 				ui_enable_mic(0);
-				google_voice_para(0);
 			}
 		}
 	}
@@ -407,109 +406,51 @@ void audio_mic_off()//
 	u8 audio_send_idx = 0;
 	u32 audio_end_tick = 0;
 
-	#if BLE_DMIC_ENABLE
-		void dmic_gpio_reset (void)
-		{
-			gpio_set_func(GPIO_DMIC_BIAS, AS_GPIO);
-			gpio_set_input_en(GPIO_DMIC_BIAS, 0);
-			gpio_set_output_en(GPIO_DMIC_BIAS, 1);
-			gpio_write(GPIO_DMIC_BIAS, 0);
-
-			gpio_set_func(GPIO_DMIC_DI, AS_GPIO);
-			gpio_set_input_en(GPIO_DMIC_DI, 1);
-			gpio_set_output_en(GPIO_DMIC_DI, 0);
-			gpio_setup_up_down_resistor(GPIO_DMIC_DI, PM_PIN_PULLDOWN_100K);
-
-			gpio_set_func(GPIO_DMIC_CK, AS_GPIO);
-			gpio_set_input_en(GPIO_DMIC_CK, 0);
-			gpio_set_output_en(GPIO_DMIC_CK, 1);
-			gpio_write(GPIO_DMIC_CK, 0);
-		}
-	#else
-		void amic_gpio_reset (void)
-		{
-			gpio_set_func(GPIO_AMIC_BIAS, AS_GPIO);
-			gpio_set_input_en(GPIO_AMIC_BIAS, 0);
-			gpio_set_output_en(GPIO_AMIC_BIAS, 1);
-			gpio_write(GPIO_AMIC_BIAS, 0);
-
-			gpio_set_func(GPIO_AMIC_C1, AS_GPIO);
-			gpio_set_input_en(GPIO_AMIC_C1, 0);
-			gpio_set_output_en(GPIO_AMIC_C1, 1);
-			gpio_write(GPIO_AMIC_C1, 0);
-
-		}
-	#endif
 	extern u8		buffer_mic_pkt_wptr;
 	extern u8		buffer_mic_pkt_rptr;
+
+	/**
+	 * @brief      for open the audio and mtu size exchange
+	 * @param[in]  en   0:close the micphone  1:open the micphone
+	 * @return     none
+	 */
 	void ui_enable_mic (int en)
 	{
 		ui_mic_enable = en;
 
-#if BLE_DMIC_ENABLE
-		//DMIC Bias output
-		gpio_set_output_en (GPIO_DMIC_BIAS, en);
-		gpio_write (GPIO_DMIC_BIAS, en);
-#else
-		//AMIC Bias output
-		gpio_set_output_en (GPIO_AMIC_BIAS, en);
-		#if (MCU_CORE_TYPE == MCU_CORE_8278)
-			gpio_set_data_strength (GPIO_AMIC_BIAS, en);
-		#endif
-		gpio_write (GPIO_AMIC_BIAS, en);
-#endif
 		#if (BLT_APP_LED_ENABLE)
-			extern const led_cfg_t led_cfg[];
-			device_led_setup(led_cfg[en ? 1 : 2]);
+			device_led_setup(led_cfg[en ? LED_AUDIO_ON : LED_AUDIO_OFF]);
 		#endif
-
+		gpio_write(GPIO_LED_BLUE,en);
 		if(en){  //audio on
 			audio_mic_param_init();
 			audio_send_idx = 0;
 			audio_end_tick = 0;
-			///////////////////// AUDIO initialization///////////////////
-			//buffer_mic set must before audio_init !!!
-			audio_config_mic_buf ( buffer_mic, TL_MIC_BUFFER_SIZE);
 			buffer_mic_pkt_rptr = buffer_mic_pkt_wptr = 0;
-			#if (BLE_DMIC_ENABLE)  //Dmic config
-				gpio_set_func(GPIO_DMIC_DI, AS_DMIC);
-				gpio_set_func(GPIO_DMIC_CK, AS_DMIC);
-				gpio_set_input_en(GPIO_DMIC_DI, 1);
-				audio_dmic_init(AUDIO_16K);
-
+			///////////////////// AUDIO initialization///////////////////
+			#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+				audio_dmic_init();
 			#else  //Amic config
-				gpio_set_output_en(GPIO_AMIC_C1, 0);
-				audio_amic_init(AUDIO_16K);
-			#endif
-
-			#if (IIR_FILTER_ENABLE)
-				//only used for debugging EQ Filter parameters, removed after mass production
-				extern void filter_setting();
-				filter_setting();
+				audio_amic_init();
 			#endif
 		}
 		else{  //audio off
-			#if BLE_DMIC_ENABLE
-				dmic_gpio_reset();
-			#else
-				#if (MCU_CORE_TYPE == MCU_CORE_8278)
-					audio_codec_and_pga_disable();	//power off codec and pga
-				#elif (MCU_CORE_TYPE == MCU_CORE_8258)
-					adc_power_on_sar_adc(0);   //power off sar adc
-				#endif
-					amic_gpio_reset();
-			#endif
 			buffer_mic_pkt_rptr = buffer_mic_pkt_wptr = 0;
 			audio_start_status = 0;
 			audio_end_status = 0;
 			audio_stick = 0;
 			audio_end_tick = 0;
 			audio_bt_status = APP_AUDIO_BT_CLOSE;
+			#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+				audio_mic_off();
+			#else  //audio off
+				audio_mic_off();
+			#endif
 		}
-		#if ((!BLE_DMIC_ENABLE) && (BATT_CHECK_ENABLE))
+
+		#if (BATT_CHECK_ENABLE)
 			battery_set_detect_enable(!en);
 		#endif
-
 	}
 
 	void voice_key_press(void)
@@ -517,10 +458,6 @@ void audio_mic_off()//
 
 		if(!ui_mic_enable && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN){
 			if(audio_start_status == 0){
-//				u8 keyBuff[6] = {0};
-//				keyBuff[0] = 0x00;
-//				keyBuff[3] = 0x3E;
-//				bls_att_pushNotifyData(HID_NORMAL_KB_REPORT_INPUT_DP_H, (u8 *)&keyBuff, 6);
 
 				u8 value[20]={0x99, 0x99, 0x99, 0x21, };// AC_SEARCH
 				if(bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
@@ -649,11 +586,7 @@ void audio_mic_off()//
 			}
 		}
 		if(ui_mic_enable){
-			#if (MCU_CORE_TYPE == MCU_CORE_8278)
-			if(audio_start || (audio_stick && clock_time_exceed(audio_stick, 380*1000))){// for 8278
-			#elif (MCU_CORE_TYPE == MCU_CORE_8258)
-			if(audio_start || (audio_stick && clock_time_exceed(audio_stick, 1*1000))){// for 8258
-			#endif
+			if(audio_start || (audio_stick && clock_time_exceed(audio_stick, 380*1000))){
 				audio_start = 1;
 				task_audio();
 			}
@@ -732,7 +665,6 @@ void audio_mic_off()//
 				}
 			}
 		}
-
 	}
 
 	void voice_key_release(void)
@@ -864,109 +796,50 @@ void audio_mic_off()//
 		u8 audio_send_idx = 0;
 		u32 audio_end_tick = 0;
 
-		#if BLE_DMIC_ENABLE
-			void dmic_gpio_reset (void)
-			{
-				gpio_set_func(GPIO_DMIC_BIAS, AS_GPIO);
-				gpio_set_input_en(GPIO_DMIC_BIAS, 0);
-				gpio_set_output_en(GPIO_DMIC_BIAS, 1);
-				gpio_write(GPIO_DMIC_BIAS, 0);
-
-				gpio_set_func(GPIO_DMIC_DI, AS_GPIO);
-				gpio_set_input_en(GPIO_DMIC_DI, 1);
-				gpio_set_output_en(GPIO_DMIC_DI, 0);
-				gpio_setup_up_down_resistor(GPIO_DMIC_DI, PM_PIN_PULLDOWN_100K);
-
-				gpio_set_func(GPIO_DMIC_CK, AS_GPIO);
-				gpio_set_input_en(GPIO_DMIC_CK, 0);
-				gpio_set_output_en(GPIO_DMIC_CK, 1);
-				gpio_write(GPIO_DMIC_CK, 0);
-			}
-		#else
-			void amic_gpio_reset (void)
-			{
-				gpio_set_func(GPIO_AMIC_BIAS, AS_GPIO);
-				gpio_set_input_en(GPIO_AMIC_BIAS, 0);
-				gpio_set_output_en(GPIO_AMIC_BIAS, 1);
-				gpio_write(GPIO_AMIC_BIAS, 0);
-
-				gpio_set_func(GPIO_AMIC_C1, AS_GPIO);
-				gpio_set_input_en(GPIO_AMIC_C1, 0);
-				gpio_set_output_en(GPIO_AMIC_C1, 1);
-				gpio_write(GPIO_AMIC_C1, 0);
-
-			}
-		#endif
 		extern u8		buffer_mic_pkt_wptr;
 		extern u8		buffer_mic_pkt_rptr;
+
+		/**
+		 * @brief      for open the audio and mtu size exchange
+		 * @param[in]  en   0:close the micphone  1:open the micphone
+		 * @return     none
+		 */
 		void ui_enable_mic (int en)
 		{
 			ui_mic_enable = en;
 
-	#if BLE_DMIC_ENABLE
-			//DMIC Bias output
-			gpio_set_output_en (GPIO_DMIC_BIAS, en);
-			gpio_write (GPIO_DMIC_BIAS, en);
-	#else
-			//AMIC Bias output
-			gpio_set_output_en (GPIO_AMIC_BIAS, en);
-			#if (MCU_CORE_TYPE == MCU_CORE_8278)
-				gpio_set_data_strength (GPIO_AMIC_BIAS, en);
-			#endif
-			gpio_write (GPIO_AMIC_BIAS, en);
-	#endif
 			#if (BLT_APP_LED_ENABLE)
-				extern const led_cfg_t led_cfg[];
-				device_led_setup(led_cfg[en ? 1 : 2]);
+				device_led_setup(led_cfg[en ? LED_AUDIO_ON : LED_AUDIO_OFF]);
 			#endif
-
+			gpio_write(GPIO_LED_BLUE,en);
 			if(en){  //audio on
 				audio_mic_param_init();
 				audio_send_idx = 0;
 				audio_end_tick = 0;
 				///////////////////// AUDIO initialization///////////////////
-				//buffer_mic set must before audio_init !!!
-				audio_config_mic_buf ( buffer_mic, TL_MIC_BUFFER_SIZE);
-				buffer_mic_pkt_rptr = buffer_mic_pkt_wptr = 0;
-				#if (BLE_DMIC_ENABLE)  //Dmic config
-					gpio_set_func(GPIO_DMIC_DI, AS_DMIC);
-					gpio_set_func(GPIO_DMIC_CK, AS_DMIC);
-					gpio_set_input_en(GPIO_DMIC_DI, 1);
-					audio_dmic_init(AUDIO_16K);
-
+				#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+					audio_dmic_init();
 				#else  //Amic config
-					gpio_set_output_en(GPIO_AMIC_C1, 0);
-					audio_amic_init(AUDIO_16K);
-				#endif
-
-				#if (IIR_FILTER_ENABLE)
-					//only used for debugging EQ Filter parameters, removed after mass production
-					extern void filter_setting();
-					filter_setting();
+					audio_amic_init();
 				#endif
 			}
 			else{  //audio off
-				#if BLE_DMIC_ENABLE
-					dmic_gpio_reset();
-				#else
-					#if (MCU_CORE_TYPE == MCU_CORE_8278)
-						audio_codec_and_pga_disable();	//power off codec and pga
-					#elif (MCU_CORE_TYPE == MCU_CORE_8258)
-						adc_power_on_sar_adc(0);   //power off sar adc
-					#endif
-						amic_gpio_reset();
-				#endif
 				buffer_mic_pkt_rptr = buffer_mic_pkt_wptr = 0;
 				audio_start_status = 0;
 				audio_end_status = 0;
 				audio_stick = 0;
 				audio_end_tick = 0;
 				audio_bt_status = APP_AUDIO_BT_CLOSE;
+				#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+					audio_mic_off();
+				#else  //audio off
+					audio_mic_off();
+				#endif
 			}
-			#if ((!BLE_DMIC_ENABLE) && (BATT_CHECK_ENABLE))
+
+			#if (BATT_CHECK_ENABLE)
 				battery_set_detect_enable(!en);
 			#endif
-
 		}
 
 		void voice_key_press(void)
@@ -974,10 +847,6 @@ void audio_mic_off()//
 
 			if(!ui_mic_enable && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN){
 				if(audio_start_status == 0){
-	//				u8 keyBuff[6] = {0};
-	//				keyBuff[0] = 0x00;
-	//				keyBuff[3] = 0x3E;
-	//				bls_att_pushNotifyData(HID_NORMAL_KB_REPORT_INPUT_DP_H, (u8 *)&keyBuff, 6);
 
 					u8 value[20]={0x99, 0x99, 0x99, 0x31, };// AC_SEARCH
 					if(bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
@@ -1090,11 +959,8 @@ void audio_mic_off()//
 				}
 			}
 			if(ui_mic_enable){
-				#if (MCU_CORE_TYPE == MCU_CORE_8278)
+
 				if(audio_start || (audio_stick && clock_time_exceed(audio_stick, 380*1000))){// for 8278
-				#elif (MCU_CORE_TYPE == MCU_CORE_8258)
-				if(audio_start || (audio_stick && clock_time_exceed(audio_stick, 1*1000))){// for 8258
-				#endif
 					audio_start = 1;
 					task_audio();
 				}

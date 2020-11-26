@@ -411,9 +411,9 @@ static FIXED_T cos_table_fixed_8[128] = {
  * and "odd" cases are needed
  */
 
-#if(!SPEED_OVER_RAM)
-const
-#endif
+//#if(!SPEED_OVER_RAM)
+//const
+//#endif
 static FIXED_T SBC_ALIGNED analysis_consts_fixed4_simd_even[40 + 16] = {
 #define C0 1.0932568993
 #define C1 1.3056875580

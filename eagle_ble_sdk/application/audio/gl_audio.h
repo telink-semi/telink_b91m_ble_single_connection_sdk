@@ -166,7 +166,7 @@ unsigned char app_audio_key_start(unsigned char isPress);
 int app_audio_timeout_proc(void);
 int app_audio_timeout_proc(void);
 int app_auido_google_callback(void* p);
-
+void google_handle_init(u16 ctl_dp_h, u16 report_dp_h);
 
 #endif
 

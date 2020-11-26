@@ -177,6 +177,7 @@ static int sbc_offset8[4][8] = {
 #define SBC_PROTO_FIXED4_SCALE 	((sizeof(FIXED_T) * 8 - 1) - SBC_FIXED_EXTRA_BITS + 1)
 #define F_PROTO4(x) 			(FIXED_A)((x * 2) * ((FIXED_A) 1 << (sizeof(FIXED_T) * 8 - 1)) + 0.5)
 #define F(x) F_PROTO4(x)
+#if 0
 #if(!SPEED_OVER_RAM)
 const
 #endif
@@ -206,12 +207,14 @@ static FIXED_T _sbc_proto_fixed4[40] = {
 	F(3.83720193E-03),  F(2.73370904E-03),
 	F(1.49188357E-03), -F(5.36548976E-04),
 };
+#endif
 #undef F
 
 #define SBC_COS_TABLE_FIXED4_SCALE 	((sizeof(FIXED_T) * 8 - 1) + SBC_FIXED_EXTRA_BITS)
 #define F_COS4(x) (FIXED_A) 		((x) * ((FIXED_A) 1 << (sizeof(FIXED_T) * 8 - 1)) + 0.5)
 #define F(x) F_COS4(x)
 
+#if 0
 #if(!SPEED_OVER_RAM)
 const
 #endif
@@ -228,6 +231,7 @@ static FIXED_T cos_table_fixed_4[32] = {
 	F(0.7071067812), -F(0.9238795325), -F(1.0000000000), -F(0.9238795325),
 	F(0.7071067812), -F(0.3826834324), -F(0.0000000000), -F(0.3826834324),
 };
+#endif
 #undef F
 
 /* A2DP specification: Section 12.8 Tables
@@ -242,6 +246,7 @@ static FIXED_T cos_table_fixed_4[32] = {
 #define F_PROTO8(x) (FIXED_A) 	((x * 2) * ((FIXED_A) 1 << (sizeof(FIXED_T) * 8 - 1)) + 0.5)
 #define F(x) F_PROTO8(x)
 
+#if 0
 #if(!SPEED_OVER_RAM)
 const
 #endif
@@ -291,6 +296,7 @@ static FIXED_T _sbc_proto_fixed8[80] = {
 	F(8.23919506E-04), -F(5.54620202E-04),
 	-F(3.43256425E-04), -F(1.56575398E-04),
 };
+#endif
 #undef F
 
 /*
@@ -313,6 +319,7 @@ static FIXED_T _sbc_proto_fixed8[80] = {
 #define F_COS8(x) 					(FIXED_A)((x) *((FIXED_A) 1 << (sizeof(FIXED_T) * 8 - 1)) + 0.5)
 #define F(x) F_COS8(x)
 
+#if 0
 #if(!SPEED_OVER_RAM)
 const
 #endif
@@ -357,6 +364,7 @@ static FIXED_T cos_table_fixed_8[128] = {
 	F(0.7071067812), -F(0.5555702330),  F(0.3826834324), -F(0.1950903220),
 	-F(0.0000000000), -F(0.1950903220),  F(0.3826834324), -F(0.5555702330),
 };
+#endif
 #undef F
 
 /*
@@ -1670,10 +1678,7 @@ _attribute_ram_code_
 #else
 _attribute_ram_code_
 #endif
-uint32_t sbc_enc(const uint8_t* buf, uint16_t len, uint8_t *outbuf, uint32_t outbuf_len, uint32_t* out_len){
-//    if(len < SBC_CODESIZE){
-//    	return 0; // LLJ
-//    }
+unsigned int sbc_enc(const unsigned char* buf,unsigned short len, unsigned char *outbuf, unsigned int outbuf_len, unsigned int* out_len){
 
     /* Select the needed input data processing function and call it */
     if (SBC_SUBBANDS == 8)

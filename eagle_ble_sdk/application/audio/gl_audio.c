@@ -49,8 +49,6 @@
 #include	"adpcm.h"
 #include 	"gl_audio.h"
 
-//#include    "../../vendor/B91_feature/feature_audio/app_att.h"
-
 #if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_GOOGLE)
 
 #include 	"stack/ble/ble.h"
@@ -73,6 +71,14 @@ _attribute_data_retention_ u8 ptt_audio_model_key_press_flags = 0;
 _attribute_data_retention_ u8 g_stream_id = 1;
 _attribute_data_retention_ u8 app_audio_status = 0;
 
+_attribute_data_retention_ u16 audio_google_ctl_dp_h;        //AUDIO_GOOGLE_CTL_DP_H
+_attribute_data_retention_ u16 hid_consume_report_input_dp_h;//HID_CONSUME_REPORT_INPUT_DP_H
+
+void google_handle_init(u16 ctl_dp_h, u16 report_dp_h)
+{
+	audio_google_ctl_dp_h = ctl_dp_h;
+	hid_consume_report_input_dp_h = report_dp_h;
+}
 
 unsigned char app_audio_key_start(unsigned char isPress)
 {
@@ -109,7 +115,7 @@ unsigned char app_audio_key_start(unsigned char isPress)
 
 			g_stream_id ++;
 
-			if(BLE_SUCCESS != bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 4))
+			if(BLE_SUCCESS != blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,audio_google_ctl_dp_h, sendBuff, 4))
 			{
 				return APP_AUDIO_PROCESS_ERR;
 			}
@@ -133,7 +139,7 @@ unsigned char app_audio_key_start(unsigned char isPress)
 			{
 				ble_sts_t ret;
 				u16 search_key = 0x0221;
-				ret = bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, (u8*)&search_key, 2);
+				ret = blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,hid_consume_report_input_dp_h, (u8*)&search_key, 2);
 				if(ret != BLE_SUCCESS) {
 					return APP_AUDIO_PROCESS_ERR;
 				}
@@ -145,7 +151,7 @@ unsigned char app_audio_key_start(unsigned char isPress)
 			{
 				ble_sts_t ret;
 				u16 consumerKey_release = 0x0000;
-				ret = bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, (u8*)&consumerKey_release, 2);
+				ret = blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,hid_consume_report_input_dp_h, (u8*)&consumerKey_release, 2);
 				if(ret != BLE_SUCCESS) {
 					return APP_AUDIO_PROCESS_ERR;
 				}
@@ -158,7 +164,7 @@ unsigned char app_audio_key_start(unsigned char isPress)
 			{
 				ble_sts_t ret;
 				u8 search = 0x08;
-				ret = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, &search, 1);
+				ret = blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,audio_google_ctl_dp_h, &search, 1);
 				if(ret != BLE_SUCCESS) {
 					return APP_AUDIO_PROCESS_ERR;
 				}
@@ -183,7 +189,7 @@ unsigned char app_audio_key_start(unsigned char isPress)
 			ble_sts_t ret;
 			sendBuff[0] = ATV_MIC_CHAR_RSP_CLOSE;
 			sendBuff[1] = AS_RELEASE_BUTTON; //triggered by releasing an Assistant button during HTT interaction;
-			ret = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 2);
+			ret = blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,audio_google_ctl_dp_h, sendBuff, 2);
 			if(ret != BLE_SUCCESS) {
 				return APP_AUDIO_PROCESS_ERR;
 			}
@@ -208,7 +214,7 @@ int app_audio_timeout_proc(void){
 		u8 sendBuff[2] = {0};
 		sendBuff[0] = ATV_MIC_CHAR_RSP_CLOSE;
 		sendBuff[1] = AS_TIMEOUT; //triggered by �� Audio Transfer Timeout ��;
-		ret = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 2);
+		ret = blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,audio_google_ctl_dp_h, sendBuff, 2);
 		if(ret != BLE_SUCCESS) {
 			return 1;
 		}
@@ -240,7 +246,7 @@ int app_auido_google_callback(void* p)
 			sendBuff[0] = ATV_MIC_CHAR_RSP_MIC_OPEN_ERROR;
 			sendBuff[1] = MIC_OPEN_ERROR_HIGH;
 			sendBuff[2] = MIC_ALREADY_OPEN_LOW;
-			if(BLE_SUCCESS != bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 3))
+			if(BLE_SUCCESS != blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,audio_google_ctl_dp_h, sendBuff, 3))
 			{
 				return 0;
 			}
@@ -252,7 +258,7 @@ int app_auido_google_callback(void* p)
 			sendBuff[1] = REASON_MICOPEN; //reason :Audio transfer is triggered by MIC_OPEN request;
 			sendBuff[2] = CS_16K16B; //codec used :ADPCM 16kHz/16bit
 			sendBuff[3] = 0x00; //streamid = 0;
-			if(BLE_SUCCESS != bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 4))
+			if(BLE_SUCCESS != blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,audio_google_ctl_dp_h, sendBuff, 4))
 			{
 				return 0;
 			}
@@ -276,7 +282,7 @@ int app_auido_google_callback(void* p)
 				ui_enable_mic(0);
 				sendBuff[0] = ATV_MIC_CHAR_RSP_CLOSE;
 				sendBuff[1] = AS_MICCLOSE; //triggered by MIC_CLOSE message;
-				if(BLE_SUCCESS != bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 2))
+				if(BLE_SUCCESS != blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,audio_google_ctl_dp_h, sendBuff, 2))
 				{
 					return 0;
 				}
@@ -288,7 +294,7 @@ int app_auido_google_callback(void* p)
 			ui_enable_mic(0);
 			sendBuff[0] = ATV_MIC_CHAR_RSP_CLOSE;
 			sendBuff[1] = AS_MICCLOSE; //triggered by MIC_CLOSE message;
-			if(BLE_SUCCESS != bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 2))
+			if(BLE_SUCCESS != blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,audio_google_ctl_dp_h, sendBuff, 2))
 			{
 				return 0;
 			}
@@ -356,7 +362,7 @@ int app_auido_google_callback(void* p)
 
 		}
 
-		if(bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 9))
+		if(blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, audio_google_ctl_dp_h, sendBuff, 9))
 		{
 			return 0;
 		}

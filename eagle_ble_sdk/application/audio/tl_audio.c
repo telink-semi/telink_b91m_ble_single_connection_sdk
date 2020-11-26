@@ -346,7 +346,6 @@ _attribute_ram_code_ void	proc_mic_encoder (void)
 	u16 l = (mic_wptr >= buffer_mic_rptr) ? (mic_wptr - buffer_mic_rptr) : 0xffff;
 
 	if ((l >=(TL_MIC_BUFFER_SIZE>>2)) && (((u8)(buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & (TL_MIC_PACKET_BUFFER_NUM * 2 - 1)) < TL_MIC_PACKET_BUFFER_NUM)) {
-		log_task_begin (TR_T_adpcm);
 
 		s16 *ps = buffer_mic + buffer_mic_rptr;
 #if 	TL_NOISE_SUPRESSION_ENABLE
@@ -413,12 +412,6 @@ _attribute_ram_code_ void	proc_mic_encoder (void)
 
 		buffer_mic_rptr = buffer_mic_rptr ? 0 : (TL_MIC_BUFFER_SIZE>>2);
 		buffer_mic_pkt_wptr++;
-//		int pkts = (buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & (TL_MIC_PACKET_BUFFER_NUM*2-1);
-//		if (pkts > TL_MIC_PACKET_BUFFER_NUM) {
-//			buffer_mic_pkt_rptr++;
-//			log_event (TR_T_adpcm_enc_overflow);
-//		}
-		log_task_end (TR_T_adpcm);
 	}
 }
 
@@ -561,7 +554,7 @@ void	proc_mic_encoder (void)
 	if (l >= MIC_SHORT_DEC_SIZE) {
 		u32 Temp_out_len = 0;
 		s16 *ps = buffer_mic + buffer_mic_rptr;
-		s16 *out = (s16 *)(buffer_mic_enc + (ADPCM_PACKET_LEN+3) * (buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1)));
+		u8 *out = (u8 *)(buffer_mic_enc + (ADPCM_PACKET_LEN+3) * (buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1)));
 
 #if 	TL_NOISE_SUPRESSION_ENABLE
         // for FIR adc sample data, only half part data are effective
@@ -621,7 +614,7 @@ void	proc_mic_encoder (void)
 
 		// step4: Soft HPF, NONE need
 #endif
-		sbc_enc((u8 *)ps, MIC_SHORT_DEC_SIZE << 1, out, ADPCM_PACKET_LEN, Temp_out_len);
+		sbc_enc((u8 *)ps, MIC_SHORT_DEC_SIZE << 1, out, ADPCM_PACKET_LEN, &Temp_out_len);
 
 		buffer_mic_rptr = buffer_mic_rptr ? 0 : (TL_MIC_BUFFER_SIZE>>2);
 		buffer_mic_pkt_wptr ++;
