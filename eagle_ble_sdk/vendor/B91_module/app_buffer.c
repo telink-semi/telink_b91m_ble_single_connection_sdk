@@ -1,7 +1,7 @@
 /********************************************************************************************************
- * @file	app_buffer.h
+ * @file	app_buffer.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,27 +43,30 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#ifndef VENDOR_B91_HCI_APP_BUFFER_H_
-#define VENDOR_B91_HCI_APP_BUFFER_H_
+#include "tl_common.h"
+#include "drivers.h"
+#include "stack/ble/ble.h"
+
+#include "app_buffer.h"
+#include "app_config.h"
+
+
+
+/********************* ACL connection LinkLayer TX & RX data FIFO allocation, Begin ********************************/
+_attribute_data_retention_	u8	app_acl_rxfifo[ACL_RX_FIFO_SIZE * ACL_RX_FIFO_NUM] = {0};
+_attribute_data_retention_  u8	app_acl_txfifo[ACL_TX_FIFO_SIZE * ACL_TX_FIFO_NUM] = {0};
+/******************** ACL connection LinkLayer TX & RX data FIFO allocation, End ***********************************/
 
 
 
 
-#define LL_RX_FIFO_SIZE		64
-#define LL_RX_FIFO_NUM		8
-
-#define LL_TX_FIFO_SIZE		48
-#define LL_TX_FIFO_NUM		17  //only 9 and 17  can be used
 
 
 
-extern	u8	app_ll_rxfifo[LL_RX_FIFO_SIZE * LL_RX_FIFO_NUM];
-extern	u8	app_ll_txfifo[LL_TX_FIFO_SIZE * LL_TX_FIFO_NUM];
+/********************* USB_DEBUG_LOG FIFO allocation, Begin *******************************/
 
+#if (APP_DUMP_EN)
+	MYFIFO_INIT_IRAM(print_fifo, 288, 32);
+#endif
 
-extern 	my_fifo_t	uart_txfifo;
-
-
-
-
-#endif /* VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_ */
+/******************** USB_DEBUG_LOG FIFO allocation, End ***********************************/

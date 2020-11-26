@@ -1,36 +1,36 @@
 /********************************************************************************************************
- * @file	gpio_default_9518.h
+ * @file	gpio_default.h
  *
- * @brief	This is the source file for B91
+ * @brief	This is the header file for B91
  *
- * @author	D.M.H / X.P.C
+ * @author	Driver Group
  * @date	2019
  *
  * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
- *          
+ *
  *          Redistribution and use in source and binary forms, with or without
  *          modification, are permitted provided that the following conditions are met:
- *          
+ *
  *              1. Redistributions of source code must retain the above copyright
  *              notice, this list of conditions and the following disclaimer.
- *          
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions 
- *              in binary form must reproduce the above copyright notice, this list of 
+ *
+ *              2. Unless for usage inside a TELINK integrated circuit, redistributions
+ *              in binary form must reproduce the above copyright notice, this list of
  *              conditions and the following disclaimer in the documentation and/or other
  *              materials provided with the distribution.
- *          
- *              3. Neither the name of TELINK, nor the names of its contributors may be 
- *              used to endorse or promote products derived from this software without 
+ *
+ *              3. Neither the name of TELINK, nor the names of its contributors may be
+ *              used to endorse or promote products derived from this software without
  *              specific prior written permission.
- *          
+ *
  *              4. This software, with or without modification, must only be used with a
  *              TELINK integrated circuit. All other usages are subject to written permission
  *              from TELINK and different commercial license may apply.
  *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or 
+ *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
  *              relating to such deletion(s), modification(s) or alteration(s).
- *         
+ *
  *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -41,12 +41,16 @@
  *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *         
+ *
  *******************************************************************************************************/
-#pragma once
+#ifndef DRIVERS_GPIO_DEFAULT_H_
+#define DRIVERS_GPIO_DEFAULT_H_
 
-#include "../../common/config/user_config.h"
-
+#include "compiler.h"
+#include "gpio.h"
+/**********************************************************************************************************************
+ *                                           GPIO   setting                                                            *
+ *********************************************************************************************************************/
 #ifndef PA0_INPUT_ENABLE
 #define PA0_INPUT_ENABLE	0
 #endif
@@ -189,7 +193,7 @@
 #define PULL_WAKEUP_SRC_PA6	0
 #endif
 #ifndef PULL_WAKEUP_SRC_PA7
-#define PULL_WAKEUP_SRC_PA7		PM_PIN_PULLUP_1M	//sws pullup
+#define PULL_WAKEUP_SRC_PA7		GPIO_PIN_PULLUP_1M	//sws pullup
 #endif
 
 //////////////////////////////////////////////////
@@ -793,16 +797,10 @@
 #define PF3_INPUT_ENABLE	1	//MSPI
 #endif
 #ifndef PF4_INPUT_ENABLE
-#define PF4_INPUT_ENABLE	0
+#define PF4_INPUT_ENABLE	1  //MSPI
 #endif
 #ifndef PF5_INPUT_ENABLE
-#define PF5_INPUT_ENABLE	0
-#endif
-#ifndef PF6_INPUT_ENABLE
-#define PF6_INPUT_ENABLE	0
-#endif
-#ifndef PF7_INPUT_ENABLE
-#define PF7_INPUT_ENABLE	0
+#define PF5_INPUT_ENABLE	1   //MSPI
 #endif
 #ifndef PF0_OUTPUT_ENABLE
 #define PF0_OUTPUT_ENABLE	0
@@ -880,330 +878,167 @@
 #define PF5_FUNC	AS_MSPI
 #endif
 
-
 /**
- *  @brief  Define GPIO setting
+ * @brief      This function servers to initiate pull up-down resistor of all gpio.
+ * @param[in]  none
+ * @return     none.
+ * @attention  Processing methods of unused GPIO
+ * 			   Set it to high resistance state and set it to open pull-up or pull-down resistance to
+ *             let it be in the determined state.When GPIO uses internal pull-up or pull-down resistance,
+ *             do not use pull-up or pull-down resistance on the board in the process of practical
+ *             application because it may have the risk of electric leakage .
  */
-#if 0
-#define GPIO_PA0_PULL_FLOAT			do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val &= ~0x03;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA0_PULL_UP_1M			do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val &= ~0x02;	val |=  0x01;   analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA0_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val |=  0x02;	val &= ~0x01;   analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA0_PULL_UP_10K		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val |=  0x03;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA0_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val ^=  0x01;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
+static inline void gpio_analog_resistance_init(void)
+{
+	//A<3:0>
+	analog_write_reg8 (0x0e,  PULL_WAKEUP_SRC_PA0 |
+						(PULL_WAKEUP_SRC_PA1<<2) |
+						(PULL_WAKEUP_SRC_PA2<<4) |
+						(PULL_WAKEUP_SRC_PA3<<6));
+	//A<7:4>
+	analog_write_reg8 (0x0f,  PULL_WAKEUP_SRC_PA4 |
+						(PULL_WAKEUP_SRC_PA5<<2) |
+						(PULL_WAKEUP_SRC_PA6<<4) |
+						(PULL_WAKEUP_SRC_PA7<<6));
+	//B<3:0>
+	analog_write_reg8 (0x10,  PULL_WAKEUP_SRC_PB0 |
+						(PULL_WAKEUP_SRC_PB1<<2) |
+						(PULL_WAKEUP_SRC_PB2<<4) |
+						(PULL_WAKEUP_SRC_PB3<<6));
+	//B<7:4>
+	analog_write_reg8 (0x11,  PULL_WAKEUP_SRC_PB4 |
+						(PULL_WAKEUP_SRC_PB5<<2) |
+						(PULL_WAKEUP_SRC_PB6<<4) |
+						(PULL_WAKEUP_SRC_PB7<<6));
+
+    //C<3:0>
+	analog_write_reg8 (0x12,  PULL_WAKEUP_SRC_PC0 |
+						(PULL_WAKEUP_SRC_PC1<<2) |
+						(PULL_WAKEUP_SRC_PC2<<4) |
+						(PULL_WAKEUP_SRC_PC3<<6));
+    //C<7:4>
+	analog_write_reg8 (0x13,  PULL_WAKEUP_SRC_PC4 |
+						(PULL_WAKEUP_SRC_PC5<<2) |
+						(PULL_WAKEUP_SRC_PC6<<4) |
+						(PULL_WAKEUP_SRC_PC7<<6));
+
+    //D<3:0>
+	analog_write_reg8 (0x14,  PULL_WAKEUP_SRC_PD0 |
+						(PULL_WAKEUP_SRC_PD1<<2) |
+						(PULL_WAKEUP_SRC_PD2<<4) |
+						(PULL_WAKEUP_SRC_PD3<<6));
+	//D<7:4>
+	analog_write_reg8 (0x15,  PULL_WAKEUP_SRC_PD4 |
+						(PULL_WAKEUP_SRC_PD5<<2) |
+						(PULL_WAKEUP_SRC_PD6<<4) |
+						(PULL_WAKEUP_SRC_PD7<<6));
+	//E<3:0>
+	analog_write_reg8 (0x16,  PULL_WAKEUP_SRC_PE0 |
+						(PULL_WAKEUP_SRC_PE1<<2) |
+						(PULL_WAKEUP_SRC_PE2<<4) |
+						(PULL_WAKEUP_SRC_PE3<<6));
+	//E<7:4>
+	analog_write_reg8 (0x17,  PULL_WAKEUP_SRC_PE4 |
+						(PULL_WAKEUP_SRC_PE5<<2) |
+						(PULL_WAKEUP_SRC_PE6<<4) |
+						(PULL_WAKEUP_SRC_PE7<<6));
+}
+
+
+_attribute_ram_code_sec_
+static inline void gpio_init(int anaRes_init_en)
+{
+	//PA group
+	reg_gpio_pa_setting1 =
+		(PA0_INPUT_ENABLE<<8) 	| (PA1_INPUT_ENABLE<<9)	| (PA2_INPUT_ENABLE<<10)	| (PA3_INPUT_ENABLE<<11) |
+		(PA4_INPUT_ENABLE<<12)	| (PA5_INPUT_ENABLE<<13)	| (PA6_INPUT_ENABLE<<14)	| (PA7_INPUT_ENABLE<<15) |
+		((PA0_OUTPUT_ENABLE?0:1)<<16)	| ((PA1_OUTPUT_ENABLE?0:1)<<17) | ((PA2_OUTPUT_ENABLE?0:1)<<18)	| ((PA3_OUTPUT_ENABLE?0:1)<<19) |
+		((PA4_OUTPUT_ENABLE?0:1)<<20)	| ((PA5_OUTPUT_ENABLE?0:1)<<21) | ((PA6_OUTPUT_ENABLE?0:1)<<22)	| ((PA7_OUTPUT_ENABLE?0:1)<<23) |
+		(PA0_DATA_OUT<<24)	| (PA1_DATA_OUT<<25)	| (PA2_DATA_OUT<<26)	| (PA3_DATA_OUT<<27) |
+		(PA4_DATA_OUT<<28)	| (PA5_DATA_OUT<<29)	| (PA6_DATA_OUT<<30)	| (PA7_DATA_OUT<<31) ;
+	reg_gpio_pa_setting2 =
+		(PA0_DATA_STRENGTH<<8)		| (PA1_DATA_STRENGTH<<9)| (PA2_DATA_STRENGTH<<10)	| (PA3_DATA_STRENGTH<<11) |
+		(PA4_DATA_STRENGTH<<12)	| (PA5_DATA_STRENGTH<<13)	| (PA6_DATA_STRENGTH<<14)	| (PA7_DATA_STRENGTH<<15) |
+		(PA0_FUNC==AS_GPIO ? BIT(16):0)	| (PA1_FUNC==AS_GPIO ? BIT(17):0)| (PA2_FUNC==AS_GPIO ? BIT(18):0)| (PA3_FUNC==AS_GPIO ? BIT(19):0) |
+		(PA4_FUNC==AS_GPIO ? BIT(20):0)	| (PA5_FUNC==AS_GPIO ? BIT(21):0)| (PA6_FUNC==AS_GPIO ? BIT(22):0)| (PA7_FUNC==AS_GPIO ? BIT(23):0);
+
+	//PB group
+	reg_gpio_pb_setting1 =
+		(PB0_INPUT_ENABLE<<8) 	| (PB1_INPUT_ENABLE<<9)	| (PB2_INPUT_ENABLE<<10)	| (PB3_INPUT_ENABLE<<11) |
+		(PB4_INPUT_ENABLE<<12)	| (PB5_INPUT_ENABLE<<13)	| (PB6_INPUT_ENABLE<<14)	| (PB7_INPUT_ENABLE<<15) |
+		((PB0_OUTPUT_ENABLE?0:1)<<16)	| ((PB1_OUTPUT_ENABLE?0:1)<<17) | ((PB2_OUTPUT_ENABLE?0:1)<<18)	| ((PB3_OUTPUT_ENABLE?0:1)<<19) |
+		((PB4_OUTPUT_ENABLE?0:1)<<20)	| ((PB5_OUTPUT_ENABLE?0:1)<<21) | ((PB6_OUTPUT_ENABLE?0:1)<<22)	| ((PB7_OUTPUT_ENABLE?0:1)<<23) |
+		(PB0_DATA_OUT<<24)	| (PB1_DATA_OUT<<25)	| (PB2_DATA_OUT<<26)	| (PB3_DATA_OUT<<27) |
+		(PB4_DATA_OUT<<28)	| (PB5_DATA_OUT<<29)	| (PB6_DATA_OUT<<30)	| (PB7_DATA_OUT<<31) ;
+	reg_gpio_pb_setting2 =
+		(PB0_DATA_STRENGTH<<8)		| (PB1_DATA_STRENGTH<<9)| (PB2_DATA_STRENGTH<<10)	| (PB3_DATA_STRENGTH<<11) |
+		(PB4_DATA_STRENGTH<<12)	| (PB5_DATA_STRENGTH<<13)	| (PB6_DATA_STRENGTH<<14)	| (PB7_DATA_STRENGTH<<15) |
+		(PB0_FUNC==AS_GPIO ? BIT(16):0)	| (PB1_FUNC==AS_GPIO ? BIT(17):0)| (PB2_FUNC==AS_GPIO ? BIT(18):0)| (PB3_FUNC==AS_GPIO ? BIT(19):0) |
+		(PB4_FUNC==AS_GPIO ? BIT(20):0)	| (PB5_FUNC==AS_GPIO ? BIT(21):0)| (PB6_FUNC==AS_GPIO ? BIT(22):0)| (PB7_FUNC==AS_GPIO ? BIT(23):0);
+
+	//PC group
+	//ie
+	analog_write_reg8(areg_gpio_pc_ie, 	(PC0_INPUT_ENABLE<<0) 	| (PC1_INPUT_ENABLE<<1)	| (PC2_INPUT_ENABLE<<2)	| (PC3_INPUT_ENABLE<<3) |
+									(PC4_INPUT_ENABLE<<4)	| (PC5_INPUT_ENABLE<<5) | (PC6_INPUT_ENABLE<<6)	| (PC7_INPUT_ENABLE<<7) );
+
+	//oen
+	reg_gpio_pc_oen =
+		((PC0_OUTPUT_ENABLE?0:1)<<0)	| ((PC1_OUTPUT_ENABLE?0:1)<<1) | ((PC2_OUTPUT_ENABLE?0:1)<<2)	| ((PC3_OUTPUT_ENABLE?0:1)<<3) |
+		((PC4_OUTPUT_ENABLE?0:1)<<4)	| ((PC5_OUTPUT_ENABLE?0:1)<<5) | ((PC6_OUTPUT_ENABLE?0:1)<<6)	| ((PC7_OUTPUT_ENABLE?0:1)<<7);
+	//dataO
+	reg_gpio_pc_out =
+		(PC0_DATA_OUT<<0)	| (PC1_DATA_OUT<<1)	| (PC2_DATA_OUT<<2)	| (PC3_DATA_OUT<<3) |
+		(PC4_DATA_OUT<<4)	| (PC5_DATA_OUT<<5)	| (PC6_DATA_OUT<<6)	| (PC7_DATA_OUT<<7) ;
+
+	//ds
+	analog_write_reg8(areg_gpio_pc_ds, 	(PC0_DATA_STRENGTH<<0) 	| (PC1_DATA_STRENGTH<<1)  | (PC2_DATA_STRENGTH<<2)	| (PC3_DATA_STRENGTH<<3) |
+									(PC4_DATA_STRENGTH<<4)	| (PC5_DATA_STRENGTH<<5)  | (PC6_DATA_STRENGTH<<6)	| (PC7_DATA_STRENGTH<<7) );
+
+	reg_gpio_pc_gpio =
+		(PC0_FUNC==AS_GPIO ? BIT(0):0)	| (PC1_FUNC==AS_GPIO ? BIT(1):0)| (PC2_FUNC==AS_GPIO ? BIT(2):0)| (PC3_FUNC==AS_GPIO ? BIT(3):0) |
+		(PC4_FUNC==AS_GPIO ? BIT(4):0)	| (PC5_FUNC==AS_GPIO ? BIT(5):0)| (PC6_FUNC==AS_GPIO ? BIT(6):0)| (PC7_FUNC==AS_GPIO ? BIT(7):0);
+
+	//PD group
+	//ie
+	analog_write_reg8(areg_gpio_pd_ie, 	(PD0_INPUT_ENABLE<<0) 	| (PD1_INPUT_ENABLE<<1)	| (PD2_INPUT_ENABLE<<2)	| (PD3_INPUT_ENABLE<<3) |
+									(PD4_INPUT_ENABLE<<4)	| (PD5_INPUT_ENABLE<<5) | (PD6_INPUT_ENABLE<<6)	| (PD7_INPUT_ENABLE<<7) );
+
+	//oen
+	reg_gpio_pd_oen =
+		((PD0_OUTPUT_ENABLE?0:1)<<0)	| ((PD1_OUTPUT_ENABLE?0:1)<<1) | ((PD2_OUTPUT_ENABLE?0:1)<<2)	| ((PD3_OUTPUT_ENABLE?0:1)<<3) |
+		((PD4_OUTPUT_ENABLE?0:1)<<4)	| ((PD5_OUTPUT_ENABLE?0:1)<<5) | ((PD6_OUTPUT_ENABLE?0:1)<<6)	| ((PD7_OUTPUT_ENABLE?0:1)<<7);
+	//dataO
+	reg_gpio_pd_out =
+		(PD0_DATA_OUT<<0)	| (PD1_DATA_OUT<<1)	| (PD2_DATA_OUT<<2)	| (PD3_DATA_OUT<<3) |
+		(PD4_DATA_OUT<<4)	| (PD5_DATA_OUT<<5)	| (PD6_DATA_OUT<<6)	| (PD7_DATA_OUT<<7) ;
+
+	//ds
+	analog_write_reg8(areg_gpio_pd_ds, 	(PD0_DATA_STRENGTH<<0) 	| (PD1_DATA_STRENGTH<<1)  | (PD2_DATA_STRENGTH<<2)	| (PD3_DATA_STRENGTH<<3) |
+									(PD4_DATA_STRENGTH<<4)	| (PD5_DATA_STRENGTH<<5)  | (PD6_DATA_STRENGTH<<6)	| (PD7_DATA_STRENGTH<<7) );
+
+	reg_gpio_pd_gpio =
+		(PD0_FUNC==AS_GPIO ? BIT(0):0)	| (PD1_FUNC==AS_GPIO ? BIT(1):0)| (PD2_FUNC==AS_GPIO ? BIT(2):0)| (PD3_FUNC==AS_GPIO ? BIT(3):0) |
+		(PD4_FUNC==AS_GPIO ? BIT(4):0)	| (PD5_FUNC==AS_GPIO ? BIT(5):0)| (PD6_FUNC==AS_GPIO ? BIT(6):0)| (PD7_FUNC==AS_GPIO ? BIT(7):0);
+
+	//PE group
+	reg_gpio_pe_setting1 =
+		(PE0_INPUT_ENABLE<<8) 	| (PE1_INPUT_ENABLE<<9)	| (PE2_INPUT_ENABLE<<10)	| (PE3_INPUT_ENABLE<<11) |
+		(PE4_INPUT_ENABLE<<12)	| (PE5_INPUT_ENABLE<<13)| (PE6_INPUT_ENABLE<<14)	| (PE7_INPUT_ENABLE<<15) |
+		((PE0_OUTPUT_ENABLE?0:1)<<16)	| ((PE1_OUTPUT_ENABLE?0:1)<<17) | ((PE2_OUTPUT_ENABLE?0:1)<<18)	| ((PE3_OUTPUT_ENABLE?0:1)<<19) |
+		((PE4_OUTPUT_ENABLE?0:1)<<20)	| ((PE5_OUTPUT_ENABLE?0:1)<<21) | ((PE6_OUTPUT_ENABLE?0:1)<<22)	| ((PE7_OUTPUT_ENABLE?0:1)<<23) |
+		(PE0_DATA_OUT<<24)	| (PE1_DATA_OUT<<25)	| (PE2_DATA_OUT<<26)	| (PE3_DATA_OUT<<27) |
+		(PE4_DATA_OUT<<28)	| (PE5_DATA_OUT<<29)	| (PE6_DATA_OUT<<30)	| (PE7_DATA_OUT<<31) ;
+	reg_gpio_pe_setting2 =
+		(PE0_DATA_STRENGTH<<8)	| (PE1_DATA_STRENGTH<<9)	| (PE2_DATA_STRENGTH<<10)	| (PE3_DATA_STRENGTH<<11) |
+		(PE4_DATA_STRENGTH<<12)	| (PE5_DATA_STRENGTH<<13)	| (PE6_DATA_STRENGTH<<14)	| (PE7_DATA_STRENGTH<<15) |
+		(PE0_FUNC==AS_GPIO ? BIT(16):0)	| (PE1_FUNC==AS_GPIO ? BIT(17):0)| (PE2_FUNC==AS_GPIO ? BIT(18):0)| (PE3_FUNC==AS_GPIO ? BIT(19):0) |
+		(PE4_FUNC==AS_GPIO ? BIT(20):0)	| (PE5_FUNC==AS_GPIO ? BIT(21):0)| (PE6_FUNC==AS_GPIO ? BIT(22):0)| (PE7_FUNC==AS_GPIO ? BIT(23):0);
+
+	if(anaRes_init_en)
+	{
+		gpio_analog_resistance_init();
+	}
+}
+
+#endif /* DRIVERS_GPIO_SETTING_H_ */
 
-
-
-#define GPIO_PA1_PULL_FLOAT			do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val &= ~0x0C;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA1_PULL_UP_1M			do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val &= ~0x08;	val |=  0x04;   analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA1_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val |=  0x08;	val &= ~0x04;   analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA1_PULL_UP_10K		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val |=  0x0C;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA1_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val ^=  0x04;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-
-
-#define GPIO_PA2_PULL_FLOAT			do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val &= ~0x30;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA2_PULL_UP_1M			do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val &= ~0x20;	val |=  0x10;   analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA2_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val |=  0x20;	val &= ~0x10;   analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA2_PULL_UP_10K		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val |=  0x30;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA2_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val ^=  0x10;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-
-
-#define GPIO_PA3_PULL_FLOAT			do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val &= ~0xC0;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA3_PULL_UP_1M			do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val &= ~0x80;	val |=  0x40;   analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA3_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val |=  0x80;	val &= ~0x40;   analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA3_PULL_UP_10K		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val |=  0xC0;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-#define GPIO_PA3_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_0e_pa0_pa3_pull);  val ^=  0x40;   				analog_write(areg_0e_pa0_pa3_pull, val); }while(0)
-
-#define GPIO_PA4_PULL_FLOAT			do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val &= ~0x03;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA4_PULL_UP_1M			do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val &= ~0x02;	val |=  0x01;   analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA4_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val |=  0x02;	val &= ~0x01;   analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA4_PULL_UP_10K		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val |=  0x03;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA4_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val ^=  0x01;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-
-
-#define GPIO_PA5_PULL_FLOAT			do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val &= ~0x0C;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA5_PULL_UP_1M			do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val &= ~0x08;	val |=  0x04;   analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA5_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val |=  0x08;	val &= ~0x04;   analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA5_PULL_UP_10K		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val |=  0x0C;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA5_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val ^=  0x04;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-
-#define GPIO_PA6_PULL_FLOAT			do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val &= ~0x30;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA6_PULL_UP_1M			do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val &= ~0x20;	val |=  0x10;   analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA6_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val |=  0x20;	val &= ~0x10;   analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA6_PULL_UP_10K		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val |=  0x30;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA6_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val ^=  0x10;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-
-#define GPIO_PA7_PULL_FLOAT			do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val &= ~0xC0;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA7_PULL_UP_1M			do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val &= ~0x80;	val |=  0x40;   analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA7_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val |=  0x80;	val &= ~0x40;   analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA7_PULL_UP_10K		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val |=  0xC0;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-#define GPIO_PA7_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_0f_pa4_pa7_pull);  val ^=  0x40;   				analog_write(areg_0f_pa4_pa7_pull, val); }while(0)
-
-
-
-
-
-
-#define GPIO_PB0_PULL_FLOAT			do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val &= ~0x03;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB0_PULL_UP_1M			do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val &= ~0x02;	val |=  0x01;   analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB0_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val |=  0x02;	val &= ~0x01;   analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB0_PULL_UP_10K		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val |=  0x03;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB0_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val ^=  0x01;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-
-
-
-#define GPIO_PB1_PULL_FLOAT			do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val &= ~0x0C;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB1_PULL_UP_1M			do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val &= ~0x08;	val |=  0x04;   analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB1_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val |=  0x08;	val &= ~0x04;   analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB1_PULL_UP_10K		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val |=  0x0C;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB1_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val ^=  0x04;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-
-
-#define GPIO_PB2_PULL_FLOAT			do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val &= ~0x30;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB2_PULL_UP_1M			do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val &= ~0x20;	val |=  0x10;   analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB2_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val |=  0x20;	val &= ~0x10;   analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB2_PULL_UP_10K		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val |=  0x30;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB2_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val ^=  0x10;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-
-
-#define GPIO_PB3_PULL_FLOAT			do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val &= ~0xC0;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB3_PULL_UP_1M			do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val &= ~0x80;	val |=  0x40;   analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB3_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val |=  0x80;	val &= ~0x40;   analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB3_PULL_UP_10K		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val |=  0xC0;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-#define GPIO_PB3_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_10_pb0_pb3_pull);  val ^=  0x40;   				analog_write(areg_10_pb0_pb3_pull, val); }while(0)
-
-#define GPIO_PB4_PULL_FLOAT			do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val &= ~0x03;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB4_PULL_UP_1M			do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val &= ~0x02;	val |=  0x01;   analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB4_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val |=  0x02;	val &= ~0x01;   analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB4_PULL_UP_10K		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val |=  0x03;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB4_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val ^=  0x01;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-
-
-#define GPIO_PB5_PULL_FLOAT			do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val &= ~0x0C;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB5_PULL_UP_1M			do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val &= ~0x08;	val |=  0x04;   analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB5_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val |=  0x08;	val &= ~0x04;   analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB5_PULL_UP_10K		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val |=  0x0C;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB5_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val ^=  0x04;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-
-#define GPIO_PB6_PULL_FLOAT			do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val &= ~0x30;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB6_PULL_UP_1M			do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val &= ~0x20;	val |=  0x10;   analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB6_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val |=  0x20;	val &= ~0x10;   analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB6_PULL_UP_10K		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val |=  0x30;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB6_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val ^=  0x10;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-
-#define GPIO_PB7_PULL_FLOAT			do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val &= ~0xC0;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB7_PULL_UP_1M			do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val &= ~0x80;	val |=  0x40;   analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB7_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val |=  0x80;	val &= ~0x40;   analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB7_PULL_UP_10K		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val |=  0xC0;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-#define GPIO_PB7_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_11_pb4_pb7_pull);  val ^=  0x40;   				analog_write(areg_11_pb4_pb7_pull, val); }while(0)
-
-
-
-#define GPIO_PC0_PULL_FLOAT			do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val &= ~0x03;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC0_PULL_UP_1M			do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val &= ~0x02;	val |=  0x01;   analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC0_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val |=  0x02;	val &= ~0x01;   analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC0_PULL_UP_10K		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val |=  0x03;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC0_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val ^=  0x01;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-
-
-
-#define GPIO_PC1_PULL_FLOAT			do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val &= ~0x0C;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC1_PULL_UP_1M			do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val &= ~0x08;	val |=  0x04;   analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC1_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val |=  0x08;	val &= ~0x04;   analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC1_PULL_UP_10K		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val |=  0x0C;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC1_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val ^=  0x04;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-
-
-#define GPIO_PC2_PULL_FLOAT			do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val &= ~0x30;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC2_PULL_UP_1M			do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val &= ~0x20;	val |=  0x10;   analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC2_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val |=  0x20;	val &= ~0x10;   analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC2_PULL_UP_10K		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val |=  0x30;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC2_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val ^=  0x10;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-
-
-#define GPIO_PC3_PULL_FLOAT			do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val &= ~0xC0;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC3_PULL_UP_1M			do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val &= ~0x80;	val |=  0x40;   analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC3_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val |=  0x80;	val &= ~0x40;   analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC3_PULL_UP_10K		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val |=  0xC0;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-#define GPIO_PC3_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_12_pc0_pc3_pull);  val ^=  0x40;   				analog_write(areg_12_pc0_pc3_pull, val); }while(0)
-
-#define GPIO_PC4_PULL_FLOAT			do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val &= ~0x03;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC4_PULL_UP_1M			do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val &= ~0x02;	val |=  0x01;   analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC4_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val |=  0x02;	val &= ~0x01;   analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC4_PULL_UP_10K		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val |=  0x03;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC4_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val ^=  0x01;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-
-
-#define GPIO_PC5_PULL_FLOAT			do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val &= ~0x0C;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC5_PULL_UP_1M			do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val &= ~0x08;	val |=  0x04;   analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC5_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val |=  0x08;	val &= ~0x04;   analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC5_PULL_UP_10K		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val |=  0x0C;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC5_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val ^=  0x04;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-
-#define GPIO_PC6_PULL_FLOAT			do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val &= ~0x30;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC6_PULL_UP_1M			do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val &= ~0x20;	val |=  0x10;   analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC6_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val |=  0x20;	val &= ~0x10;   analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC6_PULL_UP_10K		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val |=  0x30;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC6_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val ^=  0x10;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-
-#define GPIO_PC7_PULL_FLOAT			do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val &= ~0xC0;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC7_PULL_UP_1M			do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val &= ~0x80;	val |=  0x40;   analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC7_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val |=  0x80;	val &= ~0x40;   analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC7_PULL_UP_10K		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val |=  0xC0;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-#define GPIO_PC7_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_13_pc4_pc7_pull);  val ^=  0x40;   				analog_write(areg_13_pc4_pc7_pull, val); }while(0)
-
-
-
-#define GPIO_PD0_PULL_FLOAT			do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val &= ~0x03;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD0_PULL_UP_1M			do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val &= ~0x02;	val |=  0x01;   analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD0_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val |=  0x02;	val &= ~0x01;   analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD0_PULL_UP_10K		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val |=  0x03;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD0_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val ^=  0x01;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-
-
-
-#define GPIO_PD1_PULL_FLOAT			do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val &= ~0x0C;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD1_PULL_UP_1M			do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val &= ~0x08;	val |=  0x04;   analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD1_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val |=  0x08;	val &= ~0x04;   analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD1_PULL_UP_10K		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val |=  0x0C;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD1_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val ^=  0x04;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-
-
-#define GPIO_PD2_PULL_FLOAT			do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val &= ~0x30;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD2_PULL_UP_1M			do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val &= ~0x20;	val |=  0x10;   analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD2_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val |=  0x20;	val &= ~0x10;   analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD2_PULL_UP_10K		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val |=  0x30;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD2_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val ^=  0x10;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-
-
-#define GPIO_PD3_PULL_FLOAT			do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val &= ~0xC0;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD3_PULL_UP_1M			do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val &= ~0x80;	val |=  0x40;   analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD3_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val |=  0x80;	val &= ~0x40;   analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD3_PULL_UP_10K		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val |=  0xC0;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-#define GPIO_PD3_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_14_pd0_pd3_pull);  val ^=  0x40;   				analog_write(areg_14_pd0_pd3_pull, val); }while(0)
-
-#define GPIO_PD4_PULL_FLOAT			do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val &= ~0x03;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD4_PULL_UP_1M			do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val &= ~0x02;	val |=  0x01;   analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD4_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val |=  0x02;	val &= ~0x01;   analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD4_PULL_UP_10K		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val |=  0x03;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD4_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val ^=  0x01;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-
-
-#define GPIO_PD5_PULL_FLOAT			do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val &= ~0x0C;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD5_PULL_UP_1M			do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val &= ~0x08;	val |=  0x04;   analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD5_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val |=  0x08;	val &= ~0x04;   analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD5_PULL_UP_10K		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val |=  0x0C;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD5_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val ^=  0x04;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-
-#define GPIO_PD6_PULL_FLOAT			do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val &= ~0x30;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD6_PULL_UP_1M			do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val &= ~0x20;	val |=  0x10;   analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD6_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val |=  0x20;	val &= ~0x10;   analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD6_PULL_UP_10K		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val |=  0x30;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD6_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val ^=  0x10;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-
-#define GPIO_PD7_PULL_FLOAT			do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val &= ~0xC0;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD7_PULL_UP_1M			do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val &= ~0x80;	val |=  0x40;   analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD7_PULL_DOWN_100K		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val |=  0x80;	val &= ~0x40;   analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD7_PULL_UP_10K		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val |=  0xC0;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-#define GPIO_PD7_PULL_TOGGLE		do{ unsigned char val = analog_read(areg_15_pd4_pd7_pull);  val ^=  0x40;   				analog_write(areg_15_pd4_pd7_pull, val); }while(0)
-
-
-#define GPIO_PA0_OUTPUT_LOW			( (*(volatile unsigned char *)0x800583) &= (~0x01) )
-#define GPIO_PA0_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800583) |= 0x01    )
-#define GPIO_PA0_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800583) ^= 0x01    )
-#define GPIO_PA1_OUTPUT_LOW			( (*(volatile unsigned char *)0x800583) &= (~0x02) )
-#define GPIO_PA1_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800583) |= 0x02    )
-#define GPIO_PA1_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800583) ^= 0x02    )
-#define GPIO_PA2_OUTPUT_LOW			( (*(volatile unsigned char *)0x800583) &= (~0x04) )
-#define GPIO_PA2_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800583) |= 0x04    )
-#define GPIO_PA2_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800583) ^= 0x04    )
-#define GPIO_PA3_OUTPUT_LOW			( (*(volatile unsigned char *)0x800583) &= (~0x08) )
-#define GPIO_PA3_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800583) |= 0x08    )
-#define GPIO_PA3_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800583) ^= 0x08    )
-#define GPIO_PA4_OUTPUT_LOW			( (*(volatile unsigned char *)0x800583) &= (~0x10) )
-#define GPIO_PA4_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800583) |= 0x10    )
-#define GPIO_PA4_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800583) ^= 0x10    )
-#define GPIO_PA5_OUTPUT_LOW			( (*(volatile unsigned char *)0x800583) &= (~0x20) )
-#define GPIO_PA5_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800583) |= 0x20    )
-#define GPIO_PA5_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800583) ^= 0x20    )
-#define GPIO_PA6_OUTPUT_LOW			( (*(volatile unsigned char *)0x800583) &= (~0x40) )
-#define GPIO_PA6_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800583) |= 0x40    )
-#define GPIO_PA6_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800583) ^= 0x40    )
-#define GPIO_PA7_OUTPUT_LOW			( (*(volatile unsigned char *)0x800583) &= (~0x80) )
-#define GPIO_PA7_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800583) |= 0x80    )
-#define GPIO_PA7_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800583) ^= 0x80    )
-
-#define GPIO_PB0_OUTPUT_LOW			( (*(volatile unsigned char *)0x80058b) &= (~0x01) )
-#define GPIO_PB0_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80058b) |= 0x01    )
-#define GPIO_PB0_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80058b) ^= 0x01    )
-#define GPIO_PB1_OUTPUT_LOW			( (*(volatile unsigned char *)0x80058b) &= (~0x02) )
-#define GPIO_PB1_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80058b) |= 0x02    )
-#define GPIO_PB1_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80058b) ^= 0x02    )
-#define GPIO_PB2_OUTPUT_LOW			( (*(volatile unsigned char *)0x80058b) &= (~0x04) )
-#define GPIO_PB2_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80058b) |= 0x04    )
-#define GPIO_PB2_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80058b) ^= 0x04    )
-#define GPIO_PB3_OUTPUT_LOW			( (*(volatile unsigned char *)0x80058b) &= (~0x08) )
-#define GPIO_PB3_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80058b) |= 0x08    )
-#define GPIO_PB3_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80058b) ^= 0x08    )
-#define GPIO_PB4_OUTPUT_LOW			( (*(volatile unsigned char *)0x80058b) &= (~0x10) )
-#define GPIO_PB4_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80058b) |= 0x10    )
-#define GPIO_PB4_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80058b) ^= 0x10    )
-#define GPIO_PB5_OUTPUT_LOW			( (*(volatile unsigned char *)0x80058b) &= (~0x20) )
-#define GPIO_PB5_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80058b) |= 0x20    )
-#define GPIO_PB5_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80058b) ^= 0x20    )
-#define GPIO_PB6_OUTPUT_LOW			( (*(volatile unsigned char *)0x80058b) &= (~0x40) )
-#define GPIO_PB6_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80058b) |= 0x40    )
-#define GPIO_PB6_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80058b) ^= 0x40    )
-#define GPIO_PB7_OUTPUT_LOW			( (*(volatile unsigned char *)0x80058b) &= (~0x80) )
-#define GPIO_PB7_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80058b) |= 0x80    )
-#define GPIO_PB7_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80058b) ^= 0x80    )
-
-#define GPIO_PC0_OUTPUT_LOW			( (*(volatile unsigned char *)0x800593) &= (~0x01) )
-#define GPIO_PC0_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800593) |= 0x01    )
-#define GPIO_PC0_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800593) ^= 0x01    )
-#define GPIO_PC1_OUTPUT_LOW			( (*(volatile unsigned char *)0x800593) &= (~0x02) )
-#define GPIO_PC1_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800593) |= 0x02    )
-#define GPIO_PC1_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800593) ^= 0x02    )
-#define GPIO_PC2_OUTPUT_LOW			( (*(volatile unsigned char *)0x800593) &= (~0x04) )
-#define GPIO_PC2_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800593) |= 0x04    )
-#define GPIO_PC2_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800593) ^= 0x04    )
-#define GPIO_PC3_OUTPUT_LOW			( (*(volatile unsigned char *)0x800593) &= (~0x08) )
-#define GPIO_PC3_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800593) |= 0x08    )
-#define GPIO_PC3_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800593) ^= 0x08    )
-#define GPIO_PC4_OUTPUT_LOW			( (*(volatile unsigned char *)0x800593) &= (~0x10) )
-#define GPIO_PC4_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800593) |= 0x10    )
-#define GPIO_PC4_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800593) ^= 0x10    )
-#define GPIO_PC5_OUTPUT_LOW			( (*(volatile unsigned char *)0x800593) &= (~0x20) )
-#define GPIO_PC5_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800593) |= 0x20    )
-#define GPIO_PC5_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800593) ^= 0x20    )
-#define GPIO_PC6_OUTPUT_LOW			( (*(volatile unsigned char *)0x800593) &= (~0x40) )
-#define GPIO_PC6_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800593) |= 0x40    )
-#define GPIO_PC6_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800593) ^= 0x40    )
-#define GPIO_PC7_OUTPUT_LOW			( (*(volatile unsigned char *)0x800593) &= (~0x80) )
-#define GPIO_PC7_OUTPUT_HIGH		( (*(volatile unsigned char *)0x800593) |= 0x80    )
-#define GPIO_PC7_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x800593) ^= 0x80    )
-
-#define GPIO_PD0_OUTPUT_LOW			( (*(volatile unsigned char *)0x80059b) &= (~0x01) )
-#define GPIO_PD0_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80059b) |= 0x01    )
-#define GPIO_PD0_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80059b) ^= 0x01    )
-#define GPIO_PD1_OUTPUT_LOW			( (*(volatile unsigned char *)0x80059b) &= (~0x02) )
-#define GPIO_PD1_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80059b) |= 0x02    )
-#define GPIO_PD1_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80059b) ^= 0x02    )
-#define GPIO_PD2_OUTPUT_LOW			( (*(volatile unsigned char *)0x80059b) &= (~0x04) )
-#define GPIO_PD2_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80059b) |= 0x04    )
-#define GPIO_PD2_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80059b) ^= 0x04    )
-#define GPIO_PD3_OUTPUT_LOW			( (*(volatile unsigned char *)0x80059b) &= (~0x08) )
-#define GPIO_PD3_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80059b) |= 0x08    )
-#define GPIO_PD3_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80059b) ^= 0x08    )
-#define GPIO_PD4_OUTPUT_LOW			( (*(volatile unsigned char *)0x80059b) &= (~0x10) )
-#define GPIO_PD4_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80059b) |= 0x10    )
-#define GPIO_PD4_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80059b) ^= 0x10    )
-#define GPIO_PD5_OUTPUT_LOW			( (*(volatile unsigned char *)0x80059b) &= (~0x20) )
-#define GPIO_PD5_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80059b) |= 0x20    )
-#define GPIO_PD5_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80059b) ^= 0x20    )
-#define GPIO_PD6_OUTPUT_LOW			( (*(volatile unsigned char *)0x80059b) &= (~0x40) )
-#define GPIO_PD6_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80059b) |= 0x40    )
-#define GPIO_PD6_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80059b) ^= 0x40    )
-#define GPIO_PD7_OUTPUT_LOW			( (*(volatile unsigned char *)0x80059b) &= (~0x80) )
-#define GPIO_PD7_OUTPUT_HIGH		( (*(volatile unsigned char *)0x80059b) |= 0x80    )
-#define GPIO_PD7_OUTPUT_TOGGLE		( (*(volatile unsigned char *)0x80059b) ^= 0x80    )
-#endif
