@@ -44,7 +44,6 @@
  *         
  *******************************************************************************************************/
 #include "tl_common.h"
-#include "gpio_default.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
 #include "app.h"

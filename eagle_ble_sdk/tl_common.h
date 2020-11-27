@@ -74,5 +74,6 @@
 #include "vendor/common/custom_pair.h"
 #include "vendor/common/flash_fw_check.h"
 
+#include "gpio_default.h"
 
 #endif /* TL_COMMON_H_ */
