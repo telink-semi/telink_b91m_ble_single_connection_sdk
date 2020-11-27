@@ -71,7 +71,7 @@
 								<option id="nds.c.link.option.libs.1542962212" name="Libraries (-l)" superClass="nds.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="firmware_encrypt"/>
-									<listOptionValue builtIn="false" value="lt_9518"/>
+									<listOptionValue builtIn="false" value="B91_ble_lib"/>
 									<listOptionValue builtIn="false" value="dsp"/>
 								</option>
 								<option id="nds.c.link.option.paths.1790734836" name="Library search path (-L)" superClass="nds.c.link.option.paths" valueType="libPaths">
@@ -172,7 +172,7 @@
 								<option id="nds.c.link.option.nostart.220421097" name="Do not use standard start files (-nostartfiles)" superClass="nds.c.link.option.nostart" value="true" valueType="boolean"/>
 								<option id="nds.c.link.option.virtualhosting.2052785802" name="Virtual Hosting (-mvh)" superClass="nds.c.link.option.virtualhosting" value="false" valueType="boolean"/>
 								<option id="nds.c.link.option.libs.1177219499" name="Libraries (-l)" superClass="nds.c.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="lt_9518"/>
+									<listOptionValue builtIn="false" value="B91_ble_lib"/>
 									<listOptionValue builtIn="false" value="firmware_encrypt"/>
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="dsp"/>
@@ -298,7 +298,7 @@
 								<option id="nds.c.link.option.libs.803629507" name="Libraries (-l)" superClass="nds.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="firmware_encrypt"/>
-									<listOptionValue builtIn="false" value="lt_9518"/>
+									<listOptionValue builtIn="false" value="B91_ble_lib"/>
 									<listOptionValue builtIn="false" value="dsp"/>
 								</option>
 								<option id="nds.c.link.option.paths.1373449280" name="Library search path (-L)" superClass="nds.c.link.option.paths" valueType="libPaths">
@@ -421,7 +421,7 @@
 								<option id="nds.c.link.option.libs.104711410" name="Libraries (-l)" superClass="nds.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="firmware_encrypt"/>
-									<listOptionValue builtIn="false" value="lt_9518"/>
+									<listOptionValue builtIn="false" value="B91_ble_lib"/>
 									<listOptionValue builtIn="false" value="dsp"/>
 								</option>
 								<option id="nds.c.link.option.userobjs.787067469" name="Other objects" superClass="nds.c.link.option.userobjs" valueType="userObjs">
@@ -532,7 +532,7 @@
 									<listOptionValue builtIn="false" value="../vendor/Common"/>
 									<listOptionValue builtIn="false" value="../common"/>
 								</option>
-								<option id="nds.c.compiler.option.misc.use-cc.toolchain.1327898591" superClass="nds.c.compiler.option.misc.use-cc.toolchain" value="nds.c.compiler.option.misc.use-cc.gcc" valueType="enumerated"/>
+								<option id="nds.c.compiler.option.misc.use-cc.toolchain.1327898591" name="Compiler to use" superClass="nds.c.compiler.option.misc.use-cc.toolchain" value="nds.c.compiler.option.misc.use-cc.gcc" valueType="enumerated"/>
 								<inputType id="tool.nds.c.compiler.input.1407798974" superClass="tool.nds.c.compiler.input"/>
 							</tool>
 							<tool command="$(CROSS_COMPILE)gcc" id="tool.nds32le-elf-mculib-v5f.c.linker.base.879978856" name="Andes C Linker" superClass="tool.nds32le-elf-mculib-v5f.c.linker.base">
@@ -546,7 +546,7 @@
 								<option id="nds.c.link.option.LTO.771506433" name="Link Time Optimization (-flto)" superClass="nds.c.link.option.LTO" value="true" valueType="boolean"/>
 								<option id="nds.c.link.option.other.duplacitecompiler.1815573520" name="DuplaciteComplierOption" superClass="nds.c.link.option.other.duplacitecompiler" value="-g3 -mcpu=d25f -ffunction-sections -fdata-sections -fmessage-length=0 -fno-builtin -fomit-frame-pointer -fno-strict-aliasing -fshort-wchar -fuse-ld=bfd -fpack-struct " valueType="string"/>
 								<option id="nds.c.link.option.libs.1992659641" name="Libraries (-l)" superClass="nds.c.link.option.libs" valueType="libs">
-									<listOptionValue builtIn="false" value="lt_9518"/>
+									<listOptionValue builtIn="false" value="B91_ble_lib"/>
 									<listOptionValue builtIn="false" value="firmware_encrypt"/>
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="dsp"/>
@@ -655,7 +655,7 @@
 								<option id="nds.c.link.option.libs.2136120284" name="Libraries (-l)" superClass="nds.c.link.option.libs" valueType="libs">
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="firmware_encrypt"/>
-									<listOptionValue builtIn="false" value="lt_9518"/>
+									<listOptionValue builtIn="false" value="B91_ble_lib"/>
 									<listOptionValue builtIn="false" value="dsp"/>
 								</option>
 								<option id="nds.c.link.option.paths.220929886" name="Library search path (-L)" superClass="nds.c.link.option.paths" valueType="libPaths">
