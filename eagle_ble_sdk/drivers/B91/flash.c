@@ -50,6 +50,8 @@
 #include "sys.h"
 #include "core.h"
 #include "stimer.h"
+#include "ext_driver/ext_misc.h"
+
 volatile unsigned char flash_cnt = 1;
 
 static preempt_config_t s_flash_preempt_config =

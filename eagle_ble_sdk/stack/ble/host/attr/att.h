@@ -202,6 +202,17 @@ ble_sts_t	 blc_att_requestMtuSizeExchange (u16 connHandle, u16 mtu_size);
 ble_sts_t	 blc_att_responseMtuSizeExchange (u16 connHandle, u16 mtu_size);
 
 
+
+/**
+ * @brief	This function is used to set prepare write buffer
+ * @param	*p - the pointer of buffer
+ * @param	len - the length of buffer
+ * @return	none.
+ */
+void  blt_att_setPrepareWriteBuffer(u8 *p, u16 len);
+
+
+
 // 0x04: ATT_OP_FIND_INFO_REQ
 /**
  * @brief	This function is used to find attribute information for request
