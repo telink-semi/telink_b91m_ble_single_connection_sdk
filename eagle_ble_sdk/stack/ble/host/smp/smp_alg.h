@@ -52,15 +52,15 @@
 
 /**
  * @brief   	this function is used to generate the confirm values
- * @param[in]   *key - aes key, little--endian.
- * @param[in]   *r - the plaintext, little--endian.
- * @param[in]   *pres - packet buffer2, little--endian.
- * @param[in]   *preq - packet buffer2, little--endian.
+ * @param[in]   key[16] - aes key, little--endian.
+ * @param[in]   r[16] - the plaintext, little--endian.
+ * @param[in]   pres[7] - packet buffer2, little--endian.
+ * @param[in]   preq[7] - packet buffer2, little--endian.
  * @param[in]   iat - initiate address type
- * @param[in]   *ia - packet buffer2, little--endian.
+ * @param[in]   ia[6] - packet buffer2, little--endian.
  * @param[in]   rat - response address type
- * @param[in]   *ra - packet buffer2, little--endian.
- * @param[out]  *c1 - the confirm value, little--endian.
+ * @param[in]   ra[6] - packet buffer2, little--endian.
+ * @param[out]  c1[16] - the confirm value, little--endian.
  * @return  	none.
  * @Note		Input data requires strict Word alignment
  */
