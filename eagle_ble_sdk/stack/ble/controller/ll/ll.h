@@ -69,6 +69,12 @@ typedef void (*blt_event_callback_t)(u8 e, u8 *p, int n);
 
 
 /**
+ * @brief	Telink defined LinkLayer Callback Declaration for phyTest
+ */
+typedef int (*blc_main_loop_phyTest_callback_t)(void);
+
+
+/**
  * @brief	Telink defined LinkLayer Event Type
  */
 #define 		BLT_EV_MAX_NUM									20
