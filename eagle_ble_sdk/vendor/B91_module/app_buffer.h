@@ -111,14 +111,5 @@ extern	u8	app_acl_txfifo[];
 
 
 
-/********************* USB_DEBUG_LOG FIFO allocation, Begin *******************************/
-#if (APP_DUMP_EN)
-	extern my_fifo_t print_fifo;
-	extern	u8 	print_fifo_b[];
-#endif
-/******************** USB_DEBUG_LOG FIFO allocation, End ***********************************/
-
-
-
 
 #endif /* VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_ */

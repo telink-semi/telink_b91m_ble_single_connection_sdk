@@ -62,12 +62,6 @@
 #define	UI_KEYBOARD_ENABLE					1
 
 
-/**
- *  @brief  DEBUG  Configuration
- */
-#define APP_DUMP_EN							0
-
-
 
 
 #if (UI_KEYBOARD_ENABLE)   // if test pure power, kyeScan GPIO setting all disabled
@@ -162,12 +156,6 @@ enum{
 
 
 
-#if (APP_DUMP_EN)
-	#define PA5_FUNC						AS_USB_DM
-	#define PA6_FUNC						AS_USB_DP
-	#define PA5_INPUT_ENABLE				1
-	#define PA6_INPUT_ENABLE				1
-#endif
 
 /**
  *  @brief  Definition for gpio debug

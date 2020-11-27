@@ -80,7 +80,6 @@
 #define UART_PRINT_DEBUG_ENABLE  			0
 #define DEBUG_GPIO_ENABLE					0
 #define JTAG_DEBUG_DISABLE					0
-#define APP_DUMP_EN							0
 
 
 
@@ -276,12 +275,6 @@ enum{
 
 #endif
 
-#if (APP_DUMP_EN)
-	#define PA5_FUNC						AS_USB_DM
-	#define PA6_FUNC						AS_USB_DP
-	#define PA5_INPUT_ENABLE				1
-	#define PA6_INPUT_ENABLE				1
-#endif
 
 
 /////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////

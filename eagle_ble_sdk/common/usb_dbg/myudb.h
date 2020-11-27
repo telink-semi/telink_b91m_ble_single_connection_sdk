@@ -56,7 +56,7 @@
 #endif
 /* USB print log enable macro */
 #ifndef			DUMP_STR_EN
-#define 		DUMP_STR_EN                                   		1
+#define 		DUMP_STR_EN                                   		0
 #endif
 
 

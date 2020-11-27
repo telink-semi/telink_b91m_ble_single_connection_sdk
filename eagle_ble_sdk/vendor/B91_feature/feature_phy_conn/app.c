@@ -402,12 +402,6 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 
-
-#if (APP_DUMP_EN)
-	myudb_usb_init (0x120,&uart_txfifo);		//0x120: usb sub-id
-	usb_set_pin_en ();
-#endif
-
 }
 
 
@@ -498,9 +492,6 @@ _attribute_no_inline_ void main_loop (void)
 
 
 
-#if (APP_DUMP_EN)
-	myudb_usb_handle_irq ();
-#endif
 }
 
 

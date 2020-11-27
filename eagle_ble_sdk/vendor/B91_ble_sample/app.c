@@ -541,12 +541,6 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 
-
-#if (APP_DUMP_EN)
-	my_usb_init(0x120, &print_fifo);
-	usb_set_pin_en ();
-#endif
-
 }
 
 
@@ -651,9 +645,6 @@ _attribute_no_inline_ void main_loop (void)
 
 
 
-	#if (APP_DUMP_EN)
-		myudb_usb_handle_irq ();
-	#endif
 }
 
 

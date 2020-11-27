@@ -62,11 +62,3 @@ _attribute_data_retention_  u8	app_acl_txfifo[ACL_TX_FIFO_SIZE * ACL_TX_FIFO_NUM
 
 
 
-
-/********************* USB_DEBUG_LOG FIFO allocation, Begin *******************************/
-
-#if (APP_DUMP_EN)
-	MYFIFO_INIT_IRAM(print_fifo, 288, 32);
-#endif
-
-/******************** USB_DEBUG_LOG FIFO allocation, End ***********************************/
