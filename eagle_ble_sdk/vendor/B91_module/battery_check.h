@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file     battery_check.h 
  *
- * @brief    for TLSR chips
+ * @brief    This is the header file for BLE SDK
  *
  * @author	 BLE Group
  * @date     Sep. 18, 2015

@@ -66,11 +66,6 @@
 
 /******************************* stimer_start ******************************************************************/
 
-#define	    sys_tick_per_us   				16
-
-
-
-
 #define reg_system_tick_irq				reg_system_irq_level
 
 typedef enum {

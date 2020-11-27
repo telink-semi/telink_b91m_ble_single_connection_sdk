@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	spp.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -521,6 +521,6 @@ void spp_restart_proc(void)
 {
 	//when received SPP_CMD_RESTART_MOD, leave 500ms(you can change this time) for moudle to send uart ack to host, then restart.
 	if(spp_cmd_restart_flag && clock_time_exceed(spp_cmd_restart_flag, 500000)){
-		cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_TIMER, clock_time() + 10000 * sys_tick_per_us);
+		cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_TIMER, clock_time() + 10000 * SYSTEM_TIMER_TICK_1US);
 	}
 }

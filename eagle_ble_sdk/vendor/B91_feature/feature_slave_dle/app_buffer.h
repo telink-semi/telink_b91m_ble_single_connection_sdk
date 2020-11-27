@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_buffer.h
  *
- * @brief	This is the source file for BLE SDK
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -117,12 +117,11 @@
  *  		ACL TX buffer is used to hold LinkLayer RF TX data.
  * usage limitation for ACL_TX_FIFO_SIZE:
  * 1. should be greater than or equal to (connMaxTxOctets + 10)
- * 2. should be be an integer multiple of 16 (16 Byte align). user can use formula:  size = CAL_LL_ACL_TX_FIFO_SIZE(connMaxRxOctets)
- * 3. can use:  size = CAL_LL_ACL_RX_FIFO_SIZE(maxRxOct)
+ * 2. should be be an integer multiple of 16 (16 Byte align). user can use formula:  size = CAL_LL_ACL_TX_FIFO_SIZE(connMaxTxOctets)
  * usage limitation for ACL_TX_FIFO_NUM:
  * 1. must be: (2^n) + 1, (power of 2, then add 1)
  * 2. at least 9; recommended value: 9, 17, 33; other value not allowed.
- * usage limitation for (size-1)*number
+ * usage limitation for size * (number - 1)
  * 1. (ACL_TX_FIFO_NUM * (ACL_TX_FIFO_NUM - 1)) must be less than 4096 (4K)
  *    so when ACL TX FIFO size bigger than 256(when connMaxTxOctets bigger than 246), ACL TX FIFO number can only be 9(can not use 17)
  */

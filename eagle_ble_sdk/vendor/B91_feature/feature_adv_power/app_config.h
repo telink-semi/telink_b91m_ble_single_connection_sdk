@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_config.h
  *
- * @brief	This is the source file for BLE SDK
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06

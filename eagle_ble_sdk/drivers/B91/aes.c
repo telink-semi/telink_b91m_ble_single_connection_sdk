@@ -117,7 +117,7 @@ void aes_get_result(unsigned char *result)
 }
 
 /**
- * @brief     This function refer to encrypt. AES module register must be used by word, all data need Little endian.
+ * @brief     This function refer to encrypt. AES module register must be used by word, all data need big endian.
  * @param[in] key       - the key of encrypt.
  * @param[in] plaintext - the plaintext of encrypt.
  * @param[in] result    - the result of encrypt.
@@ -139,7 +139,7 @@ int aes_encrypt(unsigned char *key, unsigned char* plaintext, unsigned char *res
 }
 
 /**
- * @brief     This function refer to decrypt. AES module register must be used by word.all data need Little endian.
+ * @brief     This function refer to decrypt. AES module register must be used by word.all data need big endian.
  * @param[in] key         - the key of decrypt.
  * @param[in] decrypttext - the text of decrypt.
  * @param[in] result      - the result of decrypt.

@@ -50,13 +50,10 @@
 
 
 
-
-
-#if(FEATURE_TEST_MODE == TEST_ADVERTISING_ONLY || FEATURE_TEST_MODE == TEST_SCANNING_ONLY || FEATURE_TEST_MODE == TEST_ADVERTISING_IN_CONN_SLAVE_ROLE || \
-	FEATURE_TEST_MODE == TEST_SCANNING_IN_ADV_AND_CONN_SLAVE_ROLE || FEATURE_TEST_MODE == TEST_ADVERTISING_SCANNING_IN_CONN_SLAVE_ROLE)
-	#include "feature_ll_state/app_config.h"
-#elif(FEATURE_TEST_MODE == TEST_POWER_ADV)
+#if(FEATURE_TEST_MODE == TEST_POWER_ADV)
 	#include "feature_adv_power/app_config.h"
+#elif(FEATURE_TEST_MODE == TEST_POWER_CONN)
+	#include "feature_conn_power/app_config.h"
 #elif(FEATURE_TEST_MODE == TEST_SMP_SECURITY)
 	#include "feature_smp_security/app_config.h"
 #elif(FEATURE_TEST_MODE == TEST_GATT_SECURITY)

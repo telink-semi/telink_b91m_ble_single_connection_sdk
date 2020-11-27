@@ -240,13 +240,12 @@ static inline void plic_interrupt_complete(irq_source_e  src)
 }
 
 /**
- * @brief    This function serves to claim  interrupt source.
- * @param[in]  src - interrupt source.
- * @return  none
+ * @brief    This function serves to claim  interrupt.
+ * @return   it return the source id which interrupted in irq_source_e enum .
  */
-static inline  unsigned int plic_interrupt_claim(irq_source_e  src)
+static inline  unsigned int plic_interrupt_claim(void)
 {
-	return reg_irq_done&src;
+	return reg_irq_done;
 }
 
 

@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file     battery_check.c 
  *
- * @brief    for TLSR chips
+ * @brief    This is the source file for BLE SDK
  *
  * @author	 BLE Group
  * @date     Sep. 18, 2015
@@ -105,7 +105,10 @@ _attribute_ram_code_ int app_battery_power_check(u16 alram_vol_mv)
 	u32 adc_average;
 	adc_average = adc_get_code();
 
-
+	if(adc_average & BIT(13)){
+		adc_average=0;
+		return 1;
+	}
 #if 1
 	adc_result = adc_average;
 #else  	//history data filter

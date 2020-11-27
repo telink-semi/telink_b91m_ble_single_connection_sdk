@@ -1,28 +1,46 @@
 /********************************************************************************************************
  * @file	smp.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
  *
- * @par		Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd.
- *			All rights reserved.
+ * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ *          All rights reserved.
  *
- *			The information contained herein is confidential property of Telink
- *          Semiconductor (Shanghai) Co., Ltd. and is available under the terms
- *          of Commercial License Agreement between Telink Semiconductor (Shanghai)
- *          Co., Ltd. and the licensee or the terms described here-in. This heading
- *          MUST NOT be removed from this file.
+ *          Redistribution and use in source and binary forms, with or without
+ *          modification, are permitted provided that the following conditions are met:
  *
- *          Licensee shall not delete, modify or alter (or permit any third party to delete, modify, or  
- *          alter) any information contained herein in whole or in part except as expressly authorized  
- *          by Telink semiconductor (shanghai) Co., Ltd. Otherwise, licensee shall be solely responsible  
- *          for any claim to the extent arising out of or relating to such deletion(s), modification(s)  
- *          or alteration(s).
+ *              1. Redistributions of source code must retain the above copyright
+ *              notice, this list of conditions and the following disclaimer.
  *
- *          Licensees are granted free, non-transferable use of the information in this
- *          file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
+ *              2. Unless for usage inside a TELINK integrated circuit, redistributions
+ *              in binary form must reproduce the above copyright notice, this list of
+ *              conditions and the following disclaimer in the documentation and/or other
+ *              materials provided with the distribution.
+ *
+ *              3. Neither the name of TELINK, nor the names of its contributors may be
+ *              used to endorse or promote products derived from this software without
+ *              specific prior written permission.
+ *
+ *              4. This software, with or without modification, must only be used with a
+ *              TELINK integrated circuit. All other usages are subject to written permission
+ *              from TELINK and different commercial license may apply.
+ *
+ *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
+ *              relating to such deletion(s), modification(s) or alteration(s).
+ *
+ *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
+ *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *******************************************************************************************************/
 #ifndef BLE_SMP_H_
@@ -33,57 +51,13 @@
 
 
 
-#if (SIMPLE_MULTI_MAC_EN)
-	#define	SMP_BONDING_DEVICE_MAX_NUM				16
-#else
-	#define	SMP_BONDING_DEVICE_MAX_NUM				4
-#endif
 
-
-#ifndef	SIMPLE_MULTI_MAC_EN
-#define SIMPLE_MULTI_MAC_EN							0
-#endif
-
-
-/** @addtogroup SMP info storage type definition
+/** @addtogroup SMP first pairing or connecting back definition
  * @{
  */
-#define SMP_INFO_STORAGE_IN_FLASH					1
-#define SMP_INFO_STORAGE_IN_EEPROM					2
-#define SMP_INFO_STORAGE_OTHER_MCU	 				3
-/** @} end of group SMP info storage type */
-
-
-#define SMP_STANDARD_PAIR   						0
-#define SMP_FAST_CONNECT   							1
-
-
-//define smp database(keys/peer device informations ...)
-#ifndef SMP_DATABASE_INFO_SOURCE
-#define SMP_DATABASE_INFO_SOURCE					SMP_INFO_STORAGE_IN_FLASH
-#endif
-
-
-/** @addtogroup SMP pairing opcode definition
- * @{
- */
-#define SMP_OP_PAIRING_REQ							1
-#define SMP_OP_PAIRING_RSP							2
-#define SMP_OP_PAIRING_CONFIRM						3
-#define SMP_OP_PAIRING_RANDOM						4
-#define SMP_OP_PAIRING_FAIL							5
-#define SMP_OP_ENC_INFO								6
-#define SMP_OP_ENC_IDX								7
-#define SMP_OP_ENC_IINFO							8
-#define SMP_OP_ENC_IADR								9
-#define SMP_OP_ENC_SIGN								0x0a
-#define	SMP_OP_SEC_REQ								0x0b
-#define SMP_OP_PAIRING_PUBLIC_KEY					0x0c
-#define SMP_OP_PAIRING_DHKEY							0x0d
-#define SMP_OP_KEYPRESS_NOTIFICATION				0x0e
-#define SMP_OP_WAIT									0x0f
-#define SMP_OP_ENC_END								0xFF //TLK defined
-/** @} end of group SMP pairing opcode */
+#define SMP_STANDARD_PAIR   							0
+#define SMP_FAST_CONNECT   								1
+/** @} end of group SMP first pairing or connecting back */
 
 
 /** @addtogroup SMP pairing fail reason definition
@@ -109,29 +83,13 @@
 /** @} end of group SMP pairing fail reasone */
 
 
-/** @addtogroup SMP encryption key size definition
- * @{
- */
-#define	ENCRYPRION_KEY_SIZE_MAXINUM					16
-#define	ENCRYPRION_KEY_SIZE_MINIMUN					7
-/** @} end of group SMP encryption key size */
+// "SecReq" refer to "security request"
+typedef enum {
+	SecReq_NOT_SEND = 0,   // do not send "security request" after link layer connection established
+	SecReq_IMM_SEND = BIT(0),   //"IMM" refer to immediate, send "security request" immediately after link layer connection established
+	SecReq_PEND_SEND = BIT(1),  //"PEND" refer to pending,  pending "security request" for some time after link layer connection established, when pending time arrived. send it
+}secReq_cfg;
 
-
-/** @addtogroup SMP TK status definition
- * @{
- */
-#define TK_ST_REQUEST								BIT(0)
-#define TK_ST_UPDATE								BIT(1)
-#define TK_ST_CONFIRM_PENDING						BIT(2)
-#define TK_ST_NUMERIC_COMPARE						BIT(3)
-#define TK_ST_NUMERIC_CHECK_YES					    BIT(4)
-#define TK_ST_NUMERIC_CHECK_NO					    BIT(5)
-#define TK_ST_NUMERIC_DHKEY_FAIL_PENDING			BIT(6)
-#define TK_ST_NUMERIC_DHKEY_SUCC_PENDING			BIT(7)
-/** @} end of group SMP TK status */
-
-
-#define	MASTER_SMP_EVENT							1
 
 //See the Core_v5.0(Vol 3/Part C/10.2, Page 2067) for more information.
 typedef enum {
@@ -176,54 +134,8 @@ typedef enum {
 	IO_CAPABILITY_KEYBOARD_DISPLAY 		= 4,
 } io_capability_t;
 
-typedef struct {
-	u8 security_level;
-	u8 bonding_maxNum;
-	u8 bonding_mode;
-	u8 IO_capability;
 
-	u32 ecdh_debug_mode;	//1:debug_mode,0:ecdh public/private key pairs distribute
 
-	u8 MITM_protetion;
-	u8 oob_enable;
-	u8 paring_method;  		//paring_method
-	u8 keyPress_en;
-
-	u8 secure_conn; 		// final paring method is paring_method or not
-	u8 stk_method;  		// final available stk generate method
-	u8 tk_status;
-	u8 peerKey_mask;    	//determine which peer key to store   <0>: EncKey  <1>:IdKey   <2>:Sign, NOTE: not used now in code
-
-	u8 bonding_enable;
-	u8 paring_busy;
-	u8 key_distribute;
-	u8 save_key_flag;
-} smp_mng_t;
-
-extern _attribute_aligned_(4)	smp_mng_t        blc_smpMng;
-
-/**
- * @brief      This function is used to set the flag in SMP pairing process.
- * @param[in]  busy - Set the SMP pairing flag.
- * 					  1:is pair busy
- * 					  0:isn't pair busy
- * @return     none.
- */
-static inline  void	blc_smp_setParingBusy(u8 busy)
-{
-	blc_smpMng.paring_busy = busy;
-}
-
-/**
- * @brief      This function is used to set the flag in SMP pairing process.
- * @param[in]  none.
- * @return     1:is pair busy
- * 			   0:isn't pair busy
- */
-static inline int	blc_smp_isParingBusy(void)
-{
-	return blc_smpMng.paring_busy;
-}
 
 /**
  * @brief      This function is used to set the maximum number of devices that can be bound.

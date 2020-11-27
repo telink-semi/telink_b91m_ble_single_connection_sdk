@@ -1,7 +1,7 @@
 /********************************************************************************************************
- * @file	ll_slave.h
+ * @file	app_buffer.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,72 +43,23 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#include "conn_stack.h"
+#include "tl_common.h"
+#include "drivers.h"
+#include "stack/ble/ble.h"
 
-#ifndef LL_SLAVE_H_
-#define LL_SLAVE_H_
+#include "app_buffer.h"
+#include "app_config.h"
 
+#if (FEATURE_TEST_MODE == TEST_POWER_CONN)
 
-
-
-
-
-
-
-/**
- * @brief      for user to initialize ACL connection slave role.
- * @param	   none
- * @return     none
- */
-void 		blc_ll_initSlaveRole_module(void);
-
-
-/**
- * @brief      for user to terminate an existing connection slave role.
- * @param[in]  reason - indicates the reason for ending the connection
- * @return     status, 0x00:  succeed
- * 			           other: failed
- */
-ble_sts_t  	bls_ll_terminateConnection (u8 reason);
-
-
-/**
- * @brief      for user to read current slave connection  interval
- * @param	   none
- * @return     0    :  LinkLayer not in connection state
- * 			   other:  connection interval, unit: 1.25mS
- */
-u16			bls_ll_getConnectionInterval(void);
-
-
-/**
- * @brief      for user to read current slave connection latency
- * @param	   none
- * @return     0    :  LinkLayer not in connection state
- * 			   other:  connection latency
- */
-u16			bls_ll_getConnectionLatency(void);
-
-
-/**
- * @brief      for user to read current slave connection supervision timeout
- * @param	   none
- * @return     0    :  LinkLayer not in connection state
- * 			   other:  connection supervision timeout, unit: 10 mS
- */
-u16			bls_ll_getConnectionTimeout(void);
-
-
-
-/**
- * @brief      used to set telink defined event mask for BLE module only.
- * @param[in]  evtMask - event mask
- * @return     status, 0x00:  succeed
- * 			           other: failed
- */
-ble_sts_t 	bls_hci_mod_setEventMask_cmd(u32 evtMask);
+/********************* ACL connection LinkLayer TX & RX data FIFO allocation, Begin ********************************/
+_attribute_data_retention_	u8	app_acl_rxfifo[ACL_RX_FIFO_SIZE * ACL_RX_FIFO_NUM] = {0};
+_attribute_data_retention_  u8	app_acl_txfifo[ACL_TX_FIFO_SIZE * ACL_TX_FIFO_NUM] = {0};
+/******************** ACL connection LinkLayer TX & RX data FIFO allocation, End ***********************************/
 
 
 
 
-#endif /* LL_SLAVE_H_ */
+
+
+#endif  //end of (FEATURE_TEST_MODE == ...)

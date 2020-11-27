@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	ble.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -30,6 +30,8 @@
 #include "tl_common.h"
 #include "drivers.h"
 
+
+_attribute_session_(".ram_code")
 __attribute__((noinline)) void  smemset(void * dest, int val, int len)
 {
 	register unsigned char *ptr = (unsigned char*) dest;

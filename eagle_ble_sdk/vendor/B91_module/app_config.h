@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_config.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -50,11 +50,11 @@
 /////////////////// MODULE /////////////////////////////////
 #define BLE_MODULE_PM_ENABLE				1
 #define PM_DEEPSLEEP_RETENTION_ENABLE		1
-#define BLE_OTA_ENABLE						1
+#define BLE_OTA_ENABLE						0
 #define TELIK_SPP_SERVICE_ENABLE			1
 #define BLE_MODULE_INDICATE_DATA_TO_MCU		1
-#define BATT_CHECK_ENABLE       			1   //enable or disable battery voltage detection
-#define BLT_APP_LED_ENABLE					0
+#define BATT_CHECK_ENABLE       			0   //enable or disable battery voltage detection
+#define BLT_APP_LED_ENABLE					1
 
 #define UART_DMA_USE						1
 
@@ -108,7 +108,7 @@
 #endif
 
 //////////////////// LED CONFIG (EVK board) ///////////////////////////
-#if (1)
+#if BLT_APP_LED_ENABLE
 	#define LED_ON_LEVAL 					1 			//gpio output high voltage to turn on led
 	#define	GPIO_LED_WHITE					GPIO_PB6
 	#define	GPIO_LED_GREEN					GPIO_PB5

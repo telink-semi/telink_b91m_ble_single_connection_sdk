@@ -1,28 +1,46 @@
 /********************************************************************************************************
  * @file	hci_cmd.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
  *
- * @par		Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd.
- *			All rights reserved.
+ * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ *          All rights reserved.
  *
- *			The information contained herein is confidential property of Telink
- *          Semiconductor (Shanghai) Co., Ltd. and is available under the terms
- *          of Commercial License Agreement between Telink Semiconductor (Shanghai)
- *          Co., Ltd. and the licensee or the terms described here-in. This heading
- *          MUST NOT be removed from this file.
+ *          Redistribution and use in source and binary forms, with or without
+ *          modification, are permitted provided that the following conditions are met:
  *
- *          Licensee shall not delete, modify or alter (or permit any third party to delete, modify, or  
- *          alter) any information contained herein in whole or in part except as expressly authorized  
- *          by Telink semiconductor (shanghai) Co., Ltd. Otherwise, licensee shall be solely responsible  
- *          for any claim to the extent arising out of or relating to such deletion(s), modification(s)  
- *          or alteration(s).
+ *              1. Redistributions of source code must retain the above copyright
+ *              notice, this list of conditions and the following disclaimer.
  *
- *          Licensees are granted free, non-transferable use of the information in this
- *          file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
+ *              2. Unless for usage inside a TELINK integrated circuit, redistributions
+ *              in binary form must reproduce the above copyright notice, this list of
+ *              conditions and the following disclaimer in the documentation and/or other
+ *              materials provided with the distribution.
+ *
+ *              3. Neither the name of TELINK, nor the names of its contributors may be
+ *              used to endorse or promote products derived from this software without
+ *              specific prior written permission.
+ *
+ *              4. This software, with or without modification, must only be used with a
+ *              TELINK integrated circuit. All other usages are subject to written permission
+ *              from TELINK and different commercial license may apply.
+ *
+ *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
+ *              relating to such deletion(s), modification(s) or alteration(s).
+ *
+ *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
+ *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *******************************************************************************************************/
 #ifndef HCI_CMD_H_
@@ -30,10 +48,7 @@
 
 
 #include "stack/ble/ble_common.h"
-#include "stack/ble/ble_stack.h"
 
-
-//#include "stack/ble/ll/adv/ext_adv.h"
 
 /**
  *  @brief  Command Parameters for "7.8.5 LE Set Advertising Parameters command"
@@ -65,26 +80,28 @@ typedef enum{
 	ADV_INTERVAL_40MS        =                   64,
 	ADV_INTERVAL_45MS        =                   72,
 	ADV_INTERVAL_50MS        =                   80,
-	ADV_INTERVAL_55MS        =                   88,
 	ADV_INTERVAL_60MS        =                   96,
 	ADV_INTERVAL_70MS        =                   112,
 	ADV_INTERVAL_80MS        =                   128,
 	ADV_INTERVAL_90MS		 =					 144,
 	ADV_INTERVAL_100MS       =                   160,
-	ADV_INTERVAL_105MS       =                   168,
+	ADV_INTERVAL_150MS       =                   240,
 	ADV_INTERVAL_200MS       =                   320,
-	ADV_INTERVAL_205MS       =                   328,
+	ADV_INTERVAL_250MS       =                   400,
 	ADV_INTERVAL_300MS       =                   480,
-	ADV_INTERVAL_305MS       =                   488,
+	ADV_INTERVAL_350MS       =                   560,
 	ADV_INTERVAL_400MS       =                   640,
-	ADV_INTERVAL_405MS       =                   648,
+	ADV_INTERVAL_450MS       =                   720,
 	ADV_INTERVAL_500MS       =                   800,
-	ADV_INTERVAL_505MS       =                   808,
+	ADV_INTERVAL_600MS       =                   960,
+	ADV_INTERVAL_700MS       =                  1120,
+	ADV_INTERVAL_800MS       =                  1280,
+	ADV_INTERVAL_900MS       =                  1440,
 	ADV_INTERVAL_1S          =                	1600,
 	ADV_INTERVAL_1S5         =                 	2400,
 	ADV_INTERVAL_2S          =                	3200,
-	ADV_INTERVAL_1_28_S      =                  0x0800,
-	ADV_INTERVAL_10_24S      =                   16384,
+	ADV_INTERVAL_1_28_S      =                  2048,
+	ADV_INTERVAL_10_24S      =                 16384,
 }adv_inter_t;
 
 /* Advertisement Type */
@@ -155,15 +172,26 @@ typedef enum{
 	SCAN_INTERVAL_10MS              =            16,
 	SCAN_INTERVAL_20MS              =            32,
 	SCAN_INTERVAL_30MS              =            48,
+	SCAN_INTERVAL_40MS              =            64,
 	SCAN_INTERVAL_50MS              =            80,
 	SCAN_INTERVAL_60MS              =            96,
+	SCAN_INTERVAL_70MS              =            112,
 	SCAN_INTERVAL_80MS              =            128,
 	SCAN_INTERVAL_90MS              =            144,
 	SCAN_INTERVAL_100MS             =            160,
+	SCAN_INTERVAL_150MS             =            240,
 	SCAN_INTERVAL_200MS             =            320,
+	SCAN_INTERVAL_250MS             =            400,
 	SCAN_INTERVAL_300MS             =            480,
+	SCAN_INTERVAL_350MS             =            560,
 	SCAN_INTERVAL_400MS             =            640,
+	SCAN_INTERVAL_450MS             =            720,
 	SCAN_INTERVAL_500MS             =            800,
+	SCAN_INTERVAL_600MS             =            960,
+	SCAN_INTERVAL_700MS             =            1120,
+	SCAN_INTERVAL_800MS             =            1280,
+	SCAN_INTERVAL_900MS             =            1440,
+	SCAN_INTERVAL_1000MS            =            1600,
 }scan_inter_t;
 
 /* Scannning_Window, Time = N * 0.625 ms,
@@ -172,8 +200,10 @@ typedef enum{
 	SCAN_WINDOW_10MS                =            16,
 	SCAN_WINDOW_20MS                =            32,
 	SCAN_WINDOW_30MS                =            48,
+	SCAN_WINDOW_40MS                =            64,
 	SCAN_WINDOW_50MS                =            80,
 	SCAN_WINDOW_60MS                =            96,
+	SCAN_WINDOW_70MS                =            112,
 	SCAN_WINDOW_80MS                =            128,
 	SCAN_WINDOW_90MS                =            144,
 	SCAN_WINDOW_100MS               =            160,
@@ -181,8 +211,15 @@ typedef enum{
 	SCAN_WINDOW_200MS               =            320,
 	SCAN_WINDOW_250MS               =            400,
 	SCAN_WINDOW_300MS               =            480,
+	SCAN_WINDOW_350MS               =            560,
 	SCAN_WINDOW_400MS               =            640,
+	SCAN_WINDOW_450MS               =            720,
 	SCAN_WINDOW_500MS               =            800,
+	SCAN_WINDOW_600MS               =            960,
+	SCAN_WINDOW_700MS               =            1120,
+	SCAN_WINDOW_800MS               =            1280,
+	SCAN_WINDOW_900MS               =            1440,
+	SCAN_WINDOW_1000MS              =            1600,
 }scan_wind_t;
 
 /* Scanning_Filter_Policy */
@@ -236,19 +273,52 @@ typedef enum{
 	CONN_INTERVAL_13P75MS            =            11,
 	CONN_INTERVAL_15MS               =            12,
 	CONN_INTERVAL_16P25MS            =            13,
+	CONN_INTERVAL_17P5MS             =            14,
 	CONN_INTERVAL_18P75MS            =            15,
 	CONN_INTERVAL_20MS               =            16,
+	CONN_INTERVAL_21P25MS            =            17,
+	CONN_INTERVAL_22P5MS             =            18,
+	CONN_INTERVAL_23P75MS            =            19,
+	CONN_INTERVAL_25MS               =            20,
+	CONN_INTERVAL_26P25MS            =            21,
 	CONN_INTERVAL_27P5MS             =            22,
+	CONN_INTERVAL_28P75MS            =            23,
 	CONN_INTERVAL_30MS               =            24,
 	CONN_INTERVAL_31P25MS            =            25,
+	CONN_INTERVAL_32P5MS             =            26,
+	CONN_INTERVAL_33P75MS            =            27,
+	CONN_INTERVAL_35MS             	 =            28,
+	CONN_INTERVAL_36P25MS            =            29,
+	CONN_INTERVAL_37P5MS             =            30,
 	CONN_INTERVAL_38P75MS            =            31,
 	CONN_INTERVAL_40MS               =            32,
+	CONN_INTERVAL_41P25MS            =            33,
+	CONN_INTERVAL_42P5MS             =            34,
+	CONN_INTERVAL_43P75MS            =            35,
+	CONN_INTERVAL_45MS               =            36,
+	CONN_INTERVAL_46P25MS            =            37,
+	CONN_INTERVAL_47P5MS             =            38,
 	CONN_INTERVAL_48P75MS            =            39,
 	CONN_INTERVAL_50MS               =            40,
+	CONN_INTERVAL_55MS               =            44,
+	CONN_INTERVAL_60MS               =            48,
+	CONN_INTERVAL_65MS               =            52,
+	CONN_INTERVAL_70MS               =            56,
+	CONN_INTERVAL_75MS               =            60,
 	CONN_INTERVAL_80MS               =            64,
+	CONN_INTERVAL_85MS               =            68,
+	CONN_INTERVAL_90MS               =            72,
+	CONN_INTERVAL_95MS               =            78,
 	CONN_INTERVAL_100MS              =            80,
+	CONN_INTERVAL_110MS              =            88,
+	CONN_INTERVAL_120MS              =            96,
+	CONN_INTERVAL_130MS              =            104,
+	CONN_INTERVAL_140MS              =            112,
 	CONN_INTERVAL_150MS              =            120,
 	CONN_INTERVAL_200MS              =            160,
+	CONN_INTERVAL_250MS              =            200,
+	CONN_INTERVAL_300MS              =            240,
+	CONN_INTERVAL_320MS              =            256,
 }conn_inter_t;
 
 
@@ -257,10 +327,20 @@ typedef enum{
 typedef enum{
 	CONN_TIMEOUT_500MS				 =			  50,
 	CONN_TIMEOUT_1S					 =		 	  100,
+	CONN_TIMEOUT_1S5				 =		 	  150,
 	CONN_TIMEOUT_2S					 =		 	  200,
+	CONN_TIMEOUT_2S5				 =		 	  250,
+	CONN_TIMEOUT_3S					 =		 	  300,
+	CONN_TIMEOUT_3S5				 =		 	  350,
 	CONN_TIMEOUT_4S					 =		 	  400,
+	CONN_TIMEOUT_4S5				 =		 	  450,
 	CONN_TIMEOUT_5S					 =		 	  500,
+	CONN_TIMEOUT_6S					 =		 	  600,
+	CONN_TIMEOUT_7S					 =		 	  700,
+	CONN_TIMEOUT_8S					 =		 	  800,
+	CONN_TIMEOUT_9S					 =		 	  900,
 	CONN_TIMEOUT_10S				 =			  1000,
+	CONN_TIMEOUT_15S				 =			  1500,
 	CONN_TIMEOUT_20S				 =			  2000,
 }conn_tm_t;
 
@@ -275,7 +355,16 @@ typedef enum{
 
 
 
-
+/**
+ *  @brief  Return Parameters for "7.8.46 LE Read Maximum Data Length command"
+ */
+typedef struct {
+	u8         status;
+	u16        support_max_tx_oct;
+	u16        support_max_tx_time;
+	u16        support_max_rx_oct;
+	u16        support_max_rx_time;
+} hci_le_readMaxDataLengthCmd_retParam_t;
 
 
 
@@ -370,7 +459,6 @@ typedef enum{
 	ADV_HANDLE0		= 0x00,
 	ADV_HANDLE1		= 0x01,
 	ADV_HANDLE2		= 0x02,
-	ADV_HANDLE3		= 0x03,
 }adv_handle_t;
 
 
@@ -540,8 +628,12 @@ typedef enum{
 	SCAN_DURATION_300MS				 =			  30,
 	SCAN_DURATION_400MS				 =			  40,
 	SCAN_DURATION_500MS				 =			  50,
+	SCAN_DURATION_600MS				 =			  60,
+	SCAN_DURATION_700MS				 =			  70,
 	SCAN_DURATION_800MS				 =			  80,
+	SCAN_DURATION_900MS				 =			  90,
 	SCAN_DURATION_1S				 =		 	  100,
+	SCAN_DURATION_1S5				 =			  150,
 	SCAN_DURATION_2S				 =		 	  200,
 }scan_durn_t;
 

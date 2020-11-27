@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	main.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,18 +43,10 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#include "app_config.h"
-#include "gpio_default.h"
-#include "../../drivers.h"
-
 #include "tl_common.h"
-#include "../common/blt_common.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
-
-extern void user_init_normal();
-extern void user_init_deepRetn();
-extern void main_loop (void);
+#include "app.h"
 
 /**
  * @brief		BLE SDK RF interrupt handler.
@@ -116,7 +108,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
 
-	sys_init(LDO_1P4_LDO_1P8,VBAT_V_GREATER_THAN_3V6);
+	sys_init(LDO_1P4_LDO_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
 
 	/* detect if MCU is wake_up from deep retention mode */
 	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp

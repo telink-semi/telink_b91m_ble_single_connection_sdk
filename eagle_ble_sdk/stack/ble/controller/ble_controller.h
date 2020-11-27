@@ -55,18 +55,15 @@
 #include "stack/ble/hci/hci_const.h"
 #include "stack/ble/hci/hci_cmd.h"
 #include "stack/ble/hci/hci_event.h"
-#include "stack/ble/hci/usb_desc.h"
 
 
 #include "stack/ble/controller/ll/ll.h"
 #include "stack/ble/controller/ll/ll_adv.h"
-#include "stack/ble/controller/ll/ll_init.h"
 #include "stack/ble/controller/ll/ll_pm.h"
 #include "stack/ble/controller/ll/ll_scan.h"
 #include "stack/ble/controller/ll/ll_whitelist.h"
 #include "stack/ble/controller/ll/ll_conn/ll_conn.h"
 #include "stack/ble/controller/ll/ll_conn/ll_slave.h"
-#include "stack/ble/controller/ll/ll_conn/ll_master.h"
 #include "stack/ble/controller/ll/ll_conn/ll_conn_csa.h"
 
 #include "stack/ble/controller/ll/ll_ext_adv.h"

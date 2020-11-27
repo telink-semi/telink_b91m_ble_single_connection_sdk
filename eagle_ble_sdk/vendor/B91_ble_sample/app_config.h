@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_config.h
  *
- * @brief	This is the source file for BLE SDK
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -79,7 +79,7 @@
  */
 #define UART_PRINT_DEBUG_ENABLE  			0
 #define DEBUG_GPIO_ENABLE					0
-#define JTAG_DEBUG_EN						0
+#define JTAG_DEBUG_DISABLE					0
 #define APP_DUMP_EN							0
 
 
@@ -266,13 +266,13 @@ enum{
 	CLOCK_SYS_CLOCK_1US = (CLOCK_SYS_CLOCK_1S / 1000000),
 };
 
-#if (JTAG_DEBUG_EN)//2-wire jtag mode
+#if (JTAG_DEBUG_DISABLE)//2-wire jtag mode
 
-#define PE6_FUNC			AS_TMS
-#define PE7_FUNC			AS_TCK
+#define PE6_FUNC			AS_GPIO
+#define PE7_FUNC			AS_GPIO
 
-#define PE6_INPUT_ENABLE	1
-#define PE7_INPUT_ENABLE	1
+#define PE6_INPUT_ENABLE	0
+#define PE7_INPUT_ENABLE	0
 
 #endif
 

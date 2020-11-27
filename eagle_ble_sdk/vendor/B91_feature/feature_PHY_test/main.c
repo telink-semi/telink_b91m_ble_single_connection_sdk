@@ -97,7 +97,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	DBG_CHN1_TOGGLE;
 	blc_pm_select_internal_32k_crystal();
 
-	sys_init(LDO_1P4_LDO_1P8,VBAT_V_GREATER_THAN_3V6);
+	sys_init(LDO_1P4_LDO_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
 
 
 #if (CLOCK_SYS_CLOCK_HZ == 16000000)

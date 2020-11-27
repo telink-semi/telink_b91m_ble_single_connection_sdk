@@ -54,7 +54,7 @@
 #include "application/usbstd/usbkeycode.h"
 #include "../default_att.h"
 
-#if (FEATURE_TEST_MODE == TEST_2M_CODED_PHY_CONNECTION)
+#if (FEATURE_TEST_MODE == TEST_POWER_CONN)
 
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
@@ -63,7 +63,7 @@
  * @brief	Adv Packet data
  */
 const u8	tbl_advData[] = {
-	 0x05, 0x09, 'x', 'H', 'I', 'D',
+	 0x05, 0x09, 'f', 't', 'r', 'e',
 	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
 	 0x03, 0x19, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
 	 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
@@ -73,7 +73,7 @@ const u8	tbl_advData[] = {
  * @brief	Scan Response Packet data
  */
 const u8	tbl_scanRsp [] = {
-		0x08, 0x09, 'x', 'R', 'e', 'm', 'o', 't', 'e',
+		 0x08, 0x09, 'f', 'e', 'a', 't', 'u', 'r', 'e',
 	};
 
 
@@ -90,20 +90,8 @@ _attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
 _attribute_data_retention_	u32	latest_user_event_tick;
 
 
-_attribute_data_retention_	u32 device_connection_tick;
 
-#if (CONNECTABLE_MODE == EXTENDED_ADV_CONNECTABLE_UNDIRECTED)
 
-#define	APP_ADV_SETS_NUMBER						1			// Number of Supported Advertising Sets
-#define APP_MAX_LENGTH_ADV_DATA					318			// Maximum Advertising Data Length,   (if legacy ADV, max length 31 bytes is enough)
-#define APP_MAX_LENGTH_SCAN_RESPONSE_DATA		318			// Maximum Scan Response Data Length, (if legacy ADV, max length 31 bytes is enough)
-
-_attribute_data_retention_	u8  app_adv_set_param[ADV_SET_PARAM_LENGTH * APP_ADV_SETS_NUMBER];
-_attribute_data_retention_	u8	app_primary_adv_pkt[MAX_LENGTH_PRIMARY_ADV_PKT * APP_ADV_SETS_NUMBER];
-_attribute_data_retention_	u8	app_secondary_adv_pkt[MAX_LENGTH_SECOND_ADV_PKT * APP_ADV_SETS_NUMBER];
-_attribute_data_retention_	u8 	app_advData[APP_MAX_LENGTH_ADV_DATA	* APP_ADV_SETS_NUMBER];
-_attribute_data_retention_	u8 	app_scanRspData[APP_MAX_LENGTH_SCAN_RESPONSE_DATA * APP_ADV_SETS_NUMBER];
-#endif
 
 
 /**
@@ -121,7 +109,7 @@ _attribute_ram_code_ void  ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
 }
 
 
-
+_attribute_data_retention_ u8 Adbg_cnt_check = 0;
 
 
 
@@ -143,11 +131,6 @@ void	task_connect (u8 e, u8 *p, int n)
 
 	interval_update_tick = clock_time() | 1; //none zero
 
-	device_connection_tick = clock_time() | 1;
-
-#if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //yellow light on
-#endif
 }
 
 
@@ -163,7 +146,6 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
 	device_in_connection_state = 0;
 
-	device_connection_tick = 0;
 
 	if(*p == HCI_ERR_CONN_TIMEOUT){
 
@@ -178,13 +160,20 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 	}
 
-
-#if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //yellow light off
-#endif
-
 	advertise_begin_tick = clock_time();
 
+	u8 read_cnt = 0;
+	flash_read_page(0x80000,1,(u8*)&read_cnt);
+	if(read_cnt == 0xff){
+		read_cnt = 0;
+	}
+
+	Adbg_cnt_check = read_cnt + 1;
+	sleep_us(100);
+
+	flash_erase_page(0x80000);
+	sleep_us(100);
+	flash_write_page(0x80000,1,(u8*)&Adbg_cnt_check);
 }
 
 
@@ -202,20 +191,7 @@ _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 }
 
 
-/**
- * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_PHY_UPDATE"
- * @param[in]  e - LinkLayer Event type
- * @param[in]  p - data pointer of event
- * @param[in]  n - data length of event
- * @return     none
- */
-void 	callback_phy_update_complete_event(u8 e,u8 *p, int n)
-{
-//	hci_le_phyUpdateCompleteEvt_t *pEvt = (hci_le_phyUpdateCompleteEvt_t *)p;
 
-
-
-}
 
 
 /**
@@ -233,6 +209,8 @@ void blt_pm_proc(void)
 	#else
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 	#endif
+
+
 
 #endif  //end of BLE_APP_PM_ENABLE
 }
@@ -264,23 +242,9 @@ _attribute_no_inline_ void user_init_normal(void)
 	//////////// Controller Initialization  Begin /////////////////////////
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);		//mandatory
-#if (CONNECTABLE_MODE == LEGACY_ADV_CONNECTABLE_UNDIRECTED)
 	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
-#elif (CONNECTABLE_MODE == EXTENDED_ADV_CONNECTABLE_UNDIRECTED)
-	//Extended ADV module:
-	blc_ll_initExtendedAdvertising_module(app_adv_set_param, app_primary_adv_pkt, APP_ADV_SETS_NUMBER);
-	blc_ll_initExtSecondaryAdvPacketBuffer(app_secondary_adv_pkt, MAX_LENGTH_SECOND_ADV_PKT);
-	blc_ll_initExtAdvDataBuffer(app_advData, APP_MAX_LENGTH_ADV_DATA);
-	blc_ll_initExtScanRspDataBuffer(app_scanRspData, APP_MAX_LENGTH_SCAN_RESPONSE_DATA);
-
-	blc_ll_initChannelSelectionAlgorithm_2_feature();
-#endif
-
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
-
-	blc_ll_init2MPhyCodedPhy_feature();			// mandatory for 2M/Coded PHY
-
 
 	blc_ll_setAclConnMaxOctetsNumber(ACL_CONN_MAX_RX_OCTETS, ACL_CONN_MAX_TX_OCTETS);
 
@@ -325,47 +289,12 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 
-#if (CONNECTABLE_MODE == LEGACY_ADV_CONNECTABLE_UNDIRECTED)
 	bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) );
 	bls_ll_setScanRspData( (u8 *)tbl_scanRsp, sizeof(tbl_scanRsp));
 
 
+
 	bls_ll_setAdvEnable(1);  //adv enable
-
-#elif (CONNECTABLE_MODE == EXTENDED_ADV_CONNECTABLE_UNDIRECTED)
-	u32 my_adv_interval_min = ADV_INTERVAL_50MS;
-	u32 my_adv_interval_max = ADV_INTERVAL_50MS;
-
-	le_phy_type_t  user_primary_adv_phy;
-	le_phy_type_t  user_secondary_adv_phy;
-
-	#if 1      // ADV_EXT_IND: 1M PHY;  		AUX_ADV_IND/AUX_CHAIN_IND: 1M PHY
-	user_primary_adv_phy   = BLE_PHY_1M;
-	user_secondary_adv_phy = BLE_PHY_1M;
-	#elif 0      // ADV_EXT_IND: 1M PHY;  		AUX_ADV_IND/AUX_CHAIN_IND: Coded PHY(S8)
-	user_primary_adv_phy   = BLE_PHY_1M;
-	user_secondary_adv_phy = BLE_PHY_CODED;
-	blc_ll_setDefaultExtAdvCodingIndication(ADV_HANDLE0, CODED_PHY_PREFER_S8);
-	#elif 0      // ADV_EXT_IND: 1M PHY;  		AUX_ADV_IND/AUX_CHAIN_IND: Coded PHY(S2)
-	user_primary_adv_phy   = BLE_PHY_1M;
-	user_secondary_adv_phy = BLE_PHY_CODED;
-	blc_ll_setDefaultExtAdvCodingIndication(ADV_HANDLE0, CODED_PHY_PREFER_S2);
-	#else
-	user_primary_adv_phy   = BLE_PHY_1M;
-	user_secondary_adv_phy = BLE_PHY_1M;
-	#endif
-
-	blc_ll_setExtAdvParam( ADV_HANDLE0, 		ADV_EVT_PROP_EXTENDED_CONNECTABLE_UNDIRECTED, 					my_adv_interval_min, 			my_adv_interval_max,
-						   BLT_ENABLE_ADV_ALL,	OWN_ADDRESS_PUBLIC, 										    BLE_ADDR_PUBLIC, 				NULL,
-						   ADV_FP_NONE,  		TX_POWER_8dBm,												   	user_primary_adv_phy, 			0,
-						   user_secondary_adv_phy, 	ADV_SID_0, 													0);
-
-	blc_ll_setExtAdvData( ADV_HANDLE0, DATA_OPER_COMPLETE, DATA_FRAGM_ALLOWED, sizeof(tbl_advData),   (u8*)tbl_advData);
-	blc_ll_setExtScanRspData( ADV_HANDLE0, DATA_OPER_COMPLETE, DATA_FRAGM_ALLOWED, sizeof(tbl_scanRsp) , (u8 *)tbl_scanRsp);
-
-	blc_ll_setExtAdvEnable_1( BLC_ADV_ENABLE, 1, ADV_HANDLE0, 0 , 0);
-#endif
-
 
 
 
@@ -376,7 +305,6 @@ _attribute_no_inline_ void user_init_normal(void)
 	bls_app_registerEventCallback (BLT_EV_FLAG_CONNECT, &task_connect);
 	bls_app_registerEventCallback (BLT_EV_FLAG_TERMINATE, &task_terminate);
 	bls_app_registerEventCallback (BLT_EV_FLAG_SUSPEND_EXIT, &user_set_rf_power);
-	bls_app_registerEventCallback (BLT_EV_FLAG_PHY_UPDATE, &callback_phy_update_complete_event);
 
 	///////////////////// Power Management initialization///////////////////
 #if(BLE_APP_PM_ENABLE)
@@ -385,7 +313,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	#if (PM_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(95, 95);
-		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(240);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(320);
 		//blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW64K); //default use 32k deep retention
 	#else
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
@@ -398,15 +326,12 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 
+
+
 //	advertise_begin_tick = clock_time();
 
 
 
-
-#if (APP_DUMP_EN)
-	myudb_usb_init (0x120,&uart_txfifo);		//0x120: usb sub-id
-	usb_set_pin_en ();
-#endif
 
 }
 
@@ -428,6 +353,7 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 	DBG_CHN0_HIGH;    //debug
 	irq_enable();
 
+
 #endif
 }
 
@@ -435,48 +361,8 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 /////////////////////////////////////////////////////////////////////s
 // main loop flow
 /////////////////////////////////////////////////////////////////////
-_attribute_data_retention_ u32 phy_update_test_tick = 0;
-_attribute_data_retention_ u32 phy_update_test_seq = 0;
-
-/**
- * @brief		This is main_loop function in BLE 2M/Coded PHY connect project
- * @param[in]	none
- * @return      none
- */
-void feature_2m_coded_phy_conn_mainloop(void)
-{
-	if(device_connection_tick && clock_time_exceed(device_connection_tick, 2000000)){
-		device_connection_tick = 0;
-
-		phy_update_test_tick = clock_time() | 1;
-		phy_update_test_seq = 0;  //reset
-
-	}
 
 
-	if(phy_update_test_tick && clock_time_exceed(phy_update_test_tick, 10000000)){
-		phy_update_test_tick = clock_time() | 1;
-
-
-
-		int AAA = phy_update_test_seq%4;
-		if(AAA == 0){
-			blc_ll_setPhy(BLS_CONN_HANDLE, PHY_TRX_PREFER, PHY_PREFER_CODED, PHY_PREFER_CODED, CODED_PHY_PREFER_S2);
-		}
-		else if(AAA == 1){
-			blc_ll_setPhy(BLS_CONN_HANDLE, PHY_TRX_PREFER, PHY_PREFER_2M, 	 PHY_PREFER_2M,    CODED_PHY_PREFER_NONE);
-		}
-		else if(AAA == 2){
-			blc_ll_setPhy(BLS_CONN_HANDLE, PHY_TRX_PREFER, PHY_PREFER_CODED, PHY_PREFER_CODED, CODED_PHY_PREFER_S8);
-		}
-		else{
-			blc_ll_setPhy(BLS_CONN_HANDLE, PHY_TRX_PREFER, PHY_PREFER_1M, 	 PHY_PREFER_1M,    CODED_PHY_PREFER_NONE);
-		}
-
-		phy_update_test_seq ++;
-	}
-
-}
 
 
 /**
@@ -490,17 +376,9 @@ _attribute_no_inline_ void main_loop (void)
 	blt_sdk_main_loop();
 
 
-	////////////////////////////////////// UI entry /////////////////////////////////
-
-	feature_2m_coded_phy_conn_mainloop();
 	////////////////////////////////////// PM Process /////////////////////////////////
 	blt_pm_proc();
 
-
-
-#if (APP_DUMP_EN)
-	myudb_usb_handle_irq ();
-#endif
 }
 
 

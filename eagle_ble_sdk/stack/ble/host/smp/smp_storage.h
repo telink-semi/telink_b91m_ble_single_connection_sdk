@@ -1,72 +1,51 @@
 /********************************************************************************************************
  * @file	smp_storage.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
  *
- * @par		Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd.
- *			All rights reserved.
+ * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ *          All rights reserved.
  *
- *			The information contained herein is confidential property of Telink
- *          Semiconductor (Shanghai) Co., Ltd. and is available under the terms
- *          of Commercial License Agreement between Telink Semiconductor (Shanghai)
- *          Co., Ltd. and the licensee or the terms described here-in. This heading
- *          MUST NOT be removed from this file.
+ *          Redistribution and use in source and binary forms, with or without
+ *          modification, are permitted provided that the following conditions are met:
  *
- *          Licensee shall not delete, modify or alter (or permit any third party to delete, modify, or  
- *          alter) any information contained herein in whole or in part except as expressly authorized  
- *          by Telink semiconductor (shanghai) Co., Ltd. Otherwise, licensee shall be solely responsible  
- *          for any claim to the extent arising out of or relating to such deletion(s), modification(s)  
- *          or alteration(s).
+ *              1. Redistributions of source code must retain the above copyright
+ *              notice, this list of conditions and the following disclaimer.
  *
- *          Licensees are granted free, non-transferable use of the information in this
- *          file under Mutual Non-Disclosure Agreement. NO WARRENTY of ANY KIND is provided.
+ *              2. Unless for usage inside a TELINK integrated circuit, redistributions
+ *              in binary form must reproduce the above copyright notice, this list of
+ *              conditions and the following disclaimer in the documentation and/or other
+ *              materials provided with the distribution.
+ *
+ *              3. Neither the name of TELINK, nor the names of its contributors may be
+ *              used to endorse or promote products derived from this software without
+ *              specific prior written permission.
+ *
+ *              4. This software, with or without modification, must only be used with a
+ *              TELINK integrated circuit. All other usages are subject to written permission
+ *              from TELINK and different commercial license may apply.
+ *
+ *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
+ *              relating to such deletion(s), modification(s) or alteration(s).
+ *
+ *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
+ *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *******************************************************************************************************/
 #ifndef SMP_STORAGE_H_
 #define SMP_STORAGE_H_
 
-
-
-#if (SIMPLE_MULTI_MAC_EN)
-	#include "smp.h"
-	extern u8 device_mac_index;
-#endif
-
-
-#define		NEW_FLASH_STORAGE_KEY_ENABLE			0     //be compatible with old flash storage methods
-
-#define		FLAG_SMP_PARAM_SAVE_OLD					0x5A  // 0101 1010  old storage
-
-#if (SIMPLE_MULTI_MAC_EN)
-#define		FLAG_SMP_PARAM_SAVE_BASE				(0x88+(device_mac_index&0x07))//0x8A  // 1000 1010
-#else
-														  // 10xx 1010  new storage,  xx: see "paring_sts_t" definition
-#define		FLAG_SMP_PARAM_SAVE_BASE				0x8A  // 1000 1010
-#endif
-
-#define		FLAG_SMP_PARAM_SAVE_UNANTHEN			0x9A  // 1001 1010  new storage Unauthenticated_LTK
-#define		FLAG_SMP_PARAM_SAVE_AUTHEN				0xAA  // 1010 1010  new storage Authenticated_LTK_Legacy_Paring
-#define		FLAG_SMP_PARAM_SAVE_AUTHEN_SC			0xBA  // 1011 1010  new storage Authenticated_LTK_Secure_Connection
-
-#define		FLAG_SMP_PARAM_SAVE_PENDING				0xBF  // 1011 1111
-#define		FLAG_SMP_PARAM_SAVE_ERASE				0x00
-
-#if (SIMPLE_MULTI_MAC_EN)
-#define 	FLAG_SMP_PARAM_MASK						0xC8
-#define     FLAG_SMP_PARAM_VALID					0x88
-#else
-#define 	FLAG_SMP_PARAM_MASK						0x0F  // 0000 1111
-#define     FLAG_SMP_PARAM_VALID					0x0A  // 0000 1010
-#endif
-
-#define 	FLAG_SMP_PAIRING_STATUS_MASK				0x30  // 0011 1000
-
-#define		FLAG_SMP_SECTOR_USE						0x3C
-#define		FLAG_SMP_SECTOR_CLEAR					0x00
-#define     FLASH_SECTOR_OFFSET						4080  //0xFF0
 
 
 
@@ -94,26 +73,6 @@ typedef struct {  //82
 	u8		peer_csrk[16];
 
 }smp_param_save_t;
-
-
-typedef struct {
-	u8 paring_status;  		//if multiConnection, define as paring_status[connMaxNum]
-	u8 addrIndex;
-	u8 keyIndex;
-	u8 cur_bondNum;
-
-#if (SMP_DATABASE_INFO_SOURCE == SMP_INFO_STORAGE_IN_FLASH)
-	u32 bond_flash_idx[SMP_BONDING_DEVICE_MAX_NUM];  //mark paired slave mac address in flash
-	u8	bond_flag[SMP_BONDING_DEVICE_MAX_NUM];
-	u32 index_update_method;
-#else
-	//may be sram address if use other mcu store smp info
-#endif
-
-} bond_device_t;
-
-extern _attribute_aligned_(4) 	bond_device_t	 tbl_bondDevice;
-
 
 
 /**

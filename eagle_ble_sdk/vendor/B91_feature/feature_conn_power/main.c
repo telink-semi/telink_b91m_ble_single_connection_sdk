@@ -1,7 +1,7 @@
 /********************************************************************************************************
- * @file	ll_init.h
+ * @file	main.c
  *
- * @brief	for TLSR chips
+ * @brief	This is the source file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,62 +43,102 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#ifndef LL_INIT_H_
-#define LL_INIT_H_
+#include "tl_common.h"
+#include "app_config.h"
+#include "gpio_default.h"
+#include "drivers.h"
+#include "stack/ble/ble.h"
+#include "app.h"
+
+#if (FEATURE_TEST_MODE == TEST_POWER_CONN)
+
+/**
+ * @brief		BLE SDK RF interrupt handler.
+ * @param[in]	none
+ * @return      none
+ */
+_attribute_ram_code_
+void rf_irq_handler(void)
+{
+	DBG_CHN14_HIGH;
+
+	irq_blt_sdk_handler ();
+
+	DBG_CHN14_LOW;
+}
+
 
 
 /**
- * @brief      for user to initialize initiating module
- * 			   notice that only one module can be selected between legacy initiating module and extended initiating module
- * @param	   none
- * @return     none
+ * @brief		BLE SDK System timer interrupt handler.
+ * @param[in]	none
+ * @return      none
  */
-void	 	blc_ll_initInitiating_module(void);
+_attribute_ram_code_
+void stimer_irq_handler(void)
+{
+	DBG_CHN15_HIGH;
 
+	irq_blt_sdk_handler ();
 
-
-
-/**
- * @brief      This function is used to create an ACL connection to a connectable advertiser.
- * @param[in]  scan_interval
- * @param[in]  scan_window
- * @param[in]  initiator_filter_policy
- * @param[in]  adr_type
- * @param[in]  *mac
- * @param[in]  own_adr_type
- * @param[in]  conn_min
- * @param[in]  conn_max
- * @param[in]  conn_latency
- * @param[in]  timeout
- * @param[in]  ce_min
- * @param[in]  ce_max
- * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
- */
-ble_sts_t 	blc_ll_createConnection ( 	u16 scan_interval, u16 scan_window, init_fp_t initiator_filter_policy,
-										u8 adr_type, 	   u8 *mac, 		u8 own_adr_type,
-										u16 conn_min, 	   u16 conn_max, 	u16 conn_latency, 					u16 timeout,
-										u16 ce_min, 	   u16 ce_max );
-
-
-/**
- * @brief      This function is is used to cancel the HCI_LE_Create_Connection or HCI_LE_Extended_Create_Connection commands.
- * @param	   none
- * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
- */
-ble_sts_t 	blc_ll_createConnectionCancel (void);
+	DBG_CHN15_LOW;
+}
 
 
 
 
 
 /**
- * @brief      This function is is used to create the timeout for current connection.
- * @param	   timeout_ms - The length of time, the unit is ms
- * @return     Status - 0x00: succeeded;
- * 						0x01-0xFF: failed
+ * @brief		This is main function
+ * @param[in]	none
+ * @return      none
  */
-ble_sts_t   blc_ll_setCreateConnectionTimeout (u32 timeout_ms);
+_attribute_ram_code_ int main (void)   //must on ramcode
+{
+	DBG_CHN0_LOW;
+	blc_pm_select_internal_32k_crystal();
+
+	sys_init(DCDC_1P4_DCDC_1P8,VBAT_V_GREATER_THAN_3V6);
+
+	/* detect if MCU is wake_up from deep retention mode */
+	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
+
+#if (CLOCK_SYS_CLOCK_HZ == 16000000)
+	CCLK_16M_HCLK_16M_PCLK_16M;
+#elif (CLOCK_SYS_CLOCK_HZ == 24000000)
+	CCLK_24M_HCLK_24M_PCLK_24M;
+#elif (CLOCK_SYS_CLOCK_HZ == 32000000)
+	CCLK_32M_HCLK_32M_PCLK_16M;
+#elif (CLOCK_SYS_CLOCK_HZ == 48000000)
+	CCLK_48M_HCLK_48M_PCLK_24M;
+#elif (CLOCK_SYS_CLOCK_HZ == 64000000)
+	CCLK_64M_HCLK_32M_PCLK_16M;
+#endif
+
+	rf_drv_ble_init();
+
+	gpio_init(!deepRetWakeUp);
+
+	if(!deepRetWakeUp){//read flash size
+		blc_readFlashSize_autoConfigCustomFlashSector();
+	}
+
+	blc_app_loadCustomizedParameters();  //load customized freq_offset cap value
+
+	if( deepRetWakeUp ){ //MCU wake_up from deepSleep retention mode
+		user_init_deepRetn ();
+	}
+	else{ //MCU power_on or wake_up from deepSleep mode
+		user_init_normal();
+	}
+
+	irq_enable();
+
+	while (1) {
+		main_loop ();
+	}
+	return 0;
+}
 
 
-
-#endif /* LL_INIT_H_ */
+#endif  //end of (FEATURE_TEST_MODE == ...)

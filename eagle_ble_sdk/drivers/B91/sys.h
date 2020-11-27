@@ -150,14 +150,14 @@ typedef enum{
 
 /**
  * @brief 	The maximum voltage that the chip can withstand is 3.6V.
- * 			When the vbat power supply voltage is lower than 3.6V, it is configured as VBAT_V_LESS_THAN_3V6 mode,
+ * 			When the vbat power supply voltage is lower than 3.6V, it is configured as VBAT_MAX_VALUE_LESS_THAN_3V6 mode,
  * 			bypass is turned on, and the vbat voltage directly supplies power to the chip.
- * 			When the vbat power supply voltage may be higher than 3.6V, it is configured as VBAT_V_GREATER_THAN_3V6 mode,
+ * 			When the vbat power supply voltage may be higher than 3.6V, it is configured as VBAT_MAX_VALUE_GREATER_THAN_3V6 mode,
  * 			the bypass is closed, and the vbat voltage passes through an LDO to supply power to the chip.
  */
 typedef enum{
-	VBAT_V_GREATER_THAN_3V6	= 0x00,	/*VBAT may be greater than 3.6V. */
-	VBAT_V_LESS_THAN_3V6	= BIT(3),	/*VBAT must be below 3.6V. */
+	VBAT_MAX_VALUE_GREATER_THAN_3V6	= 0x00,	/*VBAT may be greater than 3.6V. */
+	VBAT_MAX_VALUE_LESS_THAN_3V6	= BIT(3),	/*VBAT must be below 3.6V. */
 }vbat_type_e;
 
 /**

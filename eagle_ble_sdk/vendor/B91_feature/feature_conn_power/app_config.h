@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_config.h
  *
- * @brief	This is the source file for BLE SDK
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -47,57 +47,29 @@
 
 #include "../feature_config.h"
 
-#if (FEATURE_TEST_MODE == TEST_ADVERTISING_ONLY || FEATURE_TEST_MODE == TEST_SCANNING_ONLY || FEATURE_TEST_MODE == TEST_ADVERTISING_IN_CONN_SLAVE_ROLE || \
-	FEATURE_TEST_MODE == TEST_SCANNING_IN_ADV_AND_CONN_SLAVE_ROLE || FEATURE_TEST_MODE == TEST_ADVERTISING_SCANNING_IN_CONN_SLAVE_ROLE)
+#if (FEATURE_TEST_MODE == TEST_POWER_CONN)
 
 /////////////////// FEATURE SELECT /////////////////////////////////
 /**
  *  @brief  Feature select in bLE Sample project
  */
-#define BLE_APP_PM_ENABLE					0
-#define PM_DEEPSLEEP_RETENTION_ENABLE		1
+#define BLE_APP_PM_ENABLE										1
+#define PM_DEEPSLEEP_RETENTION_ENABLE							1
 
 #define APP_DEFAULT_HID_BATTERY_OTA_ATTRIBUTE_TABLE				1
 
+#define JTAG_DEBUG_DISABLE										1
 
 
-/**
- *  @brief  UI Configuration
- */
-#define UI_LED_ENABLE          	 			1
+#if (JTAG_DEBUG_DISABLE)	//2-wire jtag mode
 
+#define PE6_FUNC			AS_GPIO
+#define PE7_FUNC			AS_GPIO
 
+#define PE6_INPUT_ENABLE	0
+#define PE7_INPUT_ENABLE	0
 
-/**
- *  @brief  DEBUG  Configuration
- */
-#define APP_DUMP_EN							0
-
-
-
-#if (UI_LED_ENABLE)
-	/**
-	 *  @brief  Definition gpio for led
-	 */
-	#define	GPIO_LED_WHITE			GPIO_PB6
-	#define	GPIO_LED_GREEN			GPIO_PB5
-	#define	GPIO_LED_BLUE			GPIO_PB4
-	#define GPIO_LED_RED			GPIO_PB7
-	#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
-
-	#define PB7_FUNC				AS_GPIO
-	#define PB6_FUNC				AS_GPIO
-	#define PB5_FUNC				AS_GPIO
-	#define PB4_FUNC				AS_GPIO
-
-	#define	PB7_OUTPUT_ENABLE		1
-	#define	PB6_OUTPUT_ENABLE		1
-	#define PB5_OUTPUT_ENABLE		1
-	#define	PB4_OUTPUT_ENABLE		1
 #endif
-
-
-
 
 
 /////////////////// Clock  /////////////////////////////////
@@ -116,24 +88,6 @@ enum{
 };
 
 
-#ifndef UART_PRINT_DEBUG_ENABLE
-#define UART_PRINT_DEBUG_ENABLE  			1
-#endif
-/////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
-#if (UART_PRINT_DEBUG_ENABLE)
-	#define PRINT_BAUD_RATE             					115200
-	#define DEBUG_INFO_TX_PIN           					GPIO_PA0
-	#define PULL_WAKEUP_SRC_PA0         					PM_PIN_PULLUP_10K
-	#define PA0_OUTPUT_ENABLE         					1
-	#define PA0_DATA_OUT                                      1 //must
-#endif
-
-#if (APP_DUMP_EN)
-	#define PA5_FUNC						AS_USB_DM
-	#define PA6_FUNC						AS_USB_DP
-	#define PA5_INPUT_ENABLE				1
-	#define PA6_INPUT_ENABLE				1
-#endif
 
 /**
  *  @brief  Definition for gpio debug

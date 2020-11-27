@@ -1,36 +1,36 @@
 /********************************************************************************************************
- * @file	ll_conn_csa.h
+ * @file	app.h
  *
- * @brief	for TLSR chips
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
- *          
+ *
  *          Redistribution and use in source and binary forms, with or without
  *          modification, are permitted provided that the following conditions are met:
- *          
+ *
  *              1. Redistributions of source code must retain the above copyright
  *              notice, this list of conditions and the following disclaimer.
- *          
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions 
- *              in binary form must reproduce the above copyright notice, this list of 
+ *
+ *              2. Unless for usage inside a TELINK integrated circuit, redistributions
+ *              in binary form must reproduce the above copyright notice, this list of
  *              conditions and the following disclaimer in the documentation and/or other
  *              materials provided with the distribution.
- *          
- *              3. Neither the name of TELINK, nor the names of its contributors may be 
- *              used to endorse or promote products derived from this software without 
+ *
+ *              3. Neither the name of TELINK, nor the names of its contributors may be
+ *              used to endorse or promote products derived from this software without
  *              specific prior written permission.
- *          
+ *
  *              4. This software, with or without modification, must only be used with a
  *              TELINK integrated circuit. All other usages are subject to written permission
  *              from TELINK and different commercial license may apply.
  *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or 
+ *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
  *              relating to such deletion(s), modification(s) or alteration(s).
- *         
+ *
  *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -41,25 +41,59 @@
  *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *         
+ *
  *******************************************************************************************************/
-#ifndef LL_CONN_CSA_H_
-#define LL_CONN_CSA_H_
+#ifndef VENDOR_APP_H_
+#define VENDOR_APP_H_
 
-
+#if (FEATURE_TEST_MODE == TEST_POWER_CONN)
 
 
 /**
- * @brief      this function is used to initialize channel selection algorithm #2 feature
- * @param	   none
+ * @brief		user initialization when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
+void user_init_normal(void);
+
+
+/**
+ * @brief		user initialization when MCU wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
+void user_init_deepRetn();
+
+
+/**
+ * @brief     BLE main loop
+ * @param[in]  none.
+ * @return     none.
+ */
+void main_loop (void);
+
+
+
+
+#if (UI_KEYBOARD_ENABLE)
+
+
+extern int 	key_not_released;
+
+
+/**
+ * @brief      this function is used to detect if key pressed or released.
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
  * @return     none
  */
-void blc_ll_initChannelSelectionAlgorithm_2_feature(void);
+void proc_keyboard (u8 e, u8 *p, int n);
 
 
 
+#endif
 
 
-
-
-#endif /* LL_CONN_CSA_H_ */
+#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif /* VENDOR_APP_H_ */

@@ -50,17 +50,9 @@
 
 /////////////////// TEST FEATURE SELECTION /////////////////////////////////
 
-//ble link layer test
-#define	TEST_ADVERTISING_ONLY							1
-#define TEST_SCANNING_ONLY								2
-#define TEST_ADVERTISING_IN_CONN_SLAVE_ROLE				3
-#define TEST_SCANNING_IN_ADV_AND_CONN_SLAVE_ROLE        4
-#define TEST_ADVERTISING_SCANNING_IN_CONN_SLAVE_ROLE	5
-
-
 //power test
 #define TEST_POWER_ADV									10
-
+#define TEST_POWER_CONN									11
 
 
 //smp test
@@ -97,7 +89,7 @@
 #define TEST_FEATURE_BACKUP								200
 
 
-#define FEATURE_TEST_MODE								TEST_AUDIO
+#define FEATURE_TEST_MODE								TEST_POWER_CONN
 
 
 
