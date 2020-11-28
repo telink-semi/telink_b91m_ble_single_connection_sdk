@@ -74,7 +74,7 @@
 #define TEST_EXTENDED_ADVERTISING						40		//  Extended ADV demo
 
 
-
+#define TEST_2M_CODED_PHY_EXT_ADV						50		//  2M/Coded PHY used on Extended ADV
 
 #define TEST_2M_CODED_PHY_CONNECTION					60		//  2M/Coded PHY used on Legacy_ADV/Extended_ADV and Connection
 

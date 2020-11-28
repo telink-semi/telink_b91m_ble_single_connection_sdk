@@ -416,7 +416,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	u32 my_adv_interval_min = ADV_INTERVAL_50MS;
 	u32 my_adv_interval_max = ADV_INTERVAL_50MS;
 
-#if 1 //Legacy, non_connectable_non_scannable
+#if 0 //Legacy, non_connectable_non_scannable
 
 	blc_ll_setExtAdvParam( ADV_HANDLE0, 		ADV_EVT_PROP_LEGACY_NON_CONNECTABLE_NON_SCANNABLE_UNDIRECTED,  my_adv_interval_min, 			my_adv_interval_max,
 						   BLT_ENABLE_ADV_ALL,	OWN_ADDRESS_PUBLIC, 										   BLE_ADDR_PUBLIC, 				NULL,
@@ -494,7 +494,7 @@ _attribute_no_inline_ void user_init_normal(void)
 		testAdvData[i]=i;
 	}
 
-	#if 1   //AdvData: 100 bytes, check that APP_MAX_LENGTH_ADV_DATA must bigger than 100
+	#if 0   //AdvData: 100 bytes, check that APP_MAX_LENGTH_ADV_DATA must bigger than 100
 		blc_ll_setExtAdvData( ADV_HANDLE0, DATA_OPER_COMPLETE, DATA_FRAGM_ALLOWED, 100, testAdvData);
 	#elif 0 //AdvData: 251 bytes, check that APP_MAX_LENGTH_ADV_DATA must bigger than 300
 		blc_ll_setExtAdvData( ADV_HANDLE0, DATA_OPER_COMPLETE, DATA_FRAGM_ALLOWED, 251, testAdvData);
@@ -579,7 +579,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_ll_setExtAdvEnable_1( BLC_ADV_ENABLE, 1, ADV_HANDLE0, 0 , 0);
 
 
-#elif 0 // Extended, Connectable, Undirected
+#elif 1 // Extended, Connectable, Undirected
 
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,

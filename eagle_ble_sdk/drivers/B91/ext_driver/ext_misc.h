@@ -169,7 +169,20 @@ extern unsigned int aes_data_buff[8];
 
 
 
+/******************************* clock_start ******************************************************************/
+typedef enum{
+	SYSCLK_16M    =    16,
+	SYSCLK_24M    =    24,
+	SYSCLK_32M    =    32,
+	SYSCLK_48M    =    48,
+	SYSCLK_64M    =    64,
+}sys_clk_fre_t;
 
+static inline unsigned char clock_get_system_clk()
+{
+	return sys_clk.cclk;
+}
+/******************************* clock_end ********************************************************************/
 
 
 

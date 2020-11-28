@@ -64,7 +64,7 @@
  * @return  	none.
  * @Note		Input data requires strict Word alignment
  */
-void 			blt_smp_alg_c1(u8 key[16], u8 r[16], u8 pres[7], u8 preq[7], u8 iat, u8 ia[6], u8 rat, u8 ra[6], u8 c1[16]);
+void 			blt_smp_alg_c1(unsigned char key[16], unsigned char r[16], unsigned char pres[7], unsigned char preq[7], unsigned char iat, unsigned char ia[6], unsigned char rat, unsigned char ra[6], unsigned char c1[16]);
 
 /**
  * @brief   	this function is used to generate the STK during the LE legacy pairing process.
@@ -75,7 +75,7 @@ void 			blt_smp_alg_c1(u8 key[16], u8 r[16], u8 pres[7], u8 preq[7], u8 iat, u8 
  * @return  	none.
  * @Note		Input data requires strict Word alignment
  */
-void			blt_smp_alg_s1(u8 key[16], u8 r1[16], u8 r2[16], u8 stk[16]);
+void			blt_smp_alg_s1(unsigned char key[16], unsigned char r1[16], unsigned char r2[16], unsigned char stk[16]);
 
 /**
  * @brief		This function is used to compute confirm value by function f4

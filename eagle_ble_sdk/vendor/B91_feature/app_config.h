@@ -71,7 +71,7 @@
 #elif (FEATURE_TEST_MODE == TEST_EXTENDED_ADVERTISING)
 	#include "feature_extend_adv/app_config.h"
 #elif (FEATURE_TEST_MODE == TEST_2M_CODED_PHY_EXT_ADV)
-//	#include "...../app_config.h"
+	#include "feature_phy_extend_adv/app_config.h"
 #elif (FEATURE_TEST_MODE == TEST_2M_CODED_PHY_CONNECTION)
 	#include "feature_phy_conn/app_config.h"
 #elif (FEATURE_TEST_MODE == TEST_CSA2)
