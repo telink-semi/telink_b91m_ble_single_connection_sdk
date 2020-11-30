@@ -78,7 +78,6 @@ void main_loop (void);
 #if (UI_KEYBOARD_ENABLE)
 
 
-extern u32	scan_pin_need;
 extern int 	key_not_released;
 
 

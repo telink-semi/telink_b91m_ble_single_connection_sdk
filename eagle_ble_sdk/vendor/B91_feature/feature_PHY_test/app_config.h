@@ -51,29 +51,51 @@
 
 /////////////////// FEATURE SELECT /////////////////////////////////
 /**
- *  @brief  UI Configuration
+ *  @brief  Feature select in bLE Sample project
  */
-#define UI_LED_ENABLE          	 			1
+#define BLE_APP_PM_ENABLE										1
+#define PM_DEEPSLEEP_RETENTION_ENABLE							1
+#define APP_DEFAULT_HID_BATTERY_OTA_ATTRIBUTE_TABLE				1
 
 
-#define CHIP_VER_A0		1
-#define CHIP_VER_A1		2
+///////////////////PHYTEST CONFIGURATION////////////////////////////
+/**
+ *  @brief  Choose phytest mode
+ */
+#define 		PHYTEST_MODE_THROUGH_2_WIRE_UART		1   //Direct Test Mode through a 2-wire UART interface
+#define 		PHYTEST_MODE_OVER_HCI_WITH_UART			2   //Direct Test Mode over HCI(UART hardware interface)
 
-#define CHIP_VER	CHIP_VER_A1
+#define BLE_PHYTEST_MODE		PHYTEST_MODE_OVER_HCI_WITH_UART
 
+/**
+ *  @brief phytest uart setting.
+ *  UART_TX_PIN can choose :
+ *  UART0_TX_PA3, UART0_TX_PB2, UART0_TX_PD2, UART1_TX_PC6, UART1_TX_PD6, UART1_TX_PE0
+ *
+ *  UART_RX_PIN can choose :
+ *	UART0_RX_PA4, UART0_RX_PB3, UART0_RX_PD3, UART1_RX_PC7, UART1_RX_PD7, UART1_RX_PE2
+ *
+ *	BANDRATE:
+ *	Recommend setting to 115200
+ */
+#define UART_TX_PIN			UART0_TX_PB2
+#define UART_RX_PIN			UART0_RX_PB3
+#define BANDRATE			115200
 
-
-
-
-
-#define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
+/**
+ *  @brief phytest buffer related setting.
+ */
+#define UART_TX_BUFFER_NUM		8
+#define UART_TX_BUFFER_SIZE		80
+#define UART_RX_BUFFER_NUM		4
+#define UART_RX_BUFFER_SIZE		80
 
 
 /////////////////// Clock  /////////////////////////////////
 /**
  *  @brief  MCU system clock
  */
-#define CLOCK_SYS_CLOCK_HZ  	24000000
+#define CLOCK_SYS_CLOCK_HZ  	48000000
 
 /**
  *  @brief  Definition the number of system tick for 1s/1ms/1us
@@ -84,6 +106,63 @@ enum{
 	CLOCK_SYS_CLOCK_1US = (CLOCK_SYS_CLOCK_1S / 1000000),
 };
 
+
+ ///////////////////DEBUG SETTING /////////////////////////
+/**
+ *  @brief  keyboard enable
+ */
+#define	UI_KEYBOARD_ENABLE					1
+
+#if (UI_KEYBOARD_ENABLE)   // if test pure power, kyeScan GPIO setting all disabled
+		//---------------  KeyMatrix PB2/PB3/PB4/PB5 -----------------------------
+		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
+		#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
+
+		#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+
+		#define			CR_VOL_UP				0xf0  ////
+		#define			CR_VOL_DN				0xf1
+
+		/**
+		 *  @brief  Normal keyboard map
+		 */
+		#define		KB_MAP_NORMAL	{	{CR_VOL_DN,		VK_1},	 \
+										{CR_VOL_UP,		VK_2}, }
+
+		//////////////////// KEY CONFIG (EVK board) ///////////////////////////
+		#define  KB_DRIVE_PINS  {GPIO_PC2, GPIO_PC0}
+		#define  KB_SCAN_PINS   {GPIO_PC3, GPIO_PC1}
+
+		//drive pin as gpio
+		#define	PC2_FUNC				AS_GPIO
+		#define	PC0_FUNC				AS_GPIO
+
+		//drive pin need 100K pulldown
+		#define	PULL_WAKEUP_SRC_PC2		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PC0		MATRIX_ROW_PULL
+
+		//drive pin open input to read gpio wakeup level
+		#define PC2_INPUT_ENABLE		1
+		#define PC0_INPUT_ENABLE		1
+
+		//scan pin as gpio
+		#define	PC3_FUNC				AS_GPIO
+		#define	PC1_FUNC				AS_GPIO
+
+		//scan  pin need 10K pullup
+		#define	PULL_WAKEUP_SRC_PC3		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PC1		MATRIX_COL_PULL
+
+		//scan pin open input to read gpio level
+		#define PC3_INPUT_ENABLE		1
+		#define PC1_INPUT_ENABLE		1
+#endif
+
+
+/**
+*  @brief  LED enable
+*/
+#define UI_LED_ENABLE          	 			1
 
 #if (UI_LED_ENABLE)
 	/**
@@ -107,13 +186,10 @@ enum{
 #endif
 
 
-/////////////////// DEBUG Related  /////////////////////////////////
-
-
-/**
- *  @brief  Definition for gpio debug
+ /**
+ *  @brief  GPIO debug enable
  */
-#define DEBUG_GPIO_ENABLE							1
+#define DEBUG_GPIO_ENABLE							0
 
 #if(DEBUG_GPIO_ENABLE)
 
@@ -124,13 +200,13 @@ enum{
     #define GPIO_CHN3							GPIO_PA4
 	#define GPIO_CHN4							GPIO_PA3
 	#define GPIO_CHN5							GPIO_PB0
-	#define GPIO_CHN6							//GPIO_PB2
+	#define GPIO_CHN6							GPIO_PB2
 	#define GPIO_CHN7							GPIO_PE0
 
 	#define GPIO_CHN8							GPIO_PA2
 	#define GPIO_CHN9							GPIO_PA1
 	#define GPIO_CHN10							GPIO_PB1
-	#define GPIO_CHN11							//GPIO_PB3
+	#define GPIO_CHN11							GPIO_PB3
 
 
 	#define GPIO_CHN12							GPIO_PC7
@@ -145,13 +221,13 @@ enum{
 	#define PA4_OUTPUT_ENABLE					1
 	#define PA3_OUTPUT_ENABLE					1
 	#define PB0_OUTPUT_ENABLE					1
-//	#define PB2_OUTPUT_ENABLE					1
+	#define PB2_OUTPUT_ENABLE					1
 	#define PE0_OUTPUT_ENABLE					1
 
 	#define PA2_OUTPUT_ENABLE					1
 	#define PA1_OUTPUT_ENABLE					1
 	#define PB1_OUTPUT_ENABLE					1
-//	#define PB3_OUTPUT_ENABLE					1
+	#define PB3_OUTPUT_ENABLE					1
 	#define PC7_OUTPUT_ENABLE					1
 	#define PC6_OUTPUT_ENABLE					1
 	#define PC5_OUTPUT_ENABLE					1
@@ -176,9 +252,9 @@ enum{
 	#define DBG_CHN5_LOW		gpio_write(GPIO_CHN5, 0)
 	#define DBG_CHN5_HIGH		gpio_write(GPIO_CHN5, 1)
 	#define DBG_CHN5_TOGGLE		gpio_toggle(GPIO_CHN5)
-	#define DBG_CHN6_LOW		//gpio_write(GPIO_CHN6, 0)
-	#define DBG_CHN6_HIGH		//gpio_write(GPIO_CHN6, 1)
-	#define DBG_CHN6_TOGGLE		//gpio_toggle(GPIO_CHN6)
+	#define DBG_CHN6_LOW		gpio_write(GPIO_CHN6, 0)
+	#define DBG_CHN6_HIGH		gpio_write(GPIO_CHN6, 1)
+	#define DBG_CHN6_TOGGLE		gpio_toggle(GPIO_CHN6)
 	#define DBG_CHN7_LOW		gpio_write(GPIO_CHN7, 0)
 	#define DBG_CHN7_HIGH		gpio_write(GPIO_CHN7, 1)
 	#define DBG_CHN7_TOGGLE		gpio_toggle(GPIO_CHN7)
@@ -191,9 +267,9 @@ enum{
 	#define DBG_CHN10_LOW		gpio_write(GPIO_CHN10, 0)
 	#define DBG_CHN10_HIGH		gpio_write(GPIO_CHN10, 1)
 	#define DBG_CHN10_TOGGLE	gpio_toggle(GPIO_CHN10)
-	#define DBG_CHN11_LOW		//gpio_write(GPIO_CHN11, 0)
-	#define DBG_CHN11_HIGH		//gpio_write(GPIO_CHN11, 1)
-	#define DBG_CHN11_TOGGLE	//gpio_toggle(GPIO_CHN11)
+	#define DBG_CHN11_LOW		gpio_write(GPIO_CHN11, 0)
+	#define DBG_CHN11_HIGH		gpio_write(GPIO_CHN11, 1)
+	#define DBG_CHN11_TOGGLE	gpio_toggle(GPIO_CHN11)
 	#define DBG_CHN12_LOW		gpio_write(GPIO_CHN12, 0)
 	#define DBG_CHN12_HIGH		gpio_write(GPIO_CHN12, 1)
 	#define DBG_CHN12_TOGGLE	gpio_toggle(GPIO_CHN12)
@@ -258,6 +334,8 @@ enum{
 #endif  //end of DEBUG_GPIO_ENABLE
 
 
+
 #include "vendor/common/default_config.h"
+
 
 #endif  //end of (FEATURE_TEST_MODE == ...)

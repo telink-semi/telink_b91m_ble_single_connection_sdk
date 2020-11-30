@@ -50,6 +50,9 @@
 
 #if (FEATURE_TEST_MODE == TEST_BLE_PHY)
 
+extern hci_fifo_t bltHci_rxfifo;
+extern hci_fifo_t bltHci_txfifo;
+
 /**
  * @brief		BLE SDK RF interrupt handler.
  * @param[in]	none
@@ -84,7 +87,51 @@ void stimer_irq_handler(void)
 
 
 
+/**
+ * @brief      UART0 irq function
+ * @param[in]  none
+ * @return     none
+ */
+_attribute_ram_code_
+void uart0_irq_handler(void)
+{
+	u32 rev_data_len = 0;
+	if(uart_get_irq_status(UART0,UART_TXDONE))
+	{
+		gpio_toggle(GPIO_LED_GREEN);
+	    uart_clr_tx_done(UART0);
+	}
 
+    if(uart_get_irq_status(UART0,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can noly used in A1-SOC.
+    {
+    	gpio_toggle(GPIO_LED_WHITE);
+    	/************************get the length of receive data****************************/
+    	if(((reg_uart_status1(UART0)&FLD_UART_RBCNT)%4)==0)
+    	{
+			rev_data_len=4*(0xffffff-reg_dma_size(DMA2));
+    	}
+    	else
+    	{
+    		rev_data_len=4*(0xffffff-reg_dma_size(DMA2)-1)+(reg_uart_status1(UART0)&FLD_UART_RBCNT)%4;
+    	}
+    	/************************cll rx_irq****************************/
+    	uart_clr_irq_status(UART0,UART_CLR_RX);
+		if(rev_data_len!=0)
+		{
+			u8* p = hci_fifo_wptr(&bltHci_rxfifo);
+			p[0] = rev_data_len;
+			hci_fifo_next(&bltHci_rxfifo);
+			p = hci_fifo_wptr(&bltHci_rxfifo);
+			uart_receive_dma(UART0, (unsigned char*)(p+4),bltHci_rxfifo.size);
+		}
+
+    	if((uart_get_irq_status(UART0,UART_RX_ERR)))
+    	{
+    		uart_clr_irq_status(UART0,UART_CLR_RX);
+    	}
+    }
+
+}
 
 /**
  * @brief		This is main function
@@ -93,11 +140,13 @@ void stimer_irq_handler(void)
  */
 _attribute_ram_code_ int main (void)   //must on ramcode
 {
-	DBG_CHN1_TOGGLE;
+	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
 
-	sys_init(LDO_1P4_LDO_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
+	sys_init(DCDC_1P4_DCDC_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
 
+	/* detect if MCU is wake_up from deep retention mode */
+	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
 
 #if (CLOCK_SYS_CLOCK_HZ == 16000000)
 	CCLK_16M_HCLK_16M_PCLK_16M;
@@ -113,12 +162,20 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 
 	rf_drv_ble_init();
 
-	gpio_init(1);
+	gpio_init(!deepRetWakeUp);
 
-	/* load customized freq_offset cap value. */
-	blc_app_loadCustomizedParameters();  //note: to be tested
+	if(!deepRetWakeUp){//read flash size
+		blc_readFlashSize_autoConfigCustomFlashSector();
+	}
 
-	user_init_normal();
+	blc_app_loadCustomizedParameters();  //load customized freq_offset cap value
+
+	if( deepRetWakeUp ){ //MCU wake_up from deepSleep retention mode
+		user_init_deepRetn ();
+	}
+	else{ //MCU power_on or wake_up from deepSleep mode
+		user_init_normal();
+	}
 
 	irq_enable();
 

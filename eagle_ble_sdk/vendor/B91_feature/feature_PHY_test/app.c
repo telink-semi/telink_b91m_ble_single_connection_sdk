@@ -47,7 +47,6 @@
 #include "drivers.h"
 #include "stack/ble/ble.h"
 
-#include "common/config/user_config.h"
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
@@ -57,21 +56,127 @@
 
 #if (FEATURE_TEST_MODE == TEST_BLE_PHY)
 
+
+#define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
+
+/**
+ * @brief	Adv Packet data
+ */
+const u8	tbl_advData[] = {
+	 0x05, 0x09, 'f', 't', 'r', 'e',
+	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
+	 0x03, 0x19, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
+	 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
+};
+
+/**
+ * @brief	Scan Response Packet data
+ */
+const u8	tbl_scanRsp [] = {
+		 0x08, 0x09, 'f', 'e', 'a', 't', 'u', 'r', 'e',
+	};
+
+volatile u8	phyTest_rxfifo[UART_RX_BUFFER_SIZE * UART_RX_BUFFER_NUM];
+volatile u8	phyTest_txfifo[UART_TX_BUFFER_SIZE * UART_TX_BUFFER_NUM];
+
+extern hci_fifo_t				bltHci_rxfifo;
+extern hci_fifo_t			    bltHci_txfifo;
+extern blc_main_loop_phyTest_callback_t	blc_main_loop_phyTest_cb;
+
 _attribute_data_retention_	int device_in_connection_state;
 
 _attribute_data_retention_	u32 advertise_begin_tick;
 
 _attribute_data_retention_	u32	interval_update_tick;
 
+_attribute_data_retention_	u8	phyTestStart = 0;
+
 _attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
 
 _attribute_data_retention_	u32	latest_user_event_tick;
 
-extern blc_main_loop_phyTest_callback_t	blc_main_loop_phyTest_cb;
-extern hci_fifo_t				bltHci_rxfifo;
-extern hci_fifo_t			    bltHci_txfifo;
 
-u32 rev_data_len;
+
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
+_attribute_ram_code_ void  ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
+{
+	if( blc_ll_getCurrentState() == BLS_LINK_STATE_CONN && ((u32)(bls_pm_getSystemWakeupTick() - clock_time())) > 80 * SYSTEM_TIMER_TICK_1MS){  //suspend time > 30ms.add gpio wakeup
+		bls_pm_setWakeupSource(PM_WAKEUP_PAD);  //gpio pad wakeup suspend/deepsleep
+	}
+}
+
+
+
+
+
+
+
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_CONNECT"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
+void	task_connect (u8 e, u8 *p, int n)
+{
+	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
+
+	latest_user_event_tick = clock_time();
+
+	device_in_connection_state = 1;//
+
+	interval_update_tick = clock_time() | 1; //none zero
+
+
+#if (UI_LED_ENABLE)
+	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //yellow light on
+#endif
+}
+
+
+
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_TERMINATE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
+void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
+{
+	device_in_connection_state = 0;
+
+
+	if(*p == HCI_ERR_CONN_TIMEOUT){
+
+	}
+	else if(*p == HCI_ERR_REMOTE_USER_TERM_CONN){  //0x13
+
+	}
+	else if(*p == HCI_ERR_CONN_TERM_MIC_FAILURE){
+
+	}
+	else{
+
+	}
+
+
+#if (UI_LED_ENABLE)
+	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //yellow light off
+#endif
+
+	advertise_begin_tick = clock_time();
+
+}
+
+
 
 /**
  * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_EXIT"
@@ -86,75 +191,201 @@ _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 }
 
 
+
 /**
- * @brief      UART0 irq function
- * @param[in]  none
+ * @brief      function to initialization parameter for phy test.
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
  * @return     none
  */
-_attribute_ram_code_sec_ void uart0_irq_handler(void)
-{
-    if(uart_get_irq_status(UART0,UART_TXDONE))
-	{
-		gpio_toggle(GPIO_LED_GREEN);
-	    uart_clr_tx_done(UART0);
-	}
-
-    if(uart_get_irq_status(UART0,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can noly used in A1-SOC.
-    {
-    	gpio_toggle(GPIO_LED_WHITE);
-    	/************************get the length of receive data****************************/
-    	if(((reg_uart_status1(UART0)&FLD_UART_RBCNT)%4)==0)
-    	{
-			rev_data_len=4*(0xffffff-reg_dma_size(DMA2));
-    	}
-    	else
-    	{
-    		rev_data_len=4*(0xffffff-reg_dma_size(DMA2)-1)+(reg_uart_status1(UART0)&FLD_UART_RBCNT)%4;
-    	}
-    	/************************cll rx_irq****************************/
-    	uart_clr_irq_status(UART0,UART_CLR_RX);
-		if(rev_data_len!=0)
-		{
-			u8* p = bltHci_rxfifo.p + (bltHci_rxfifo.wptr & (bltHci_rxfifo.num-1)) * bltHci_rxfifo.size;
-			p[0] = rev_data_len;
-			hci_fifo_next(&bltHci_rxfifo);
-			p = bltHci_rxfifo.p + (bltHci_rxfifo.wptr & (bltHci_rxfifo.num-1)) * bltHci_rxfifo.size;
-			uart_receive_dma(UART0, (unsigned char*)(p+4),bltHci_rxfifo.size);
-		}
-
-    	if((uart_get_irq_status(UART0,UART_RX_ERR)))
-    	{
-    		uart_clr_irq_status(UART0,UART_CLR_RX);
-    	}
-    }
-
-}
-
-void phy_test_uart_init(void)
+void phy_test_uart_init(uart_tx_pin_e tx_pin, uart_rx_pin_e rx_pin, unsigned int baudrate )
 {
 	unsigned short div;
 	unsigned char bwpc;
 
 	uart_reset(UART0);
-	uart_set_pin(UART0_TX_PB2,UART0_RX_PB3);
-	uart_cal_div_and_bwpc(115200, sys_clk.pclk*1000*1000, &div, &bwpc);
+	uart_set_pin(tx_pin,rx_pin);
+	uart_cal_div_and_bwpc(baudrate, sys_clk.pclk*1000*1000, &div, &bwpc);
 	uart_set_dma_rx_timeout(UART0, bwpc, 12, UART_BW_MUL1);
 	uart_init(UART0, div, bwpc, UART_PARITY_NONE, UART_STOP_BIT_ONE);
 
-	core_interrupt_enable();
 	uart_set_tx_dma_config(UART0, DMA3);
 	uart_set_rx_dma_config(UART0, DMA2);
 	uart_clr_tx_done(UART0);
 	dma_clr_irq_mask(DMA3,TC_MASK|ABT_MASK|ERR_MASK);
 	dma_clr_irq_mask(DMA2,TC_MASK|ABT_MASK|ERR_MASK);
 
-	uart_receive_dma(UART0, (unsigned char*)(bltHci_rxfifo.p + 4),bltHci_rxfifo.size);
+	uart_receive_dma(UART0, (unsigned char*)(phyTest_rxfifo + 4),UART_RX_BUFFER_SIZE);
 	uart_set_irq_mask(UART0, UART_RXDONE_MASK);
 	uart_set_irq_mask(UART0, UART_TXDONE_MASK);
 	plic_interrupt_enable(IRQ19_UART0);
 	reg_uart_status2(UART0) &= FLD_UART_TX_DONE;
+	core_interrupt_enable();
+}
+
+
+/**
+ * @brief      power management code for application
+ * @param	   none
+ * @return     none
+ */
+_attribute_ram_code_
+void blt_pm_proc(void)
+{
+
+#if(BLE_APP_PM_ENABLE)
+	#if (PM_DEEPSLEEP_RETENTION_ENABLE)
+		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
+	#else
+		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
+	#endif
+
+	if(blc_main_loop_phyTest_cb && phyTestStart)
+	{
+		bls_pm_setSuspendMask (SUSPEND_DISABLE);
+	}
+
+	//do not care about keyScan/button_detect power here, if you care about this, please refer to "8258_ble_remote" demo
+	#if (UI_KEYBOARD_ENABLE)
+		if(scan_pin_need || key_not_released)
+		{
+			bls_pm_setSuspendMask (SUSPEND_DISABLE);
+		}
+	#endif
+#endif  //end of BLE_APP_PM_ENABLE
+}
+
+
+
+
+#if (UI_KEYBOARD_ENABLE)
+
+
+
+_attribute_data_retention_	int 	key_not_released;
+
+extern u32	latest_user_event_tick;
+
+#define CONSUMER_KEY   	   		1
+#define KEYBOARD_KEY   	   		2
+_attribute_data_retention_	u8 		key_type;
+
+
+
+
+
+/**
+ * @brief		this function is used to process keyboard matrix status change.
+ * @param[in]	none
+ * @return      none
+ */
+void key_change_proc(void)
+{
+
+	latest_user_event_tick = clock_time();  //record latest key change time
+
+
+	u8 key0 = kb_event.keycode[0];
+	u8 key_buf[8] = {0,0,0,0,0,0,0,0};
+
+	key_not_released = 1;
+	if (kb_event.cnt == 2)   //two key press, do  not process
+	{
+
+	}
+	else if(kb_event.cnt == 1)
+	{
+		if(key0 >= CR_VOL_UP )  //volume up/down
+		{
+			key_type = CONSUMER_KEY;
+			u16 consumer_key;
+			if(key0 == CR_VOL_UP){  	//volume up
+				consumer_key = MKEY_VOL_UP;
+				gpio_write(GPIO_LED_WHITE,1);
+			}
+			else if(key0 == CR_VOL_DN){ //volume down
+				consumer_key = MKEY_VOL_DN;
+				gpio_write(GPIO_LED_GREEN,1);
+			}
+
+			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
+		}
+		else
+		{
+			key_type = KEYBOARD_KEY;
+			key_buf[2] = key0;
+			if(key0 == VK_1)
+			{
+				gpio_write(GPIO_LED_BLUE,1);
+			}
+			else if(key0 == VK_2)
+			{
+				gpio_write(GPIO_LED_BLUE,1);
+			}
+
+			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
+		}
+
+	}
+	else   //kb_event.cnt == 0,  key release
+	{
+		gpio_write(GPIO_LED_WHITE,0);
+		gpio_write(GPIO_LED_GREEN,0);
+		key_not_released = 0;
+		if(key_type == CONSUMER_KEY)
+		{
+			u16 consumer_key = 0;
+
+			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
+		}
+		else if(key_type == KEYBOARD_KEY)
+		{
+			gpio_write(GPIO_LED_BLUE,0);
+			gpio_write(GPIO_LED_BLUE,0);
+			key_buf[2] = 0;
+
+			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
+		}
+	}
+
 
 }
+
+
+
+_attribute_data_retention_		static u32 keyScanTick = 0;
+
+
+
+/**
+ * @brief      this function is used to detect if key pressed or released.
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
+_attribute_ram_code_
+void proc_keyboard (u8 e, u8 *p, int n)
+{
+	if(clock_time_exceed(keyScanTick, 8000)){
+		keyScanTick = clock_time();
+	}
+	else{
+		return;
+	}
+
+	kb_event.keycode[0] = 0;
+	int det_key = kb_scan_key (0, 1);
+
+	if (det_key){
+		key_change_proc();
+	}
+}
+
+#endif
+
+
 
 
 /**
@@ -162,11 +393,13 @@ void phy_test_uart_init(void)
  * @param[in]	none
  * @return      none
  */
-void user_init_normal(void)
+_attribute_no_inline_ void user_init_normal(void)
 {
 	/* random number generator must be initiated here( in the beginning of user_init_nromal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
+
+
 
 //////////////////////////// BLE stack Initialization  Begin //////////////////////////////////
 	/* for 1M   Flash, flash_sector_mac_address equals to 0xFF000
@@ -175,34 +408,157 @@ void user_init_normal(void)
 	u8  mac_random_static[6];
 	blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
+
 	//////////// Controller Initialization  Begin /////////////////////////
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);		//mandatory
+	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
+	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
+	blc_ll_setAclConnMaxOctetsNumber(ACL_CONN_MAX_RX_OCTETS, ACL_CONN_MAX_TX_OCTETS);
+
+	blc_ll_initAclConnTxFifo(app_acl_txfifo, ACL_TX_FIFO_SIZE, ACL_TX_FIFO_NUM);
+	blc_ll_initAclConnRxFifo(app_acl_rxfifo, ACL_RX_FIFO_SIZE, ACL_RX_FIFO_NUM);
+
+	u8 check_status = blc_controller_check_appBufferInitialization();
+	if(check_status != BLE_SUCCESS){
+		/* here user should set some log to know which application buffer incorrect */
+		write_log32(0x88880000 | check_status);
+		while(1);
+	}
 	//////////// Controller Initialization  End /////////////////////////
 
-	//////////// Phy Test Initialization  Begin /////////////////////////
 
-	blc_ll_initHciRxFifo((u8*)(&bltHci_rxfifo),72,2);
-	blc_ll_initHciTxFifo((u8*)(&bltHci_txfifo),72,8);
+	//////////// Host Initialization  Begin /////////////////////////
+	/* Host Initialization */
+	/* GAP initialization must be done before any other host feature initialization !!! */
+	blc_gap_peripheral_init();    //gap initialization
+	extern void my_att_init ();
+	my_att_init (); //gatt initialization
+
+	/* L2CAP Initialization */
+	blc_l2cap_register_handler (blc_l2cap_packet_receive);
+
+	/* SMP Initialization may involve flash write/erase(when one sector stores too much information,
+	 *   is about to exceed the sector threshold, this sector must be erased, and all useful information
+	 *   should re_stored) , so it must be done after battery check */
+	blc_smp_peripheral_init();
+
+	//////////// Host Initialization  End /////////////////////////
+
+
+	//////////// PhyTest Initialization  Begin /////////////////////////
+
 	blc_phy_initPhyTest_module();
 	blc_phy_setPhyTestEnable( BLC_PHYTEST_ENABLE );
+#if( BLE_PHYTEST_MODE == PHYTEST_MODE_THROUGH_2_WIRE_UART )
+	blc_register_hci_handler (blc_phyTest_2wire_rxUartCb, blc_phyTest_2wire_txUartCb);
+#elif( BLE_PHYTEST_MODE == PHYTEST_MODE_OVER_HCI_WITH_UART )
+	blc_register_hci_handler (blc_phyTest_hci_rxUartCb, blc_phyTest_2wire_txUartCb);
+#endif
+	blc_ll_initHciRxFifo((u8*)(phyTest_rxfifo),UART_RX_BUFFER_SIZE,UART_RX_BUFFER_NUM);
+	blc_ll_initHciTxFifo((u8*)(phyTest_txfifo),UART_TX_BUFFER_SIZE,UART_TX_BUFFER_NUM);
+	phy_test_uart_init(UART_TX_PIN, UART_RX_PIN, BANDRATE);
+
 
 //	blc_register_hci_handler (blc_phyTest_2wire_rxUartCb, blc_phyTest_2wire_txUartCb);
-	blc_register_hci_handler (blc_phyTest_2wire_rxUartCb, blc_phyTest_2wire_txUartCb);
-	phy_test_uart_init();
-	rf_set_power_level_index (MY_RF_POWER_INDEX);
-	//////////// Phy Test Initialization  End   /////////////////////////
+
+
+	//////////// PhyTest Initialization  End ///////////////////////////
 
 
 //////////////////////////// BLE stack Initialization  End //////////////////////////////////
 
 
-	///////////////////// Power Management initialization///////////////////
-	bls_pm_setSuspendMask (SUSPEND_DISABLE);
+	u8 status = bls_ll_setAdvParam(  ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
+									 ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC,
+									 0,  NULL,
+									 BLT_ENABLE_ADV_ALL,
+									 ADV_FP_NONE);
+	if(status != BLE_SUCCESS) { while(1); }  //debug: adv setting err
 
+
+
+	bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) );
+	bls_ll_setScanRspData( (u8 *)tbl_scanRsp, sizeof(tbl_scanRsp));
+
+
+
+	bls_ll_setAdvEnable(1);  //adv enable
+
+
+
+	//set rf power index, user must set it after every suspend wakeup, cause relative setting will be reset in suspend
+	user_set_rf_power(0, 0, 0);
+
+
+	bls_app_registerEventCallback (BLT_EV_FLAG_CONNECT, &task_connect);
+	bls_app_registerEventCallback (BLT_EV_FLAG_TERMINATE, &task_terminate);
+	bls_app_registerEventCallback (BLT_EV_FLAG_SUSPEND_EXIT, &user_set_rf_power);
+
+	///////////////////// Power Management initialization///////////////////
+#if(BLE_APP_PM_ENABLE)
+	blc_ll_initPowerManagement_module();
+
+	#if (PM_DEEPSLEEP_RETENTION_ENABLE)
+		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
+		blc_pm_setDeepsleepRetentionThreshold(95, 95);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(240);
+		//blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW64K); //default use 32k deep retention
+	#else
+		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
+	#endif
+
+	bls_app_registerEventCallback (BLT_EV_FLAG_SUSPEND_ENTER, &ble_remote_set_sleep_wakeup);
+#else
+	bls_pm_setSuspendMask (SUSPEND_DISABLE);
+#endif
+
+
+
+#if (UI_KEYBOARD_ENABLE)
+	/////////// keyboard gpio wakeup init ////////
+	u32 pin[] = KB_DRIVE_PINS;
+	for (int i=0; i<(sizeof (pin)/sizeof(*pin)); i++)
+	{
+		cpu_set_gpio_wakeup (pin[i], Level_High,1);  //drive pin pad high wakeup deepsleep
+	}
+
+	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboard);
+#endif
+
+	phyTestStart = 1;
 }
 
+
+
+/**
+ * @brief		user initialization when MCU wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
+_attribute_ram_code_ void user_init_deepRetn(void)
+{
+#if (PM_DEEPSLEEP_RETENTION_ENABLE)
+
+	blc_ll_initBasicMCU();   //mandatory
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
+	blc_ll_recoverDeepRetention();
+
+	DBG_CHN0_HIGH;    //debug
+	irq_enable();
+	#if (UI_KEYBOARD_ENABLE)
+		/////////// keyboard gpio wakeup init ////////
+		u32 pin[] = KB_DRIVE_PINS;
+		for (int i=0; i<(sizeof (pin)/sizeof(*pin)); i++)
+		{
+			cpu_set_gpio_wakeup (pin[i], Level_High,1);  //drive pin pad high wakeup deepsleep
+		}
+	#endif
+
+#endif
+}
 
 
 /////////////////////////////////////////////////////////////////////s
@@ -217,10 +573,20 @@ void user_init_normal(void)
  * @param[in]	none
  * @return      none
  */
-void main_loop (void)
+_attribute_no_inline_ void main_loop (void)
 {
 	////////////////////////////////////// BLE entry /////////////////////////////////
 	blt_sdk_main_loop();
+
+
+	////////////////////////////////////// UI entry /////////////////////////////////
+	proc_keyboard (0,0, 0);
+
+	////////////////////////////////////// PM Process /////////////////////////////////
+	blt_pm_proc();
+
+
+
 }
 
 
