@@ -89,7 +89,7 @@
 #define TEST_FEATURE_BACKUP								200
 
 
-#define FEATURE_TEST_MODE								TEST_FEATURE_BACKUP
+#define FEATURE_TEST_MODE								TEST_AUDIO
 
 
 

@@ -100,9 +100,9 @@ static const u16 my_appearance = GAP_APPEARE_UNKNOWN;
 static const u16 my_gattServiceUUID = SERVICE_UUID_GENERIC_ATTRIBUTE;
 
 #if((TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_HID_DONGLE_TO_STB) || (TL_AUDIO_MODE == TL_AUDIO_RCU_SBC_HID_DONGLE_TO_STB))
-static const gap_periConnectParams_t my_periConnParameters = {8, 11, 0, 1000};
+static const gap_periConnectParams_t my_periConnParameters = {8, 8, 99, 400};
 
-static const u8 my_PnPtrs [] = {0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00};
+static const u8 my_PnPtrs [] = {0x01, 0x5a, 0x1d, 0x80, 0xc0, 0x01, 0x00};
 
 #else
 
@@ -239,6 +239,69 @@ static const u8 reportMap[] =
 	0x81,0x00,     //main,  input data varible, absolute
 	0xc0,        //main, end collection
 
+#if (TL_AUDIO_MODE & TL_AUDIO_MASK_HID_SERVICE_CHANNEL)							//HID Service
+	//consumer report in
+	0x05, 0x0C,   // Usage Page (Consumer)
+	0x09, 0x01,   // Usage (Consumer Control)
+	0xA1, 0x01,   // Collection (Application)
+	0x85, HID_REPORT_ID_CONSUME_CONTROL_INPUT,   //     Report Id
+	0x75,0x10,     //global, report size 16 bits
+	0x95,0x0A,     //global, report count 1
+	0x15,0x01,     //global, min  0x01
+	0x26,0x8c,0x02,  //global, max  0x28c
+	0x19,0x01,     //local, min   0x01
+	0x2a,0x8c,0x02,  //local, max    0x28c
+	0x81,0x00,     //main,  input data varible, absolute
+	0xc0,        //main, end collection
+
+	//audio 3
+	0x05, 0x0c,
+	0x09, 0x01,
+	0xA1, 0x01,
+	0x85, HID_REPORT_ID_AUDIO_THIRD_INPUT,
+	0x95, 0x14,
+	0x75, 0x08,
+	0x15, 0x00,
+	0x26, 0xff, 0x00,
+	0x81, 0x00,
+	0xC0,
+	//audio 1
+	0x05, 0x0c,
+	0x09, 0x01,
+	0xA1, 0x01,
+	0x85, HID_REPORT_ID_AUDIO_FIRST_INPUT,
+	0x95, 0x14,
+	0x75, 0x08,
+	0x15, 0x00,
+	0x26, 0xff, 0x00,
+	0x81, 0x00,
+	0xC0,
+	//audio 2
+	0x05, 0x0c,
+	0x09, 0x01,
+	0xA1, 0x01,
+	0x85, HID_REPORT_ID_AUDIO_SECND_INPUT,
+	0x95, 0x14,
+	0x75, 0x08,
+	0x15, 0x00,
+	0x26, 0xff, 0x00,
+	0x81, 0x00,
+	0xC0,
+#else
+	//consumer report in
+	0x05, 0x0C,   // Usage Page (Consumer)
+	0x09, 0x01,   // Usage (Consumer Control)
+	0xA1, 0x01,   // Collection (Application)
+	0x85, HID_REPORT_ID_CONSUME_CONTROL_INPUT,   //     Report Id
+	0x75,0x10,     //global, report size 16 bits
+	0x95,0x01,     //global, report count 1
+	0x15,0x01,     //global, min  0x01
+	0x26,0x8c,0x02,  //global, max  0x28c
+	0x19,0x01,     //local, min   0x01
+	0x2a,0x8c,0x02,  //local, max    0x28c
+	0x81,0x00,     //main,  input data varible, absolute
+	0xc0,        //main, end collection
+#endif
 };
 
 // HID External Report Reference Descriptor for report map
@@ -312,10 +375,10 @@ static u8 sAudioGoogleCTLData[1] 	= {0};
 u16 gAudioGoogleCTLCCC = 0;
 u16 gAudioGoogleRXCCC = 0;
 
-static const u8 sAudioGoogleTXUUID[16] 		= AUDIO_GOOGL_TX_CHAR_UUID;
-static const u8 sAudioGoogleServiceUUID[16] = AUDIO_GOOGLE_SERVICE_UUID;
-static const u8 sAudioGoogleRXUUID[16] 		= AUDIO_GOOGL_RX_CHAR_UUID;
-static const u8 sAudioGoogleCTLUUID[16] 	= AUDIO_GOOGL_CTL_CHAR_UUID;
+static const u8 sAudioGoogleTXUUID[16] 		= WRAPPING_BRACES(AUDIO_GOOGL_TX_CHAR_UUID);
+static const u8 sAudioGoogleServiceUUID[16] = WRAPPING_BRACES(AUDIO_GOOGLE_SERVICE_UUID);
+static const u8 sAudioGoogleRXUUID[16] 		= WRAPPING_BRACES(AUDIO_GOOGL_RX_CHAR_UUID);
+static const u8 sAudioGoogleCTLUUID[16] 	= WRAPPING_BRACES(AUDIO_GOOGL_CTL_CHAR_UUID);
 
 static const u8 sAudioGoogleTXChar[20] = {
 	CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RSP | CHAR_PROP_NOTIFY,

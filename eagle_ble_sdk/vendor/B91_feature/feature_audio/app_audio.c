@@ -107,8 +107,8 @@ void audio_dmic_init()
  */
 void audio_amic_init(void)
 {
-	audio_init(AMIC_IN_TO_BUF_TO_LINE_OUT ,AUDIO_16K,MONO_BIT_16);
 	audio_set_codec_in_path_a_d_gain(CODEC_IN_D_GAIN_20_DB,CODEC_IN_A_GAIN_0_DB);//recommend setting dgain:20db,again 0db
+	audio_init(AMIC_IN_TO_BUF_TO_LINE_OUT ,AUDIO_16K,MONO_BIT_16);
 	audio_rx_dma_chain_init(DMA2,(u16*)buffer_mic,TL_MIC_BUFFER_SIZE);
 }
 #endif
@@ -246,153 +246,153 @@ void audio_mic_off()//
 		}
 	}
 #elif (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_GOOGLE) 				// GATT GOOGLE
-	#include "application/audio/gl_audio.h"
-	extern u8		buffer_mic_pkt_wptr;
-	extern u8		buffer_mic_pkt_rptr;
-	extern u16		app_audio_sync_serial;
-	extern u32		app_audio_timer;
+#include "application/audio/gl_audio.h"
+extern u8		buffer_mic_pkt_wptr;
+extern u8		buffer_mic_pkt_rptr;
+extern u16		app_audio_sync_serial;
+extern u32		app_audio_timer;
 
-	u8    audio_send_index = 0;
-	u32   audio_stick = 0;
-	_attribute_data_retention_	u8  audio_start = 0;
+_attribute_data_retention_	u8  audio_start = 0;
+extern u16		app_audio_sync_serial;
+extern u32		app_audio_timer;
 
-	extern u16		app_audio_sync_serial;
-	extern u32		app_audio_timer;
+_attribute_data_retention_ u8    audio_send_index = 0;
+_attribute_data_retention_ u32   audio_stick = 0;
 
-	/**
-	 * @brief      for open the audio and mtu size exchange
-	 * @param[in]  en   0:close the micphone  1:open the micphone
-	 * @return     none
-	 */
-	void ui_enable_mic (int en)
-	{
-		ui_mic_enable = en;
+/**
+ * @brief      for open the audio and mtu size exchange
+ * @param[in]  en   0:close the micphone  1:open the micphone
+ * @return     none
+ */
+void ui_enable_mic (int en)
+{
+	ui_mic_enable = en;
 
-		#if (BLT_APP_LED_ENABLE)
-			device_led_setup(led_cfg[en ? LED_AUDIO_ON : LED_AUDIO_OFF]);
+	#if (BLT_APP_LED_ENABLE)
+		device_led_setup(led_cfg[en ? LED_AUDIO_ON : LED_AUDIO_OFF]);
+	#endif
+	gpio_write(GPIO_LED_BLUE,en);
+	if(en){  //audio on
+		app_audio_sync_serial = 0;
+		bls_pm_setManualLatency(0);
+		bls_pm_setSuspendMask(SUSPEND_DISABLE);
+		app_audio_timer = clock_time() | 1;
+		audio_stick = clock_time() | 1;
+		extern u16	adpcm_serial_num;
+		adpcm_serial_num = 0;
+		audio_send_index = 0;
+		///////////////////// AUDIO initialization///////////////////
+		#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+			audio_dmic_init();
+		#else  //Amic config
+			audio_amic_init();
 		#endif
-		gpio_write(GPIO_LED_BLUE,en);
-		if(en){  //audio on
-			app_audio_sync_serial = 0;
-			bls_pm_setManualLatency(0);
-			bls_pm_setSuspendMask(SUSPEND_DISABLE);
-			app_audio_timer = clock_time() | 1;
-			extern u16	adpcm_serial_num;
-			adpcm_serial_num = 0;
-			audio_send_index = 0;
-			///////////////////// AUDIO initialization///////////////////
-			#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
-				audio_dmic_init();
-			#else  //Amic config
-				audio_amic_init();
-			#endif
-		}
-		else{  //audio off
-			audio_stick = 0;
-			app_audio_timer = 0;
-			audio_start = 0;
-			#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
-				audio_mic_off();
-			#else  //audio off
-				audio_mic_off();
-			#endif
-		}
-
-		#if (BATT_CHECK_ENABLE)
-			battery_set_detect_enable(!en);
+	}
+	else{  //audio off
+		audio_stick = 0;
+		app_audio_timer = 0;
+		audio_start = 0;
+		#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+			audio_mic_off();
+		#else  //audio off
+			audio_mic_off();
 		#endif
 	}
 
-	void voice_key_press(void)
-	{
-		if(!ui_mic_enable && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN){
+	#if (BATT_CHECK_ENABLE)
+		battery_set_detect_enable(!en);
+	#endif
+}
 
-			if(app_audio_key_start(1) == APP_AUDIO_ENABLE){
-				audio_stick = clock_time()|1;
-				ui_enable_mic(1);
-				google_handle_init(AUDIO_GOOGLE_CTL_DP_H,HID_CONSUME_REPORT_INPUT_DP_H);
-			}
+void voice_key_press(void)
+{
+	if(!ui_mic_enable && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN){
+
+		if(app_audio_key_start(1) == APP_AUDIO_ENABLE){
+			ui_enable_mic(1);
+			google_handle_init(AUDIO_GOOGLE_CTL_DP_H,HID_CONSUME_REPORT_INPUT_DP_H);
 		}
 	}
+}
 
-	void voice_key_release(void)
-	{
-		if(ui_mic_enable){
-			if(app_audio_key_start(0) == APP_AUDIO_DISABLE){
-				ui_enable_mic(0);
-			}
+void voice_key_release(void)
+{
+	if(ui_mic_enable){
+		if(app_audio_key_start(0) == APP_AUDIO_DISABLE){
+			ui_enable_mic(0);
 		}
 	}
+}
 
-	_attribute_ram_code_ void task_audio (void)
+_attribute_ram_code_ void task_audio (void)
+{
+	static u32 audioProcTick = 0;
+	if(clock_time_exceed(audioProcTick, 500)){
+		audioProcTick = clock_time();
+	}
+	else{
+		return;
+	}
+
+	///////////////////////////////////////////////////////////////
+	if(app_audio_timeout_proc()){
+		return;
+	}
+	proc_mic_encoder ();
+	u8 audio_send_length;
+	//////////////////////////////////////////////////////////////////
+	if (blc_ll_getTxFifoNumber() < 7)
 	{
-		static u32 audioProcTick = 0;
-		if(clock_time_exceed(audioProcTick, 500)){
-			audioProcTick = clock_time();
-		}
-		else{
-			return;
-		}
-
-		///////////////////////////////////////////////////////////////
-		if(app_audio_timeout_proc()){
-			return;
-		}
-		proc_mic_encoder ();
-		u8 audio_send_length;
-		//////////////////////////////////////////////////////////////////
-		if (blc_ll_getTxFifoNumber() < 7)
+		int *p = mic_encoder_data_buffer ();
+		if(p)
 		{
-			int *p = mic_encoder_data_buffer ();
-			if(p)
+			for(u8 i=0; i<7; i++)
 			{
-				for(u8 i=0; i<7; i++)
+				if(audio_send_index < 6)
 				{
-					if(audio_send_index < 6)
-					{
-						audio_send_length = 20;
+					audio_send_length = 20;
 
-					}
-					else if(audio_send_index == 6)
-					{
-						audio_send_length = 14;
-					}
-					else
-					{
-						audio_send_length = 0;
-					}
-					if(BLE_SUCCESS == bls_att_pushNotifyData(AUDIO_GOOGLE_RX_DP_H, (u8*)p+audio_send_index*20, audio_send_length))
-					{
-						audio_send_index++;
-					}
-					else
-					{
-						return ;
-					}
-					if(audio_send_index == 7)
-					{
-						audio_send_index = 0;
-						mic_encoder_data_read_ok();
-					}
 				}
-
+				else if(audio_send_index == 6)
+				{
+					audio_send_length = 14;
+				}
+				else
+				{
+					audio_send_length = 0;
+				}
+				if(BLE_SUCCESS == blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, AUDIO_GOOGLE_RX_DP_H, (u8*)p+audio_send_index*20, audio_send_length))
+				{
+					audio_send_index++;
+				}
+				else
+				{
+					return ;
+				}
+				if(audio_send_index == 7)
+				{
+					audio_send_index = 0;
+					mic_encoder_data_read_ok();
+				}
 			}
+
 		}
 	}
+}
 
-	void proc_audio(void){
+void proc_audio(void){
 
-		if(ui_mic_enable){
-			if(audio_start || (audio_stick && clock_time_exceed(audio_stick, 380*1000))){// for 8278
-				audio_start = 1;
-				task_audio();
-			}
+	if(ui_mic_enable){
+		if(audio_start || (audio_stick && clock_time_exceed(audio_stick, 380*1000))){// for 8278
+			audio_start = 1;
+			task_audio();
 		}
-		else{
-			audio_start = 0;
-		}
-
 	}
+	else{
+		audio_start = 0;
+	}
+
+}
 
 
 
@@ -460,7 +460,7 @@ void audio_mic_off()//
 			if(audio_start_status == 0){
 
 				u8 value[20]={0x99, 0x99, 0x99, 0x21, };// AC_SEARCH
-				if(bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
+				if(blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
 					audio_start_status = 2; //push notify fail
 				}
 				else{
@@ -475,7 +475,7 @@ void audio_mic_off()//
 	{
 		if(ui_mic_enable && (audio_end_status == 0)){
 			u8 value[20]={0x99, 0x99, 0x99, 0x24, };// AC_SEARCH
-			if (bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
+			if (blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
 				audio_end_status = 2;	//push notify fail
 			}
 			else{
@@ -489,13 +489,13 @@ void audio_mic_off()//
 	{
 		if (audio_start_status == 2){//press
 			u8 value[20]={0x99, 0x99, 0x99, 0x21, };// AC_SEARCH
-			if(!bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
+			if(!blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
 				audio_start_status = 2; //push notify success
 			}
 		}
 		if(audio_end_status == 2){//release
 			u8 value[20]={0x99, 0x99, 0x99, 0x24, };// AC_SEARCH
-			if (!bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
+			if (!blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
 				audio_end_status = 0;	//push notify success
 			}
 		}
@@ -550,7 +550,7 @@ void audio_mic_off()//
 				for(i=0;i<12;i++){
 					handle = HID_AUDIO_REPORT_INPUT_FIRST_DP_H + (audio_send_idx%3)*4;//+ (audio_send_idx%3)*4
 					buff = ((u8*)(p))+20*audio_send_idx;
-					if(BLE_SUCCESS == bls_att_pushNotifyData(handle, buff, 20)){
+					if(BLE_SUCCESS == blc_gatt_pushHandleValueNotify(BLS_CONN_HANDLE, handle, buff, 20)){
 						audio_send_idx++;
 					}
 					if(audio_send_idx == 6){
@@ -849,7 +849,7 @@ void audio_mic_off()//
 				if(audio_start_status == 0){
 
 					u8 value[20]={0x99, 0x99, 0x99, 0x31, };// AC_SEARCH
-					if(bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
+					if(blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
 						audio_start_status = 2; //push notify fail
 					}
 					else{
@@ -864,7 +864,7 @@ void audio_mic_off()//
 		{
 			if(ui_mic_enable && (audio_end_status == 0)){
 				u8 value[20]={0x99, 0x99, 0x99, 0x34, };// AC_SEARCH
-				if (bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
+				if (blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
 					audio_end_status = 2;	//push notify fail
 				}
 				else{
@@ -878,13 +878,13 @@ void audio_mic_off()//
 		{
 			if (audio_start_status == 2){//press
 				u8 value[20]={0x99, 0x99, 0x99, 0x31, };// AC_SEARCH
-				if(!bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
+				if(!blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
 					audio_start_status = 2; //push notify success
 				}
 			}
 			if(audio_end_status == 2){//release
 				u8 value[20]={0x99, 0x99, 0x99, 0x34, };// AC_SEARCH
-				if (!bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
+				if (!blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, value, 20)){
 					audio_end_status = 0;	//push notify success
 				}
 			}
@@ -923,7 +923,7 @@ void audio_mic_off()//
 					u8 handle;
 					for(i=0;i<3;i++){
 						handle = HID_AUDIO_REPORT_INPUT_FIRST_DP_H + (audio_send_idx%3)*4;//+ (audio_send_idx%3)*4
-						if(BLE_SUCCESS == bls_att_pushNotifyData(handle, (u8*)p, ADPCM_PACKET_LEN)){
+						if(BLE_SUCCESS == blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, handle, (u8*)p, ADPCM_PACKET_LEN)){
 							audio_send_idx++;
 							buffer_mic_pkt_rptr++;
 							if(audio_send_idx == 3){
