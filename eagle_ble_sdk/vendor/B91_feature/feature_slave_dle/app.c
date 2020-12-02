@@ -236,7 +236,13 @@ void blt_pm_proc(void)
 #endif  //end of BLE_APP_PM_ENABLE
 }
 
-
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_DATA_LENGTH_EXCHANGE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
 void	task_dle_exchange (u8 e, u8 *p, int n)
 {
 	//ll_data_extension_t* dle_param = (ll_data_extension_t*)p;
@@ -412,7 +418,7 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 
-	bls_ll_setAdvEnable(1);  //adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //adv enable
 
 
 
@@ -539,4 +545,4 @@ _attribute_no_inline_ void main_loop (void)
 
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif  //end of (FEATURE_TEST_MODE == TEST_SDATA_LENGTH_EXTENSION)

@@ -111,4 +111,9 @@ ble_sts_t 	bls_hci_mod_setEventMask_cmd(u32 evtMask);
 
 
 
+
+#define blc_ll_disconnect(conn, reason)     	bls_ll_terminateConnection(reason)
+
+
+
 #endif /* LL_SLAVE_H_ */

@@ -82,6 +82,8 @@
 	#include "feature_audio/app_config.h"
 #elif (FEATURE_TEST_MODE == TEST_IR)
 //	#include "...../app_config.h"
+#elif (FEATURE_TEST_MODE == TEST_OTA)
+	#include "feature_ota/app_config.h"
 #elif (FEATURE_TEST_MODE == TEST_FEATURE_BACKUP)
 	#include "feature_backup/app_config.h"
 #endif

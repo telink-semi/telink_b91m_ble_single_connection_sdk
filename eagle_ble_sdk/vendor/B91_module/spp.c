@@ -49,21 +49,27 @@
 
 #include "spp.h"
 
-
 extern int	module_uart_data_flg;
 extern u32 module_wakeup_module_tick;
-
 extern my_fifo_t spp_rx_fifo;
 extern my_fifo_t spp_tx_fifo;
 extern void app_suspend_exit ();
 extern void main_loop ();
-u8  pm_ctrl_flg;
-u8  pairing_end_status;
-///////////the code below is just for demonstration of the event callback only////////////
+extern unsigned char uart_dma_send_flag;
+
+uart_data_t T_txdata_buf;
 
 _attribute_data_retention_	u32 spp_cmd_restart_flag;
 
+///////////the code below is just for demonstration of the event callback only////////////
 
+/**
+ * @brief      callback function of LinkLayer Event
+ * @param[in]  e     - LinkLayer Event type
+ * @param[in]  param - data pointer of event
+ * @param[in]  n     - data length of event
+ * @return     none
+ */
 int controller_event_handler(u32 h, u8 *para, int n)
 {
 
@@ -157,84 +163,12 @@ int controller_event_handler(u32 h, u8 *para, int n)
 	return 0;
 }
 
-int app_host_event_callback (u32 h, u8 *para, int n)
-{
-	u8 event = h & 0xFF;
-
-	switch(event)
-	{
-		case GAP_EVT_SMP_PAIRING_BEAGIN:
-		{
-
-		}
-		break;
-
-		case GAP_EVT_SMP_PAIRING_SUCCESS:
-		{
-			gap_smp_paringSuccessEvt_t* p = (gap_smp_paringSuccessEvt_t*)para;
-
-			if(p->bonding_result){
-
-			}
-			else{
-
-			}
-		}
-		break;
-
-		case GAP_EVT_SMP_PAIRING_FAIL:
-		{
-			//gap_smp_paringFailEvt_t* p = (gap_smp_paringFailEvt_t*)para;
-		}
-		break;
-
-		case GAP_EVT_SMP_CONN_ENCRYPTION_DONE:
-		{
-			gap_smp_connEncDoneEvt_t* p = (gap_smp_connEncDoneEvt_t*)para;
-
-			if(p->re_connect == SMP_STANDARD_PAIR){  //first paring
-
-			}
-			else if(p->re_connect == SMP_FAST_CONNECT){  //auto connect
-
-			}
-		}
-		break;
-
-		case GAP_EVT_SMP_TK_DISPALY:
-		{
-			//char pc[7];
-			//u32 pinCode = *(u32*)para;
-		}
-		break;
-
-		case GAP_EVT_SMP_TK_REQUEST_PASSKEY:
-		{
-
-		}
-		break;
-
-		case GAP_EVT_SMP_TK_REQUEST_OOB:
-		{
-
-		}
-		break;
-
-		case GAP_EVT_SMP_TK_NUMERIC_COMPARE:
-		{
-			//char pc[7];
-			//u32 pinCode = *(u32*)para;
-		}
-		break;
-
-		default:
-		break;
-	}
-
-	return 0;
-}
-
 /////////////////////////////////////blc_register_hci_handler for spp////////////////////////////
+/**
+ * @brief		this function is used to process rx uart data.
+ * @param[in]	none
+ * @return      0 is ok
+ */
 int rx_from_uart_cb (void)//UART data send to Master,we will handler the data as CMD or DATA
 {
 	if(my_fifo_get(&spp_rx_fifo) == 0)
@@ -259,10 +193,13 @@ int rx_from_uart_cb (void)//UART data send to Master,we will handler the data as
 	return 0;
 }
 
-extern ble_sts_t bls_ll_setAdvFilterPolicy(adv_fp_type_t advFilterPolicy);
-extern ble_sts_t bls_ll_setAdvInterval(u16 intervalMin, u16 intervalMax);
-extern ble_sts_t blc_hci_le_readBufferSize_cmd(u8 *pData);
 ///////////////////////////////////////////the default bls_uart_handler///////////////////////////////
+/**
+ * @brief		this function is used to process rx uart data to remote device.
+ * @param[in]   p - data pointer
+ * @param[in]   n - data length
+ * @return      0 is ok
+ */
 int bls_uart_handler (u8 *p, int n)
 {
 
@@ -431,8 +368,12 @@ int bls_uart_handler (u8 *p, int n)
 	return 0;
 }
 
-
-
+/**
+ * @brief		this function is used to process tx uart data to remote device.
+ * @param[in]   header - hci event type
+ * @param[in]   pEvent - event data
+ * @return      0 is ok
+ */
 int spp_send_data (u32 header, spp_event_t * pEvt)
 {
 
@@ -475,9 +416,11 @@ int spp_send_data (u32 header, spp_event_t * pEvt)
 	return 0;
 }
 
-extern unsigned char uart_dma_send_flag;
-
-uart_data_t T_txdata_buf;
+/**
+ * @brief		this function is used to process tx uart data.
+ * @param[in]	none
+ * @return      0 is ok
+ */
 int tx_to_uart_cb (void)
 {
 	u8 *p = my_fifo_get (&spp_tx_fifo);
@@ -519,7 +462,11 @@ int tx_to_uart_cb (void)
 	return 0;
 }
 
-
+/**
+ * @brief		this function is used to restart module.
+ * @param[in]	none
+ * @return      none
+ */
 void spp_restart_proc(void)
 {
 	//when received SPP_CMD_RESTART_MOD, leave 500ms(you can change this time) for moudle to send uart ack to host, then restart.

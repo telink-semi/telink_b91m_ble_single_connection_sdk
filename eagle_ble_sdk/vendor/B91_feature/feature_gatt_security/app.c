@@ -473,7 +473,7 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 
-	bls_ll_setAdvEnable(1);  //adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //adv enable
 
 
 
@@ -565,4 +565,4 @@ _attribute_no_inline_ void main_loop (void)
 
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif  //end of (FEATURE_TEST_MODE == TEST_GATT_SECURITY)

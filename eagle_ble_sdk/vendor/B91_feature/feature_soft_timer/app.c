@@ -511,7 +511,7 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 
-	bls_ll_setAdvEnable(1);  //adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //adv enable
 
 
 

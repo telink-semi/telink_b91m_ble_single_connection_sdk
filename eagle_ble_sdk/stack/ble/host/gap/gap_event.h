@@ -278,13 +278,4 @@ void 	blc_gap_registerHostEventHandler (gap_event_handler_t  handler);
 
 
 
-
-
-/************************* Stack Interface, user can not use!!! ***************************/
-extern u32		gap_eventMask;
-
-int blc_gap_send_event (u32 h, u8 *para, int n);
-/************************* Stack Interface, user can not use!!! ***************************/
-
-
 #endif /* GAP_EVENT_H_ */

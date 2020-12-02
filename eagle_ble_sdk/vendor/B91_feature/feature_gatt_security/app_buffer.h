@@ -106,9 +106,9 @@ extern	u8	app_acl_rxfifo[];
 extern	u8	app_acl_txfifo[];
 /******************** ACL connection LinkLayer TX & RX data FIFO allocation, End ***************************************************/
 
-extern 	my_fifo_t	uart_txfifo;
 
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+
+#endif  //end of (FEATURE_TEST_MODE == TEST_GATT_SECURITY)
 #endif /* VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_ */

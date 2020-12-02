@@ -147,7 +147,7 @@ void 	app_switch_to_indirect_adv(u8 e, u8 *p, int n)
 						BLT_ENABLE_ADV_ALL,
 						ADV_FP_NONE);
 
-	bls_ll_setAdvEnable(1);  //must: set adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //must: set adv enable
 }
 
 
@@ -295,7 +295,7 @@ void blt_pm_proc(void)
 				{
 
 					bls_ll_terminateConnection(HCI_ERR_REMOTE_USER_TERM_CONN); //push terminate cmd into ble TX buffer
-					bls_ll_setAdvEnable(0);   //disable adv
+					bls_ll_setAdvEnable(BLC_ADV_DISABLE);   //disable adv
 					sendTerminate_before_enterDeep = 1;
 				}
 			}
@@ -478,7 +478,7 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 
-	bls_ll_setAdvEnable(1);  //adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //adv enable
 
 
 
@@ -497,7 +497,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	#if (PM_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(95, 95);
-		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 320 : 350);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 370 : 400);
 		//blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW64K); //default use 32k deep retention
 	#else
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
@@ -528,12 +528,14 @@ _attribute_no_inline_ void user_init_normal(void)
 #endif
 
 
-#if (BLE_SLAVE_OTA_ENABLE)
+#if (BLE_OTA_SERVER_ENABLE)
 	////////////////// OTA relative ////////////////////////
-	bls_ota_clearNewFwDataArea(); //must
-	bls_ota_set_VersionFlashAddr_and_VersionNumber(OTA_VERSION_FLASH_ADDR, OTA_VERSION_NUMBER); //must
-	bls_ota_registerStartCmdCb(app_enter_ota_mode);
-	bls_ota_registerResultIndicateCb(app_ota_end_result);  //debug
+	/* OTA module initialization must be done before any other OTA settings. */
+	blc_ota_initOtaServer_module();
+
+	blc_ota_setOtaProcessTimeout(30);   //OTA process timeout:  30 seconds
+	blc_ota_registerOtaStartCmdCb(app_enter_ota_mode);
+	blc_ota_registerOtaResultIndicationCb(app_ota_end_result);  //debug
 #endif
 
 

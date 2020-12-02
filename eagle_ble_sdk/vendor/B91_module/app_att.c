@@ -63,10 +63,6 @@ typedef struct
 
 static const u16 clientCharacterCfgUUID = GATT_UUID_CLIENT_CHAR_CFG;
 
-//static const u16 extReportRefUUID = GATT_UUID_EXT_REPORT_REF;
-
-//static const u16 reportRefUUID = GATT_UUID_REPORT_REF;
-
 static const u16 userdesc_UUID	= GATT_UUID_CHAR_USER_DESC;
 
 static const u16 serviceChangeUUID = GATT_UUID_SERVICE_CHANGE;
@@ -190,8 +186,12 @@ static const u8 my_OtaCharVal[19] = {
 	TELINK_SPP_DATA_OTA
 };
 
-
-int module_onReceiveData(rf_packet_att_write_t *p)
+/**
+ * @brief      write callback of Attribute of TelinkSppDataClient2ServerUUID
+ * @param[in]  p - rf_packet_att_write_t
+ * @return     0
+ */
+int module_onReceiveData(u16 connHandle, rf_packet_att_write_t *p)
 {
 	u8 len = p->l2capLen - 3;
 	if(len > 0)
@@ -252,11 +252,16 @@ static const attribute_t my_Attributes[] = {
 	// 0017 - 001A OTA
 	{4,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID), 	(u8*)(&my_OtaServiceUUID), 0},
 	{0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},				//prop
-	{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, &otaRead},			//value
+	{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, NULL},			//value
 	{0,ATT_PERMISSIONS_READ, 2,sizeof (my_OtaName),(u8*)(&userdesc_UUID), (u8*)(my_OtaName), 0},
 
 };
-
+/**
+ * @brief      set device name
+ * @param[in]  p - the point of name
+ * @param[in]  len - the length of name
+ * @return     BLE_SUCCESS
+ */
 ble_sts_t bls_att_setDeviceName(u8* pName,u8 len)
 {
 	memset(ble_devName, 0, MAX_DEV_NAME_LEN );
@@ -264,7 +269,11 @@ ble_sts_t bls_att_setDeviceName(u8* pName,u8 len)
 
 	return BLE_SUCCESS;
 }
-
+/**
+ * @brief      Initialize the attribute table
+ * @param[in]  none
+ * @return     none
+ */
 void	my_att_init (void)
 {
 	bls_att_setAttributeTable ((u8 *)my_Attributes);

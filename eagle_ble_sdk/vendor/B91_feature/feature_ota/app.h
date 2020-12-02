@@ -1,5 +1,5 @@
 /********************************************************************************************************
- * @file	ble_host.h
+ * @file	app.h
  *
  * @brief	This is the header file for BLE SDK
  *
@@ -43,46 +43,57 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *******************************************************************************************************/
+#ifndef VENDOR_APP_H_
+#define VENDOR_APP_H_
 
-#ifndef STACK_BLE_HOST_BLE_HOST_H_
-#define STACK_BLE_HOST_BLE_HOST_H_
-
-#include "stack/ble/ble_common.h"
-#include "stack/ble/ble_format.h"
-
-#include "stack/ble/host/l2cap/l2cap_stack.h"
-#include "stack/ble/host/l2cap/l2cap.h"
+#if (FEATURE_TEST_MODE == TEST_OTA)
 
 
-#include "stack/ble/host/attr/attr_stack.h"
-#include "stack/ble/host/attr/att.h"
-#include "stack/ble/host/attr/gatt.h"
-
-#include "stack/ble/host/smp/smp_stack.h"
-#include "stack/ble/host/smp/smp.h"
-#include "stack/ble/host/smp/smp_alg.h"
-#include "stack/ble/host/smp/smp_peripheral.h"
-#include "stack/ble/host/smp/smp_storage.h"
+/**
+ * @brief		user initialization when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return      none
+ */
+void user_init_normal(void);
 
 
-#include "stack/ble/host/gap/gap.h"
-#include "stack/ble/host/gap/gap_event.h"
+/**
+ * @brief		user initialization when MCU wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return      none
+ */
+void user_init_deepRetn();
 
 
-/*********************************************************/
-//Remove when file merge to SDK //
-#include "stack/ble/ble_stack.h"
-#include "stack/ble/ble_config.h"
-//#include "stack/ble/debug.h"
-#include "stack/ble/trace.h"
-
-#include "stack/ble/host/host_stack.h"
-#include "stack/ble/host/l2cap/l2cap_stack.h"
-#include "stack/ble/host/attr/attr_stack.h"
-#include "stack/ble/host/smp/smp_stack.h"
-#include "stack/ble/host/gap/gap_stack.h"
-//#include "stack/ble/host/gap/gap_stack.h"
-/*********************************************************/
+/**
+ * @brief     BLE main loop
+ * @param[in]  none.
+ * @return     none.
+ */
+void main_loop (void);
 
 
-#endif /* STACK_BLE_HOST_BLE_HOST_H_ */
+
+
+#if (UI_KEYBOARD_ENABLE)
+
+
+extern int 	key_not_released;
+
+
+/**
+ * @brief      this function is used to detect if key pressed or released.
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
+void proc_keyboard (u8 e, u8 *p, int n);
+
+
+
+#endif
+
+
+#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif /* VENDOR_APP_H_ */

@@ -102,7 +102,8 @@
 
 
 
-typedef int (*att_readwrite_callback_t)(void* p);
+//typedef int (*att_readwrite_callback_t)(void* p);
+typedef int (*att_readwrite_callback_t)(u16 connHandle, void* p);
 
 typedef struct attribute
 {

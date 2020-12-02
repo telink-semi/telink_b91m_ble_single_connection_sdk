@@ -68,7 +68,7 @@ _attribute_data_retention_	u8 		key_type;
 
 
 
-#if (BLE_SLAVE_OTA_ENABLE)
+#if (BLE_OTA_SERVER_ENABLE)
 /**
  * @brief      this function is used to register the function for OTA start.
  * @param[in]  none
@@ -77,7 +77,6 @@ _attribute_data_retention_	u8 		key_type;
 void app_enter_ota_mode(void)
 {
 	ota_is_working = 1;
-	bls_ota_setTimeout(30 * 1000 * 1000); //set OTA timeout  30 seconds
 
 	#if(1 && UI_LED_ENABLE)  //this is only for debug
 	gpio_write(GPIO_LED_WHITE, 1);

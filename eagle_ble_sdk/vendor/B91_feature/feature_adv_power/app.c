@@ -295,7 +295,7 @@ _attribute_no_inline_ void user_init_normal(void)
 			while(1);
 		}
 
-		bls_ll_setAdvEnable(1);  //adv enable
+		bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //adv enable
 
 
 		rf_set_power_level_index (MY_RF_POWER_INDEX);
@@ -377,4 +377,4 @@ _attribute_no_inline_ void main_loop (void)
 
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif  //end of (FEATURE_TEST_MODE == TEST_POWER_ADV)

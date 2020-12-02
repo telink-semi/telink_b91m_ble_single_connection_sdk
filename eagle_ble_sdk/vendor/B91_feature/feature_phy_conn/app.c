@@ -330,7 +330,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	bls_ll_setScanRspData( (u8 *)tbl_scanRsp, sizeof(tbl_scanRsp));
 
 
-	bls_ll_setAdvEnable(1);  //adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //adv enable
 
 #elif (CONNECTABLE_MODE == EXTENDED_ADV_CONNECTABLE_UNDIRECTED)
 	u32 my_adv_interval_min = ADV_INTERVAL_50MS;
@@ -352,7 +352,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_ll_setDefaultExtAdvCodingIndication(ADV_HANDLE0, CODED_PHY_PREFER_S2);
 	#else
 	user_primary_adv_phy   = BLE_PHY_1M;
-	user_secondary_adv_phy = BLE_PHY_1M;
+	user_secondary_adv_phy = BLE_PHY_2M;
 	#endif
 
 	blc_ll_setExtAdvParam( ADV_HANDLE0, 		ADV_EVT_PROP_EXTENDED_CONNECTABLE_UNDIRECTED, 					my_adv_interval_min, 			my_adv_interval_max,
@@ -498,4 +498,4 @@ _attribute_no_inline_ void main_loop (void)
 
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif  //end of (FEATURE_TEST_MODE == TEST_2M_CODED_PHY_CONNECTION)

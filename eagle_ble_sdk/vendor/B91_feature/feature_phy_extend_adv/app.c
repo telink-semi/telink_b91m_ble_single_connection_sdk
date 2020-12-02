@@ -570,6 +570,10 @@ _attribute_no_inline_ void user_init_normal(void)
 		user_primary_adv_phy   = BLE_PHY_1M;
 		user_secondary_adv_phy = BLE_PHY_CODED;
 		blc_ll_setDefaultExtAdvCodingIndication(ADV_HANDLE0, CODED_PHY_PREFER_S8);
+	#elif 0      // ADV_EXT_IND: 1M PHY;  		AUX_ADV_IND/AUX_CHAIN_IND: Coded PHY(S2)
+		user_primary_adv_phy   = BLE_PHY_1M;
+		user_secondary_adv_phy = BLE_PHY_CODED;
+		blc_ll_setDefaultExtAdvCodingIndication(ADV_HANDLE0, CODED_PHY_PREFER_S2);
 
 
 	#elif 0      // ADV_EXT_IND: Coded PHY(S8) 		AUX_ADV_IND/AUX_CHAIN_IND: 1M PHY

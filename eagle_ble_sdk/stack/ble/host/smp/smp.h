@@ -249,11 +249,29 @@ void 		blc_smp_setTK_by_OOB (u8 *oobData);
 
 
 /**
+ * @brief      This function is used to check whether the PinCode needs to be input.
+ * @param[in]  none.
+ * @return     1: Need to enter PinCode
+ * 			   0: No need to enter PinCode
+ */
+int 		blc_smp_isWaitingToSetPasskeyEntry(void);
+
+
+/**
+ * @brief      This function is used to check whether it is needed to confirm NC YES/NO.
+ * @param[in]  none.
+ * @return     1: Need to confirm NC YES/NO
+ * 			   0: No need to confirm NC YES/NO
+ */
+int 		blc_smp_isWaitingToCfmNumericComparison(void);
+
+
+/**
  * @brief      This function is used to set TK by passkey entry method.
  * @param[in]  pinCodeInput - TK's value, input range [000000, 999999].
- * @return     none.
+ * @return     1:Succeed; 0:Failed.
  */
-void 		blc_smp_setTK_by_PasskeyEntry (u32 pinCodeInput);
+int 		blc_smp_setTK_by_PasskeyEntry (u32 pinCodeInput);
 
 
 /**

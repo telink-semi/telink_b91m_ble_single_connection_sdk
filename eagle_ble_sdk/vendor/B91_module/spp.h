@@ -43,12 +43,7 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-/*
- * spp.h
- *
- *  Created on: 2016-11-3
- *      Author: Administrator
- */
+
 
 #ifndef SPP_H_
 #define SPP_H_
@@ -90,12 +85,26 @@ typedef struct {
 	u8  param[0];
 } spp_event_t;
 
-
+/**
+ * @brief		this function is used to process rx uart data to remote device.
+ * @param[in]   p - data pointer
+ * @param[in]   n - data length
+ * @return      0 is ok
+ */
 int bls_uart_handler (u8 *p, int n);
+/**
+ * @brief		this function is used to process tx uart data to remote device.
+ * @param[in]   header - hci event type
+ * @param[in]   pEvent - event data
+ * @return      0 is ok
+ */
 int spp_send_data (u32 header, spp_event_t * pEvt);
-
+/**
+ * @brief		this function is used to restart module.
+ * @param[in]	none
+ * @return      none
+ */
 void spp_restart_proc(void);
 
-int app_host_event_callback (u32 h, u8 *para, int n);
 
 #endif /* SPP_H_ */

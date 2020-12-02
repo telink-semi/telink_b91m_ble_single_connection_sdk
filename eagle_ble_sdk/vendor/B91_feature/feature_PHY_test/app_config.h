@@ -53,7 +53,7 @@
 /**
  *  @brief  Feature select in bLE Sample project
  */
-#define BLE_APP_PM_ENABLE										1
+#define BLE_APP_PM_ENABLE										0
 #define PM_DEEPSLEEP_RETENTION_ENABLE							1
 #define APP_DEFAULT_HID_BATTERY_OTA_ATTRIBUTE_TABLE				1
 
@@ -65,7 +65,7 @@
 #define 		PHYTEST_MODE_THROUGH_2_WIRE_UART		1   //Direct Test Mode through a 2-wire UART interface
 #define 		PHYTEST_MODE_OVER_HCI_WITH_UART			2   //Direct Test Mode over HCI(UART hardware interface)
 
-#define BLE_PHYTEST_MODE		PHYTEST_MODE_OVER_HCI_WITH_UART
+#define BLE_PHYTEST_MODE		PHYTEST_MODE_THROUGH_2_WIRE_UART
 
 /**
  *  @brief phytest uart setting.
@@ -85,7 +85,7 @@
 /**
  *  @brief phytest buffer related setting.
  */
-#define UART_TX_BUFFER_NUM		8
+#define UART_TX_BUFFER_NUM		4
 #define UART_TX_BUFFER_SIZE		80
 #define UART_RX_BUFFER_NUM		4
 #define UART_RX_BUFFER_SIZE		80
@@ -95,7 +95,7 @@
 /**
  *  @brief  MCU system clock
  */
-#define CLOCK_SYS_CLOCK_HZ  	48000000
+#define CLOCK_SYS_CLOCK_HZ  	16000000
 
 /**
  *  @brief  Definition the number of system tick for 1s/1ms/1us
@@ -189,7 +189,7 @@ enum{
  /**
  *  @brief  GPIO debug enable
  */
-#define DEBUG_GPIO_ENABLE							0
+#define DEBUG_GPIO_ENABLE							1
 
 #if(DEBUG_GPIO_ENABLE)
 
@@ -200,13 +200,13 @@ enum{
     #define GPIO_CHN3							GPIO_PA4
 	#define GPIO_CHN4							GPIO_PA3
 	#define GPIO_CHN5							GPIO_PB0
-	#define GPIO_CHN6							GPIO_PB2
+//	#define GPIO_CHN6							GPIO_PB2
 	#define GPIO_CHN7							GPIO_PE0
 
 	#define GPIO_CHN8							GPIO_PA2
 	#define GPIO_CHN9							GPIO_PA1
 	#define GPIO_CHN10							GPIO_PB1
-	#define GPIO_CHN11							GPIO_PB3
+//	#define GPIO_CHN11							GPIO_PB3
 
 
 	#define GPIO_CHN12							GPIO_PC7
@@ -221,13 +221,13 @@ enum{
 	#define PA4_OUTPUT_ENABLE					1
 	#define PA3_OUTPUT_ENABLE					1
 	#define PB0_OUTPUT_ENABLE					1
-	#define PB2_OUTPUT_ENABLE					1
+//	#define PB2_OUTPUT_ENABLE					1
 	#define PE0_OUTPUT_ENABLE					1
 
 	#define PA2_OUTPUT_ENABLE					1
 	#define PA1_OUTPUT_ENABLE					1
 	#define PB1_OUTPUT_ENABLE					1
-	#define PB3_OUTPUT_ENABLE					1
+//	#define PB3_OUTPUT_ENABLE					1
 	#define PC7_OUTPUT_ENABLE					1
 	#define PC6_OUTPUT_ENABLE					1
 	#define PC5_OUTPUT_ENABLE					1
@@ -252,9 +252,9 @@ enum{
 	#define DBG_CHN5_LOW		gpio_write(GPIO_CHN5, 0)
 	#define DBG_CHN5_HIGH		gpio_write(GPIO_CHN5, 1)
 	#define DBG_CHN5_TOGGLE		gpio_toggle(GPIO_CHN5)
-	#define DBG_CHN6_LOW		gpio_write(GPIO_CHN6, 0)
-	#define DBG_CHN6_HIGH		gpio_write(GPIO_CHN6, 1)
-	#define DBG_CHN6_TOGGLE		gpio_toggle(GPIO_CHN6)
+//	#define DBG_CHN6_LOW		gpio_write(GPIO_CHN6, 0)
+//	#define DBG_CHN6_HIGH		gpio_write(GPIO_CHN6, 1)
+//	#define DBG_CHN6_TOGGLE		gpio_toggle(GPIO_CHN6)
 	#define DBG_CHN7_LOW		gpio_write(GPIO_CHN7, 0)
 	#define DBG_CHN7_HIGH		gpio_write(GPIO_CHN7, 1)
 	#define DBG_CHN7_TOGGLE		gpio_toggle(GPIO_CHN7)
@@ -267,9 +267,9 @@ enum{
 	#define DBG_CHN10_LOW		gpio_write(GPIO_CHN10, 0)
 	#define DBG_CHN10_HIGH		gpio_write(GPIO_CHN10, 1)
 	#define DBG_CHN10_TOGGLE	gpio_toggle(GPIO_CHN10)
-	#define DBG_CHN11_LOW		gpio_write(GPIO_CHN11, 0)
-	#define DBG_CHN11_HIGH		gpio_write(GPIO_CHN11, 1)
-	#define DBG_CHN11_TOGGLE	gpio_toggle(GPIO_CHN11)
+//	#define DBG_CHN11_LOW		gpio_write(GPIO_CHN11, 0)
+//	#define DBG_CHN11_HIGH		gpio_write(GPIO_CHN11, 1)
+//	#define DBG_CHN11_TOGGLE	gpio_toggle(GPIO_CHN11)
 	#define DBG_CHN12_LOW		gpio_write(GPIO_CHN12, 0)
 	#define DBG_CHN12_HIGH		gpio_write(GPIO_CHN12, 1)
 	#define DBG_CHN12_TOGGLE	gpio_toggle(GPIO_CHN12)

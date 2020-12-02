@@ -46,7 +46,7 @@
 #ifndef VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_
 #define VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_
 
-#if (FEATURE_TEST_MODE == TEST_AUDIO)
+#if (FEATURE_TEST_MODE == TEST_OTA)
 
 /**
  * @brief	connMaxRxOctets
@@ -108,6 +108,16 @@ extern	u8	app_acl_txfifo[];
 
 
 
+
+
+/********************* USB_DEBUG_LOG FIFO allocation, Begin *******************************/
+
+#if (APP_DUMP_EN)
+	extern my_fifo_t print_fifo;
+	extern	u8 	print_fifo_b[];
+#endif
+
+/******************** USB_DEBUG_LOG FIFO allocation, End ***********************************/
 
 
 #endif  //end of (FEATURE_TEST_MODE == ...)

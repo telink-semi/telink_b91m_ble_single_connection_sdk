@@ -83,7 +83,7 @@
 
 
 
-#define     SMP_TEST_MODE						SMP_TEST_NO_SECURITY
+#define     SMP_TEST_MODE						SMP_TEST_SC_NUMERIC_COMPARISON
 
 /**
  *  @brief  UI Configuration

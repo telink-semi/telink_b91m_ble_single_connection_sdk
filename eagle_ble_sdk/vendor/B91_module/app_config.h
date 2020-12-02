@@ -50,10 +50,9 @@
 /////////////////// MODULE /////////////////////////////////
 #define BLE_MODULE_PM_ENABLE				1
 #define PM_DEEPSLEEP_RETENTION_ENABLE		1
-#define BLE_OTA_ENABLE						0
 #define TELIK_SPP_SERVICE_ENABLE			1
 #define BLE_MODULE_INDICATE_DATA_TO_MCU		1
-#define BATT_CHECK_ENABLE       			0   //enable or disable battery voltage detection
+#define BATT_CHECK_ENABLE       			1   //enable or disable battery voltage detection
 #define BLT_APP_LED_ENABLE					1
 
 #define UART_DMA_USE						1
@@ -85,11 +84,6 @@
 /////////////////// DEEP SAVE FLG //////////////////////////////////
 #define USED_DEEP_ANA_REG                   DEEP_ANA_REG1 //u8,can save 8 bit info when deep
 #define	LOW_BATT_FLG					    BIT(0)
-
-#if(BLE_OTA_ENABLE)
-#define OTA_VERSION_FLASH_ADDR				0xEF000
-#define OTA_VERSION_NUMBER					0x01
-#endif
 
 #if (BATT_CHECK_ENABLE)
 #define VBAT_CHANNEL_EN						0

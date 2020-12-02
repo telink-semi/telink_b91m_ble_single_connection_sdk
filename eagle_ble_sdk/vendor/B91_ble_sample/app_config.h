@@ -56,7 +56,7 @@
 #define TEST_CONN_CURRENT_ENABLE            0 //test connection current, disable UI to have a pure power
 #define APP_SECURITY_ENABLE      			1
 #define APP_DIRECT_ADV_ENABLE				1
-#define BLE_SLAVE_OTA_ENABLE				0
+#define BLE_OTA_SERVER_ENABLE				1
 #define BATT_CHECK_ENABLE					0
 
 
@@ -92,11 +92,6 @@
 		#define	UI_KEYBOARD_ENABLE			0
 #else
 		#define	UI_KEYBOARD_ENABLE			1
-#endif
-
-#if (BLE_SLAVE_OTA_ENABLE)
-	#define OTA_VERSION_FLASH_ADDR				0xEF000
-	#define OTA_VERSION_NUMBER					0x01
 #endif
 
 

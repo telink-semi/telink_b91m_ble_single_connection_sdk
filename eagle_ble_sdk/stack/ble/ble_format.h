@@ -435,8 +435,7 @@ typedef struct{
 	u16	l2capLen;
 	u16	chanId;
 	u8  opcode;
-	u8  handle0;
-	u8  handle1;
+	u16  handle;
 	u8	dat[20];
 }rf_packet_att_t;
 

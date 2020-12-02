@@ -61,4 +61,4 @@ _attribute_data_retention_  u8	app_acl_txfifo[ACL_TX_FIFO_SIZE * ACL_TX_FIFO_NUM
 
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif  //end of (FEATURE_TEST_MODE == TEST_GATT_SECURITY)

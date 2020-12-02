@@ -53,6 +53,9 @@
 extern hci_fifo_t bltHci_rxfifo;
 extern hci_fifo_t bltHci_txfifo;
 
+volatile u32 test1,test2,test3,test4,test5,test6,test7,test8,test9;
+volatile u8* test_p1;
+
 /**
  * @brief		BLE SDK RF interrupt handler.
  * @param[in]	none
@@ -85,8 +88,6 @@ void stimer_irq_handler(void)
 	DBG_CHN15_LOW;
 }
 
-
-
 /**
  * @brief      UART0 irq function
  * @param[in]  none
@@ -95,15 +96,20 @@ void stimer_irq_handler(void)
 _attribute_ram_code_
 void uart0_irq_handler(void)
 {
+	DBG_CHN1_HIGH;
+	test3++;
 	u32 rev_data_len = 0;
+	test8 = reg_uart_status1(UART0);
+	test9 = reg_uart_status2(UART0);
 	if(uart_get_irq_status(UART0,UART_TXDONE))
 	{
+		test4 ++;
 		gpio_toggle(GPIO_LED_GREEN);
 	    uart_clr_tx_done(UART0);
 	}
-
     if(uart_get_irq_status(UART0,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can noly used in A1-SOC.
     {
+    	test5 ++;
     	gpio_toggle(GPIO_LED_WHITE);
     	/************************get the length of receive data****************************/
     	if(((reg_uart_status1(UART0)&FLD_UART_RBCNT)%4)==0)
@@ -118,11 +124,11 @@ void uart0_irq_handler(void)
     	uart_clr_irq_status(UART0,UART_CLR_RX);
 		if(rev_data_len!=0)
 		{
-			u8* p = hci_fifo_wptr(&bltHci_rxfifo);
+			u8* p = bltHci_rxfifo.p + (bltHci_rxfifo.wptr & (bltHci_rxfifo.num-1)) * bltHci_rxfifo.size;
 			p[0] = rev_data_len;
-			hci_fifo_next(&bltHci_rxfifo);
-			p = hci_fifo_wptr(&bltHci_rxfifo);
-			uart_receive_dma(UART0, (unsigned char*)(p+4),bltHci_rxfifo.size);
+			bltHci_rxfifo.wptr++;
+			p = bltHci_rxfifo.p + (bltHci_rxfifo.wptr & (bltHci_rxfifo.num-1)) * bltHci_rxfifo.size;
+			uart_receive_dma(UART0, (unsigned char*)(p+4),UART_RX_BUFFER_SIZE);
 		}
 
     	if((uart_get_irq_status(UART0,UART_RX_ERR)))
@@ -131,6 +137,8 @@ void uart0_irq_handler(void)
     	}
     }
 
+	DBG_CHN1_LOW;
+	test6++;
 }
 
 /**
@@ -143,7 +151,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
 
-	sys_init(DCDC_1P4_DCDC_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
+	sys_init(LDO_1P4_LDO_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
 
 	/* detect if MCU is wake_up from deep retention mode */
 	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
@@ -162,7 +170,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 
 	rf_drv_ble_init();
 
-	gpio_init(!deepRetWakeUp);
+//	gpio_init(!deepRetWakeUp);
 
 	if(!deepRetWakeUp){//read flash size
 		blc_readFlashSize_autoConfigCustomFlashSector();
@@ -177,9 +185,19 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 		user_init_normal();
 	}
 
-	irq_enable();
-
+	test1 = 0;
+	test2 = 0;
+	test3 = 0;
+	test4 = 0;
+	test5 = 0;
+	test6 = 0;
+	test7 = 0;
+	test8 = 0;
+	test9 = 0;
+	test_p1 = 0;
 	while (1) {
+		test7 ++;
+		DBG_CHN0_TOGGLE;
 		main_loop ();
 	}
 	return 0;

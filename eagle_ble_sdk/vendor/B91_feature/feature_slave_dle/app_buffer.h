@@ -159,9 +159,9 @@ extern	u8	app_acl_txfifo[];
 
 /******************** RX MTU buffer,, End ***********************************/
 
-extern 	my_fifo_t	uart_txfifo;
 
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+
+#endif  //end of (FEATURE_TEST_MODE == TEST_SDATA_LENGTH_EXTENSION)
 #endif /* VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_ */

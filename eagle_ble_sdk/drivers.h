@@ -52,4 +52,4 @@
 #include "common/assert.h"
 
 
-#define write_log32(err_code)   write_sram32(0x00012, err_code)
+#define write_log32(err_code)   write_sram32(0x00014, err_code)

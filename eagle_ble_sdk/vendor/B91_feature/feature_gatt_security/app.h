@@ -95,5 +95,5 @@ void proc_keyboard (u8 e, u8 *p, int n);
 #endif
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif  //end of (FEATURE_TEST_MODE == TEST_GATT_SECURITY)
 #endif /* VENDOR_APP_H_ */

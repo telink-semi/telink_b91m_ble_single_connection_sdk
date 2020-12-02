@@ -199,7 +199,7 @@ static const u8 my_OtaCharVal[19] = {
  * @param[in]  p - rf_packet_att_write_t
  * @return     0
  */
-int module_onReceiveData(rf_packet_att_write_t *p)
+int module_onReceiveData(u16 connHandle, rf_packet_att_write_t *p)
 {
 	u8 len = p->l2capLen - 3;
 	if(len > 0)
@@ -257,7 +257,7 @@ static const attribute_t my_Attributes[] = {
 	// 0017 - 001A OTA
 	{4,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID), 	(u8*)(&my_OtaServiceUUID), 0},
 	{0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},				//prop
-	{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, &otaRead},			//value
+	{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, NULL},			//value
 	{0,ATT_PERMISSIONS_READ, 2,sizeof (my_OtaName),(u8*)(&userdesc_UUID), (u8*)(my_OtaName), 0},
 
 };

@@ -262,4 +262,4 @@ enum{
 #include "vendor/common/default_config.h"
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif  //end of (FEATURE_TEST_MODE == TEST_POWER_ADV)

@@ -46,8 +46,11 @@ _attribute_data_retention_  u16     batt_vol_mv;
 
 
 
-
-
+/**
+ * @brief		callback function of adjust whether allow enter to pm or not
+ * @param[in]	none
+ * @return      0 orbidden enter cpu_sleep_wakeup, 1 allow enter cpu_sleep_wakeup
+ */
 int app_suspend_enter_low_battery (void)
 {
 	if (!gpio_read(GPIO_WAKEUP_MODULE)) //gpio low level
@@ -61,25 +64,23 @@ int app_suspend_enter_low_battery (void)
 }
 
 
-void battery_set_detect_enable (int en)
-{
-	lowBattDet_enable = en;
 
-	if(!en){
-		adc_hw_initialized = 0;   //need initialized again
-	}
-
-}
-
-
+/**
+ * @brief		get the value of lowBattDet_enable
+ * @param[in]	none
+ * @return      the value of lowBattDet_enable
+ */
 int battery_get_detect_enable (void)
 {
 	return lowBattDet_enable;
 }
 
 
-
-
+/**
+ * @brief		This is battery check function
+ * @param[in]	alram_vol_mv - input battery calue
+ * @return      0 fail 1 success
+ */
 _attribute_ram_code_ int app_battery_power_check(u16 alram_vol_mv)
 {
 

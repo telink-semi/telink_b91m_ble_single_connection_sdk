@@ -295,19 +295,16 @@ void key_change_proc(void)
 
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 
-
 			#if (SMP_TEST_MODE == SMP_TEST_SC_NUMERIC_COMPARISON)
 				//NOTICE:smp NC confirm (vol-)"YES" or (vol+)"NO"
-				if(!(blc_smpMng.tk_status & TK_ST_NUMERIC_CHECK_YES) && !(blc_smpMng.tk_status & TK_ST_NUMERIC_CHECK_NO)){
-					if(blc_smpMng.tk_status & TK_ST_NUMERIC_COMPARE){
-						if(consumer_key == MKEY_VOL_DN){
-							blc_smp_setNumericComparisonResult(1);// YES
-							/*confirmed YES*/
-						}
-						else if(consumer_key == MKEY_VOL_UP){
-							blc_smp_setNumericComparisonResult(0);// NO
-							/*confirmed NO*/
-						}
+				if(blc_smp_isWaitingToCfmNumericComparison()){
+					if(consumer_key == MKEY_VOL_DN){
+						blc_smp_setNumericComparisonResult(1);// YES
+						/*confirmed YES*/
+					}
+					else if(consumer_key == MKEY_VOL_UP){
+						blc_smp_setNumericComparisonResult(0);// NO
+						/*confirmed NO*/
 					}
 				}
 			#endif
@@ -327,32 +324,29 @@ void key_change_proc(void)
 
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
 
-			#if 0 && (SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MDSI || SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MISI || \
+			#if 1 && (SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MDSI || SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MISI || \
 				 SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MISI || SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI)
-
-				if(!(blc_smpMng.tk_status & TK_ST_UPDATE)){
-					if (blc_smpMng.tk_status & TK_ST_REQUEST){
-						if( key_value <= VK_0 && key_value >= VK_1 && digital_key_cnt < 6){//key: 0~9
-							int i;
-							for(i = 0; i<10; i++){
-								if(vk_dig_map[i] == key_value){
-									tk_input[digital_key_cnt++] = i;
-									break;
-								}
+				if(blc_smp_isWaitingToSetPasskeyEntry()){
+					if( key_value <= VK_0 && key_value >= VK_1 && digital_key_cnt < 6){//key: 0~9
+						int i;
+						for(i = 0; i<10; i++){
+							if(vk_dig_map[i] == key_value){
+								tk_input[digital_key_cnt++] = i;
+								break;
 							}
-
-							led_onoff(LED_ON_LEVAL);
 						}
-						else if( key_value == VK_ENTER){// key: Enter/OK
 
-							led_onoff(LED_ON_LEVAL);
+						led_onoff(LED_ON_LEVAL);
+					}
+					else if( key_value == VK_ENTER){// key: Enter/OK
 
-							if(digital_key_cnt >= 6){
-								digital_key_cnt = 0;
-								u32 pincode = tk_input[0]*100000 + tk_input[1]*10000 + \
-											  tk_input[2]*1000 + tk_input[3]*100 + tk_input[4]*10 + tk_input[5];
-								blc_smp_setTK_by_PasskeyEntry(pincode);
-							}
+						led_onoff(LED_ON_LEVAL);
+
+						if(digital_key_cnt >= 6){
+							digital_key_cnt = 0;
+							u32 pincode = tk_input[0]*100000 + tk_input[1]*10000 + \
+										  tk_input[2]*1000 + tk_input[3]*100 + tk_input[4]*10 + tk_input[5];
+							blc_smp_setTK_by_PasskeyEntry(pincode);
 						}
 					}
 				}
@@ -774,7 +768,7 @@ _attribute_no_inline_ void user_init_normal(void)
 						ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC,
 						0,  NULL,  BLT_ENABLE_ADV_37, ADV_FP_NONE);
 
-	bls_ll_setAdvEnable(1);  //adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //adv enable
 
 	//ble event call back
 	bls_app_registerEventCallback (BLT_EV_FLAG_CONNECT, &task_connect);

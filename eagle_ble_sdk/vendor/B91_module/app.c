@@ -94,6 +94,20 @@ volatile _attribute_data_retention_ unsigned char uart_dma_send_flag = 0;
 
 #endif
 
+#define UATRT_TIMNEOUT_US					   100 //100uS for 115200
+
+_attribute_data_retention_ volatile unsigned int   uart0_ndmairq_cnt=0;//Pre-4B for len
+_attribute_data_retention_ volatile unsigned int   uart0_ndma_tick = 0;
+_attribute_data_retention_ volatile unsigned char  uart0_flag = 0;
+enum
+{
+	UART0_RECIEVE_IDLE=0,
+	UART0_RECIEVE_START=1,
+};
+volatile unsigned int uart0_rx_buff_byte[16] __attribute__((aligned(4))) ={0x00};
+
+
+
 /**
  * @brief	Adv Packet data
  */
@@ -110,111 +124,12 @@ const u8	tbl_scanRsp [] = {
 	};
 
 
-_attribute_data_retention_	u8 	ui_ota_is_working = 0;
-
 _attribute_data_retention_	u32	lowBattDet_tick   = 0;
 
 _attribute_data_retention_ u8 conn_update_cnt;
 
 
-/**
- * @brief		response for the conn_request
- * @param[in]
- * @param[in]	none
- * @return      none
- */
-int app_conn_param_update_response(u8 id, u16  result)
-{
-#if 0
-	if(result == CONN_PARAM_UPDATE_ACCEPT){
-		/*SIG: the LE master Host has accepted the connection parameters.*/
-		conn_update_cnt = 0;
-	}
-	else if(result == CONN_PARAM_UPDATE_REJECT)
-	{
-		/*SIG: the LE master Host has rejected the connection parameters.*/
 
-		conn_update_cnt++;
-		if(conn_update_cnt < 4){
-			/*Slave sent update connPara req!*/
-		}
-		if(conn_update_cnt == 1){
-			bls_l2cap_requestConnParamUpdate (8, 16, 0, 400);//18.75ms iOS
-		}
-		else if(conn_update_cnt == 2){
-			bls_l2cap_requestConnParamUpdate (16,32, 0, 400);
-		}
-		else if(conn_update_cnt == 3){
-			bls_l2cap_requestConnParamUpdate (32,60, 0, 400);
-		}
-		else{
-			conn_update_cnt = 0;
-			/*Slave Connection Parameters Update table all tested and failed!*/
-		}
-	}
-#endif
-
-	return 0;
-}
-
-
-/**
- * @brief		enter in ota mode
- * @param[in]	none
- * @return      none
- */
-#if (BLE_OTA_ENABLE)
-void entry_ota_mode(void)
-{
-	bls_ota_setTimeout(15 * 1000 * 1000); //set OTA timeout  15 seconds
-
-	#if(BLT_APP_LED_ENABLE)
-		gpio_set_output_en(GPIO_LED, 1);  //output enable
-		gpio_write(GPIO_LED, 1);  //LED on for indicate OTA mode
-	#endif
-}
-
-
-/**
- * @brief		show the ota result with led according to the input param
- * @param[in]	0: ota success ; else ota fail
- * @return      none
- */
-void show_ota_result(int result)
-{
-	#if(1 && BLT_APP_LED_ENABLE)
-		gpio_set_output_en(GPIO_LED, 1);
-
-		if(result == OTA_SUCCESS){  //OTA success
-			gpio_write(GPIO_LED, 1);
-			sleep_us(500000);
-			gpio_write(GPIO_LED, 0);
-			sleep_us(500000);
-			gpio_write(GPIO_LED, 1);
-			sleep_us(500000);
-			gpio_write(GPIO_LED, 0);
-			sleep_us(500000);
-		}
-		else{  //OTA fail
-
-			#if 0 //this is only for debug,  can not use this in application code
-				irq_disable();
-				WATCHDOG_DISABLE;
-
-				while(1){
-					gpio_write(GPIO_LED, 1);
-					sleep_us(200000);
-					gpio_write(GPIO_LED, 0);
-					sleep_us(200000);
-				}
-			#endif
-
-		}
-
-		gpio_set_output_en(GPIO_LED, 0);
-	#endif
-}
-#endif
 
 
 #define MAX_INTERVAL_VAL		16
@@ -265,12 +180,12 @@ void 	app_switch_to_indirect_adv(u8 e, u8 *p, int n)
 						BLT_ENABLE_ADV_ALL,
 						ADV_FP_NONE);
 
-	bls_ll_setAdvEnable(1);  //must: set adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //must: set adv enable
 }
 
 
 /**
- * @brief		stop sleep and enter in working mode
+ * @brief		exit suspend mode
  * @param[in]	none
  * @return      none
  */
@@ -285,7 +200,11 @@ void app_suspend_exit ()
 	tick_wakeup = clock_time () | 1;
 }
 
-
+/**
+ * @brief		enter suspend mode
+ * @param[in]	none
+ * @return      none
+ */
 int app_suspend_enter ()
 {
 	if (app_module_busy ())
@@ -298,7 +217,7 @@ int app_suspend_enter ()
 
 /**
  * @brief      power management code for application
- * @param	   none
+ * @param[in]  none
  * @return     none
  */
 void app_power_management ()
@@ -336,22 +255,10 @@ void app_power_management ()
 #endif
 }
 
-#define UATRT_TIMNEOUT_US					   100 //100uS for 115200
-
-_attribute_data_retention_ volatile unsigned int   uart0_ndmairq_cnt=0;//Pre-4B for len
-_attribute_data_retention_ volatile unsigned int   uart0_ndma_tick = 0;
-_attribute_data_retention_ volatile unsigned char  uart0_flag = 0;
-enum
-{
-	UART0_RECIEVE_IDLE=0,
-	UART0_RECIEVE_START=1,
-};
-volatile unsigned int uart0_rx_buff_byte[16] __attribute__((aligned(4))) ={0x00};
-
 
 /**
  * @brief      uart0 irq code for application
- * @param	   none
+ * @param[in]  none
  * @return     none
  */
 void uart0_recieve_irq(void)
@@ -400,9 +307,9 @@ void uart0_recieve_irq(void)
 
 
 /**
- * @brief      this function for count data numbers
- * @param	   none
- * @return     none
+ * @brief      	this function for count data numbers
+ * @param[in]	none
+ * @return      none
  */
 void uart0_recieve_process(void)
 {
@@ -499,7 +406,6 @@ _attribute_no_inline_ void user_init_normal(void)
 	my_att_init (); //gatt initialization
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);  	//l2cap initialization
 
-	blc_l2cap_registerConnUpdateRspCb(app_conn_param_update_response);
 	//Smp Initialization may involve flash write/erase(when one sector stores too much information,
 	//   is about to exceed the sector threshold, this sector must be erased, and all useful information
 	//   should re_stored) , so it must be done after battery check
@@ -549,7 +455,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) );
 	bls_ll_setScanRspData( (u8 *)tbl_scanRsp, sizeof(tbl_scanRsp));
 
-	bls_ll_setAdvEnable(1);  //adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //adv enable
 
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
@@ -624,13 +530,6 @@ _attribute_no_inline_ void user_init_normal(void)
 	bls_pm_setSuspendMask (SUSPEND_DISABLE);
 #endif
 
-#if (BLE_OTA_ENABLE)
-	// OTA init
-	bls_ota_clearNewFwDataArea(); //must
-	bls_ota_set_VersionFlashAddr_and_VersionNumber(OTA_VERSION_FLASH_ADDR, OTA_VERSION_NUMBER); //must
-	bls_ota_registerStartCmdCb(entry_ota_mode);
-	bls_ota_registerResultIndicateCb(show_ota_result);
-#endif
 }
 
 

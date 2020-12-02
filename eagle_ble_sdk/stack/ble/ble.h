@@ -58,12 +58,18 @@
 #include "hci/hci_cmd.h"
 #include "hci/hci_event.h"
 
-#include "service/ota.h"
-#include "service/ota_stack.h"
+#include "service/ota/ota.h"
+#include "service/ota/ota_server.h"
 #include "service/device_information.h"
 #include "service/hids.h"
 #include "service/uuid.h"
 
+
+/*********************************************************/
+//Remove when file merge to SDK //
+
+#include "service/ota/ota_stack.h"
+/*********************************************************/
 
 
 #endif /* BLE_H_ */

@@ -63,7 +63,7 @@
  * @brief	Adv Packet data
  */
 const u8	tbl_advData[] = {
-	 0x05, 0x09, 'f', 't', 'r', 'e',
+	 0x08, 0x09, 'f', 'e', 'a', 't', 'u', 'r', 'e',
 	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
 	 0x03, 0x19, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
 	 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
@@ -426,7 +426,7 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 
-	bls_ll_setAdvEnable(1);  //adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //adv enable
 
 
 

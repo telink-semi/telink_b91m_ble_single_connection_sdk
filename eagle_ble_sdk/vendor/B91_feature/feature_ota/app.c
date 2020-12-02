@@ -54,7 +54,11 @@
 #include "application/usbstd/usbkeycode.h"
 #include "../default_att.h"
 
-#if (FEATURE_TEST_MODE == TEST_BLE_PHY)
+#if (FEATURE_TEST_MODE == TEST_OTA)
+
+
+#define FIRMWARE_SELECT							1
+
 
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P2p79dBm
@@ -63,7 +67,7 @@
  * @brief	Adv Packet data
  */
 const u8	tbl_advData[] = {
-	 0x05, 0x09, 'f', 't', 'r', 'e',
+	 0x08, 0x09, 'B','9','1','_','o','t','a',
 	 0x02, 0x01, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
 	 0x03, 0x19, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
 	 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
@@ -73,16 +77,11 @@ const u8	tbl_advData[] = {
  * @brief	Scan Response Packet data
  */
 const u8	tbl_scanRsp [] = {
-		 0x08, 0x09, 'f', 'e', 'a', 't', 'u', 'r', 'e',
+		  0x08, 0x09, 'B','9','1','_','o','t','a',
 	};
 
-volatile u8	phyTest_rxfifo[UART_RX_BUFFER_SIZE * UART_RX_BUFFER_NUM] __attribute__((aligned(4))) = {0};
-volatile u8	phyTest_txfifo[UART_TX_BUFFER_SIZE * UART_TX_BUFFER_NUM] __attribute__((aligned(4))) = {0};
 
-extern hci_fifo_t				bltHci_rxfifo;
-extern hci_fifo_t			    bltHci_txfifo;
-extern unsigned int g_chip_version;
-extern blc_main_loop_phyTest_callback_t	blc_main_loop_phyTest_cb;
+
 
 _attribute_data_retention_	int device_in_connection_state;
 
@@ -93,6 +92,9 @@ _attribute_data_retention_	u32	interval_update_tick;
 _attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
 
 _attribute_data_retention_	u32	latest_user_event_tick;
+
+
+
 
 
 
@@ -135,8 +137,15 @@ void	task_connect (u8 e, u8 *p, int n)
 
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //yellow light on
+	#if(FIRMWARE_SELECT == 1)
+		gpio_write(GPIO_LED_RED, LED_ON_LEVAL);
+	#elif(FIRMWARE_SELECT == 2)
+		gpio_write(GPIO_LED_WHITE, LED_ON_LEVAL);
+	#endif
 #endif
+
+
+	my_dump_str_data(APP_DUMP_EN, "conn complete", 0, 0);
 }
 
 
@@ -168,10 +177,16 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //yellow light off
+	#if(FIRMWARE_SELECT == 1)
+		gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);
+	#elif(FIRMWARE_SELECT == 2)
+		gpio_write(GPIO_LED_WHITE, !LED_ON_LEVAL);
+	#endif
 #endif
 
 	advertise_begin_tick = clock_time();
+
+	my_dump_str_data(APP_DUMP_EN, "conn disconnect ", p, 1);
 
 }
 
@@ -191,37 +206,6 @@ _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 
 
 
-/**
- * @brief      function to initialization parameter for phy test.
- * @param[in]  e - LinkLayer Event type
- * @param[in]  p - data pointer of event
- * @param[in]  n - data length of event
- * @return     none
- */
-void phy_test_uart_init(uart_tx_pin_e tx_pin, uart_rx_pin_e rx_pin, unsigned int baudrate )
-{
-	unsigned short div;
-	unsigned char bwpc;
-	g_chip_version = 0x01;
-
-	uart_reset(UART0);
-	uart_set_pin(tx_pin,rx_pin);
-	uart_cal_div_and_bwpc(baudrate, sys_clk.pclk*1000*1000, &div, &bwpc);
-	uart_set_dma_rx_timeout(UART0, bwpc, 12, UART_BW_MUL1);
-	uart_init(UART0, div, bwpc, UART_PARITY_NONE, UART_STOP_BIT_ONE);
-
-	core_interrupt_enable();
-	uart_set_tx_dma_config(UART0, DMA3);
-	uart_set_rx_dma_config(UART0, DMA2);
-	uart_clr_tx_done(UART0);
-	dma_clr_irq_mask(DMA2,TC_MASK|ABT_MASK|ERR_MASK);
-	dma_clr_irq_mask(DMA3,TC_MASK|ABT_MASK|ERR_MASK);
-	uart_set_irq_mask(UART0, UART_RXDONE_MASK);
-	uart_set_irq_mask(UART0, UART_TXDONE_MASK);
-	plic_interrupt_enable(IRQ19_UART0);
-	uart_receive_dma(UART0, (unsigned char*)(phyTest_rxfifo+4),UART_RX_BUFFER_SIZE);
-
-}
 
 
 /**
@@ -240,10 +224,6 @@ void blt_pm_proc(void)
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 	#endif
 
-	if(blc_main_loop_phyTest_cb && bltParam.phy_en)
-	{
-		bls_pm_setSuspendMask (SUSPEND_DISABLE);
-	}
 
 	//do not care about keyScan/button_detect power here, if you care about this, please refer to "8258_ble_remote" demo
 	#if (UI_KEYBOARD_ENABLE)
@@ -388,6 +368,54 @@ void proc_keyboard (u8 e, u8 *p, int n)
 
 
 /**
+ * @brief      this function is used to register the function for OTA start.
+ * @param[in]  none
+ * @return     none
+ */
+void app_enter_ota_mode(void)
+{
+	#if(UI_LED_ENABLE)  //this is only for debug
+		gpio_write(GPIO_LED_BLUE, 1);
+	#endif
+}
+
+/**
+ * @brief       no matter whether the OTA result is successful or fail.
+ *              code will run here to tell user the OTA result.
+ * @param[in]   result    OTA result:success or fail(different reason)
+ * @return      none
+ */
+void app_debug_ota_result(int result)
+{
+	#if (1)  //this is only for debug
+		if(result == OTA_SUCCESS){  //led for debug: OTA success
+			//add your test code here
+			gpio_write(GPIO_LED_GREEN, 1);
+		}
+		else{  //OTA fail
+			//add your test code here
+			gpio_write(GPIO_LED_GREEN, 0);
+		}
+	#endif
+
+	gpio_write(GPIO_LED_BLUE, 0);
+
+
+#if 0 //stop code to see OTA result
+	gpio_write(GPIO_LED_RED, 1);
+	gpio_write(GPIO_LED_WHITE, 1);
+	write_log32(result);
+	irq_disable();
+	while(1);
+#endif
+
+}
+
+
+
+
+
+/**
  * @brief		user initialization when MCU power on or wake_up from deepSleep mode
  * @param[in]	none
  * @return      none
@@ -446,29 +474,6 @@ _attribute_no_inline_ void user_init_normal(void)
 
 	//////////// Host Initialization  End /////////////////////////
 
-
-	//////////// PhyTest Initialization  Begin /////////////////////////
-
-	blc_phy_initPhyTest_module();
-	blc_phy_setPhyTestEnable( BLC_PHYTEST_ENABLE );
-	blc_ll_initHciRxFifo((u8*)(phyTest_rxfifo),UART_RX_BUFFER_SIZE,UART_RX_BUFFER_NUM);
-	blc_ll_initHciTxFifo((u8*)(phyTest_txfifo),UART_TX_BUFFER_SIZE,UART_TX_BUFFER_NUM);
-#if( BLE_PHYTEST_MODE == PHYTEST_MODE_THROUGH_2_WIRE_UART )
-	blc_register_hci_handler (blc_phyTest_2wire_rxUartCb, blc_phyTest_2wire_txUartCb);
-//	blc_register_hci_handler (blc_phyTest_hci_rxUartCb, blc_phyTest_2wire_txUartCb);
-#elif( BLE_PHYTEST_MODE == PHYTEST_MODE_OVER_HCI_WITH_UART )
-	blc_register_hci_handler (blc_phyTest_hci_rxUartCb, blc_phyTest_2wire_txUartCb);
-#endif
-
-	phy_test_uart_init(UART_TX_PIN, UART_RX_PIN, BANDRATE);
-
-
-//	blc_register_hci_handler (blc_phyTest_2wire_rxUartCb, blc_phyTest_2wire_txUartCb);
-
-
-	//////////// PhyTest Initialization  End ///////////////////////////
-
-
 //////////////////////////// BLE stack Initialization  End //////////////////////////////////
 
 
@@ -486,7 +491,7 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 
-	bls_ll_setAdvEnable(1);  //adv enable
+	bls_ll_setAdvEnable(BLC_ADV_ENABLE);  //adv enable
 
 
 
@@ -529,6 +534,32 @@ _attribute_no_inline_ void user_init_normal(void)
 	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboard);
 #endif
 
+
+//	advertise_begin_tick = clock_time();
+
+
+#if (BLE_OTA_SERVER_ENABLE)
+	/* OTA module initialization must be done before any other OTA settings. */
+	blc_ota_initOtaServer_module();
+
+	blc_ota_registerOtaStartCmdCb(app_enter_ota_mode);
+	blc_ota_registerOtaResultIndicationCb(app_debug_ota_result);  //debug
+	blc_ota_setOtaProcessTimeout(20);   //OTA process timeout:  20 seconds
+	blc_ota_setOtaDataPacketTimeout(3); //OTA data packet interval timeout 3 seconds
+#endif
+
+
+#if (APP_DUMP_EN)
+	my_usb_init(0x120, &print_fifo);
+	usb_set_pin_en ();
+#endif
+
+
+#if(FIRMWARE_SELECT == 1)
+	my_dump_str_data(APP_DUMP_EN,"FW 1 user init", 0, 0);
+#elif(FIRMWARE_SELECT == 2)
+	my_dump_str_data(APP_DUMP_EN,"FW 2 user init", 0, 0);
+#endif
 }
 
 
@@ -586,7 +617,9 @@ _attribute_no_inline_ void main_loop (void)
 	blt_pm_proc();
 
 
-
+#if (APP_DUMP_EN)
+	myudb_usb_handle_irq ();
+#endif
 }
 
 

@@ -47,7 +47,7 @@
 
 #include "../feature_config.h"
 
-#if (FEATURE_TEST_MODE == TEST_2M_CODED_PHY_CONNECTION)
+#if (FEATURE_TEST_MODE == TEST_OTA)
 
 /////////////////// FEATURE SELECT /////////////////////////////////
 /**
@@ -55,20 +55,73 @@
  */
 #define BLE_APP_PM_ENABLE					0
 #define PM_DEEPSLEEP_RETENTION_ENABLE		1
+#define BLE_OTA_SERVER_ENABLE				1
+
 
 #define APP_DEFAULT_HID_BATTERY_OTA_ATTRIBUTE_TABLE				1
 
 
-#define	LEGACY_ADV_CONNECTABLE_UNDIRECTED			1
-#define EXTENDED_ADV_CONNECTABLE_UNDIRECTED			2
-#define CONNECTABLE_MODE							LEGACY_ADV_CONNECTABLE_UNDIRECTED
+#define DUMP_STR_EN							1
+#define APP_DUMP_EN							1
 
 /**
  *  @brief  UI Configuration
  */
 #define UI_LED_ENABLE          	 			1
+#define	UI_KEYBOARD_ENABLE					1
 
 
+
+
+#if (UI_KEYBOARD_ENABLE)   // if test pure power, kyeScan GPIO setting all disabled
+		//---------------  KeyMatrix PB2/PB3/PB4/PB5 -----------------------------
+		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
+		#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
+
+		#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+
+
+
+		#define			CR_VOL_UP				0xf0  ////
+		#define			CR_VOL_DN				0xf1
+
+
+		/**
+		 *  @brief  Normal keyboard map
+		 */
+		#define		KB_MAP_NORMAL	{	{CR_VOL_DN,		VK_1},	 \
+										{CR_VOL_UP,		VK_2}, }
+
+
+
+		//////////////////// KEY CONFIG (EVK board) ///////////////////////////
+		#define  KB_DRIVE_PINS  {GPIO_PC2, GPIO_PC0}
+		#define  KB_SCAN_PINS   {GPIO_PC3, GPIO_PC1}
+
+		//drive pin as gpio
+		#define	PC2_FUNC				AS_GPIO
+		#define	PC0_FUNC				AS_GPIO
+
+		//drive pin need 100K pulldown
+		#define	PULL_WAKEUP_SRC_PC2		MATRIX_ROW_PULL
+		#define	PULL_WAKEUP_SRC_PC0		MATRIX_ROW_PULL
+
+		//drive pin open input to read gpio wakeup level
+		#define PC2_INPUT_ENABLE		1
+		#define PC0_INPUT_ENABLE		1
+
+		//scan pin as gpio
+		#define	PC3_FUNC				AS_GPIO
+		#define	PC1_FUNC				AS_GPIO
+
+		//scan  pin need 10K pullup
+		#define	PULL_WAKEUP_SRC_PC3		MATRIX_COL_PULL
+		#define	PULL_WAKEUP_SRC_PC1		MATRIX_COL_PULL
+
+		//scan pin open input to read gpio level
+		#define PC3_INPUT_ENABLE		1
+		#define PC1_INPUT_ENABLE		1
+#endif
 
 #if (UI_LED_ENABLE)
 	/**
@@ -114,11 +167,10 @@ enum{
 
 
 
-
 /**
  *  @brief  Definition for gpio debug
  */
-#define DEBUG_GPIO_ENABLE							0
+#define DEBUG_GPIO_ENABLE							1
 
 #if(DEBUG_GPIO_ENABLE)
 
@@ -267,4 +319,4 @@ enum{
 #include "vendor/common/default_config.h"
 
 
-#endif  //end of (FEATURE_TEST_MODE == TEST_2M_CODED_PHY_CONNECTION)
+#endif  //end of (FEATURE_TEST_MODE == ...)

@@ -74,5 +74,5 @@ void main_loop (void);
 
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif  //end of (FEATURE_TEST_MODE == TEST_POWER_ADV)
 #endif /* VENDOR_APP_H_ */

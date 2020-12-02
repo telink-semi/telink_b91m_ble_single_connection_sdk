@@ -54,7 +54,7 @@ extern int 	key_not_released;
 extern	u8 	ota_is_working;
 
 
-#if (BLE_SLAVE_OTA_ENABLE)
+#if (BLE_OTA_SERVER_ENABLE)
 /**
  * @brief      this function is used to register the function for OTA start.
  * @param[in]  none

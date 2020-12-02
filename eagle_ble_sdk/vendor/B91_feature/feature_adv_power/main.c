@@ -109,8 +109,6 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	CCLK_32M_HCLK_32M_PCLK_16M;
 #elif (CLOCK_SYS_CLOCK_HZ == 48000000)
 	CCLK_48M_HCLK_48M_PCLK_24M;
-#elif (CLOCK_SYS_CLOCK_HZ == 64000000)
-	CCLK_64M_HCLK_32M_PCLK_16M;
 #endif
 
 	rf_drv_ble_init();
@@ -139,4 +137,4 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 }
 
 
-#endif  //end of (FEATURE_TEST_MODE == ...)
+#endif  //end of (FEATURE_TEST_MODE == TEST_POWER_ADV)
