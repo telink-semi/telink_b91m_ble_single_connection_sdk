@@ -192,7 +192,9 @@ int rx_from_uart_cb (void)//UART data send to Master,we will handler the data as
 
 	return 0;
 }
-
+extern ble_sts_t 	bls_ll_setAdvInterval(u16 intervalMin, u16 intervalMax);
+extern ble_sts_t 	bls_ll_setAdvFilterPolicy(adv_fp_type_t advFilterPolicy);
+extern ble_sts_t 	blc_hci_le_readBufferSize_cmd(u8 *pData);
 ///////////////////////////////////////////the default bls_uart_handler///////////////////////////////
 /**
  * @brief		this function is used to process rx uart data to remote device.

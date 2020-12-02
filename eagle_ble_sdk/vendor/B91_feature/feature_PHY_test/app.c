@@ -240,7 +240,7 @@ void blt_pm_proc(void)
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 	#endif
 
-	if(blc_main_loop_phyTest_cb && bltParam.phy_en)
+	if(blc_main_loop_phyTest_cb && blc_phy_isPhyTestEnable())
 	{
 		bls_pm_setSuspendMask (SUSPEND_DISABLE);
 	}
