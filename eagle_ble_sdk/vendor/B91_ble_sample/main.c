@@ -94,7 +94,6 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 {
 	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
-
 	sys_init(LDO_1P4_LDO_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
 
 	/* detect if MCU is wake_up from deep retention mode */

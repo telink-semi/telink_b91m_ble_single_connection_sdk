@@ -165,7 +165,7 @@ bool blc_ota_setOtaProcessTimeout(int timeout_second);
 /**
  * @brief      This function is used to set OTA packet interval timeout value
  * 			   if not set, default value is 5 S
- * @param[in]  timeout_ms - timeout value, unit: mS, should in range of 1 ~ 10
+ * @param[in]  timeout_ms - timeout value, unit: mS, should in range of 1 ~ 20
  * @return     status, 1:  succeed
  * 			           0:  failed
  */

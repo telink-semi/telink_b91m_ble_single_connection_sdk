@@ -472,6 +472,10 @@ _attribute_no_inline_ void user_init_normal(void)
 	 *   should re_stored) , so it must be done after battery check */
 	blc_smp_peripheral_init();
 
+	// Hid device on android7.0/7.1 or later version
+	// New paring: send security_request immediately after connection complete
+	// reConnect:  send security_request 1000mS after connection complete. If master start paring or encryption before 1000mS timeout, slave do not send security_request.
+	blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection)
 	//////////// Host Initialization  End /////////////////////////
 
 //////////////////////////// BLE stack Initialization  End //////////////////////////////////
@@ -548,6 +552,9 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_ota_setOtaDataPacketTimeout(3); //OTA data packet interval timeout 3 seconds
 #endif
 
+#if (OTA_SERVER_SUPPORT_BIG_PDU_ENABLE)
+	blc_att_setRxMtuSize(250);
+#endif
 
 #if (APP_DUMP_EN)
 	my_usb_init(0x120, &print_fifo);

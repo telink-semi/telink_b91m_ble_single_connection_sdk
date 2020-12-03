@@ -46,6 +46,8 @@
 #ifndef VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_
 #define VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_
 
+#include "app_config.h"
+
 #if (FEATURE_TEST_MODE == TEST_OTA)
 
 /**
@@ -54,8 +56,11 @@
  * usage limitation:
  * 1. should be in range of 27 ~ 251
  */
-#define ACL_CONN_MAX_RX_OCTETS			27
-
+#if(OTA_SERVER_SUPPORT_BIG_PDU_ENABLE)
+	#define ACL_CONN_MAX_RX_OCTETS			251  //cover biggest OTA PDU length 240 Bytes
+#else
+	#define ACL_CONN_MAX_RX_OCTETS			27
+#endif
 
 /**
  * @brief	connMaxTxOctets
@@ -79,7 +84,7 @@
  * 1. must be: 2^n, (power of 2)
  * 2. at least 4; recommended value: 8, 16
  */
-#define ACL_RX_FIFO_SIZE				64  // ACL_CONN_MAX_RX_OCTETS + 21, then 16 Byte align
+#define ACL_RX_FIFO_SIZE				CAL_LL_ACL_RX_FIFO_SIZE(ACL_CONN_MAX_RX_OCTETS)  // ACL_CONN_MAX_RX_OCTETS + 21, then 16 Byte align
 #define ACL_RX_FIFO_NUM					8	// must be: 2^n
 
 
@@ -97,7 +102,7 @@
  *    so when ACL TX FIFO size bigger than 256(when connMaxTxOctets bigger than 246), ACL TX FIFO number can only be 9(can not use 17)
  */
 #define ACL_TX_FIFO_SIZE				48	// ACL_CONN_MAX_TX_OCTETS + 10, then 16 Byte align
-#define ACL_TX_FIFO_NUM					17	// must be: (2^n) + 1
+#define ACL_TX_FIFO_NUM					9	// must be: (2^n) + 1
 
 
 

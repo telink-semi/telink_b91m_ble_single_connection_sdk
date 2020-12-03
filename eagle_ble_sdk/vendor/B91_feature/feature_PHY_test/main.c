@@ -96,20 +96,15 @@ void stimer_irq_handler(void)
 _attribute_ram_code_
 void uart0_irq_handler(void)
 {
-	DBG_CHN1_HIGH;
-	test3++;
 	u32 rev_data_len = 0;
-	test8 = reg_uart_status1(UART0);
-	test9 = reg_uart_status2(UART0);
 	if(uart_get_irq_status(UART0,UART_TXDONE))
 	{
-		test4 ++;
+		delay_us(10);
 		gpio_toggle(GPIO_LED_GREEN);
 	    uart_clr_tx_done(UART0);
 	}
     if(uart_get_irq_status(UART0,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can noly used in A1-SOC.
     {
-    	test5 ++;
     	gpio_toggle(GPIO_LED_WHITE);
     	/************************get the length of receive data****************************/
     	if(((reg_uart_status1(UART0)&FLD_UART_RBCNT)%4)==0)
@@ -133,12 +128,10 @@ void uart0_irq_handler(void)
 
     	if((uart_get_irq_status(UART0,UART_RX_ERR)))
     	{
+			delay_us(10);
     		uart_clr_irq_status(UART0,UART_CLR_RX);
     	}
     }
-
-	DBG_CHN1_LOW;
-	test6++;
 }
 
 /**
@@ -186,18 +179,8 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	}
 
 	test1 = 0;
-	test2 = 0;
-	test3 = 0;
-	test4 = 0;
-	test5 = 0;
-	test6 = 0;
-	test7 = 0;
-	test8 = 0;
-	test9 = 0;
-	test_p1 = 0;
 	while (1) {
-		test7 ++;
-		DBG_CHN0_TOGGLE;
+		test1 ++;
 		main_loop ();
 	}
 	return 0;

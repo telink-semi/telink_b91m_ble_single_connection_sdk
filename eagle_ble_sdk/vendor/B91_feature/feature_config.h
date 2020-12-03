@@ -82,7 +82,7 @@
 
 #define	TEST_STUCK_KEY									90
 #define	TEST_AUDIO										91
-#define	TEST_IR											92		//TODO
+#define	TEST_IR											92
 
 #define	TEST_OTA										95
 
@@ -90,7 +90,7 @@
 #define TEST_FEATURE_BACKUP								200
 
 
-#define FEATURE_TEST_MODE								TEST_BLE_PHY//TEST_FEATURE_BACKUP
+#define FEATURE_TEST_MODE								TEST_OTA//TEST_FEATURE_BACKUP
 
 
 

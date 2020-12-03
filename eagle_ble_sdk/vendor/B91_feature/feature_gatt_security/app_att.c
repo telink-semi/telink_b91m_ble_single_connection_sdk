@@ -205,7 +205,7 @@ int module_onReceiveData(u16 connHandle, rf_packet_att_write_t *p)
 	if(len > 0)
 	{
 
-		bls_att_pushNotifyData(0x11, &p->value, len);
+		blc_gatt_pushHandleValueNotify (connHandle,0x11, &p->value, len);
 	}
 
 	return 0;

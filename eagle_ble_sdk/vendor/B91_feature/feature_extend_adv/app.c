@@ -439,6 +439,10 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);  	//l2cap initialization
 	blc_smp_peripheral_init(); 									//SMP initialization
 
+	// Hid device on android7.0/7.1 or later version
+	// New paring: send security_request immediately after connection complete
+	// reConnect:  send security_request 1000mS after connection complete. If master start paring or encryption before 1000mS timeout, slave do not send security_request.
+	blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection)
 
 	blc_ll_setExtAdvParam( ADV_HANDLE0, 		ADV_EVT_PROP_LEGACY_CONNECTABLE_SCANNABLE_UNDIRECTED,  		   my_adv_interval_min, 			my_adv_interval_max,
 						   BLT_ENABLE_ADV_ALL,	OWN_ADDRESS_PUBLIC, 										   BLE_ADDR_PUBLIC, 				NULL,
@@ -592,6 +596,11 @@ _attribute_no_inline_ void user_init_normal(void)
 	my_att_init (); //gatt initialization
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);  	//l2cap initialization
 	blc_smp_peripheral_init(); 									//SMP initialization
+
+	// Hid device on android7.0/7.1 or later version
+	// New paring: send security_request immediately after connection complete
+	// reConnect:  send security_request 1000mS after connection complete. If master start paring or encryption before 1000mS timeout, slave do not send security_request.
+	blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection)
 
 	blc_ll_setExtAdvParam( ADV_HANDLE0, 		ADV_EVT_PROP_EXTENDED_CONNECTABLE_UNDIRECTED, 					my_adv_interval_min, 			my_adv_interval_max,
 						   BLT_ENABLE_ADV_ALL,	OWN_ADDRESS_PUBLIC, 										    BLE_ADDR_PUBLIC, 				NULL,

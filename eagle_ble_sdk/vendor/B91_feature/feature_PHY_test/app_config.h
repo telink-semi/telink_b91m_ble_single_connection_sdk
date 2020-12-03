@@ -53,7 +53,7 @@
 /**
  *  @brief  Feature select in bLE Sample project
  */
-#define BLE_APP_PM_ENABLE										0
+#define BLE_APP_PM_ENABLE										1
 #define PM_DEEPSLEEP_RETENTION_ENABLE							1
 #define APP_DEFAULT_HID_BATTERY_OTA_ATTRIBUTE_TABLE				1
 
@@ -65,7 +65,7 @@
 #define 		PHYTEST_MODE_THROUGH_2_WIRE_UART		1   //Direct Test Mode through a 2-wire UART interface
 #define 		PHYTEST_MODE_OVER_HCI_WITH_UART			2   //Direct Test Mode over HCI(UART hardware interface)
 
-#define BLE_PHYTEST_MODE		PHYTEST_MODE_THROUGH_2_WIRE_UART
+#define BLE_PHYTEST_MODE		PHYTEST_MODE_OVER_HCI_WITH_UART
 
 /**
  *  @brief phytest uart setting.

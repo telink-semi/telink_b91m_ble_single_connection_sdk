@@ -55,7 +55,7 @@
 #include "app_att.h"
 
 #include "app_audio.h"
-
+#include "application/audio/gl_audio.h"
 #if (FEATURE_TEST_MODE == TEST_AUDIO)
 
 
@@ -281,6 +281,10 @@ _attribute_no_inline_ void user_init_normal(void)
 	 *   should re_stored) , so it must be done after battery check */
 	blc_smp_peripheral_init();
 
+	// Hid device on android7.0/7.1 or later version
+	// New paring: send security_request immediately after connection complete
+	// reConnect:  send security_request 1000mS after connection complete. If master start paring or encryption before 1000mS timeout, slave do not send security_request.
+	blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection)
 	//////////// Host Initialization  End /////////////////////////
 
 //////////////////////////// BLE stack Initialization  End //////////////////////////////////
@@ -532,7 +536,8 @@ void key_change_proc(void)
 	}
 }
 #elif(TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_GOOGLE)
-
+extern u8 htt_audio_model_key_press_flags;
+extern u8 app_audio_key_flags;
 /**
  * @brief      this function is used to detect if key pressed or released.
  * @param[in]  e - LinkLayer Event type
@@ -627,6 +632,11 @@ void key_change_proc(void)
 			key_buf[2] = 0;
 
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
+		}
+
+		if(app_audio_key_flags & APP_AUDIO_KEY_FLAG_PRESS || htt_audio_model_key_press_flags)
+		{
+			voice_key_release();
 		}
 	}
 }

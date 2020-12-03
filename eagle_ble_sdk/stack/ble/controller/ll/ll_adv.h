@@ -103,7 +103,7 @@ ble_sts_t   bls_ll_setAdvParam( u16 intervalMin,  u16 intervalMax,  adv_type_t a
  * @param[in]  adv_enable - Advertising_Enable
  * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
-ble_sts_t   bls_ll_setAdvEnable(adv_en_t adv_enable);
+ble_sts_t   bls_ll_setAdvEnable(int adv_enable);
 
 
 

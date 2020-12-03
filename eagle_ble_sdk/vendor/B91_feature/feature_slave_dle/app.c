@@ -385,11 +385,10 @@ _attribute_no_inline_ void user_init_normal(void)
 	 *   should re_stored) , so it must be done after battery check */
 	blc_smp_peripheral_init();
 
-	/* if not set, default is:  send "security request"
-	 * immediately after link layer connection established(regardless of new connection or reconnection )*/
-
-	blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000);
-
+	// Hid device on android7.0/7.1 or later version
+	// New paring: send security_request immediately after connection complete
+	// reConnect:  send security_request 1000mS after connection complete. If master start paring or encryption before 1000mS timeout, slave do not send security_request.
+	blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection)
 
 	//host(GAP/SMP/GATT/ATT) event process: register host event callback and set event mask
 	blc_gap_registerHostEventHandler( app_host_event_callback );

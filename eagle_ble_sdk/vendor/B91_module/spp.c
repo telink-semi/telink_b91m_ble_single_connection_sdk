@@ -361,7 +361,7 @@ int bls_uart_handler (u8 *p, int n)
 		}
 		else
 		{
-			pEvt->param[0] = bls_att_pushNotifyData( cmdPara[0] | (cmdPara[1]<<8), cmdPara + 2,  pCmd->paramLen - 2);
+			pEvt->param[0] = blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, cmdPara[0] | (cmdPara[1]<<8), cmdPara + 2,  pCmd->paramLen - 2);
 		}
 	}
 

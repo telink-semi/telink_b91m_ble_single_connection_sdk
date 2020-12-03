@@ -423,13 +423,13 @@ void blt_pm_proc(void)
 			{
 				//DEBUG("RCU transmit consumer release code.\n");
 				u16 consumer_key = 0;
-				bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
+				blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
 			}
 			else if(key_type == KEYBOARD_KEY)
 			{
 				//DEBUG("RCU transmit keyboard release code.\n");
 				u8 key_buf[2] = {0};
-				bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
+				blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE,HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
 			}
 
 			bls_ll_terminateConnection(HCI_ERR_REMOTE_USER_TERM_CONN); //push terminate cmd into ble TX buffer
@@ -523,7 +523,10 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);  	//l2cap initialization
 	blc_smp_peripheral_init();
 
-	blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection )
+	// Hid device on android7.0/7.1 or later version
+	// New paring: send security_request immediately after connection complete
+	// reConnect:  send security_request 1000mS after connection complete. If master start paring or encryption before 1000mS timeout, slave do not send security_request.
+	blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection)
 
 ///////////////////// USER application initialization ///////////////////
 
