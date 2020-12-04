@@ -507,7 +507,7 @@ void proc_audio(void){
 		}
 	}
 
-	int server2client_auido_proc(void* p)
+	int server2client_auido_proc(u16 connHandle,void* p)
 	{
 		rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
 
@@ -703,7 +703,7 @@ void proc_audio(void){
 		}
 	}
 
-	int server2client_auido_proc(void* p)
+	int server2client_auido_proc(u16 connHandle, void* p)
 	{
 		rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
 
@@ -896,7 +896,7 @@ void proc_audio(void){
 			}
 		}
 
-		int server2client_auido_proc(void* p)
+		int server2client_auido_proc(u16 connHandle,void* p)
 		{
 			rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
 

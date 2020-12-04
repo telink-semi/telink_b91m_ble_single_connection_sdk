@@ -55,7 +55,7 @@ void ui_enable_mic (int en);
 void voice_press_proc(void);
 void blc_checkConnParamUpdate(void);
 void proc_audio(void);
-int server2client_auido_proc(void* p);
+int server2client_auido_proc(u16 connHandle,void* p);
 void audio_state_check(void);
 void voice_key_release(void);
 void voice_key_press(void);

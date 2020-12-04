@@ -76,6 +76,7 @@
 								</option>
 								<option id="nds.c.link.option.paths.1790734836" name="Library search path (-L)" superClass="nds.c.link.option.paths" valueType="libPaths">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/proj_lib}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/application/audio}&quot;"/>
 								</option>
 								<inputType id="tool.nds.c.linker.input.1065994281" superClass="tool.nds.c.linker.input">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
