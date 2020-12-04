@@ -454,7 +454,7 @@ void app_enter_ota_mode(void)
  * @param[in]   result    OTA result:success or fail(different reason)
  * @return      none
  */
-void app_debug_ota_result(int result)
+void app_ota_result(int result)
 {
 	#if (1)  //this is only for debug
 		if(result == OTA_SUCCESS){  //led for debug: OTA success
@@ -619,11 +619,11 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 #if (BLE_OTA_SERVER_ENABLE)
-	/* OTA module initialization must be done before any other OTA settings. */
+	/* OTA module initialization must be called after "blc_ota_setNewFirmwwareStorageAddress"(if used), and before any other OTA API.*/
 	blc_ota_initOtaServer_module();
 
 	blc_ota_registerOtaStartCmdCb(app_enter_ota_mode);
-	blc_ota_registerOtaResultIndicationCb(app_debug_ota_result);  //debug
+	blc_ota_registerOtaResultIndicationCb(app_ota_result);
 	blc_ota_setOtaProcessTimeout(20);   //OTA process timeout:  20 seconds
 	blc_ota_setOtaDataPacketTimeout(3); //OTA data packet interval timeout 3 seconds
 #endif

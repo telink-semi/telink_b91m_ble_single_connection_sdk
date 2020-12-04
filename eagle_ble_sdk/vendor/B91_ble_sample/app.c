@@ -535,7 +535,7 @@ _attribute_no_inline_ void user_init_normal(void)
 
 #if (BLE_OTA_SERVER_ENABLE)
 	////////////////// OTA relative ////////////////////////
-	/* OTA module initialization must be done before any other OTA settings. */
+	/* OTA module initialization must be called after "blc_ota_setNewFirmwwareStorageAddress"(if used), and before any other OTA API.*/
 	blc_ota_initOtaServer_module();
 
 	blc_ota_setOtaProcessTimeout(30);   //OTA process timeout:  30 seconds
