@@ -70,10 +70,6 @@ typedef void (*ota_resIndicateCb_t)(int result);
 
 
 
-
-extern unsigned int	ota_program_bootAddr;
-
-
 /**
  * @brief      this function is used for user to initialize OTA server module.
  * 			   //attention: this API must called before any other OTA relative settings.
@@ -87,13 +83,12 @@ void blc_ota_initOtaServer_module(void);
 
 
 /**
- * @brief      This function is used to set OTA firmware maximum size and firmware boot address.
- *             attention:
- * @param[in]  firmware_size_k - firmware size, unit: K bytes, must be 4k aligned, size range: 16 ~ 252K
- * @param[in]  boot_addr - new firmware boot address, can only be 0x20000, 0x40000, or 0x80000
- * @return     none
+ * @brief      This function is used to set OTA new firmware storage address on Flash.
+ * @param[in]  new_fw_addr - new firmware storage address, can only choose from multiple boot address
+ * 							 supported by MCU
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
-bool blc_ota_set_firmwareMaxSize_and_firmwwareBootAddress(int firmware_size_k, int boot_addr);
+ble_sts_t blc_ota_setNewFirmwwareStorageAddress(multi_boot_addr_e new_fw_addr);
 
 
 
@@ -155,10 +150,9 @@ void blc_ota_registerOtaResultIndicationCb(ota_resIndicateCb_t cb);
  * @brief      This function is used to set OTA whole process timeout value
  * 			   if not set, default value is 30 S
  * @param[in]  timeout_second - timeout value, unit: S, should in range of 4 ~ 250
- * @return     status, 1:  succeed
- * 			           0:  failed
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
-bool blc_ota_setOtaProcessTimeout(int timeout_second);
+ble_sts_t blc_ota_setOtaProcessTimeout(int timeout_second);
 
 
 
@@ -166,10 +160,9 @@ bool blc_ota_setOtaProcessTimeout(int timeout_second);
  * @brief      This function is used to set OTA packet interval timeout value
  * 			   if not set, default value is 5 S
  * @param[in]  timeout_ms - timeout value, unit: mS, should in range of 1 ~ 20
- * @return     status, 1:  succeed
- * 			           0:  failed
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
-bool blc_ota_setOtaDataPacketTimeout(int timeout_second);
+ble_sts_t blc_ota_setOtaDataPacketTimeout(int timeout_second);
 
 
 

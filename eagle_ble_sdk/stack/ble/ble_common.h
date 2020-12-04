@@ -174,14 +174,17 @@ typedef enum {
 	IAL_ERR_ISO_TX_FIFO_NOT_ENOUGH,
 	IAL_ERR_SDU_BUFF_INVALID,
 
+	//Service status
+	SERVICE_ERR_INVALID_PARAMETER 								   = 0xD0,
+
 	//Application buffer check error code
-	LL_ACL_RX_BUF_NO_INIT 							   	  		   = 0xD0,
-	LL_ACL_RX_BUF_PARAM_INVALID 							   	   = 0xD1,
-	LL_ACL_RX_BUF_SIZE_NOT_MEET_MAX_RX_OCT 					   	   = 0xD2,
-	LL_ACL_TX_BUF_NO_INIT 							   	  		   = 0xD3,
-	LL_ACL_TX_BUF_PARAM_INVALID 							   	   = 0xD4,
-	LL_ACL_TX_BUF_SIZE_MUL_NUM_EXCEED_4K 					       = 0xD5,
-	LL_ACL_TX_BUF_SIZE_NOT_MEET_MAX_TX_OCT 					   	   = 0xD6,
+	LL_ACL_RX_BUF_NO_INIT 							   	  		   = 0xE0,
+	LL_ACL_RX_BUF_PARAM_INVALID,
+	LL_ACL_RX_BUF_SIZE_NOT_MEET_MAX_RX_OCT,
+	LL_ACL_TX_BUF_NO_INIT,
+	LL_ACL_TX_BUF_PARAM_INVALID,
+	LL_ACL_TX_BUF_SIZE_MUL_NUM_EXCEED_4K,
+	LL_ACL_TX_BUF_SIZE_NOT_MEET_MAX_TX_OCT,
 
 } ble_sts_t;
 
