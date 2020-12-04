@@ -539,8 +539,9 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_ota_initOtaServer_module();
 
 	blc_ota_setOtaProcessTimeout(30);   //OTA process timeout:  30 seconds
+	blc_ota_setOtaDataPacketTimeout(2);	//OTA data packet timeout:  2 seconds
 	blc_ota_registerOtaStartCmdCb(app_enter_ota_mode);
-	blc_ota_registerOtaResultIndicationCb(app_ota_end_result);  //debug
+	blc_ota_registerOtaResultIndicationCb(app_ota_end_result);
 #endif
 
 

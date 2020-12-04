@@ -77,10 +77,6 @@ _attribute_data_retention_	u8 		key_type;
 void app_enter_ota_mode(void)
 {
 	ota_is_working = 1;
-
-	#if(1 && UI_LED_ENABLE)  //this is only for debug
-	gpio_write(GPIO_LED_WHITE, 1);
-	#endif
 }
 
 
@@ -91,6 +87,8 @@ void app_enter_ota_mode(void)
  */
 void app_ota_end_result(int result)
 {
+	ota_is_working = 0;
+
 	#if(1 && UI_LED_ENABLE)  //this is only for debug
 	if(result == OTA_SUCCESS){  //led for debug: OTA success
 		gpio_write(GPIO_LED_BLUE, 1);

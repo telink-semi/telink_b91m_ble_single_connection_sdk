@@ -85,7 +85,7 @@
 	#define BLE_DMIC_SELECT					0
 	#define BLE_AMIC_SELECT					1
 	#define MICPHONE_SELECT					BLE_AMIC_SELECT
-
+	#define MCU_STALL_ENABLE				0
 #if	(MICPHONE_SELECT == BLE_DMIC_SELECT)
 	#define PD4_INPUT_ENABLE				1
 	#define PD5_INPUT_ENABLE				1
@@ -186,7 +186,7 @@ enum{
 };
 
 
-
+#define PE1_OUTPUT_ENABLE					1
 
 
 /**

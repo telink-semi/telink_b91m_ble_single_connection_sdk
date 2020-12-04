@@ -138,7 +138,9 @@ void	task_connect (u8 e, u8 *p, int n)
 {
 	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
-	latest_user_event_tick = clock_time();
+	latest_user_event_tick = clock_time() | 1;
+
+	connect_event_occurTick = clock_time() | 1;
 
 	device_in_connection_state = 1;//
 

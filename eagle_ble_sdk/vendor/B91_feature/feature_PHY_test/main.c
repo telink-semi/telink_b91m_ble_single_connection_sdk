@@ -123,7 +123,7 @@ void uart0_irq_handler(void)
 			p[0] = rev_data_len;
 			bltHci_rxfifo.wptr++;
 			p = bltHci_rxfifo.p + (bltHci_rxfifo.wptr & (bltHci_rxfifo.num-1)) * bltHci_rxfifo.size;
-			uart_receive_dma(UART0, (unsigned char*)(p+4),UART_RX_BUFFER_SIZE);
+			uart_receive_dma_set(DMA2, (unsigned char*)(p+4),UART_RX_BUFFER_SIZE-4);
 		}
 
     	if((uart_get_irq_status(UART0,UART_RX_ERR)))

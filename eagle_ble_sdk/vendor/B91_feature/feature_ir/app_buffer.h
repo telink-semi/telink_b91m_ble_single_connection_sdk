@@ -1,7 +1,7 @@
 /********************************************************************************************************
- * @file	main.c
+ * @file	app_buffer.h
  *
- * @brief	This is the source file for BLE SDK
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -43,115 +43,72 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *         
  *******************************************************************************************************/
-#include "tl_common.h"
-#include "app_config.h"
-#include "gpio_default.h"
-#include "drivers.h"
-#include "stack/ble/ble.h"
-#include "app.h"
-#include "rc_ir.h"
-#include "rc_ir_learn.h"
+#ifndef VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_
+#define VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_
 
 #if (FEATURE_TEST_MODE == TEST_IR)
 
 /**
- * @brief		BLE SDK RF interrupt handler.
- * @param[in]	none
- * @return      none
+ * @brief	connMaxRxOctets
+ * refer to BLE SPEC "4.5.10 Data PDU length management" & "2.4.2.21 LL_LENGTH_REQ and LL_LENGTH_RSP"
+ * usage limitation:
+ * 1. should be in range of 27 ~ 251
  */
-_attribute_ram_code_
-void rf_irq_handler(void)
-{
-	DBG_CHN14_HIGH;
+#define ACL_CONN_MAX_RX_OCTETS			27
 
-	irq_blt_sdk_handler ();
-
-	DBG_CHN14_LOW;
-}
 
 /**
- * @brief		BLE SDK System timer interrupt handler.
- * @param[in]	none
- * @return      none
+ * @brief	connMaxTxOctets
+ * refer to BLE SPEC "4.5.10 Data PDU length management" & "2.4.2.21 LL_LENGTH_REQ and LL_LENGTH_RSP"
+ * usage limitation:
+ * 1. connMaxTxOctets should be in range of 27 ~ 251
  */
-_attribute_ram_code_
-void stimer_irq_handler(void)
-{
-	DBG_CHN15_HIGH;
+#define ACL_CONN_MAX_TX_OCTETS			27
 
-	irq_blt_sdk_handler ();
 
-	DBG_CHN15_LOW;
-}
+
+
+/********************* ACL connection LinkLayer TX & RX data FIFO allocation, Begin ************************************************/
+/**
+ * @brief	ACL RX buffer size & number
+ *  		ACL RX buffer is used to hold LinkLayer RF RX data.
+ * usage limitation for ACL_RX_FIFO_SIZE:
+ * 1. should be greater than or equal to (connMaxRxOctets + 21)
+ * 2. should be be an integer multiple of 16 (16 Byte align). user can use formula:  size = CAL_LL_ACL_RX_FIFO_SIZE(connMaxRxOctets)
+ * usage limitation for ACL_RX_FIFO_NUM:
+ * 1. must be: 2^n, (power of 2)
+ * 2. at least 4; recommended value: 8, 16
+ */
+#define ACL_RX_FIFO_SIZE				64  // ACL_CONN_MAX_RX_OCTETS + 21, then 16 Byte align
+#define ACL_RX_FIFO_NUM					8	// must be: 2^n
+
 
 /**
- * @brief		BLE SDK pwm interrupt handler.
- * @param[in]	none
- * @return      none
+ * @brief	ACL TX buffer size & number
+ *  		ACL TX buffer is used to hold LinkLayer RF TX data.
+ * usage limitation for ACL_TX_FIFO_SIZE:
+ * 1. should be greater than or equal to (connMaxTxOctets + 10)
+ * 2. should be be an integer multiple of 16 (16 Byte align). user can use formula:  size = CAL_LL_ACL_TX_FIFO_SIZE(connMaxTxOctets)
+ * usage limitation for ACL_TX_FIFO_NUM:
+ * 1. must be: (2^n) + 1, (power of 2, then add 1)
+ * 2. at least 9; recommended value: 9, 17, 33; other value not allowed.
+ * usage limitation for size * (number - 1)
+ * 1. (ACL_TX_FIFO_NUM * (ACL_TX_FIFO_NUM - 1)) must be less than 4096 (4K)
+ *    so when ACL TX FIFO size bigger than 256(when connMaxTxOctets bigger than 246), ACL TX FIFO number can only be 9(can not use 17)
  */
-_attribute_ram_code_
-void pwm_irq_handler(void)
-{
-	rc_ir_irq_prc();
-}
+#define ACL_TX_FIFO_SIZE				48	// ACL_CONN_MAX_TX_OCTETS + 10, then 16 Byte align
+#define ACL_TX_FIFO_NUM					17	// must be: (2^n) + 1
 
-_attribute_ram_code_
-void gpio_irq_handler(void)
-{
-	DBG_CHN1_TOGGLE;
-	ir_learn_irq_handler();
-}
 
-/**
- * @brief		This is main function
- * @param[in]	none
- * @return      none
- */
-_attribute_ram_code_ int main (void)   //must on ramcode
-{
-	DBG_CHN0_LOW;
-	blc_pm_select_internal_32k_crystal();
 
-	sys_init(LDO_1P4_LDO_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
 
-	/* detect if MCU is wake_up from deep retention mode */
-	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
+extern	u8	app_acl_rxfifo[];
+extern	u8	app_acl_txfifo[];
+/******************** ACL connection LinkLayer TX & RX data FIFO allocation, End ***************************************************/
 
-#if (CLOCK_SYS_CLOCK_HZ == 16000000)
-	CCLK_16M_HCLK_16M_PCLK_16M;
-#elif (CLOCK_SYS_CLOCK_HZ == 24000000)
-	CCLK_24M_HCLK_24M_PCLK_24M;
-#elif (CLOCK_SYS_CLOCK_HZ == 32000000)
-	CCLK_32M_HCLK_32M_PCLK_16M;
-#elif (CLOCK_SYS_CLOCK_HZ == 48000000)
-	CCLK_48M_HCLK_48M_PCLK_24M;
-#elif (CLOCK_SYS_CLOCK_HZ == 64000000)
-	CCLK_64M_HCLK_32M_PCLK_16M;
-#endif
 
-	rf_drv_ble_init();
-	gpio_init(!deepRetWakeUp);
 
-	if(!deepRetWakeUp){//read flash size
-		blc_readFlashSize_autoConfigCustomFlashSector();
-	}
-
-	blc_app_loadCustomizedParameters();  //load customized freq_offset cap value
-
-	if( deepRetWakeUp ){ //MCU wake_up from deepSleep retention mode
-		user_init_deepRetn ();
-	}
-	else{ //MCU power_on or wake_up from deepSleep mode
-		user_init_normal();
-	}
-
-	irq_enable();
-
-	while (1) {
-		main_loop ();
-	}
-	return 0;
-}
 
 
 #endif  //end of (FEATURE_TEST_MODE == ...)
+#endif /* VENDOR_B91_BLE_SAMPLE_APP_BUFFER_H_ */

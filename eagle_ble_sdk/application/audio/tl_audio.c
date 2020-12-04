@@ -375,11 +375,11 @@ _attribute_ram_code_ void	proc_mic_encoder (void)
 			if((filter_step_enable & 0x30) != 0)
 			{
 				if(filter_step_enable & BIT(4))
-				{DBG_CHN1_TOGGLE;
+				{//DBG_C HN1_TOGGLE;
 					voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
 				}
 				if(filter_step_enable & BIT(5))
-				{DBG_CHN1_TOGGLE;
+				{//DBG_C HN1_TOGGLE;
 					voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
 				}
 			}
@@ -477,11 +477,11 @@ _attribute_ram_code_ void	proc_mic_encoder (void)
 			if((filter_step_enable & 0x30) != 0)
 			{
 				if(filter_step_enable & BIT(4))
-				{DBG_CHN1_TOGGLE;
+				{//DBG_C HN1_TOGGLE;
 					voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
 				}
 				if(filter_step_enable & BIT(5))
-				{DBG_CHN1_TOGGLE;
+				{//DBG_C HN1_TOGGLE;
 					voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
 				}
 			}
@@ -583,11 +583,11 @@ void	proc_mic_encoder (void)
 			if((filter_step_enable & 0x30) != 0)
 			{
 				if(filter_step_enable & BIT(4))
-				{DBG_CHN1_TOGGLE;
+				{//DBG_C HN1_TOGGLE;
 					voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
 				}
 				if(filter_step_enable & BIT(5))
-				{DBG_CHN1_TOGGLE;
+				{//DBG_C HN1_TOGGLE;
 					voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
 				}
 			}
@@ -779,11 +779,11 @@ void	proc_mic_encoder (void)
 			if((filter_step_enable & 0x30) != 0)
 			{
 				if(filter_step_enable & BIT(4))
-				{DBG_CHN1_TOGGLE;
+				{//DBG_C HN1_TOGGLE;
 					voice_iir_OOB(ps, ps, LPF_FILTER_1, (TL_MIC_BUFFER_SIZE>>2), lpf_filter1_shift);//12 bits
 				}
 				if(filter_step_enable & BIT(5))
-				{DBG_CHN1_TOGGLE;
+				{//DBG_C HN1_TOGGLE;
 					voice_iir_OOB(ps, ps, LPF_FILTER_2, (TL_MIC_BUFFER_SIZE>>2), lpf_filter2_shift);//12 bits
 				}
 			}

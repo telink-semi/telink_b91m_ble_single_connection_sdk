@@ -79,6 +79,7 @@ const u8	tbl_scanRsp [] = {
 volatile u8	phyTest_rxfifo[UART_RX_BUFFER_SIZE * UART_RX_BUFFER_NUM] __attribute__((aligned(4))) = {0};
 volatile u8	phyTest_txfifo[UART_TX_BUFFER_SIZE * UART_TX_BUFFER_NUM] __attribute__((aligned(4))) = {0};
 
+
 extern hci_fifo_t				bltHci_rxfifo;
 extern hci_fifo_t			    bltHci_txfifo;
 extern unsigned int g_chip_version;
@@ -219,7 +220,7 @@ void phy_test_uart_init(uart_tx_pin_e tx_pin, uart_rx_pin_e rx_pin, unsigned int
 	uart_set_irq_mask(UART0, UART_RXDONE_MASK);
 	uart_set_irq_mask(UART0, UART_TXDONE_MASK);
 	plic_interrupt_enable(IRQ19_UART0);
-	uart_receive_dma(UART0, (unsigned char*)(phyTest_rxfifo+4),UART_RX_BUFFER_SIZE);
+	uart_receive_dma(UART0, (unsigned char*)(phyTest_rxfifo+4),UART_RX_BUFFER_SIZE-4);
 
 }
 
@@ -459,15 +460,11 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_ll_initHciTxFifo((u8*)(phyTest_txfifo),UART_TX_BUFFER_SIZE,UART_TX_BUFFER_NUM);
 #if( BLE_PHYTEST_MODE == PHYTEST_MODE_THROUGH_2_WIRE_UART )
 	blc_register_hci_handler (blc_phyTest_2wire_rxUartCb, blc_phyTest_2wire_txUartCb);
-//	blc_register_hci_handler (blc_phyTest_hci_rxUartCb, blc_phyTest_2wire_txUartCb);
 #elif( BLE_PHYTEST_MODE == PHYTEST_MODE_OVER_HCI_WITH_UART )
 	blc_register_hci_handler (blc_phyTest_hci_rxUartCb, blc_phyTest_2wire_txUartCb);
 #endif
 
 	phy_test_uart_init(UART_TX_PIN, UART_RX_PIN, BANDRATE);
-
-
-//	blc_register_hci_handler (blc_phyTest_2wire_rxUartCb, blc_phyTest_2wire_txUartCb);
 
 
 	//////////// PhyTest Initialization  End ///////////////////////////

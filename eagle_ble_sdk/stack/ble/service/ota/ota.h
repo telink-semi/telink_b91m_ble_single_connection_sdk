@@ -106,8 +106,6 @@ typedef struct {
 	u16  	ota_cmd;
 	u8		pdu_length;			//must be: 16*n(n is in range of 1 ~ 15); pdu_length: 16,32,48,...240
 	u8		version_compare;	//0: no version compare; 1: only higher version can replace lower version
-//	u8		resume_en;   //1: resume_mode enable; 0: resume_mode disable
-//	u16		resume_adr_index;
 } ota_startExt_t;
 
 

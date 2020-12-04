@@ -205,10 +205,16 @@ void audio_mic_off()//
 			{
 				if( BLE_SUCCESS == blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, AUDIO_MIC_INPUT_DP_H, (u8*)p, ADPCM_PACKET_LEN) ){
 					mic_encoder_data_read_ok();
-					DBG_CHN5_TOGGLE;
+//					DBG_C HN5_TOGGLE;
 				}
 			}
 		}
+#if MCU_STALL_ENABLE
+		if(!blc_ll_isBrxBusy())
+		{
+			asm("WFI");
+		}
+#endif
 	}
 
 	/**

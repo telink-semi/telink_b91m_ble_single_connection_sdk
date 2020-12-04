@@ -59,11 +59,10 @@
 #define BLE_OTA_SERVER_ENABLE				1
 #define OTA_SERVER_SUPPORT_BIG_PDU_ENABLE	0  //receive big PDU from BLE master
 
+#define OTA_MAX_PDU							240
+
 #define APP_DEFAULT_HID_BATTERY_OTA_ATTRIBUTE_TABLE				1
 
-
-#define DUMP_STR_EN							1
-#define APP_DUMP_EN							1
 
 /**
  *  @brief  UI Configuration

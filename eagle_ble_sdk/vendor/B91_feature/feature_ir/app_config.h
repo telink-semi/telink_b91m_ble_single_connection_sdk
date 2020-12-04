@@ -1,7 +1,7 @@
 /********************************************************************************************************
  * @file	app_config.h
  *
- * @brief	This is the source file for BLE SDK
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
@@ -53,20 +53,22 @@
 /**
  *  @brief  Feature select in bLE Sample project
  */
+#define BLE_APP_PM_ENABLE					0
+#define PM_DEEPSLEEP_RETENTION_ENABLE		1
 
+#define APP_DEFAULT_HID_BATTERY_OTA_ATTRIBUTE_TABLE				1
 
 /**
  *  @brief  UI Configuration
  */
 #define UI_LED_ENABLE          	 			1
 #define	UI_KEYBOARD_ENABLE					1
-#define REMOTE_IR_ENABLE                    0
-#define IR_LEARN_ENABLE                     0
+#define REMOTE_IR_ENABLE                    1
+
 
 /**
  *  @brief  DEBUG  Configuration
  */
-#define APP_DUMP_EN							0
 
 #if (UI_KEYBOARD_ENABLE)   // if test pure power, kyeScan GPIO setting all disabled
 		//---------------  KeyMatrix PB2/PB3/PB4/PB5 -----------------------------
@@ -136,6 +138,11 @@
 	#define	PB6_OUTPUT_ENABLE		1
 	#define PB5_OUTPUT_ENABLE		1
 	#define	PB4_OUTPUT_ENABLE		1
+
+    #define led_off()               gpio_write(GPIO_LED_BLUE,0); \
+                                    gpio_write(GPIO_LED_GREEN,0);\
+                                    gpio_write(GPIO_LED_WHITE,0);\
+
 #endif
 
 
@@ -159,12 +166,7 @@ enum{
 
 
 
-#if (APP_DUMP_EN)
-	#define PA5_FUNC						AS_USB_DM
-	#define PA6_FUNC						AS_USB_DP
-	#define PA5_INPUT_ENABLE				1
-	#define PA6_INPUT_ENABLE				1
-#endif
+
 
 /**
  *  @brief  Definition for gpio debug
@@ -174,14 +176,16 @@ enum{
 #if(DEBUG_GPIO_ENABLE)
 
 
-	#define GPIO_CHN0							GPIO_PE1
+//	#define GPIO_CHN0							GPIO_PE1  // use for IR_LEARN_IN
+	#define GPIO_CHN0
 	#define GPIO_CHN1							GPIO_PE2
 	#define GPIO_CHN2							GPIO_PA0
     #define GPIO_CHN3							GPIO_PA4
 	#define GPIO_CHN4							GPIO_PA3
 	#define GPIO_CHN5							GPIO_PB0
 	#define GPIO_CHN6							GPIO_PB2
-	#define GPIO_CHN7							GPIO_PE0
+//	#define GPIO_CHN7							GPIO_PE0  // use for IR_CONTROL
+	#define GPIO_CHN7
 
 	#define GPIO_CHN8							GPIO_PA2
 	#define GPIO_CHN9							GPIO_PA1
@@ -214,9 +218,12 @@ enum{
 	#define PC4_OUTPUT_ENABLE					1
 
 
-	#define DBG_CHN0_LOW		gpio_write(GPIO_CHN0, 0)
-	#define DBG_CHN0_HIGH		gpio_write(GPIO_CHN0, 1)
-	#define DBG_CHN0_TOGGLE		gpio_toggle(GPIO_CHN0)
+//	#define DBG_CHN0_LOW		gpio_write(GPIO_CHN0, 0)
+//	#define DBG_CHN0_HIGH		gpio_write(GPIO_CHN0, 1)
+//	#define DBG_CHN0_TOGGLE		gpio_toggle(GPIO_CHN0)
+ 	#define DBG_CHN0_LOW
+ 	#define DBG_CHN0_HIGH
+ 	#define DBG_CHN0_TOGGLE
 	#define DBG_CHN1_LOW		gpio_write(GPIO_CHN1, 0)
 	#define DBG_CHN1_HIGH		gpio_write(GPIO_CHN1, 1)
 	#define DBG_CHN1_TOGGLE		gpio_toggle(GPIO_CHN1)
@@ -235,9 +242,12 @@ enum{
 	#define DBG_CHN6_LOW		gpio_write(GPIO_CHN6, 0)
 	#define DBG_CHN6_HIGH		gpio_write(GPIO_CHN6, 1)
 	#define DBG_CHN6_TOGGLE		gpio_toggle(GPIO_CHN6)
-	#define DBG_CHN7_LOW		gpio_write(GPIO_CHN7, 0)
-	#define DBG_CHN7_HIGH		gpio_write(GPIO_CHN7, 1)
-	#define DBG_CHN7_TOGGLE		gpio_toggle(GPIO_CHN7)
+//	#define DBG_CHN7_LOW		gpio_write(GPIO_CHN7, 0)
+//	#define DBG_CHN7_HIGH		gpio_write(GPIO_CHN7, 1)
+//	#define DBG_CHN7_TOGGLE		gpio_toggle(GPIO_CHN7)
+ 	#define DBG_CHN7_LOW
+ 	#define DBG_CHN7_HIGH
+ 	#define DBG_CHN7_TOGGLE
 	#define DBG_CHN8_LOW		gpio_write(GPIO_CHN8, 0)
 	#define DBG_CHN8_HIGH		gpio_write(GPIO_CHN8, 1)
 	#define DBG_CHN8_TOGGLE		gpio_toggle(GPIO_CHN8)

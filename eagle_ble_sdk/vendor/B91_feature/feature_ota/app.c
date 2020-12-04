@@ -57,7 +57,7 @@
 #if (FEATURE_TEST_MODE == TEST_OTA)
 
 
-#define FIRMWARE_SELECT							1
+#define FIRMWARE_SELECT							2
 
 
 
@@ -84,17 +84,18 @@ const u8	tbl_scanRsp [] = {
 
 
 _attribute_data_retention_	int device_in_connection_state;
-
 _attribute_data_retention_	u32 advertise_begin_tick;
-
 _attribute_data_retention_	u32	interval_update_tick;
-
 _attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
-
 _attribute_data_retention_	u32	latest_user_event_tick;
 
 
 
+_attribute_data_retention_	u32 connect_event_occurTick = 0;
+_attribute_data_retention_  u32 mtuExchange_check_tick = 0;
+_attribute_data_retention_ 	int  dle_started_flg = 0;
+_attribute_data_retention_ 	int  mtuExchange_started_flg = 0;
+_attribute_data_retention_	u16  final_MTU_size = 23;
 
 
 
@@ -136,6 +137,19 @@ void	task_connect (u8 e, u8 *p, int n)
 	interval_update_tick = clock_time() | 1; //none zero
 
 
+	connect_event_occurTick = clock_time() | 1;
+	mtuExchange_check_tick = 0;
+
+	//MTU size exchange and data length exchange procedure must be executed on every new connection,
+	//so when connection terminate, relative flags must be cleared
+	dle_started_flg = 0;
+	mtuExchange_started_flg = 0;
+
+	//MTU size reset to default 23 bytes when connection terminated
+	final_MTU_size = 23;
+
+
+
 #if (UI_LED_ENABLE)
 	#if(FIRMWARE_SELECT == 1)
 		gpio_write(GPIO_LED_RED, LED_ON_LEVAL);
@@ -145,7 +159,6 @@ void	task_connect (u8 e, u8 *p, int n)
 #endif
 
 
-	my_dump_str_data(APP_DUMP_EN, "conn complete", 0, 0);
 }
 
 
@@ -176,6 +189,18 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 	}
 
 
+	connect_event_occurTick = 0;
+	mtuExchange_check_tick = 0;
+
+	//MTU size exchange and data length exchange procedure must be executed on every new connection,
+	//so when connection terminate, relative flags must be cleared
+	dle_started_flg = 0;
+	mtuExchange_started_flg = 0;
+
+	//MTU size reset to default 23 bytes when connection terminated
+	final_MTU_size = 23;
+
+
 #if (UI_LED_ENABLE)
 	#if(FIRMWARE_SELECT == 1)
 		gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);
@@ -186,7 +211,6 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 	advertise_begin_tick = clock_time();
 
-	my_dump_str_data(APP_DUMP_EN, "conn disconnect ", p, 1);
 
 }
 
@@ -205,6 +229,51 @@ _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 }
 
 
+
+
+/**
+ * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_DATA_LENGTH_EXCHANGE"
+ * @param[in]  e - LinkLayer Event type
+ * @param[in]  p - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     none
+ */
+void	task_dle_exchange (u8 e, u8 *p, int n)
+{
+	//ll_data_extension_t* dle_param = (ll_data_extension_t*)p;
+	dle_started_flg = 1;
+}
+
+
+/**
+ * @brief      callback function of Host Event
+ * @param[in]  h - Host Event type
+ * @param[in]  para - data pointer of event
+ * @param[in]  n - data length of event
+ * @return     0
+ */
+int app_host_event_callback (u32 h, u8 *para, int n)
+{
+
+	u8 event = h & 0xFF;
+
+	switch(event)
+	{
+		case GAP_EVT_ATT_EXCHANGE_MTU:
+		{
+			gap_gatt_mtuSizeExchangeEvt_t *pEvt = (gap_gatt_mtuSizeExchangeEvt_t *)para;
+			final_MTU_size = pEvt->effective_MTU;
+			mtuExchange_started_flg = 1;   //set MTU size exchange flag here
+		}
+		break;
+
+
+		default:
+		break;
+	}
+
+	return 0;
+}
 
 
 
@@ -476,6 +545,12 @@ _attribute_no_inline_ void user_init_normal(void)
 	// New paring: send security_request immediately after connection complete
 	// reConnect:  send security_request 1000mS after connection complete. If master start paring or encryption before 1000mS timeout, slave do not send security_request.
 	blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection)
+
+
+	//host(GAP/SMP/GATT/ATT) event process: register host event callback and set event mask
+	blc_gap_registerHostEventHandler( app_host_event_callback );
+	blc_gap_setEventMask(GAP_EVT_MASK_ATT_EXCHANGE_MTU);
+
 	//////////// Host Initialization  End /////////////////////////
 
 //////////////////////////// BLE stack Initialization  End //////////////////////////////////
@@ -506,6 +581,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	bls_app_registerEventCallback (BLT_EV_FLAG_CONNECT, &task_connect);
 	bls_app_registerEventCallback (BLT_EV_FLAG_TERMINATE, &task_terminate);
 	bls_app_registerEventCallback (BLT_EV_FLAG_SUSPEND_EXIT, &user_set_rf_power);
+	bls_app_registerEventCallback (BLT_EV_FLAG_DATA_LENGTH_EXCHANGE, &task_dle_exchange);
 
 	///////////////////// Power Management initialization///////////////////
 #if(BLE_APP_PM_ENABLE)
@@ -556,17 +632,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_att_setRxMtuSize(250);
 #endif
 
-#if (APP_DUMP_EN)
-	my_usb_init(0x120, &print_fifo);
-	usb_set_pin_en ();
-#endif
 
-
-#if(FIRMWARE_SELECT == 1)
-	my_dump_str_data(APP_DUMP_EN,"FW 1 user init", 0, 0);
-#elif(FIRMWARE_SELECT == 2)
-	my_dump_str_data(APP_DUMP_EN,"FW 2 user init", 0, 0);
-#endif
 }
 
 
@@ -620,13 +686,30 @@ _attribute_no_inline_ void main_loop (void)
 	////////////////////////////////////// UI entry /////////////////////////////////
 	proc_keyboard (0,0, 0);
 
+#if (OTA_SERVER_SUPPORT_BIG_PDU_ENABLE)
+	if(connect_event_occurTick && clock_time_exceed(connect_event_occurTick, 500000)){  //0.5 S after connection established
+		connect_event_occurTick = 0;
+
+		mtuExchange_check_tick = clock_time() | 1;
+		if(!mtuExchange_started_flg){  //master do not send MTU exchange request in time
+			blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
+			/*After conn 1.5s, S send  MTU size req to the Master.*/
+		}
+	}
+
+
+	if(mtuExchange_check_tick && clock_time_exceed(mtuExchange_check_tick, 500000 )){  //1 S after connection established
+		mtuExchange_check_tick = 0;
+
+		if(!dle_started_flg){ //master do not send data length request in time
+			/*Master hasn't initiated the DLE yet, S send DLE req to the Master.*/
+			blc_ll_exchangeDataLength(LL_LENGTH_REQ , ACL_CONN_MAX_TX_OCTETS);
+		}
+	}
+#endif
+
 	////////////////////////////////////// PM Process /////////////////////////////////
 	blt_pm_proc();
-
-
-#if (APP_DUMP_EN)
-	myudb_usb_handle_irq ();
-#endif
 }
 
 

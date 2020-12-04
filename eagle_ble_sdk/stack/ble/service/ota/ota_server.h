@@ -89,8 +89,8 @@ void blc_ota_initOtaServer_module(void);
 /**
  * @brief      This function is used to set OTA firmware maximum size and firmware boot address.
  *             attention:
- * @param[in]  firmware_size_k - firmware size, unit: K bytes, must be 4k aligned
- * @param[in]  boot_addr - new firmware boot address, can only be 0x20000, 0x40000, and 0x80000
+ * @param[in]  firmware_size_k - firmware size, unit: K bytes, must be 4k aligned, size range: 16 ~ 252K
+ * @param[in]  boot_addr - new firmware boot address, can only be 0x20000, 0x40000, or 0x80000
  * @return     none
  */
 bool blc_ota_set_firmwareMaxSize_and_firmwwareBootAddress(int firmware_size_k, int boot_addr);

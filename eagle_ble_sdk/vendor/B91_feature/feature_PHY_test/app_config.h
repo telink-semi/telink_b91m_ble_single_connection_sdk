@@ -90,7 +90,6 @@
 #define UART_RX_BUFFER_NUM		4
 #define UART_RX_BUFFER_SIZE		80
 
-
 /////////////////// Clock  /////////////////////////////////
 /**
  *  @brief  MCU system clock

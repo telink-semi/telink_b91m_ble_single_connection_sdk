@@ -1,9 +1,48 @@
-/*
- * rc_ir_learn.c
+/********************************************************************************************************
+ * @file	rc_ir_learn.c
  *
- *  Created on: Nov 26, 2020
- *      Author: telink
- */
+ * @brief	This is the source file for BLE SDK
+ *
+ * @author	BLE GROUP
+ * @date	2020.06
+ *
+ * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ *          All rights reserved.
+ *          
+ *          Redistribution and use in source and binary forms, with or without
+ *          modification, are permitted provided that the following conditions are met:
+ *          
+ *              1. Redistributions of source code must retain the above copyright
+ *              notice, this list of conditions and the following disclaimer.
+ *          
+ *              2. Unless for usage inside a TELINK integrated circuit, redistributions 
+ *              in binary form must reproduce the above copyright notice, this list of 
+ *              conditions and the following disclaimer in the documentation and/or other
+ *              materials provided with the distribution.
+ *          
+ *              3. Neither the name of TELINK, nor the names of its contributors may be 
+ *              used to endorse or promote products derived from this software without 
+ *              specific prior written permission.
+ *          
+ *              4. This software, with or without modification, must only be used with a
+ *              TELINK integrated circuit. All other usages are subject to written permission
+ *              from TELINK and different commercial license may apply.
+ *
+ *              5. Licensee shall be solely responsible for any claim to the extent arising out of or 
+ *              relating to such deletion(s), modification(s) or alteration(s).
+ *         
+ *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
+ *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *         
+ *******************************************************************************************************/
 
 #include "tl_common.h"
 #include "drivers.h"
@@ -13,7 +52,7 @@
 
 #if (FEATURE_TEST_MODE == TEST_IR)
 ir_learn_ctrl_t	ir_learn_ctrl;
-ir_learn_ctrl_t *g_ir_learn_ctrl;
+volatile ir_learn_ctrl_t *g_ir_learn_ctrl;
 ir_send_dma_data_t ir_send_dma_data;
 
 void ir_learn_init(void)
@@ -21,8 +60,11 @@ void ir_learn_init(void)
 ////// for debug ////////////////////////
 #if Debug_IR
 	g_ir_learn_ctrl = (ir_learn_ctrl_t*)(0xc0018000);
-#endif
 	memset((void*)g_ir_learn_ctrl, 0, sizeof(ir_learn_ctrl_t));  //ir_learn_ctrl_t is same as YF
+#else
+	g_ir_learn_ctrl = &ir_learn_ctrl;
+	memset(&ir_learn_ctrl,0,sizeof(ir_learn_ctrl_t));
+#endif
 
 	// To output ircontrol and irout low, then ir receive can work.
 	gpio_function_en(GPIO_IR_OUT);
@@ -40,6 +82,7 @@ void ir_learn_init(void)
 	gpio_set_output_en(GPIO_IR_LEARN_IN, 0);
 	gpio_setup_up_down_resistor(GPIO_IR_LEARN_IN, PM_PIN_PULLUP_10K);  //open pull up resistor
 	gpio_set_irq(GPIO_IR_LEARN_IN, INTR_FALLING_EDGE);    //falling edge
+	gpio_irq_en(GPIO_IR_LEARN_IN);
 	plic_interrupt_enable(IRQ25_GPIO);
 }
 
@@ -266,7 +309,7 @@ void ir_learn_send(ir_learn_send_t* send_buffer)
 
 	ir_send_dma_data.dma_len = (ir_send_dma_data.data_num + 1)* 2;
 
-	ir_send_ctrl.repeat_enable = 1;                         // need repeat signal
+	ir_send_ctrl.repeat_enable = 0;                         // need repeat signal
 	ir_send_ctrl.is_sending = IR_SENDING_DATA;
 
 	pwm_set_dma_config(PWM_DMA_CHN);

@@ -148,17 +148,6 @@ void  blt_att_resetEffectiveMtuSize(u16 connHandle);
 
 
 /**
- * @brief	This function is used to push notify data
- * @param	attHandle - ATT handle
- * @param	*p - the pointer of notify data
- * @param	len - the length of notify data
- * @return	0: success
- * 			other: fail
- */
-ble_sts_t  	bls_att_pushNotifyData (u16 attHandle, u8 *p, int len);
-
-
-/**
  * @brief	This function is used to set ATT table
  * @param	*p - the pointer of attribute table
  * @return	none.
