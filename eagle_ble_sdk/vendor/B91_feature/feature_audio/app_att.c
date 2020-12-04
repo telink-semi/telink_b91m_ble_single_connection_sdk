@@ -312,8 +312,9 @@ static u16 extServiceUUID;
 static const  u8 my_OtaServiceUUID[16]				= WRAPPING_BRACES(TELINK_OTA_UUID_SERVICE);
 static const  u8 my_OtaUUID[16]						= WRAPPING_BRACES(TELINK_SPP_DATA_OTA);
 static 		  u8 my_OtaData 						= 0x00;
+static 		  u8 otaDataCCC[2] 						= {0,0};
+static const  u8 my_OtaName[] 						= {'O', 'T', 'A'};
 
-static const u8  my_OtaName[] = {'O', 'T', 'A'};
 
 #if(TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)
 /////////////////////////////////////////////////////////
@@ -494,7 +495,7 @@ static const u8 my_batCharVal[5] = {
 
 //// OTA attribute values
 static const u8 my_OtaCharVal[19] = {
-	CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RSP,
+	CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RSP | CHAR_PROP_NOTIFY,
 	U16_LO(OTA_CMD_OUT_DP_H), U16_HI(OTA_CMD_OUT_DP_H),
 	TELINK_SPP_DATA_OTA,
 };
@@ -590,10 +591,11 @@ static const attribute_t my_Attributes[] = {
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(batteryValueInCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(batteryValueInCCC), 0},	//value
 
 	////////////////////////////////////// OTA /////////////////////////////////////////////////////
-	// 002e - 0031
-	{4,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID), 	(u8*)(&my_OtaServiceUUID), 0},
+	// 002e - 0032
+	{5,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID), 	(u8*)(&my_OtaServiceUUID), 0},
 	{0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},				//prop
-	{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, NULL},			//value
+	{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, NULL},				//value
+	{0,ATT_PERMISSIONS_RDWR,2,sizeof(otaDataCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(otaDataCCC), 0},				//value
 	{0,ATT_PERMISSIONS_READ, 2,sizeof (my_OtaName),(u8*)(&userdesc_UUID), (u8*)(my_OtaName), 0},
 
 	////////////////////////////////////// Audio /////////////////////////////////////////////////////
@@ -720,10 +722,11 @@ static const attribute_t my_Attributes[] = {
 		{0,ATT_PERMISSIONS_RDWR,2,sizeof(batteryValueInCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(batteryValueInCCC), 0},	//value
 
 		////////////////////////////////////// OTA /////////////////////////////////////////////////////
-		// 002e - 0031
-		{4,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID), 	(u8*)(&my_OtaServiceUUID), 0},
+		// 002e - 0032
+		{5,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID), 	(u8*)(&my_OtaServiceUUID), 0},
 		{0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},				//prop
-		{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, NULL},			//value
+		{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, NULL},				//value
+		{0,ATT_PERMISSIONS_RDWR,2,sizeof(otaDataCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(otaDataCCC), 0},				//value
 		{0,ATT_PERMISSIONS_READ, 2,sizeof (my_OtaName),(u8*)(&userdesc_UUID), (u8*)(my_OtaName), 0},
 };
 #elif (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_GOOGLE)						//GATT GOOGLE
@@ -815,26 +818,27 @@ static const attribute_t my_Attributes[] = {
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(batteryValueInCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(batteryValueInCCC), 0},	//value
 
 	////////////////////////////////////// OTA /////////////////////////////////////////////////////
-	// 002e - 0031
-	{4,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID), 	(u8*)(&my_OtaServiceUUID), 0},
+	// 002e - 0032
+	{5,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID), 	(u8*)(&my_OtaServiceUUID), 0},
 	{0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},				//prop
-	{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, NULL},			//value
+	{0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),	(&my_OtaData), &otaWrite, NULL},				//value
+	{0,ATT_PERMISSIONS_RDWR,2,sizeof(otaDataCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(otaDataCCC), 0},				//value
 	{0,ATT_PERMISSIONS_READ, 2,sizeof (my_OtaName),(u8*)(&userdesc_UUID), (u8*)(my_OtaName), 0},
 
 	////////////////////////////////////// Audio /////////////////////////////////////////////////////
 	/********************************************************************************************
 	* GOOGLE AUDIO service
 	********************************************************************************************/
-	//0032
+	//0033
 	{9,ATT_PERMISSIONS_READ,2,16, (u8*)(&my_primaryServiceUUID), (u8*)(&sAudioGoogleServiceUUID), 0},
-	//TX 0033-0034
+	//TX 0034-0035
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(sAudioGoogleTXChar),(u8*)(&my_characterUUID),(u8*)(sAudioGoogleTXChar), 0},
 	{0,ATT_PERMISSIONS_RDWR,16,sizeof(sAudioGoogleTXData),(u8*)(&sAudioGoogleTXUUID),(u8*)(&sAudioGoogleTXData), &app_auido_google_callback},	//value
-	//RX 0035 - 0037
+	//RX 0036 - 0038
 	{0,ATT_PERMISSIONS_READ,2,sizeof(sAudioGoogleRXChar),(u8*)(&my_characterUUID),(u8*)(sAudioGoogleRXChar), 0},
 	{0,ATT_PERMISSIONS_READ,16,sizeof(sAudioGoogleRXData),(u8*)(&sAudioGoogleRXUUID),(u8*)(&sAudioGoogleRXData), 0},
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(gAudioGoogleRXCCC),(u8*)(&clientCharacterCfgUUID),(u8*)(&gAudioGoogleRXCCC), 0},
-	//CTRL 0038 -003A
+	//CTRL 0039 -003B
 	{0,ATT_PERMISSIONS_READ,2,sizeof(sAudioGoogleCTLChar),(u8*)(&my_characterUUID),(u8*)(sAudioGoogleCTLChar), 0},
 	{0,ATT_PERMISSIONS_READ,16,sizeof(sAudioGoogleCTLData),(u8*)(&sAudioGoogleCTLUUID),(u8*)(&sAudioGoogleCTLData), 0},
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(gAudioGoogleCTLCCC),(u8*)(&clientCharacterCfgUUID),(u8*)(&gAudioGoogleCTLCCC), 0},

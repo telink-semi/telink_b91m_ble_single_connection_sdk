@@ -77,6 +77,7 @@ _attribute_data_retention_	u8 		key_type;
 void app_enter_ota_mode(void)
 {
 	ota_is_working = 1;
+	latest_user_event_tick = clock_time();
 }
 
 
@@ -92,17 +93,16 @@ void app_ota_end_result(int result)
 	#if(1 && UI_LED_ENABLE)  //this is only for debug
 	if(result == OTA_SUCCESS){  //led for debug: OTA success
 		gpio_write(GPIO_LED_BLUE, 1);
-		sleep_ms(500);
+		sleep_ms(300);
 		gpio_write(GPIO_LED_BLUE, 0);
-		sleep_ms(500);
+		sleep_ms(300);
 		gpio_write(GPIO_LED_BLUE, 1);
-		sleep_ms(500);
+		sleep_ms(300);
 		gpio_write(GPIO_LED_BLUE, 0);
-		sleep_ms(500);
 	}
 	else{  //OTA fail
 		gpio_write(GPIO_LED_BLUE, 1);
-		sleep_ms(200);
+		sleep_ms(100);
 		gpio_write(GPIO_LED_BLUE, 0);
 	}
 	#endif
