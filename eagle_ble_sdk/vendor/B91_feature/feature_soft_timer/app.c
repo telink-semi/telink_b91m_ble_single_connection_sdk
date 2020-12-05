@@ -103,7 +103,9 @@ _attribute_data_retention_	u32	latest_user_event_tick;
  */
 _attribute_ram_code_ void  ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
 {
-	if( blc_ll_getCurrentState() == BLS_LINK_STATE_CONN && ((u32)(bls_pm_getSystemWakeupTick() - clock_time())) > 80 * SYSTEM_TIMER_TICK_1MS){  //suspend time > 30ms.add gpio wakeup
+	if( blc_ll_getCurrentState() == BLS_LINK_STATE_CONN && \
+			((((u32)(bls_pm_getSystemWakeupTick() - clock_time())) > 80 * SYSTEM_TIMER_TICK_1MS) || \
+			((u32)(bls_pm_getNexteventWakeupTick() - clock_time())) > 80 * SYSTEM_TIMER_TICK_1MS)){  //suspend time > 30ms.add gpio wakeup
 		bls_pm_setWakeupSource(PM_WAKEUP_PAD);  //gpio pad wakeup suspend/deepsleep
 	}
 }
@@ -629,8 +631,9 @@ _attribute_no_inline_ void main_loop (void)
 
 
 	////////////////////////////////////// UI entry /////////////////////////////////
+#if UI_KEYBOARD_ENABLE
 	proc_keyboard (0,0, 0);
-
+#endif
 	////////////////////////////////////// PM Process /////////////////////////////////
 	blt_pm_proc();
 

@@ -112,6 +112,13 @@ void 		bls_pm_setWakeupSource(u8 source);
 u32 		bls_pm_getSystemWakeupTick(void);
 
 /**
+ * @brief	for user to get low power mode next connect event wake up time
+ * @param	none
+ * @return	blt_next_event_tick
+ */
+u32 		bls_pm_getNexteventWakeupTick(void);
+
+/**
  * @brief	for user to set latency manually for save power
  * @param	latency - bltPm.user_latency
  * @return	none

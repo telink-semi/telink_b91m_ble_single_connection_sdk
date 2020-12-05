@@ -53,7 +53,7 @@
 /**
  *  @brief  Feature select in bLE Sample project
  */
-#define BLE_APP_PM_ENABLE					0
+#define BLE_APP_PM_ENABLE					1
 #define PM_DEEPSLEEP_RETENTION_ENABLE		1
 
 #define APP_DEFAULT_HID_BATTERY_OTA_ATTRIBUTE_TABLE				1
@@ -167,7 +167,7 @@ enum{
 /**
  *  @brief  Definition for gpio debug
  */
-#define DEBUG_GPIO_ENABLE							0
+#define DEBUG_GPIO_ENABLE							1
 
 #if(DEBUG_GPIO_ENABLE)
 
