@@ -106,6 +106,7 @@ enum
 };
 volatile unsigned int uart0_rx_buff_byte[16] __attribute__((aligned(4))) ={0x00};
 
+extern u32 connect_event_occurTick;
 
 
 /**
@@ -406,6 +407,12 @@ _attribute_no_inline_ void user_init_normal(void)
 	my_att_init (); //gatt initialization
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);  	//l2cap initialization
 
+	//ATT initialization
+	//If not set RX MTU size, default is: 23 bytes.  In this situation, if master send MtuSize Request before slave send MTU size request,
+	//slave will response default RX MTU size 23 bytes, then master will not send long packet on host l2cap layer, link layer data length
+	//extension feature can not be used.  So in data length extension application, RX MTU size must be enlarged when initialization.
+	blc_att_setRxMtuSize(MTU_SIZE_SETTING);
+
 	//Smp Initialization may involve flash write/erase(when one sector stores too much information,
 	//   is about to exceed the sector threshold, this sector must be erased, and all useful information
 	//   should re_stored) , so it must be done after battery check
@@ -637,6 +644,12 @@ _attribute_no_inline_ void main_loop (void)
 
 
 	spp_restart_proc();
+
+	/*After conn 1s, S send  MTU size req to the Master.*/
+	if(connect_event_occurTick && clock_time_exceed(connect_event_occurTick, 1000000)){
+		connect_event_occurTick = 0;
+	    blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
+	}
 }
 
 

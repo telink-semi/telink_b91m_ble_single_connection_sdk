@@ -60,6 +60,7 @@ extern unsigned char uart_dma_send_flag;
 uart_data_t T_txdata_buf;
 
 _attribute_data_retention_	u32 spp_cmd_restart_flag;
+_attribute_data_retention_	u32 connect_event_occurTick = 0;
 
 ///////////the code below is just for demonstration of the event callback only////////////
 
@@ -94,16 +95,24 @@ int controller_event_handler(u32 h, u8 *para, int n)
 
 			case BLT_EV_FLAG_CONNECT:
 			{
+				connect_event_occurTick = clock_time() | 1;
 				bls_l2cap_requestConnParamUpdate (8, 12, 99, 400);
 
 				spp_send_data(HCI_FLAG_EVENT_TLK_MODULE, pEvt);
+				#if (BLT_APP_LED_ENABLE)
+				gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+				#endif
 			}
 			break;
 
 
 			case BLT_EV_FLAG_TERMINATE:
 			{
+				connect_event_occurTick = 0;
 				spp_send_data(HCI_FLAG_EVENT_TLK_MODULE, pEvt);
+			#if (BLT_APP_LED_ENABLE)
+				gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+			#endif
 			}
 			break;
 

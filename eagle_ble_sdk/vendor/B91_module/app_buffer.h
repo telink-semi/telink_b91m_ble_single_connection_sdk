@@ -108,7 +108,12 @@ extern	u8	app_acl_rxfifo[];
 extern	u8	app_acl_txfifo[];
 /******************** ACL connection LinkLayer TX & RX data FIFO allocation, End ***************************************************/
 
+/********************* RX MTU buffer, Begin ********************************/
 
+	#define MTU_SIZE_SETTING   			 80
+
+
+/******************** RX MTU buffer,, End ***********************************/
 
 
 
