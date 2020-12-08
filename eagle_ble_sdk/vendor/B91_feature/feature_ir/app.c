@@ -207,6 +207,10 @@ _attribute_data_retention_	int 	key_not_released;
 
 #define CONSUMER_KEY   	   		1
 #define KEYBOARD_KEY   	   		2
+#define SWITCH_KEY              3
+#define IR_KEY                  4
+#define IR_LEARN_KEY            5
+
 _attribute_data_retention_	u8 		key_type;
 
 
@@ -320,6 +324,7 @@ void key_change_proc(void)
 
 				if(switch_key == IR_mode)
 				{
+					key_type = IR_KEY;
 					g_led_st->stat = led_turkle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
@@ -331,6 +336,7 @@ void key_change_proc(void)
 				}
 				else if(switch_key == IR_Learn_mode)
 				{
+					key_type = IR_LEARN_KEY;
 					if(get_ir_learn_state() == 0) // success
 					{
 						g_led_st->stat = led_on;
@@ -376,6 +382,7 @@ void key_change_proc(void)
 
 				if(switch_key == IR_mode)
 				{
+					key_type = IR_KEY;
 					g_led_st->stat = led_turkle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
@@ -387,6 +394,7 @@ void key_change_proc(void)
 				}
 				else if(switch_key == IR_Learn_mode)
 				{
+					key_type = IR_LEARN_KEY;
 					if(get_ir_learn_state() == 0) // success
 					{
 						g_led_st->stat = led_on;
@@ -420,6 +428,7 @@ void key_change_proc(void)
 			case VK_1:
 				if(switch_key == IR_mode)
 				{
+					key_type = IR_KEY;
 					g_led_st->stat = led_turkle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
@@ -432,6 +441,7 @@ void key_change_proc(void)
 				}
 				else if(switch_key == IR_Learn_mode)
 				{
+					key_type = IR_LEARN_KEY;
 					g_led_st->stat = led_on;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
@@ -453,11 +463,7 @@ void key_change_proc(void)
 				break;
 
 			case VK_2:  // switch key
-
-				key_type = KEYBOARD_KEY;
-				key_buf[2] = key0;
-				blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
-
+				key_type = SWITCH_KEY;
 				switch_key++;
 				switch_key = (switch_key > IR_Learn_mode)? Ble_mode : switch_key;
 
