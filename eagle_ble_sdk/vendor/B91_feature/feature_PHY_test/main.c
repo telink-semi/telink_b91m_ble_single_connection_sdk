@@ -99,13 +99,10 @@ void uart0_irq_handler(void)
 	u32 rev_data_len = 0;
 	if(uart_get_irq_status(UART0,UART_TXDONE))
 	{
-		delay_us(10);
-		gpio_toggle(GPIO_LED_GREEN);
 	    uart_clr_tx_done(UART0);
 	}
     if(uart_get_irq_status(UART0,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can noly used in A1-SOC.
     {
-    	gpio_toggle(GPIO_LED_WHITE);
     	/************************get the length of receive data****************************/
     	if(((reg_uart_status1(UART0)&FLD_UART_RBCNT)%4)==0)
     	{
@@ -128,8 +125,7 @@ void uart0_irq_handler(void)
 
     	if((uart_get_irq_status(UART0,UART_RX_ERR)))
     	{
-			delay_us(10);
-    		uart_clr_irq_status(UART0,UART_CLR_RX);
+    		uart_clr_irq_status(UART0,UART_RX_ERR);
     	}
     }
 }

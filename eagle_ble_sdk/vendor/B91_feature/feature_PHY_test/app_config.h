@@ -53,8 +53,8 @@
 /**
  *  @brief  Feature select in bLE Sample project
  */
-#define BLE_APP_PM_ENABLE										1
-#define PM_DEEPSLEEP_RETENTION_ENABLE							1
+#define BLE_APP_PM_ENABLE										0
+#define PM_DEEPSLEEP_RETENTION_ENABLE							0
 #define APP_DEFAULT_HID_BATTERY_OTA_ATTRIBUTE_TABLE				1
 
 
@@ -94,7 +94,7 @@
 /**
  *  @brief  MCU system clock
  */
-#define CLOCK_SYS_CLOCK_HZ  	16000000
+#define CLOCK_SYS_CLOCK_HZ  	48000000
 
 /**
  *  @brief  Definition the number of system tick for 1s/1ms/1us
