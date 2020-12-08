@@ -1,7 +1,7 @@
 /********************************************************************************************************
- * @file	software_pa.h
+ * @file	software_pa.c
  *
- * @brief	This is the header file for B91
+ * @brief	This is the source file for B91
  *
  * @author	BLE Group
  * @date	2020
