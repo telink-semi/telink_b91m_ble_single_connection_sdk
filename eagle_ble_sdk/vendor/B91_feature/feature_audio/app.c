@@ -347,8 +347,9 @@ _attribute_no_inline_ void user_init_normal(void)
 
 	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboard);
 #endif
-
-
+#if(TL_AUDIO_RCU_ADPCM_GATT_GOOGLE)
+	google_handle_init(AUDIO_GOOGLE_CTL_DP_H,HID_CONSUME_REPORT_INPUT_DP_H);
+#endif
 //	advertise_begin_tick = clock_time();
 
 

@@ -317,7 +317,6 @@ void voice_key_press(void)
 
 		if(app_audio_key_start(1) == APP_AUDIO_ENABLE){
 			ui_enable_mic(1);
-			google_handle_init(AUDIO_GOOGLE_CTL_DP_H,HID_CONSUME_REPORT_INPUT_DP_H);
 		}
 	}
 }
