@@ -258,12 +258,13 @@ extern u8		buffer_mic_pkt_rptr;
 extern u16		app_audio_sync_serial;
 extern u32		app_audio_timer;
 
-_attribute_data_retention_	u8  audio_start = 0;
+
 extern u16		app_audio_sync_serial;
 extern u32		app_audio_timer;
 
 _attribute_data_retention_ u8    audio_send_index = 0;
 _attribute_data_retention_ u32   audio_stick = 0;
+_attribute_data_retention_ u8  audio_start = 0;
 
 /**
  * @brief      for open the audio and mtu size exchange

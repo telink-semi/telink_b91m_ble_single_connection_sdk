@@ -126,7 +126,7 @@ _attribute_ram_code_ void  ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
  */
 void	task_connect (u8 e, u8 *p, int n)
 {
-	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
+	//bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
 	latest_user_event_tick = clock_time();
 
@@ -289,7 +289,6 @@ _attribute_no_inline_ void user_init_normal(void)
 
 //////////////////////////// BLE stack Initialization  End //////////////////////////////////
 
-
 	u8 status = bls_ll_setAdvParam(  ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
 									 ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC,
 									 0,  NULL,
@@ -310,6 +309,8 @@ _attribute_no_inline_ void user_init_normal(void)
 
 	//set rf power index, user must set it after every suspend wakeup, cause relative setting will be reset in suspend
 	user_set_rf_power(0, 0, 0);
+
+
 
 
 	bls_app_registerEventCallback (BLT_EV_FLAG_CONNECT, &task_connect);
