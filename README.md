@@ -1,2 +1,2 @@
-# telink_eagle_ble_sdk
+# telink_eagle_ble_single_connection_sdk
 
