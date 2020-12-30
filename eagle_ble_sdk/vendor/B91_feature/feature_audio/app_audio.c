@@ -63,11 +63,7 @@
 
 extern	int device_in_connection_state;
 
-extern 	u32 advertise_begin_tick;
-
 extern	u32	interval_update_tick;
-
-extern	u8	sendTerminate_before_enterDeep;
 
 extern	u32	latest_user_event_tick;
 
@@ -175,10 +171,6 @@ void audio_mic_off()//
 		key_voice_press = 0;
 		ui_enable_mic (1);
 		audio_stick = clock_time()|1;
-		if(ui_mtu_size_exchange_req && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN){
-			ui_mtu_size_exchange_req = 0;
-			blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, 0x009e);
-		}
 	}
 
 	/**
@@ -586,10 +578,6 @@ void proc_audio(void){
 		if((!ui_mic_enable) && audio_bt_status == APP_AUDIO_BT_OPEN){
 			audio_stick = clock_time()|1;
 			ui_enable_mic (1);
-			if(ui_mtu_size_exchange_req && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN){
-				ui_mtu_size_exchange_req = 0;
-				blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, 0x009e);
-			}
 		}
 		if(ui_mic_enable){
 			if(audio_start || (audio_stick && clock_time_exceed(audio_stick, 380*1000))){
@@ -776,10 +764,6 @@ void proc_audio(void){
 		if((!ui_mic_enable) && audio_bt_status == APP_AUDIO_BT_OPEN){
 			audio_stick = clock_time()|1;
 			ui_enable_mic (1);
-			if(ui_mtu_size_exchange_req && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN){
-				ui_mtu_size_exchange_req = 0;
-				blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, 0x009e);
-			}
 		}
 		if(ui_mic_enable){
 			if(audio_start || (audio_stick && clock_time_exceed(audio_stick, 380*1000))){
@@ -959,10 +943,6 @@ void proc_audio(void){
 			if((!ui_mic_enable) && audio_bt_status == APP_AUDIO_BT_OPEN){
 				audio_stick = clock_time()|1;
 				ui_enable_mic (1);
-				if(ui_mtu_size_exchange_req && blc_ll_getCurrentState() == BLS_LINK_STATE_CONN){
-					ui_mtu_size_exchange_req = 0;
-					blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, 0x009e);
-				}
 			}
 			if(ui_mic_enable){
 

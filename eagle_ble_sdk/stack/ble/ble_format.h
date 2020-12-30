@@ -441,7 +441,6 @@ typedef struct{
 
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -452,7 +451,6 @@ typedef struct{
 
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -464,7 +462,6 @@ typedef struct{
 }rf_pkt_l2cap_sig_connParaUpRsp_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -479,7 +476,6 @@ typedef struct{
 	u16 scid[5];
 }rf_pkt_l2cap_credit_based_connection_req_t;
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -494,7 +490,6 @@ typedef struct{
 	u16 dcid[5];
 }rf_pkt_l2cap_credit_based_connection_rsp_t;
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -507,7 +502,6 @@ typedef struct{
 	u16 dcid[5];
 }rf_pkt_l2cap_credit_based_reconfigure_req_t;
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -571,8 +565,6 @@ typedef struct{
 
 /******************************************** ATT **************************************************************/
 typedef struct{
-	u32 dma_len;
-
 	u8	type;
 	u8  rf_len;
 	u16	l2cap;
@@ -587,7 +579,6 @@ typedef struct{
 }rf_packet_att_data_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -599,7 +590,6 @@ typedef struct{
 }rf_packet_att_errRsp_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 
@@ -614,7 +604,6 @@ typedef struct{
 }rf_packet_att_readByType_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 
@@ -630,7 +619,6 @@ typedef struct{
 }rf_packet_att_findByTypeReq_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 
@@ -642,7 +630,6 @@ typedef struct{
 
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -653,7 +640,6 @@ typedef struct{
 }rf_packet_att_read_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -666,7 +652,6 @@ typedef struct{
 }rf_packet_att_readBlob_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -687,7 +672,6 @@ typedef struct{
 }rf_pkt_att_readByTypeRsp_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -698,7 +682,6 @@ typedef struct{
 }rf_packet_att_readByTypeRsp_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -709,7 +692,6 @@ typedef struct{
 }rf_packet_att_readByGroupTypeRsp_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -720,7 +702,6 @@ typedef struct{
 }rf_packet_att_findInfoReq_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -730,7 +711,6 @@ typedef struct{
 }rf_packet_att_executeWriteReq_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -742,7 +722,6 @@ typedef struct{
 }rf_packet_att_write_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -755,7 +734,6 @@ typedef struct{
 
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
@@ -774,7 +752,6 @@ typedef struct{
 }rf_packet_att_mtu_exchange_t;
 
 typedef struct{
-	u32 dma_len;
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;

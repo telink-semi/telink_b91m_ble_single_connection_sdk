@@ -82,18 +82,10 @@ const u8	tbl_scanRsp [] = {
 
 
 
-
-_attribute_data_retention_	int device_in_connection_state;
-_attribute_data_retention_	u32 advertise_begin_tick;
-_attribute_data_retention_	u32	interval_update_tick;
-_attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
-_attribute_data_retention_	u32	latest_user_event_tick;
-
-
-
-_attribute_data_retention_	u32 connect_event_occurTick = 0;
-_attribute_data_retention_  u32 mtuExchange_check_tick = 0;
 _attribute_data_retention_ 	int  dle_started_flg = 0;
+_attribute_data_retention_ 	int  dle_max_rx_octet = 27;
+_attribute_data_retention_ 	int  dle_max_tx_octet = 27;
+
 _attribute_data_retention_ 	int  mtuExchange_started_flg = 0;
 _attribute_data_retention_	u16  final_MTU_size = 23;
 
@@ -130,19 +122,12 @@ void	task_connect (u8 e, u8 *p, int n)
 {
 	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
-	latest_user_event_tick = clock_time();
-
-	device_in_connection_state = 1;//
-
-	interval_update_tick = clock_time() | 1; //none zero
-
-
-	connect_event_occurTick = clock_time() | 1;
-	mtuExchange_check_tick = 0;
-
 	//MTU size exchange and data length exchange procedure must be executed on every new connection,
 	//so when connection terminate, relative flags must be cleared
 	dle_started_flg = 0;
+	dle_max_rx_octet = 27;
+	dle_max_tx_octet = 27;
+
 	mtuExchange_started_flg = 0;
 
 	//MTU size reset to default 23 bytes when connection terminated
@@ -172,8 +157,6 @@ void	task_connect (u8 e, u8 *p, int n)
  */
 void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
-	device_in_connection_state = 0;
-
 
 	if(*p == HCI_ERR_CONN_TIMEOUT){
 
@@ -189,12 +172,13 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 	}
 
 
-	connect_event_occurTick = 0;
-	mtuExchange_check_tick = 0;
-
 	//MTU size exchange and data length exchange procedure must be executed on every new connection,
 	//so when connection terminate, relative flags must be cleared
 	dle_started_flg = 0;
+	dle_max_rx_octet = 27;
+	dle_max_tx_octet = 27;
+
+
 	mtuExchange_started_flg = 0;
 
 	//MTU size reset to default 23 bytes when connection terminated
@@ -208,9 +192,6 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 		gpio_write(GPIO_LED_WHITE, !LED_ON_LEVAL);
 	#endif
 #endif
-
-	advertise_begin_tick = clock_time();
-
 
 }
 
@@ -240,10 +221,11 @@ _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
  */
 void	task_dle_exchange (u8 e, u8 *p, int n)
 {
-	//ll_data_extension_t* dle_param = (ll_data_extension_t*)p;
+	ll_data_extension_t* pDleParam = (ll_data_extension_t*)p;
 	dle_started_flg = 1;
+	dle_max_rx_octet = pDleParam->connEffectiveMaxRxOctets;
+	dle_max_tx_octet = pDleParam->connEffectiveMaxTxOctets;
 }
-
 
 /**
  * @brief      callback function of Host Event
@@ -312,9 +294,6 @@ void blt_pm_proc(void)
 
 
 _attribute_data_retention_	int 	key_not_released;
-
-extern u32	latest_user_event_tick;
-
 #define CONSUMER_KEY   	   		1
 #define KEYBOARD_KEY   	   		2
 _attribute_data_retention_	u8 		key_type;
@@ -330,10 +309,6 @@ _attribute_data_retention_	u8 		key_type;
  */
 void key_change_proc(void)
 {
-
-	latest_user_event_tick = clock_time();  //record latest key change time
-
-
 	u8 key0 = kb_event.keycode[0];
 	u8 key_buf[8] = {0,0,0,0,0,0,0,0};
 
@@ -615,9 +590,6 @@ _attribute_no_inline_ void user_init_normal(void)
 #endif
 
 
-//	advertise_begin_tick = clock_time();
-
-
 #if (BLE_OTA_SERVER_ENABLE)
 	/* OTA module initialization must be called after "blc_ota_setNewFirmwwareStorageAddress"(if used), and before any other OTA API.*/
 	blc_ota_initOtaServer_module();
@@ -686,27 +658,6 @@ _attribute_no_inline_ void main_loop (void)
 	////////////////////////////////////// UI entry /////////////////////////////////
 	proc_keyboard (0,0, 0);
 
-#if (OTA_SERVER_SUPPORT_BIG_PDU_ENABLE)
-	if(connect_event_occurTick && clock_time_exceed(connect_event_occurTick, 500000)){  //0.5 S after connection established
-		connect_event_occurTick = 0;
-
-		mtuExchange_check_tick = clock_time() | 1;
-		if(!mtuExchange_started_flg){  //master do not send MTU exchange request in time
-			blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
-			/*After conn 1.5s, S send  MTU size req to the Master.*/
-		}
-	}
-
-
-	if(mtuExchange_check_tick && clock_time_exceed(mtuExchange_check_tick, 500000 )){  //1 S after connection established
-		mtuExchange_check_tick = 0;
-
-		if(!dle_started_flg){ //master do not send data length request in time
-			/*Master hasn't initiated the DLE yet, S send DLE req to the Master.*/
-			blc_ll_exchangeDataLength(LL_LENGTH_REQ , ACL_CONN_MAX_TX_OCTETS);
-		}
-	}
-#endif
 
 	////////////////////////////////////// PM Process /////////////////////////////////
 	blt_pm_proc();

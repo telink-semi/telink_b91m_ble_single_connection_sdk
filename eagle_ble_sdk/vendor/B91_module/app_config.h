@@ -144,14 +144,7 @@
 
 
 
-/////////////////// Clock  /////////////////////////////////
-#define CLOCK_SYS_CLOCK_HZ  				16000000
 
-enum{
-	CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,
-	CLOCK_SYS_CLOCK_1MS = (CLOCK_SYS_CLOCK_1S / 1000),
-	CLOCK_SYS_CLOCK_1US = (CLOCK_SYS_CLOCK_1S / 1000000),
-};
 
 
 

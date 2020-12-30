@@ -72,6 +72,10 @@ void flash_plic_preempt_config(unsigned char preempt_en,unsigned char threshold)
 	s_flash_preempt_config.threshold=threshold;
 }
 
+/********************************************************************************************************
+ *								Functions for internal use in flash,
+ *		There is no need to add an evasion solution to solve the problem of access flash conflicts.
+ *******************************************************************************************************/
 /**
  * @brief		This function to determine whether the flash is busy..
  * @return		1:Indicates that the flash is busy. 0:Indicates that the flash is free
@@ -130,6 +134,10 @@ _attribute_ram_code_sec_noinline_ static void flash_wait_done(void)
 	mspi_high();
 }
 
+
+/********************************************************************************************************
+ *		It is necessary to add an evasion plan to solve the problem of access flash conflict.
+ *******************************************************************************************************/
 /**
  * @brief 		This function serves to erase a sector.
  * @param[in]   addr	- the start address of the sector needs to erase.
@@ -630,52 +638,6 @@ _attribute_text_sec_ void flash_read_uid(unsigned char idcmd,unsigned char *buf)
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
-/**
- * @brief		This function serves to read flash mid and uid,and check the correctness of mid and uid.
- * @param[out]	flash_mid	- Flash Manufacturer ID
- * @param[out]	flash_uid	- Flash Unique ID
- * @return		0:error 1:ok
- */
-_attribute_ram_code_sec_noinline_ int flash_read_mid_uid_with_check_ram( unsigned int *flash_mid ,unsigned char *flash_uid)
-{
-	unsigned char no_uid[16]={0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01};
-	int i,f_cnt=0;
-	unsigned int mid;
-
-	mspi_stop_xip();
-	flash_read_mid((unsigned char*)&mid);
-	mid = mid&0xffff;
-	*flash_mid  = mid;
-	//     	  			CMD         MID
-	//  GD25LD40C		0x4b		0x60c8
-	//  GD25LD05C		0x4b		0x60c8
-	//  P25Q40L			0x4b		0x6085
-	//  MD25D40DGIG		0x4b		0x4051
-	if( (mid == 0x60C8) || (mid == 0x6085) ||(mid == 0x4051)){
-		flash_read_uid(FLASH_GD_PUYA_READ_UID_CMD,(unsigned char *)flash_uid);
-	}else{
-		return 0;
-	}
-	for(i=0;i<16;i++){
-		if(flash_uid[i]==no_uid[i]){
-			f_cnt++;
-		}
-	}
-	if(f_cnt==16){		//no uid flash
-		return 0;
-
-	}else{
-		return  1;
-	}
-	CLOCK_DLY_5_CYC;
-}
-_attribute_text_sec_ int flash_read_mid_uid_with_check( unsigned int *flash_mid ,unsigned char *flash_uid){
-
-	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	int result = flash_read_mid_uid_with_check_ram(flash_mid,flash_uid);
-	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
-	return result;
-}
 
 /**
  * @brief 		This function serves to set the protection area of the flash.
@@ -761,8 +723,43 @@ _attribute_text_sec_ void flash_unlock(flash_type_e type)
 }
 
 
+/********************************************************************************************************
+ *									secondary calling function,
+ *	there is no need to add an circumvention solution to solve the problem of access flash conflicts.
+ *******************************************************************************************************/
+/**
+ * @brief		This function serves to read flash mid and uid,and check the correctness of mid and uid.
+ * @param[out]	flash_mid	- Flash Manufacturer ID
+ * @param[out]	flash_uid	- Flash Unique ID
+ * @return		0: flash no uid or not a known flash model 	 1:the flash model is known and the uid is read.
+ */
+_attribute_text_sec_ int flash_read_mid_uid_with_check( unsigned int *flash_mid ,unsigned char *flash_uid){
 
+	unsigned char no_uid[16]={0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01};
+	int i,f_cnt=0;
+	unsigned int mid;
 
+	flash_read_mid((unsigned char*)&mid);
+	mid = mid&0xffff;
+	*flash_mid = mid;
+	//     	  			CMD         MID
+	//  P25Q80U			0x4b		0x6085
+	if(mid == 0x6085){
+		flash_read_uid(FLASH_GD_PUYA_READ_UID_CMD,(unsigned char *)flash_uid);
+	}else{
+		return 0;
+	}
+	for(i=0;i<16;i++){
+		if(flash_uid[i]==no_uid[i]){
+			f_cnt++;
+		}
+	}
+	if(f_cnt==16){		//no uid flash
+		return 0;
+	}else{
+		return  1;
+	}
+}
 
 
 

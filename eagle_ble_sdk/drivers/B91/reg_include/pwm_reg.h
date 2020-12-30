@@ -186,6 +186,14 @@ enum{
  */
 #define reg_pwm_max(i)			REG_ADDR16(REG_PWM_BASE+0x16 + (i << 2))
 
+/*
+ * when update the duty cycle in 32K, this register bit(0) set 1.
+ */
+#define reg_pwm_cnt5_l      REG_ADDR8(REG_PWM_BASE+0x3e)
+
+enum{
+	FLD_PWM_32K_DUTY_CYCLE_UPDATE   =   BIT(0),
+};
 
 /**
  * When PWM0 is in count mode or ir mode, the total number of pulse_number is set by the following two registers.

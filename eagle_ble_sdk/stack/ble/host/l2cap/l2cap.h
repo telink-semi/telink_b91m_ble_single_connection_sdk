@@ -49,11 +49,10 @@
 
 
 
-//RF_LEN_MAX:255: MIC(4)+LL_MAX_LEN(251) => LL_MAX_LEN:l2cap_len(2)+cid(2)+ATT_MTU_MAX(247).
-//l2cap buffer max: dma(4)+header(2)+l2cap_len(2)+cid(2)+ATT_MTU_MAX(247).
-#define	L2CAP_RX_BUFF_LEN_MAX			  260//257 = 10+247,align 4, here we use 260
-//dma(4)+header(2)+l2cap_len(2)+cid(2)+Attribute_data[ATT_MTU]
-#define	ATT_RX_MTU_SIZE_MAX		  		  (L2CAP_RX_BUFF_LEN_MAX - 10)
+//header(2)+l2cap_len(2)+cid(2)+Attribute_data[ATT_MTU]
+#define	ATT_RX_MTU_SIZE_MAX		  		  (250) //dft ATT_MTU_MAX: 250
+//l2cap buffer max: header(2)+l2cap_len(2)+cid(2)+ATT_MTU_MAX(250).
+#define	L2CAP_RX_BUFF_LEN_MAX			  (256)
 
 
 
@@ -142,7 +141,15 @@ void  		blc_l2cap_SendConnParamUpdateResponse(u16 connHandle, u8 req_id, conn_pa
 void 		blc_l2cap_registerConnUpdateRspCb(l2cap_conn_update_rsp_callback_t cb);
 
 
-
+/**
+ * @brief		This function is used to initialize l2cap buffer to reassembly link lay PDU to SDU
+ * @param[in]	*pMTU_m_rx_buff - the pointer of rx buffer
+ * @param[in]	mtu_m_rx_size   - the size of of rx buffer
+ * @param[in]	*pMTU_m_tx_buff - the pointer of tx buffer
+ * @param[in]	mtu_m_tx_size   - the size of of tx buffer
+ * @return		none.
+ */
+void 		blc_l2cap_initMtuBuffer(u8 *pMTU_rx_buff, u16 mtu_rx_size, u8 *pMTU_tx_buff, u16 mtu_tx_size);
 
 
 

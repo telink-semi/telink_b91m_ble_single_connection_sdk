@@ -60,9 +60,6 @@
 
 
 
-_attribute_data_retention_	u32 advertise_begin_tick;
-
-
 /**
  * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
  * @param[in]  e - LinkLayer Event type
@@ -317,12 +314,6 @@ _attribute_no_inline_ void user_init_normal(void)
 #else
 	bls_pm_setSuspendMask (SUSPEND_DISABLE);
 #endif
-
-
-//	advertise_begin_tick = clock_time();
-
-
-
 
 
 }

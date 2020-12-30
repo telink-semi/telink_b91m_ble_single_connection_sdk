@@ -89,15 +89,7 @@ const u8	tbl_scanRsp [] = {
 
 
 
-_attribute_data_retention_	int device_in_connection_state;
-
-_attribute_data_retention_	u32 advertise_begin_tick;
-
-_attribute_data_retention_	u32	interval_update_tick;
-
 _attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
-
-_attribute_data_retention_	u32	latest_user_event_tick;
 
 _attribute_data_retention_	u32 	stuckKey_keyPressTime;
 
@@ -151,13 +143,6 @@ void	task_connect (u8 e, u8 *p, int n)
 {
 	//bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
-	latest_user_event_tick = clock_time() | 1;
-
-	device_in_connection_state = 1;
-
-	interval_update_tick = clock_time() | 1; //none zero
-
-
 #if (UI_LED_ENABLE)
 	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
 #endif
@@ -174,8 +159,6 @@ void	task_connect (u8 e, u8 *p, int n)
  */
 void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
-	device_in_connection_state = 0;
-
 
 	if(*p == HCI_ERR_CONN_TIMEOUT){
 
@@ -200,8 +183,6 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 #if (UI_LED_ENABLE)
 	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
 #endif
-
-	advertise_begin_tick = clock_time();
 
 }
 
@@ -234,8 +215,6 @@ _attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
 
 _attribute_data_retention_	int 	key_not_released;
 
-extern u32	latest_user_event_tick;
-
 #define CONSUMER_KEY   	   		1
 #define KEYBOARD_KEY   	   		2
 _attribute_data_retention_	u8 		key_type;
@@ -251,10 +230,6 @@ _attribute_data_retention_	u8 		key_type;
  */
 void key_change_proc(void)
 {
-
-	latest_user_event_tick = clock_time();  //record latest key change time
-
-
 	u8 key0 = kb_event.keycode[0];
 	u8 key_buf[8] = {0,0,0,0,0,0,0,0};
 
@@ -414,7 +389,6 @@ void blt_pm_proc(void)
 		{
 			//DEBUG("Disable adv\n");
 			bls_ll_setAdvEnable(BLC_ADV_DISABLE);   //disable adv
-			advertise_begin_tick = 0;
 			/*
 			 * when RCU connected state, if press key during 1 minute, RCU transmit release code.
 			 */
@@ -452,24 +426,6 @@ void blt_pm_proc(void)
 		cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepSleep
 	}
 
-
-	if(  !blc_ll_isControllerEventPending() ){  //no controller event pending
-		//adv 60s, deepsleep
-		if( blc_ll_getCurrentState() == BLS_LINK_STATE_ADV && !sendTerminate_before_enterDeep && \
-			clock_time_exceed(advertise_begin_tick , ADV_IDLE_ENTER_DEEP_TIME * 1000000))
-		{
-			cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
-		}
-		//conn 60s no event(key/voice/led), enter deepsleep
-		else if( device_in_connection_state && !user_task_flg && \
-				clock_time_exceed(latest_user_event_tick, CONN_IDLE_ENTER_DEEP_TIME * 1000000) )
-		{
-
-			bls_ll_terminateConnection(HCI_ERR_REMOTE_USER_TERM_CONN); //push terminate cmd into ble TX buffer
-			bls_ll_setAdvEnable(BLC_ADV_DISABLE);   //disable adv
-			sendTerminate_before_enterDeep = 1;
-		}
-	}
 
 #endif  //end of BLE_APP_PM_ENABLE
 }

@@ -181,7 +181,7 @@ static inline unsigned int pke_get_irq_status(pke_status_e status)
  */
 static inline void pke_clr_irq_status(pke_status_e status)
 {
-	BM_CLR(reg_pke_stat, status);
+	reg_pke_stat = ~status;
 }
 
 /**

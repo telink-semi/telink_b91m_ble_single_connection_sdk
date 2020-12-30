@@ -82,7 +82,7 @@
  * @brief analog register below can store infomation when MCU in deepsleep mode or deepsleep with SRAM retention mode.
  * 	      Reset these analog registers only by power cycle
  */
-#define PM_ANA_REG_POWER_ON_CLR_BUF0 	0x39 // initial value 0x00. [Bit0] is already occupied. The customer cannot change!
+#define PM_ANA_REG_POWER_ON_CLR_BUF0 	0x39 // initial value 0x00. [Bit0][Bit1] is already occupied. The customer cannot change!
 #define PM_ANA_REG_POWER_ON_CLR_BUF1 	0x3a // initial value 0x00
 #define PM_ANA_REG_POWER_ON_CLR_BUF2 	0x3b // initial value 0x00
 #define PM_ANA_REG_POWER_ON_CLR_BUF3 	0x3c // initial value 0x00
@@ -157,12 +157,16 @@ typedef enum {
 
 /**
  * @brief	mcu status
+ * 			In order to fix the problem that reboot returns to occasional crash when hclk = 1/2cclk, after each reboot,
+ * 			it will immediately enter deep. Therefore, the user will not see the reboot status. Increase the REBOOT_DEEP
+ * 			state to indicate this process.(add by weihua.zhang, confirmed by libiao and yangbin 20201211)
  */
 typedef enum{
 	MCU_STATUS_POWER_ON  		= BIT(0),
-	MCU_STATUS_REBOOT_BACK    	= BIT(2),
+	MCU_STATUS_REBOOT_BACK    	= BIT(2),	//the user will not see the reboot status.
 	MCU_STATUS_DEEPRET_BACK  	= BIT(3),
 	MCU_STATUS_DEEP_BACK		= BIT(4),
+	MCU_STATUS_REBOOT_DEEP_BACK	= BIT(5),	//reboot + deep
 }pm_mcu_status;
 
 /**

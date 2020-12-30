@@ -131,20 +131,6 @@ typedef int (*att_mtuSizeExchange_callback_t)(u16, u16);
 typedef int (*att_handleValueConfirm_callback_t)(void);
 
 
-/**
- * @brief	This function is used to set effective ATT MTU size
- * @param	connHandle - connect handle
- * @param	effective_mtu - bltAtt.effective_MTU
- * @return	none.
- */
-void  blt_att_setEffectiveMtuSize(u16 connHandle, u8 effective_mtu);
-
-/**
- * @brief	This function is used to reset effective ATT MTU size
- * @param	connHandle - connect handle
- * @return	none.
- */
-void  blt_att_resetEffectiveMtuSize(u16 connHandle);
 
 
 /**
@@ -152,8 +138,7 @@ void  blt_att_resetEffectiveMtuSize(u16 connHandle);
  * @param	*p - the pointer of attribute table
  * @return	none.
  */
-void		 bls_att_setAttributeTable (u8 *p);
-
+void		bls_att_setAttributeTable (u8 *p);
 
 
 //mtu size
@@ -163,7 +148,7 @@ void		 bls_att_setAttributeTable (u8 *p);
  * @return	0: success
  * 			other: fail
  */
-ble_sts_t  blc_att_setRxMtuSize(u16 mtu_size);
+ble_sts_t	blc_att_setRxMtuSize(u16 mtu_size);
 
 /**
  * @brief	This function is used to request MTU size exchange
@@ -182,12 +167,10 @@ ble_sts_t	 blc_att_requestMtuSizeExchange (u16 connHandle, u16 mtu_size);
  */
 ble_sts_t	 blc_att_responseMtuSizeExchange (u16 connHandle, u16 mtu_size);
 
-
-
 /**
  * @brief	This function is used to set prepare write buffer
  * @param	*p - the pointer of buffer
  * @param	len - the length of buffer
  * @return	none.
  */
-void  blt_att_setPrepareWriteBuffer(u8 *p, u16 len);
+void  		blc_att_setPrepareWriteBuffer(u8 *p, u16 len);

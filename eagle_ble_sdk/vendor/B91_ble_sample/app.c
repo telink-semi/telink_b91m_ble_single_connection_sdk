@@ -97,13 +97,11 @@ _attribute_data_retention_	int device_in_connection_state;
 
 _attribute_data_retention_	u32 advertise_begin_tick;
 
-_attribute_data_retention_	u32	interval_update_tick;
-
 _attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
 
 _attribute_data_retention_	u32	latest_user_event_tick;
 
-
+_attribute_data_retention_	u8 button_detect_en;
 
 
 
@@ -172,8 +170,6 @@ void	task_connect (u8 e, u8 *p, int n)
 	latest_user_event_tick = clock_time();
 
 	device_in_connection_state = 1;//
-
-	interval_update_tick = clock_time() | 1; //none zero
 
 
 #if (UI_LED_ENABLE)
@@ -420,6 +416,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	/* L2CAP Initialization */
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);
 
+
 	/* SMP Initialization may involve flash write/erase(when one sector stores too much information,
 	 *   is about to exceed the sector threshold, this sector must be erased, and all useful information
 	 *   should re_stored) , so it must be done after battery check */
@@ -524,14 +521,6 @@ _attribute_no_inline_ void user_init_normal(void)
 	}
 
 	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboard);
-#elif (UI_BUTTON_ENABLE)
-
-	cpu_set_gpio_wakeup (SW1_GPIO, Level_Low,1);  //button pin pad low wakeUp suspend/deepSleep
-	cpu_set_gpio_wakeup (SW2_GPIO, Level_Low,1);  //button pin pad low wakeUp suspend/deepSleep
-
-	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_button);
-#endif
-
 
 #if (BLE_OTA_SERVER_ENABLE)
 	////////////////// OTA relative ////////////////////////
@@ -544,6 +533,14 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_ota_registerOtaResultIndicationCb(app_ota_end_result);
 #endif
 
+#elif (UI_BUTTON_ENABLE)
+
+	cpu_set_gpio_wakeup (SW1_GPIO, Level_Low,1);  //button pin pad low wakeUp suspend/deepSleep
+	cpu_set_gpio_wakeup (SW2_GPIO, Level_Low,1);  //button pin pad low wakeUp suspend/deepSleep
+
+	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_button);
+
+#endif
 
 	advertise_begin_tick = clock_time();
 

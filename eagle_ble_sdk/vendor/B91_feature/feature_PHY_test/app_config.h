@@ -65,7 +65,7 @@
 #define 		PHYTEST_MODE_THROUGH_2_WIRE_UART		1   //Direct Test Mode through a 2-wire UART interface
 #define 		PHYTEST_MODE_OVER_HCI_WITH_UART			2   //Direct Test Mode over HCI(UART hardware interface)
 
-#define BLE_PHYTEST_MODE		PHYTEST_MODE_OVER_HCI_WITH_UART
+#define BLE_PHYTEST_MODE		PHYTEST_MODE_THROUGH_2_WIRE_UART
 
 /**
  *  @brief phytest uart setting.
@@ -90,20 +90,6 @@
 #define UART_RX_BUFFER_NUM		4
 #define UART_RX_BUFFER_SIZE		80
 
-/////////////////// Clock  /////////////////////////////////
-/**
- *  @brief  MCU system clock
- */
-#define CLOCK_SYS_CLOCK_HZ  	48000000
-
-/**
- *  @brief  Definition the number of system tick for 1s/1ms/1us
- */
-enum{
-	CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,
-	CLOCK_SYS_CLOCK_1MS = (CLOCK_SYS_CLOCK_1S / 1000),
-	CLOCK_SYS_CLOCK_1US = (CLOCK_SYS_CLOCK_1S / 1000000),
-};
 
 
  ///////////////////DEBUG SETTING /////////////////////////

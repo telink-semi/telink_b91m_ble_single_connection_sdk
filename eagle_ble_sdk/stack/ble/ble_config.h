@@ -109,13 +109,6 @@
 #define	HOST_CONTROLLER_DATA_FLOW_IMPROVE_EN				1
 #endif
 
-#if (HOST_CONTROLLER_DATA_FLOW_IMPROVE_EN)
-	#define ATT_RSP_BIG_MTU_PROCESS_EN						1
-#endif
-
-
-
-
 
 
 //Link layer feature enable flag default setting

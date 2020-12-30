@@ -72,7 +72,7 @@ Situation 1:   SMP Standard Pair																    |
 	|		|			        (Optional)Security_Request		    	|	    |					|
 	|		|<----------------------------------------------------------|	    |					|
 	|		|						Paring_Req							|	    |
-	| 		|---------------------------------------------------------->|=======|=====>>>  GAP_EVT_SMP_PAIRING_BEAGIN
+	| 		|---------------------------------------------------------->|=======|=====>>>  GAP_EVT_SMP_PAIRING_BEGIN
 	|		|						Paring_Rsp					    	|	    |
 	|  		|<----------------------------------------------------------|       |					|
 	|		|						....... 							|	    |					|
@@ -152,7 +152,7 @@ Situation 2:   SMP Fast Connect																		|
 /**
  * @brief      GAP event type
  */
-#define GAP_EVT_SMP_PAIRING_BEAGIN		                             0	// Refer to SMP message sequence and event chart above
+#define GAP_EVT_SMP_PAIRING_BEGIN		                             0	// Refer to SMP message sequence and event chart above
 #define GAP_EVT_SMP_PAIRING_SUCCESS			                         1	// Refer to SMP message sequence and event chart above
 #define GAP_EVT_SMP_PAIRING_FAIL			                             2
 #define GAP_EVT_SMP_CONN_ENCRYPTION_DONE							 3	// Refer to SMP message sequence and event chart above
@@ -173,7 +173,7 @@ Situation 2:   SMP Fast Connect																		|
  * @brief      GAP event mask
  */
 #define GAP_EVT_MASK_NONE                                        	 0x00000000
-#define GAP_EVT_MASK_SMP_PAIRING_BEAGIN                          	 (1<<GAP_EVT_SMP_PAIRING_BEAGIN)
+#define GAP_EVT_MASK_SMP_PAIRING_BEGIN                          	 (1<<GAP_EVT_SMP_PAIRING_BEGIN)
 #define GAP_EVT_MASK_SMP_PAIRING_SUCCESS                           	 (1<<GAP_EVT_SMP_PAIRING_SUCCESS)
 #define GAP_EVT_MASK_SMP_PAIRING_FAIL                           		 (1<<GAP_EVT_SMP_PAIRING_FAIL)
 #define GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE                     	 (1<<GAP_EVT_SMP_CONN_ENCRYPTION_DONE)

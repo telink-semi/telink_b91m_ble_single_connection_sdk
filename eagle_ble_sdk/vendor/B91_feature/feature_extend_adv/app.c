@@ -79,17 +79,6 @@ const u8	tbl_scanRsp [] = {
 
 
 
-_attribute_data_retention_	int device_in_connection_state;
-
-_attribute_data_retention_	u32 advertise_begin_tick;
-
-_attribute_data_retention_	u32	interval_update_tick;
-
-_attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
-
-_attribute_data_retention_	u32	latest_user_event_tick;
-
-
 #define	APP_ADV_SETS_NUMBER						1			// Number of Supported Advertising Sets
 #define APP_MAX_LENGTH_ADV_DATA					1024		// Maximum Advertising Data Length,   (if legacy ADV, max length 31 bytes is enough)
 #define APP_MAX_LENGTH_SCAN_RESPONSE_DATA		31		// Maximum Scan Response Data Length, (if legacy ADV, max length 31 bytes is enough)
@@ -139,13 +128,6 @@ void	task_connect (u8 e, u8 *p, int n)
 {
 	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
-	latest_user_event_tick = clock_time();
-
-	device_in_connection_state = 1;//
-
-	interval_update_tick = clock_time() | 1; //none zero
-
-
 #if (UI_LED_ENABLE)
 	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //yellow light on
 #endif
@@ -162,8 +144,6 @@ void	task_connect (u8 e, u8 *p, int n)
  */
 void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
-	device_in_connection_state = 0;
-
 
 	if(*p == HCI_ERR_CONN_TIMEOUT){
 
@@ -182,8 +162,6 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 #if (UI_LED_ENABLE)
 	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //yellow light off
 #endif
-
-	advertise_begin_tick = clock_time();
 
 }
 
@@ -241,8 +219,6 @@ void blt_pm_proc(void)
 
 _attribute_data_retention_	int 	key_not_released;
 
-extern u32	latest_user_event_tick;
-
 #define CONSUMER_KEY   	   		1
 #define KEYBOARD_KEY   	   		2
 _attribute_data_retention_	u8 		key_type;
@@ -258,10 +234,6 @@ _attribute_data_retention_	u8 		key_type;
  */
 void key_change_proc(void)
 {
-
-	latest_user_event_tick = clock_time();  //record latest key change time
-
-
 	u8 key0 = kb_event.keycode[0];
 	u8 key_buf[8] = {0,0,0,0,0,0,0,0};
 
@@ -657,11 +629,6 @@ _attribute_no_inline_ void user_init_normal(void)
 
 	bls_app_registerEventCallback (BLT_EV_FLAG_GPIO_EARLY_WAKEUP, &proc_keyboard);
 #endif
-
-
-//	advertise_begin_tick = clock_time();
-
-
 
 }
 

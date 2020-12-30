@@ -1,36 +1,36 @@
 /********************************************************************************************************
- * @file	main.c
+ * @file	static_assert.h
  *
- * @brief	This is the source file for BLE SDK
+ * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
  * @date	2020.06
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
- *          
+ *
  *          Redistribution and use in source and binary forms, with or without
  *          modification, are permitted provided that the following conditions are met:
- *          
+ *
  *              1. Redistributions of source code must retain the above copyright
  *              notice, this list of conditions and the following disclaimer.
- *          
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions 
- *              in binary form must reproduce the above copyright notice, this list of 
+ *
+ *              2. Unless for usage inside a TELINK integrated circuit, redistributions
+ *              in binary form must reproduce the above copyright notice, this list of
  *              conditions and the following disclaimer in the documentation and/or other
  *              materials provided with the distribution.
- *          
- *              3. Neither the name of TELINK, nor the names of its contributors may be 
- *              used to endorse or promote products derived from this software without 
+ *
+ *              3. Neither the name of TELINK, nor the names of its contributors may be
+ *              used to endorse or promote products derived from this software without
  *              specific prior written permission.
- *          
+ *
  *              4. This software, with or without modification, must only be used with a
  *              TELINK integrated circuit. All other usages are subject to written permission
  *              from TELINK and different commercial license may apply.
  *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or 
+ *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
  *              relating to such deletion(s), modification(s) or alteration(s).
- *         
+ *
  *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -41,92 +41,25 @@
  *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *         
+ *
  *******************************************************************************************************/
-#include "tl_common.h"
-#include "drivers.h"
-#include "stack/ble/ble.h"
-#include "app.h"
 
-#if (FEATURE_TEST_MODE == TEST_SMP_SECURITY)
+#pragma once
 
-/**
- * @brief		BLE SDK RF interrupt handler.
- * @param[in]	none
- * @return      none
- */
-_attribute_ram_code_
-void rf_irq_handler(void)
-{
-	DBG_CHN14_HIGH;
+// static assertion. evaluate at compile time. It is very useful like,  STATIC_ASSERT(sizeof(a) == 5);
 
-	irq_blt_sdk_handler ();
+// #define STATIC_ASSERT(expr)   			{ char static_assertion[(expr) ? 1 : -1]; ((void) static_assertion); }	// (void) array;  to remove compiler unused variable warning
 
-	DBG_CHN14_LOW;
-}
+// more complicated version canbe used anywhere in the source
+#define STATIC_ASSERT_M(COND,MSG) typedef char static_assertion_##MSG[(!!(COND))*2-1] 
+// token pasting madness: 
+#define STATIC_ASSERT3(X,L) 	STATIC_ASSERT_M(X,static_assertion_at_line_##L) 
+#define STATIC_ASSERT2(X,L) 	STATIC_ASSERT3(X,L) 
 
+#define STATIC_ASSERT(X)    	STATIC_ASSERT2(X,__LINE__) 
 
+#define STATIC_ASSERT_POW2(expr)		STATIC_ASSERT(!((expr) & ((expr)-1)))					//  assert  expr  is  2**N
+#define STATIC_ASSERT_EVEN(expr)		STATIC_ASSERT(!((expr) & 1))
+#define STATIC_ASSERT_ODD(expr)			STATIC_ASSERT(((expr) & 1))
+#define STATIC_ASSERT_INT_DIV(a, b) 	STATIC_ASSERT((a) / (b) * (b) == (a))
 
-/**
- * @brief		BLE SDK System timer interrupt handler.
- * @param[in]	none
- * @return      none
- */
-_attribute_ram_code_
-void stimer_irq_handler(void)
-{
-	DBG_CHN15_HIGH;
-
-	irq_blt_sdk_handler ();
-
-	DBG_CHN15_LOW;
-}
-
-
-
-
-
-/**
- * @brief		This is main function
- * @param[in]	none
- * @return      none
- */
-_attribute_ram_code_ int main (void)   //must on ramcode
-{
-	DBG_CHN0_LOW;
-	blc_pm_select_internal_32k_crystal();
-
-	sys_init(DCDC_1P4_DCDC_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
-
-	/* detect if MCU is wake_up from deep retention mode */
-	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
-
-	CCLK_48M_HCLK_48M_PCLK_24M;
-
-	rf_drv_ble_init();
-
-	gpio_init(!deepRetWakeUp);
-
-	if(!deepRetWakeUp){//read flash size
-		blc_readFlashSize_autoConfigCustomFlashSector();
-	}
-
-	blc_app_loadCustomizedParameters();  //load customized freq_offset cap value
-
-	if( deepRetWakeUp ){ //MCU wake_up from deepSleep retention mode
-		user_init_deepRetn ();
-	}
-	else{ //MCU power_on or wake_up from deepSleep mode
-		user_init_normal();
-	}
-
-	irq_enable();
-
-	while (1) {
-		main_loop ();
-	}
-	return 0;
-}
-
-
-#endif  //end of (FEATURE_TEST_MODE == ...)

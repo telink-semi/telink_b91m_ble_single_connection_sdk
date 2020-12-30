@@ -198,14 +198,6 @@ void 		blc_ll_initStandby_module (u8 *public_adr);
  */
 ble_sts_t 	blc_ll_setRandomAddr(u8 *randomAddr);
 
-/**
- * @brief      this function is used to exchange data length
- * @param[in]  opcode -  LL_LENGTH_RSP/LL_LENGTH_REQ
- * 			   maxTxOct - Maximum TX packet length
- * @return     status, 0x00:  succeed
- * 					   other: failed
- */
-ble_sts_t   blc_ll_exchangeDataLength (u8 opcode, u16 maxTxOct);
 
 /**
  * @brief      this function is used to read MAC address

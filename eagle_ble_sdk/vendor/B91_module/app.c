@@ -106,7 +106,6 @@ enum
 };
 volatile unsigned int uart0_rx_buff_byte[16] __attribute__((aligned(4))) ={0x00};
 
-extern u32 connect_event_occurTick;
 
 
 /**
@@ -644,12 +643,6 @@ _attribute_no_inline_ void main_loop (void)
 
 
 	spp_restart_proc();
-
-	/*After conn 1s, S send  MTU size req to the Master.*/
-	if(connect_event_occurTick && clock_time_exceed(connect_event_occurTick, 1000000)){
-		connect_event_occurTick = 0;
-	    blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
-	}
 }
 
 

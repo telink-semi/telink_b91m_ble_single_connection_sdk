@@ -214,3 +214,8 @@ u8 * my_fifo_get (my_fifo_t *f);
 
 /*LL ACL TX buffer len = maxTxOct + 10, then 16 Byte align*/
 #define 	CAL_LL_ACL_TX_FIFO_SIZE(maxTxOct)	(((maxTxOct+10) + 15) / 16 *16)
+
+
+#define		ATT_ALLIGN4_DMA_BUFF(n)				(((n + 10) + 3) / 4 * 4)
+
+

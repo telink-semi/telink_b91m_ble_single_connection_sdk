@@ -72,20 +72,7 @@
 #endif
 
 
-/////////////////// Clock  /////////////////////////////////
-/**
- *  @brief  MCU system clock
- */
-#define CLOCK_SYS_CLOCK_HZ  	16000000
 
-/**
- *  @brief  Definition the number of system tick for 1s/1ms/1us
- */
-enum{
-	CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,
-	CLOCK_SYS_CLOCK_1MS = (CLOCK_SYS_CLOCK_1S / 1000),
-	CLOCK_SYS_CLOCK_1US = (CLOCK_SYS_CLOCK_1S / 1000000),
-};
 
 
 

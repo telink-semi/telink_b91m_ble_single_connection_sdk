@@ -63,11 +63,7 @@
 
 _attribute_data_retention_	int device_in_connection_state;
 
-_attribute_data_retention_	u32 advertise_begin_tick;
-
 _attribute_data_retention_	u32	interval_update_tick;
-
-_attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
 
 _attribute_data_retention_	u32	latest_user_event_tick;
 
@@ -173,8 +169,6 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //yellow light off
 #endif
 
-	advertise_begin_tick = clock_time();
-
 }
 
 
@@ -273,6 +267,12 @@ _attribute_no_inline_ void user_init_normal(void)
 	extern void my_att_init ();
 	my_att_init (); //gatt initialization
 
+	//ATT initialization
+	//If not set RX MTU size, default is: 23 bytes.  In this situation, if master send MtuSize Request before slave send MTU size request,
+	//slave will response default RX MTU size 23 bytes, then master will not send long packet on host l2cap layer, link layer data length
+	//extension feature can not be used.  So in data length extension application, RX MTU size must be enlarged when initialization.
+	blc_att_setRxMtuSize(MTU_SIZE_SETTING);
+
 	/* L2CAP Initialization */
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);
 
@@ -350,7 +350,7 @@ _attribute_no_inline_ void user_init_normal(void)
 #if(TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_GOOGLE)
 	google_handle_init(AUDIO_GOOGLE_CTL_DP_H,HID_CONSUME_REPORT_INPUT_DP_H);
 #endif
-//	advertise_begin_tick = clock_time();
+
 
 
 

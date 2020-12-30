@@ -140,22 +140,12 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	DBG_CHN0_LOW;
 	blc_pm_select_internal_32k_crystal();
 
-	sys_init(LDO_1P4_LDO_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
+	sys_init(DCDC_1P4_DCDC_1P8,VBAT_MAX_VALUE_GREATER_THAN_3V6);
 
 	/* detect if MCU is wake_up from deep retention mode */
 	int deepRetWakeUp = pm_is_MCU_deepRetentionWakeup();  //MCU deep retention wakeUp
 
-#if (CLOCK_SYS_CLOCK_HZ == 16000000)
 	CCLK_16M_HCLK_16M_PCLK_16M;
-#elif (CLOCK_SYS_CLOCK_HZ == 24000000)
-	CCLK_24M_HCLK_24M_PCLK_24M;
-#elif (CLOCK_SYS_CLOCK_HZ == 32000000)
-	CCLK_32M_HCLK_32M_PCLK_16M;
-#elif (CLOCK_SYS_CLOCK_HZ == 48000000)
-	CCLK_48M_HCLK_48M_PCLK_24M;
-#elif (CLOCK_SYS_CLOCK_HZ == 64000000)
-	CCLK_64M_HCLK_32M_PCLK_16M;
-#endif
 
 	rf_drv_ble_init();
 

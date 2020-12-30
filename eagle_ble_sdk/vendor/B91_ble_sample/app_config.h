@@ -51,7 +51,7 @@
 /**
  *  @brief  Feature select in bLE Sample project
  */
-#define BLE_APP_PM_ENABLE					1
+#define BLE_APP_PM_ENABLE					0
 #define PM_DEEPSLEEP_RETENTION_ENABLE		1
 #define TEST_CONN_CURRENT_ENABLE            0 //test connection current, disable UI to have a pure power
 #define APP_SECURITY_ENABLE      			1
@@ -96,12 +96,11 @@
 
 
 
-#if 1 										//SAMPLE SELECT EVK BOARD
-
-	#if (UI_KEYBOARD_ENABLE)   // if test pure power, kyeScan GPIO setting all disabled
-			//---------------  KeyMatrix PB2/PB3/PB4/PB5 -----------------------------
-			#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
-			#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
+//SAMPLE SELECT EVK BOARD
+#if (UI_KEYBOARD_ENABLE)   // if test pure power, kyeScan GPIO setting all disabled
+		//---------------  KeyMatrix PB2/PB3/PB4/PB5 -----------------------------
+		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
+		#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
 
 			#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
 
@@ -143,10 +142,9 @@
 			#define	PULL_WAKEUP_SRC_PC3		MATRIX_COL_PULL
 			#define	PULL_WAKEUP_SRC_PC1		MATRIX_COL_PULL
 
-			//scan pin open input to read gpio level
-			#define PC3_INPUT_ENABLE		1
-			#define PC1_INPUT_ENABLE		1
-	#endif
+		//scan pin open input to read gpio level
+		#define PC3_INPUT_ENABLE		1
+		#define PC1_INPUT_ENABLE		1
 
 	#if (UI_LED_ENABLE)
 		/**
@@ -168,49 +166,47 @@
 		#define PB5_OUTPUT_ENABLE		1
 		#define	PB4_OUTPUT_ENABLE		1
 	#endif
-#else													//SAMPLE SELECT DONGLE BOARD
-	#undef  PM_DEEPSLEEP_RETENTION_ENABLE
-	#define PM_DEEPSLEEP_RETENTION_ENABLE				0    //dongle demo no need deepSleepRetention
-
-	#if (UI_BUTTON_ENABLE)
-			//---------------  Button -------------------------------
-			/**
-			 *  @brief  Definition gpio for button detection
-			 */
-			#define	SW1_GPIO				GPIO_PD5
-			#define	SW2_GPIO				GPIO_PD6
-			#define PD5_FUNC				AS_GPIO
-			#define PD6_FUNC				AS_GPIO
-			#define PD5_INPUT_ENABLE		1
-			#define PD6_INPUT_ENABLE		1
-			#define PULL_WAKEUP_SRC_PD5     PM_PIN_PULLUP_10K
-			#define PULL_WAKEUP_SRC_PD6     PM_PIN_PULLUP_10K
-	#endif
 
 
+#elif (UI_BUTTON_ENABLE)
+		//SAMPLE SELECT DONGLE BOARD
+		#undef  PM_DEEPSLEEP_RETENTION_ENABLE
+		#define PM_DEEPSLEEP_RETENTION_ENABLE				0    //dongle demo no need deepSleepRetention
+		//---------------  Button -------------------------------
+		/**
+		 *  @brief  Definition gpio for button detection
+		 */
+		#define	SW1_GPIO				GPIO_PB2
+		#define	SW2_GPIO				GPIO_PB3
+		#define PB2_FUNC				AS_GPIO
+		#define PB3_FUNC				AS_GPIO
+		#define PB2_INPUT_ENABLE		1
+		#define PB3_INPUT_ENABLE		1
+		#define PULL_WAKEUP_SRC_PB2     PM_PIN_PULLUP_10K
+		#define PULL_WAKEUP_SRC_PB3     PM_PIN_PULLUP_10K
 
 	#if (UI_LED_ENABLE)
-			/**
-			 *  @brief  Definition gpio for led
-			 */
-			//---------------  LED ----------------------------------
-			#define	GPIO_LED_RED			GPIO_PA3
-			#define	GPIO_LED_WHITE			GPIO_PB1
-			#define	GPIO_LED_GREEN			GPIO_PA2
-			#define	GPIO_LED_BLUE			GPIO_PB0
-			#define	GPIO_LED_YELLOW			GPIO_PA4
+		/**
+		 *  @brief  Definition gpio for led
+		 */
+		//---------------  LED ----------------------------------
+		#define	GPIO_LED_RED			GPIO_PB4
+		#define	GPIO_LED_WHITE			GPIO_PB1
+		#define	GPIO_LED_GREEN			GPIO_PB0
+		#define	GPIO_LED_BLUE			GPIO_PB7
+		#define	GPIO_LED_YELLOW			GPIO_PB5
 
-			#define PA3_FUNC				AS_GPIO
-			#define PB1_FUNC				AS_GPIO
-			#define PA2_FUNC				AS_GPIO
-			#define PB0_FUNC				AS_GPIO
-			#define PA4_FUNC				AS_GPIO
+		#define PB4_FUNC				AS_GPIO
+		#define PB1_FUNC				AS_GPIO
+		#define PB0_FUNC				AS_GPIO
+		#define PB7_FUNC				AS_GPIO
+		#define PB5_FUNC				AS_GPIO
 
-			#define	PA3_OUTPUT_ENABLE		1
-			#define	PB1_OUTPUT_ENABLE		1
-			#define PA2_OUTPUT_ENABLE		1
-			#define	PB0_OUTPUT_ENABLE		1
-			#define	PA4_OUTPUT_ENABLE		1
+		#define	PB4_OUTPUT_ENABLE		1
+		#define	PB1_OUTPUT_ENABLE		1
+		#define PB0_OUTPUT_ENABLE		1
+		#define	PB7_OUTPUT_ENABLE		1
+		#define	PB5_OUTPUT_ENABLE		1
 
 			#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
 	#endif
@@ -245,20 +241,7 @@
 #endif
 
 
-/////////////////// Clock  /////////////////////////////////
-/**
- *  @brief  MCU system clock
- */
-#define CLOCK_SYS_CLOCK_HZ  	16000000
 
-/**
- *  @brief  Definition the number of system tick for 1s/1ms/1us
- */
-enum{
-	CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,
-	CLOCK_SYS_CLOCK_1MS = (CLOCK_SYS_CLOCK_1S / 1000),
-	CLOCK_SYS_CLOCK_1US = (CLOCK_SYS_CLOCK_1S / 1000000),
-};
 
 #if (JTAG_DEBUG_DISABLE)//2-wire jtag mode
 

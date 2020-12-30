@@ -122,41 +122,6 @@ ble_sts_t   bls_ll_setAdvDuration (u32 duration_us, u8 duration_en);
 
 
 
-
-/**
- * @brief      This function is used to add advertise state in connect state of slave role.
- * @param[in]  none.
- * @return     Status - 0x00: BLE success; 0x01-0xFF: fail
- */
-ble_sts_t   blc_ll_addAdvertisingInConnSlaveRole(void);
-
-/**
- * @brief      This function is used to remove advertisement state in connect state of slave role.
- * @param[in]  none.
- * @return      Status - 0x00: BLE success; 0x01-0xFF: fail
- */
-ble_sts_t   blc_ll_removeAdvertisingFromConnSLaveRole(void);
-
-/**
- * @brief      This function is used to set the advertising parameters in connect slave role.
- * @param[in]  *adv_data -  advertising data buffer
- * @param[in]  advData_len - The number of significant octets in the Advertising_Data.
- * @param[in]  *scanRsp_data -  Scan_Response_Data buffer
- * @param[in]  scanRspData_len - The number of significant octets in the Scan_Response_Data.
- * @param[in]  advType - Advertising_Type
- * @param[in]  ownAddrType - Own_Address_Type
- * @param[in]  adv_channelMap - Advertising_Channel_Map
- * @param[in]  advFilterPolicy - Advertising_Filter_Policy
- * @return      Status - 0x00: BLE success; 0x01-0xFF: fail
- */
-ble_sts_t 	blc_ll_setAdvParamInConnSlaveRole( u8 		  *adv_data,  u8              advData_len, u8 *scanRsp_data,  			 u8 scanRspData_len,
-											   adv_type_t  advType,   own_addr_type_t ownAddrType, adv_chn_map_t adv_channelMap, adv_fp_type_t advFilterPolicy);
-
-
-
-
-
-
 /**
  * @brief      This function is used to set some other channel to replace advertising chn37/38/39.
  * @param[in]  chn0 - channel to replace channel 37

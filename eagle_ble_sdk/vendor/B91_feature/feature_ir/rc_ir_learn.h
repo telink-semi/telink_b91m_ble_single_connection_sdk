@@ -72,7 +72,7 @@
 ************************************************************************************************/
 
 #define			IR_LEARN_INTERVAL_THRESHOLD			(IR_LEARN_CARRIER_MAX_CYCLE*3/2)
-#define			IR_LEARN_END_THRESHOLD	 			(30*CLOCK_SYS_CLOCK_1MS)
+#define			IR_LEARN_END_THRESHOLD	 			(30*SYSTEM_TIMER_TICK_1MS)
 #define			IR_LEARN_OVERTIME_THRESHOLD			10000000						// 10s
 #define			IR_CARR_CHECK_CNT		 			10
 #define			CARR_AND_NO_CARR_MIN_NUMBER			15

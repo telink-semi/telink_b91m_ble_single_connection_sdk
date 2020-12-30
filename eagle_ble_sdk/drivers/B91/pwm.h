@@ -198,7 +198,7 @@ void pwm_set_pin(pwm_pin_e pin);
 
 
 /**
- * @brief     This fuction servers to set pwm count status(CMP) time.
+ * @brief     This function servers to set pwm count status(CMP) time.
  * @param[in] id   - variable of enum to select the pwm number.
  * @param[in] tcmp - variable of the CMP.
  * @return	  none.
@@ -210,7 +210,7 @@ static inline void pwm_set_tcmp(pwm_id_e id, unsigned short tcmp)
 
 
 /**
- * @brief     This fuction servers to set pwm cycle time.
+ * @brief     This function servers to set pwm cycle time.
  * @param[in] id   - variable of enum to select the pwm number.
  * @param[in] tmax - variable of the cycle time.
  * @return	  none.
@@ -219,9 +219,16 @@ static inline void pwm_set_tmax(pwm_id_e id, unsigned short tmax){
 	reg_pwm_max(id) = tmax;
 }
 
+/*
+ *@brief    This function servers to update the duty cycle in 32K
+ *@return	  none.
+ */
+static inline void pwm_32k_chn_update_duty_cycle(void){
+	reg_pwm_cnt5_l |= FLD_PWM_32K_DUTY_CYCLE_UPDATE;
+}
 
 /**
- * @brief     This fuction servers to start the pwm.
+ * @brief     This function servers to start the pwm.
  * @param[in] id - variable of enum to select the pwm number.
  * @return	  none.
  */
@@ -236,7 +243,7 @@ static inline void pwm_start(pwm_id_e id){
 
 
 /**
- * @brief     This fuction servers to stop the pwm.
+ * @brief     This function servers to stop the pwm.
  * @param[in] id - variable of enum to select the pwm number.
  * @return	  none.
  */
@@ -251,7 +258,7 @@ static inline void pwm_stop(pwm_id_e id){
 
 
 /**
- * @brief     This fuction servers to revert the PWMx.
+ * @brief     This function servers to revert the PWMx.
  * @param[in] id - variable of enum to select the pwm number.
  * @return	  none.
  */
@@ -261,7 +268,7 @@ static inline void pwm_invert_en(pwm_id_e id){
 
 
 /**
- * @brief     This fuction servers to disable the PWM revert function.
+ * @brief     This function servers to disable the PWM revert function.
  * @param[in] id - variable of enum to select the pwm number.
  * @return	  none.
  */
@@ -271,7 +278,7 @@ static inline void pwm_invert_dis(pwm_id_e id){
 
 
 /**
- * @brief     This fuction servers to revert the PWMx_N.
+ * @brief     This function servers to revert the PWMx_N.
  * @param[in] id - variable of enum to select the pwm number.
  * @return	  none.
  */
@@ -281,7 +288,7 @@ static inline void pwm_n_invert_en(pwm_id_e id){
 
 
 /**
- * @brief     This fuction servers to disable the PWM revert function.
+ * @brief     This function servers to disable the PWM revert function.
  * @param[in] id - variable of enum to select the pwm number.
  * @return	  none.
  */
@@ -291,7 +298,7 @@ static inline void pwm_n_invert_dis(pwm_id_e id){
 
 
 /**
- * @brief     This fuction servers to enable the pwm polarity.
+ * @brief     This function servers to enable the pwm polarity.
  * @param[in] id - variable of enum to select the pwm number.
  * @return	  none.
  */
@@ -301,7 +308,7 @@ static inline void pwm_set_polarity_en(pwm_id_e id){
 
 
 /**
- * @brief     This fuction servers to disable the pwm polarity.
+ * @brief     This function servers to disable the pwm polarity.
  * @param[in] id - variable of enum to select the pwm number.
  * @return	  none.
  */

@@ -79,15 +79,6 @@ const u8	tbl_scanRsp [] = {
 		 0x08, 0x09, 'f', 'e', 'a', 't', 'u', 'r', 'e',
 	};
 
-_attribute_data_retention_	int device_in_connection_state;
-
-_attribute_data_retention_	u32 advertise_begin_tick;
-
-_attribute_data_retention_	u32	interval_update_tick;
-
-_attribute_data_retention_	u8	sendTerminate_before_enterDeep = 0;
-
-_attribute_data_retention_	u32	latest_user_event_tick;
 
 /**
  * @brief      callback function of LinkLayer Event "BLT_EV_FLAG_SUSPEND_ENTER"
@@ -114,13 +105,6 @@ void	task_connect (u8 e, u8 *p, int n)
 {
 	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
-	latest_user_event_tick = clock_time();
-
-	device_in_connection_state = 1;//
-
-	interval_update_tick = clock_time() | 1; //none zero
-
-
 #if (UI_LED_ENABLE)
 	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
 #endif
@@ -135,8 +119,6 @@ void	task_connect (u8 e, u8 *p, int n)
  */
 void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
-	device_in_connection_state = 0;
-
 
 	if(*p == HCI_ERR_CONN_TIMEOUT){
 
@@ -155,8 +137,6 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 #if (UI_LED_ENABLE)
 	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
 #endif
-
-	advertise_begin_tick = clock_time();
 
 }
 
@@ -207,10 +187,6 @@ _attribute_data_retention_	int 	key_not_released;
 
 #define CONSUMER_KEY   	   		1
 #define KEYBOARD_KEY   	   		2
-#define SWITCH_KEY              3
-#define IR_KEY                  4
-#define IR_LEARN_KEY            5
-
 _attribute_data_retention_	u8 		key_type;
 
 
@@ -302,10 +278,6 @@ static u8 switch_key = 0;        // Ble_IR_mode:0 IR_Only_mode:1 IR_Learn_mode
 ir_learn_send_t ir_learn_result;
 void key_change_proc(void)
 {
-
-	latest_user_event_tick = clock_time();  //record latest key change time
-
-
 	u8 key0 = kb_event.keycode[0];
 	u8 key_buf[8] = {0,0,0,0,0,0,0,0};
 
@@ -324,7 +296,6 @@ void key_change_proc(void)
 
 				if(switch_key == IR_mode)
 				{
-					key_type = IR_KEY;
 					g_led_st->stat = led_turkle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
@@ -336,7 +307,6 @@ void key_change_proc(void)
 				}
 				else if(switch_key == IR_Learn_mode)
 				{
-					key_type = IR_LEARN_KEY;
 					if(get_ir_learn_state() == 0) // success
 					{
 						g_led_st->stat = led_on;
@@ -382,7 +352,6 @@ void key_change_proc(void)
 
 				if(switch_key == IR_mode)
 				{
-					key_type = IR_KEY;
 					g_led_st->stat = led_turkle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
@@ -394,7 +363,6 @@ void key_change_proc(void)
 				}
 				else if(switch_key == IR_Learn_mode)
 				{
-					key_type = IR_LEARN_KEY;
 					if(get_ir_learn_state() == 0) // success
 					{
 						g_led_st->stat = led_on;
@@ -428,7 +396,6 @@ void key_change_proc(void)
 			case VK_1:
 				if(switch_key == IR_mode)
 				{
-					key_type = IR_KEY;
 					g_led_st->stat = led_turkle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
@@ -441,7 +408,6 @@ void key_change_proc(void)
 				}
 				else if(switch_key == IR_Learn_mode)
 				{
-					key_type = IR_LEARN_KEY;
 					g_led_st->stat = led_on;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
@@ -463,7 +429,11 @@ void key_change_proc(void)
 				break;
 
 			case VK_2:  // switch key
-				key_type = SWITCH_KEY;
+
+				key_type = KEYBOARD_KEY;
+				key_buf[2] = key0;
+				blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
+
 				switch_key++;
 				switch_key = (switch_key > IR_Learn_mode)? Ble_mode : switch_key;
 

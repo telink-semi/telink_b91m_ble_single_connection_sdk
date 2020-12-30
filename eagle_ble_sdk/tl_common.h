@@ -57,6 +57,7 @@
 #include "config.h"
 
 #include "common/assert.h"
+#include "common/static_assert.h"
 
 
 
