@@ -20,9 +20,9 @@ scc:
     - scc.txt
 
 genLicense:
-  variables:
-    CODE_COMPILE_ARCH: 'EAGLE_ANDES'
-    COV_PF_CATALOG: 'BLE'
+  #variables:
+    #CODE_COMPILE_ARCH: 'EAGLE_ANDES'
+    #COV_PF_CATALOG: 'BLE'
   stage: genLicense
   before_script:
   script:
@@ -41,7 +41,7 @@ checkLicense:
     CODE_COMPILE_ARCH: 'EAGLE_ANDES'
     COV_PF_CATALOG: 'BLE'
   stage: checkLicense
-  #allow_failure: yes
+  allow_failure: yes
   before_script:
   script:
     - date
