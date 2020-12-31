@@ -172,7 +172,7 @@ void	task_connect (u8 e, u8 *p, int n)
 	device_in_connection_state = 1;//
 
 
-#if (UI_LED_ENABLE)
+#if (UI_LED_ENABLE && !TEST_CONN_CURRENT_ENABLE)
 	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //yellow light on
 #endif
 }
@@ -214,7 +214,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 #endif
 
 
-#if (UI_LED_ENABLE)
+#if (UI_LED_ENABLE && !TEST_CONN_CURRENT_ENABLE)
 	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //yellow light off
 #endif
 
@@ -528,7 +528,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_ota_initOtaServer_module();
 
 	blc_ota_setOtaProcessTimeout(30);   //OTA process timeout:  30 seconds
-	blc_ota_setOtaDataPacketTimeout(2);	//OTA data packet timeout:  2 seconds
+	blc_ota_setOtaDataPacketTimeout(4);	//OTA data packet timeout:  4 seconds
 	blc_ota_registerOtaStartCmdCb(app_enter_ota_mode);
 	blc_ota_registerOtaResultIndicationCb(app_ota_end_result);
 #endif
