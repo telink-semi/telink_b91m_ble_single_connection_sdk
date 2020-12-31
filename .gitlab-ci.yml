@@ -46,7 +46,7 @@ checkLicense:
   script:
     - date
     - check_license
-    #- generat_license_list # For no license files
+    - generat_license_list # For no license files
     - date
 
   artifacts:
