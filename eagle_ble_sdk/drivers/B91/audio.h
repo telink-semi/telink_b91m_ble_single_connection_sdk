@@ -195,6 +195,7 @@ typedef struct {
 	unsigned char  out_digital_gain;
 	unsigned char  out_analog_gain;
 	unsigned char  mic_input_mode_select;
+	unsigned char  adc_wnf_mode_select;
 }aduio_i2s_codec_config_t;
 
 
@@ -851,6 +852,15 @@ void audio_set_codec_in_path_a_d_gain (codec_in_path_digital_gain_e d_gain,codec
  void audio_set_i2s_codec_m_s (i2s_codec_m_s_mode_e m_s);
 
 
+ /**
+  * @brief  This function serves to set wind noise filter(WNF),it is a programmable high pass filter feature enabling to reduce wind noise.
+  * @param[in] mode - the wind noise filter mode,the wind noise filter is a 1st order filter.
+ *                                              Mode1  -3dB   59Hz
+ *  Wind Noise Filter corner frequency          Mode2  -3dB   117Hz
+ 			                                    Mode3  -3dB   235Hz
+ * @return    none
+  */
+ void audio_set_codec_wnf(adc_wnf_mode_sel_e mode);
  /**
   * @brief    This function serves to active soft mute dac and disable dma.
   * @return    none

@@ -129,6 +129,13 @@ typedef enum {
     FLASH_SIZE_8M      = 0x17,
 } flash_capacity_e;
 
+typedef struct{
+	unsigned char  flash_read_cmd;			/**< xip read command */
+	unsigned char  flash_read_dummy:4;		/**< dummy cycle = flash_read_dummy + 1 */
+	unsigned char  flash_read_data_line:2;	/**< 0:single line;  1: dual line;  2:quad line; 3:quad line */
+	unsigned char  flash_read_addr_line:1;	/**< 0:single line;  1:the same to dat_line_h */
+	unsigned char  flash_read_cmd_line:1; 	/**< 0:single line;  1:the same to dat_line_h */
+}flash_xip_config_t;
 /**
  * @brief     	This function serves to erase a page(256 bytes).
  * @param[in] 	addr	- the start address of the page needs to erase.
@@ -262,7 +269,14 @@ _attribute_text_sec_ void flash_unlock(flash_type_e type);
  * @return    	none.
  */
 _attribute_text_sec_ void flash_plic_preempt_config(unsigned char preempt_en, unsigned char threshold);
-
+/**
+ * @brief 		This function is used to update the configuration parameters of xip(eXecute In Place),
+ * 				this configuration will affect the speed of MCU fetching,
+ * 				this parameter needs to be consistent with the corresponding parameters in the flash datasheet.
+ * @param[in]	config	- xip configuration,reference structure flash_xip_config_t
+ * @return none
+ */
+_attribute_text_sec_ void flash_set_xip_config(flash_xip_config_t config);
 /**
  * @brief		This function serves to set flash write command.This function interface is only used internally by flash,
  * 				and is currently included in the H file for compatibility with other SDKs. When using this interface,

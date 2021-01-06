@@ -128,18 +128,25 @@ unsigned char clock_kick_32k_xtal(unsigned char xtal_times)
 			//2.set PD0 as pwm output
 			unsigned char pwm_clk = read_reg8(0x1401d8);//**condition: PCLK is 24MHZ,PCLK = HCLK
 			write_reg8(0x1401d8,((pwm_clk & 0xfc) | 0x01));//PCLK = 12M
-			unsigned char reg_31e = read_reg8(0x14031e);	//PD0
-			write_reg8(0x14031e,reg_31e & 0xfe);
-			unsigned short reg_418 = read_reg16(0x140418);	//pwm1 cmp
-			write_reg16(0x140418,0x01);
-			unsigned short reg_41a = read_reg16(0x14041a);  //pwm1 max
-			write_reg16(0x14041a,0x02);
-			unsigned char reg_400 = read_reg8(0x140400);	//pwm en
-			write_reg8(0x140400,0x02);
-			write_reg8(0x140402,0xb6);						//12M/(0xb6 + 1)/2 = 32k
+
+			unsigned char reg_31e = read_reg8(0x14031e);	//PD0 -> pwm0
+			write_reg8(0x14031e, reg_31e & 0xfe);
+			unsigned char reg_336 = read_reg8(0x140336);
+			write_reg8(0x140336, (reg_336 & 0xfc) | 0x02);
+			unsigned char reg_355 = read_reg8(0x140355);
+			write_reg8(0x140355, reg_355 | 0x01);
+
+			unsigned short reg_414 = read_reg16(0x140414);	//pwm0 cmp
+			write_reg16(0x140414, 0x01);
+			unsigned short reg_416 = read_reg16(0x140416);	//pwm0 max
+			write_reg16(0x140416, 0x02);
+
+			write_reg8(0x140402, 0xb6);						//12M/(0xb6 + 1)/2 = 32k
+			unsigned char reg_401 = read_reg8(0x140401);	//pwm_en  pwm0 enable
+			write_reg8(0x140401, 0x01);
 
 			//3.wait for PWM wake up Xtal
-			delay_ms(100);
+			delay_ms(10);
 
 			//4.Xtal 32k output
 			analog_write_reg8(0x03,0x4f); //<7:6>current select
@@ -147,15 +154,17 @@ unsigned char clock_kick_32k_xtal(unsigned char xtal_times)
 			//5.Recover PD0 as Xtal pin
 			write_reg8(0x1401d8,pwm_clk);
 			write_reg8(0x14031e,reg_31e);
-			write_reg16(0x140418,reg_418);
-			write_reg16(0x14041a,reg_41a);
-			write_reg8(0x140400,reg_400);
+			write_reg8(0x140336,reg_336);
+			write_reg8(0x140355,reg_355);
+			write_reg16(0x140414,reg_414);
+			write_reg16(0x140416,reg_416);
+			write_reg8(0x140401,reg_401);
 		}
 
-		last_32k_tick = clock_get_32k_tick();	//clock_get_32k_tick()
+		last_32k_tick = clock_get_32k_tick();
 		delay_us(305);		//for 32k tick accumulator, tick period: 30.5us, dly 10 ticks
 		curr_32k_tick = clock_get_32k_tick();
-		if(last_32k_tick != curr_32k_tick)		//clock_get_32k_tick()
+		if((curr_32k_tick - last_32k_tick) > 3)	
 		{
 			return 1;		//pwm kick 32k pad success
 		}
@@ -233,6 +242,7 @@ void clock_set_32k_tick(unsigned int tick)
  * @brief  This function serves to get the 32k tick.
  * @return none.
  */
+#if 0
 unsigned int clock_get_32k_tick(void)
 {
 	unsigned int timer_32k_tick;
@@ -244,6 +254,37 @@ unsigned int clock_get_32k_tick(void)
 	reg_system_ctrl |= FLD_SYSTEM_32K_WR_EN;	//1:32k write mode; 0:32k read mode
 	return timer_32k_tick;
 }
+#else
+/*
+ * modify by yi.bao,confirmed by guangjun at 20210105
+ * Use digital register way to get 32k tick may read error tick,cause the wakeup time is
+ * incorrect with the setting time,the sleep time will very little or very big,will not wakeup ontime.
+ */
+unsigned int clock_get_32k_tick(void)
+{
+    unsigned int t0 = 0;
+    unsigned int t1 = 0;
+    unsigned int n = 0;
+
+    while (1) {
+
+        t0 = t1;
+        t1 = analog_read_reg32(0x60);
+
+        if (n)
+        {
+            if ((unsigned int)(t1 - t0) < 2) {
+                return t1;
+            }
+            else if ( (t0^t1) == 1 ) {
+                return t0;
+            }
+        }
+        n++;
+    }
+    return t1;
+}
+#endif
 
 /**
  * @brief       This function use to select the system clock source.

@@ -161,8 +161,10 @@ typedef enum{
 }adc_chn_e;
 
 typedef enum{
-	ADC_PRESCALE_1   = 0x00,
-	ADC_PRESCALE_1F8 = 0x03,
+	ADC_PRESCALE_1   = 0x00,//Only for internal testing and temperature sensor sampling
+//	ADC_PRESCALE_1F2 = 0x01,//Only for internal testing
+	ADC_PRESCALE_1F4 = 0x02,
+//	ADC_PRESCALE_1F8 = 0x03,//Only for internal testing
 }adc_pre_scale_e;
 enum{
 	ADC_MAX_STATE_NUM  = 0x02,
@@ -360,24 +362,24 @@ void adc_temperature_sample_init(void);
  * @param[in]  pre_scale - enum variable of ADC pre_scaling factor.
  * @param[in]  sample_freq - enum variable of ADC sample frequency.
  * @return none
- * @attention  gpio voltage sample suggested initial setting are Vref = 1.2V, pre_scale = 1/8.
- * 			0.9V Vref pre_scale must be 1.
- * 			The sampling range are as follows:
- * 			Vref        pre_scale        sampling range
- * 			1.2V			1				0 ~ 1.1V (suggest)
- * 			1.2V			1/8				0 ~ 3.5V (suggest)
- * 			0.9V            1				0 ~ 0.8V
+ * @attention  gpio voltage sample suggested initial setting are Vref = 1.2V, pre_scale = 1/4. 
+ *			changed by chaofan.20201230.
  */
 void adc_gpio_sample_init(adc_input_pin_def_e pin,adc_ref_vol_e v_ref,adc_pre_scale_e pre_scale,adc_sample_freq_e sample_freq);
 
 /**
- * @brief This function servers to set ADC configuration for ADC supply voltage sampling.
+ * @brief This function servers to set ADC configuration with internal Vbat channel for ADC supply voltage sampling.
  * @return none
- * @attention battery voltage sample suggested initial setting are Vref = 1.2V, pre_scale = 1, vbat_div = 1/3.
- * 			Which has higher accuracy, user don't need to change it.
- * 			The battery voltage sample range is 1.8~3.5V,
+ * @attention Vbat channel battery voltage sample suggested initial setting are Vref = 1.2V, pre_scale = 1/4, vbat_div = off.
+ * 			The Vbat channel battery voltage sample range is 1.8~3.5V and is low accuracy,
  * 			and must set sys_init with the mode for battery voltage less than 3.6V.
- * 			For battery voltage > 3.6V, should take some external voltage divider.
+ * 			For accurate battery voltage sampling or battery voltage > 3.6V, should use gpio sampling with some external voltage divider.
+ *			Recommended configuration parameters:
+ *			--3/4 external resistor voltage divider(total resistance 400k, without any capacitance),
+ *			--1.2V Vref,
+ *			--1/4 Scale
+ *			--Sampling frequence below 48K.
+ *			changed by chaofan.20201230.
  */
 void adc_battery_voltage_sample_init(void);
 /**

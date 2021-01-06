@@ -90,7 +90,6 @@ typedef enum{
  * @note        the clk-source of s7816 is 24M-pad,the clk of clk-pin can be divided as follow.
  * 				div:        0x60-4Mhz     0x40-6Mhz   0x20-12Mhz
  * 				baudrate:   0x60-10752    0x40-16194  0x20-32388
- * 				the clk-pin is PA0 by default.
  */
 extern void s7816_set_clk(unsigned char div);
 

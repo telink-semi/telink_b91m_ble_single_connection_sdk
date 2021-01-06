@@ -721,7 +721,29 @@ _attribute_text_sec_ void flash_unlock(flash_type_e type)
 	flash_unlock_ram(type);
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
+/**
+ * @brief 		This function is used to update the configuration parameters of xip(eXecute In Place),
+ * 				this configuration will affect the speed of MCU fetching,
+ * 				this parameter needs to be consistent with the corresponding parameters in the flash datasheet.
+ * @param[in]	config	- xip configuration,reference structure flash_xip_config_t
+ * @return none
+ */
+_attribute_ram_code_sec_noinline_ void flash_set_xip_config_sram(flash_xip_config_t config)
+{
+	unsigned int r=plic_enter_critical_sec(s_flash_preempt_config.preempt_en,s_flash_preempt_config.threshold);
 
+	mspi_stop_xip();
+	reg_mspi_xip_config = *((unsigned short*)(&config));
+	CLOCK_DLY_5_CYC;
+
+	plic_exit_critical_sec(s_flash_preempt_config.preempt_en,r);
+}
+_attribute_text_sec_ void flash_set_xip_config(flash_xip_config_t config)
+{
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_set_xip_config_sram(config);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+}
 
 /********************************************************************************************************
  *									secondary calling function,

@@ -47,7 +47,6 @@
 #define BLE_COMMON_H
 
 #include "ble_config.h"
-#include "ble_stack.h"
 #include "tl_common.h"
 
 

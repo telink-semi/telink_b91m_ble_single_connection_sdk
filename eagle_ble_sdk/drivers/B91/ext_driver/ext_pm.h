@@ -55,9 +55,6 @@
 #endif
 
 
-#ifndef PM_TIM_RECOVER_MODE
-#define PM_TIM_RECOVER_MODE			    	0
-#endif
 
 
 
@@ -71,16 +68,6 @@ typedef enum {
 	 PM_TIM_RECOVER_END     = BIT(15),
 }pm_tim_recover_wakeup_src_e;
 
-#if (PM_TIM_RECOVER_MODE)
-
-typedef struct{
-	unsigned int   tick_sysClk;
-	unsigned int   tick_32k;
-	unsigned int   recover_flag;
-}pm_tim_recover_t;
-
-extern _attribute_aligned_(4) pm_tim_recover_t			pm_timRecover;
-#endif
 
 
 typedef pm_sleep_mode_e 	SleepMode_TypeDef;
@@ -202,8 +189,9 @@ unsigned int pm_tim_recover_32k_xtal(unsigned int now_tick_32k);
  * @param   none
  * @return  tick of 32k .
  */
-
 extern unsigned int get_32k_tick(void);
+
+unsigned int clock_get_digital_32k_tick(void);
 
 /**
  * @brief      This function serves to determine whether wake up source is internal 32k RC.

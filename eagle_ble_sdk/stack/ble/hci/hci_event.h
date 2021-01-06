@@ -49,7 +49,6 @@
 #include <stack/ble/hci/hci.h>
 #include "stack/ble/ble_config.h"
 #include "stack/ble/ble_common.h"
-#include "stack/ble/ble_stack.h"
 
 /**
  *  @brief  Definition for general HCI event packet

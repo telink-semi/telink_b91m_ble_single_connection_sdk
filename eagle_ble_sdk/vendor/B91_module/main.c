@@ -121,12 +121,9 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 
 	if(!deepRetWakeUp){//read flash size
 		blc_readFlashSize_autoConfigCustomFlashSector();
+
 		#if (FLASH_FIRMWARE_CHECK_ENABLE)
-			//user can use flash_fw_check() to check whether firmware in flash is modified.
-			//Advice user to do it only when power on.
-			if(flash_fw_check(0xffffffff)){ //if retrun 0, flash fw crc check ok. if retrun 1, flash fw crc check fail
-				while(1);				    //Users can process according to the actual application.
-			}
+		blt_firmware_completeness_check
 		#endif
 		#if FIRMWARES_SIGNATURE_ENABLE
 			blt_firmware_signature_check();

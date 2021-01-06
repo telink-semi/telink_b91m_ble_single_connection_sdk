@@ -64,10 +64,11 @@ aduio_i2s_codec_config_t audio_i2s_codec_config=
    .i2s_codec_m_s_mode		=I2S_M_CODEC_S,
    .i2s_data_invert_select  =I2S_DATA_INVERT_DIS,//L channel default
    .in_digital_gain			=CODEC_IN_D_GAIN_0_DB,
-   .in_analog_gain     		=CODEC_IN_A_GAIN_8_DB,
+   .in_analog_gain     		=CODEC_IN_A_GAIN_0_DB,
    .out_digital_gain   		=CODEC_OUT_D_GAIN_0_DB,
-   .out_analog_gain    		=CODEC_OUT_A_GAIN_6_DB,
+   .out_analog_gain    		=CODEC_OUT_A_GAIN_0_DB,
    .mic_input_mode_select   =1,//0 single-ended input, 1 differential input
+   .adc_wnf_mode_select     =CODEC_ADC_WNF_INACTIVE,
 };
 
 dma_config_t audio_dma_rx_config=
@@ -160,6 +161,19 @@ void audio_set_codec_in_path_a_d_gain (codec_in_path_digital_gain_e d_gain,codec
 void audio_set_i2s_codec_m_s (i2s_codec_m_s_mode_e m_s)
 {
 	audio_i2s_codec_config.i2s_codec_m_s_mode=m_s;
+}
+
+/**
+ * @brief  This function serves to set wind noise filter(WNF),it is a programmable high pass filter feature enabling to reduce wind noise.
+ * @param[in] mode - the wind noise filter mode,the wind noise filter is a 1st order filter.
+*                                              Mode1  -3dB   59Hz
+*  Wind Noise Filter corner frequency          Mode2  -3dB   117Hz
+			                                   Mode3  -3dB   235Hz
+* @return    none
+ */
+void audio_set_codec_wnf(adc_wnf_mode_sel_e mode)
+{
+	audio_i2s_codec_config.adc_wnf_mode_select = mode;
 }
 
 /**
@@ -702,8 +716,8 @@ void audio_codec_adc_config(i2s_codec_m_s_mode_e mode,audio_input_mode_e in_mode
 		reg_audio_codec_mic2_ctr= MASK_VAL( FLD_AUDIO_CODEC_MIC2_SEL, 0,\
 										FLD_AUDIO_CODEC_MIC_DIFF2, audio_i2s_codec_config.mic_input_mode_select);
 
-		/*enable wind noise filter mode3*/
-		reg_audio_codec_adc_wnf_ctr = CODEC_ADC_WNF_MODE3;
+		/*set wind noise filter */
+		reg_audio_codec_adc_wnf_ctr = audio_i2s_codec_config.adc_wnf_mode_select;
 
 		/*analog 0/4/8/12/16/20 dB boost gain*/
 		reg_audio_codec_mic_l_R_gain= MASK_VAL( FLD_AUDIO_CODEC_AMIC_L_GAIN, audio_i2s_codec_config.in_analog_gain,\
@@ -719,6 +733,10 @@ void audio_codec_adc_config(i2s_codec_m_s_mode_e mode,audio_input_mode_e in_mode
 
 		else if(in_mode==LINE_INPUT)
 		{
+			reg_audio_codec_mic1_ctr= MASK_VAL(FLD_AUDIO_CODEC_MIC_DIFF1, audio_i2s_codec_config.mic_input_mode_select);
+
+			reg_audio_codec_mic2_ctr= MASK_VAL(FLD_AUDIO_CODEC_MIC_DIFF2, audio_i2s_codec_config.mic_input_mode_select);
+
 		/*analog 0/4/8/12/16/20 dB boost gain*/
 		reg_audio_codec_mic_l_R_gain= MASK_VAL( FLD_AUDIO_CODEC_AMIC_L_GAIN, audio_i2s_codec_config.in_analog_gain,\
 												FLD_AUDIO_CODEC_AMIC_R_GAIN, audio_i2s_codec_config.in_analog_gain);

@@ -258,4 +258,4 @@
 
 
 
-#define PUYA_FLASH_JUDGE_EN					1
+#define PUYA_FLASH_JUDGE_EN					0

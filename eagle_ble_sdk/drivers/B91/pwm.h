@@ -318,7 +318,7 @@ static inline void pwm_set_polarity_dis(pwm_id_e id){
 
 
 /**
- * @brief     This fuction servers to enable the pwm interrupt.
+ * @brief     This function servers to enable the pwm interrupt.
  * @param[in] mask - variable of enum to select the pwm interrupt source.
  * @return	  none.
  */
@@ -337,7 +337,7 @@ static inline void pwm_set_irq_mask(pwm_irq_e mask){
 
 
 /**
- * @brief     This fuction servers to disable the pwm interrupt function.
+ * @brief     This function servers to disable the pwm interrupt function.
  * @param[in] mask - variable of enum to select the pwm interrupt source.
  * @return	  none.
  */
@@ -356,7 +356,7 @@ static inline void pwm_clr_irq_mask(pwm_irq_e mask){
 
 
 /**
- * @brief     This fuction servers to get the pwm interrupt status.
+ * @brief     This function servers to get the pwm interrupt status.
  * @param[in] status - variable of enum to select the pwm interrupt source.
  * @return	  none.
  */
@@ -375,7 +375,7 @@ static inline unsigned char pwm_get_irq_status(pwm_irq_e status){
 
 
 /**
- * @brief     This fuction servers to clear the pwm interrupt.When a PWM interrupt occurs, the corresponding interrupt flag bit needs to be cleared manually.
+ * @brief     This function servers to clear the pwm interrupt.When a PWM interrupt occurs, the corresponding interrupt flag bit needs to be cleared manually.
  * @param[in] status  - variable of enum to select the pwm interrupt source.
  * @return	  none.
  */
@@ -394,7 +394,7 @@ static inline void pwm_clr_irq_status(pwm_irq_e status){
 
 
 /**
- * @brief     This fuction servers to set pwm0 mode.
+ * @brief     This function servers to set pwm0 mode.
  * @param[in] mode - variable of enum to indicates the pwm mode.
  * @return	  none.
  */
@@ -404,7 +404,7 @@ static inline void pwm_set_pwm0_mode(pwm_mode_e  mode){
 
 
 /**
- * @brief     This fuction servers to set pwm cycle time & count status.
+ * @brief     This function servers to set pwm cycle time & count status.
  * @param[in] max_tick - variable of the cycle time.
  * @param[in] cmp_tick - variable of the CMP.
  * @return	  none.
@@ -417,7 +417,7 @@ static inline void pwm_set_pwm0_tcmp_and_tmax_shadow(unsigned short max_tick, un
 
 
 /**
- * @brief     This fuction servers to set the pwm0 pulse number.
+ * @brief     This function servers to set the pwm0 pulse number.
  * @param[in] pulse_num - variable of the pwm pulse number.The maximum bits is 14bits.
  * @return	  none.
  */
@@ -428,7 +428,7 @@ static inline void pwm_set_pwm0_pulse_num(unsigned short pulse_num){
 
 
 /**
- * @brief     This fuction serves to set trigger level of interrupt for IR FiFo mode
+ * @brief     This function serves to set trigger level of interrupt for IR FiFo mode
  * @param[in] trig_level - FIFO  num int trigger level.When fifo numbers is less than this value.It's will take effect.
  * @return	  none
  */
@@ -439,7 +439,7 @@ static inline void pwm_set_pwm0_ir_fifo_irq_trig_level(unsigned char trig_level)
 
 
 /**
- * @brief     This fuction serves to clear data in fifo. Only when pwm is in not active mode,
+ * @brief     This function serves to clear data in fifo. Only when pwm is in not active mode,
  * 			  it is possible to clear data in fifo.
  * @return	  none
  */
@@ -450,7 +450,7 @@ static inline void pwm_clr_pwm0_ir_fifo(void)
 
 
 /**
- * @brief     This fuction serves to get the number of data in fifo.
+ * @brief     This function serves to get the number of data in fifo.
  * @return	  the number of data in fifo
  */
 static inline unsigned char pwm_get_pwm0_ir_fifo_data_num(void)//????TODO
@@ -460,7 +460,7 @@ static inline unsigned char pwm_get_pwm0_ir_fifo_data_num(void)//????TODO
 
 
 /**
- * @brief     This fuction serves to determine whether data in fifo is empty.
+ * @brief     This function serves to determine whether data in fifo is empty.
  * @return	  yes: 1 ,no: 0;
  */
 static inline unsigned char pwm_get_pwm0_ir_fifo_is_empty(void)
@@ -470,7 +470,7 @@ static inline unsigned char pwm_get_pwm0_ir_fifo_is_empty(void)
 
 
 /**
- * @brief     This fuction serves to determine whether data in fifo is full.
+ * @brief     This function serves to determine whether data in fifo is full.
  * @return	  yes: 1 ,no: 0;
  */
 static inline unsigned char pwm_get_pwm0_ir_fifo_is_full(void)
@@ -480,7 +480,7 @@ static inline unsigned char pwm_get_pwm0_ir_fifo_is_full(void)
 
 
 /**
- * @brief     This fuction serves to config the pwm's dma wave form.
+ * @brief     This function serves to configure the pwm's dma wave form.
  * @param[in] pulse_num - the number of pulse.
  * @param[in] shadow_en - whether enable shadow mode.
  * @param[in] carrier_en - must 1 or 0.
@@ -493,7 +493,7 @@ static inline unsigned short pwm_cal_pwm0_ir_fifo_cfg_data(unsigned short pulse_
 
 
 /**
- * @brief     This fuction serves to write data into FiFo
+ * @brief     This function serves to write data into FiFo
  * @param[in] pulse_num  - the number of pulse
  * @param[in] use_shadow - determine whether the configuration of shadow cmp and shadow max is used
  * 						   1: use shadow, 0: not use

@@ -138,11 +138,15 @@ void key_change_proc(void)
 			u16 consumer_key;
 			if(key0 == CR_VOL_UP){  	//volume up
 				consumer_key = MKEY_VOL_UP;
-				gpio_write(GPIO_LED_WHITE,1);
+				#if (UI_LED_ENABLE)
+					gpio_write(GPIO_LED_WHITE,1);
+				#endif
 			}
 			else if(key0 == CR_VOL_DN){ //volume down
 				consumer_key = MKEY_VOL_DN;
-				gpio_write(GPIO_LED_GREEN,1);
+				#if (UI_LED_ENABLE)
+					gpio_write(GPIO_LED_GREEN,1);
+				#endif
 			}
 
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 2);
@@ -153,11 +157,15 @@ void key_change_proc(void)
 			key_buf[2] = key0;
 			if(key0 == VK_1)
 			{
-				gpio_write(GPIO_LED_BLUE,1);
+				#if (UI_LED_ENABLE)
+					gpio_write(GPIO_LED_BLUE,1);
+				#endif
 			}
 			else if(key0 == VK_2)
 			{
-				gpio_write(GPIO_LED_BLUE,1);
+				#if (UI_LED_ENABLE)
+					gpio_write(GPIO_LED_BLUE,1);
+				#endif
 			}
 
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
@@ -166,8 +174,10 @@ void key_change_proc(void)
 	}
 	else   //kb_event.cnt == 0,  key release
 	{
-		gpio_write(GPIO_LED_WHITE,0);
-		gpio_write(GPIO_LED_GREEN,0);
+		#if (UI_LED_ENABLE)
+			gpio_write(GPIO_LED_WHITE,0);
+			gpio_write(GPIO_LED_GREEN,0);
+		#endif
 		key_not_released = 0;
 		if(key_type == CONSUMER_KEY)
 		{
@@ -177,8 +187,10 @@ void key_change_proc(void)
 		}
 		else if(key_type == KEYBOARD_KEY)
 		{
-			gpio_write(GPIO_LED_BLUE,0);
-			gpio_write(GPIO_LED_BLUE,0);
+			#if (UI_LED_ENABLE)
+				gpio_write(GPIO_LED_BLUE,0);
+				gpio_write(GPIO_LED_BLUE,0);
+			#endif
 			key_buf[2] = 0;
 
 			blc_gatt_pushHandleValueNotify (BLS_CONN_HANDLE, HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
