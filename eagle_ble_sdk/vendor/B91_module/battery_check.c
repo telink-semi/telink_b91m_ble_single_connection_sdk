@@ -110,7 +110,7 @@ _attribute_ram_code_ int app_battery_power_check(u16 alram_vol_mv)
 #if VBAT_CHANNEL_EN
 		adc_battery_voltage_sample_init();
 #else
-		adc_gpio_sample_init(ADC_INPUT_PIN_CHN,ADC_VREF_1P2V,ADC_PRESCALE_1F8,ADC_SAMPLE_FREQ_96K);
+		adc_gpio_sample_init(ADC_INPUT_PIN_CHN,ADC_VREF_1P2V,ADC_PRESCALE_1F4,ADC_SAMPLE_FREQ_96K);
 #endif
 		adc_power_on();
 	}

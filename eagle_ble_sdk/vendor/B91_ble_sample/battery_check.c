@@ -98,13 +98,13 @@ _attribute_ram_code_ void adc_bat_detect_init(void)
 	g_adc_vref = 1175;
 
 #if VBAT_CHANNEL_EN//vbat mode, vbat channel
-	//set Analog input pre-scaling,ADC_PRESCALE_1F8
+	//set Analog input pre-scaling,ADC_PRESCALE_1F4
 	analog_write_reg8( areg_ain_scale  , (analog_read_reg8( areg_ain_scale  )&(~FLD_SEL_AIN_SCALE)) | (ADC_PRESCALE_1<<6) );
 	g_adc_pre_scale = 1<<(unsigned char)ADC_PRESCALE_1;
 #else
-	//set Analog input pre-scaling,ADC_PRESCALE_1F8
-	analog_write_reg8( areg_ain_scale  , (analog_read_reg8( areg_ain_scale  )&(~FLD_SEL_AIN_SCALE)) | (ADC_PRESCALE_1F8<<6) );
-	g_adc_pre_scale = 1<<(unsigned char)ADC_PRESCALE_1F8;
+	//set Analog input pre-scaling,ADC_PRESCALE_1F4
+	analog_write_reg8( areg_ain_scale  , (analog_read_reg8( areg_ain_scale  )&(~FLD_SEL_AIN_SCALE)) | (ADC_PRESCALE_1F4<<6) );
+	g_adc_pre_scale = 1<<(unsigned char)ADC_PRESCALE_1F4;
 #endif
 
 	//set sample frequency.96k
