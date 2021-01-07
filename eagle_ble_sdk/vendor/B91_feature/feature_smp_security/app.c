@@ -774,7 +774,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	#if (PM_DEEPSLEEP_RETENTION_ENABLE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(95, 95);
-		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(240);
+		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(360);
 		//blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW64K); //default use 32k deep retention
 	#else
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);

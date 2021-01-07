@@ -125,6 +125,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 		#if (FLASH_FIRMWARE_CHECK_ENABLE)
 		blt_firmware_completeness_check
 		#endif
+
 		#if FIRMWARES_SIGNATURE_ENABLE
 			blt_firmware_signature_check();
 		#endif

@@ -783,6 +783,3 @@ _attribute_text_sec_ int flash_read_mid_uid_with_check( unsigned int *flash_mid 
 	}
 }
 
-
-
-

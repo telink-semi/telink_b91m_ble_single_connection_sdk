@@ -78,7 +78,6 @@
 
 #define TEST_2M_CODED_PHY_CONNECTION					60		//  2M/Coded PHY used on Legacy_ADV/Extended_ADV and Connection
 
-#define	TEST_CSA2										80
 
 #define	TEST_STUCK_KEY									90
 #define	TEST_AUDIO										91

@@ -184,7 +184,7 @@ unsigned int div2n_u32(unsigned int a[], signed int aWordLen, unsigned int n)
 	if(!aWordLen)
 		return 0;
 
-	if(n <= 32)
+	if(n < 32)
 	{
 		for(i=0; i<aWordLen-1; i++)
 		{
@@ -842,7 +842,7 @@ unsigned char pke_mod(unsigned int *a, unsigned int aWordLen, unsigned int *b, u
 		}
 	}
 
-	if(0 == b_h && 0 == b_n1)
+	if(0 == b_h || 0 == b_n1)
 	{
 		ret = pke_calc_pre_mont(b, bWordLen);
 		if(PKE_SUCCESS != ret)

@@ -317,7 +317,7 @@ void audio_set_dmic_pin(dmic_pin_group_e pin_gp)
 	{
 		reg_gpio_pad_mul_sel=BIT(2);
 		reg_gpio_pb_fuc_h=reg_gpio_pb_fuc_h&(~BIT_RNG(0,1));
-		reg_gpio_pb_fuc_l=(reg_gpio_pb_fuc_h&(~BIT_RNG(4,7)))|0x0f;
+		reg_gpio_pb_fuc_l=(reg_gpio_pb_fuc_l&(~BIT_RNG(4,7)));
 		gpio_function_dis(GPIO_PB2|GPIO_PB3|GPIO_PB4);
 	}
 	else if(pin_gp == DMIC_GROUPC_C1_DAT_C2_C3_CLK)
@@ -335,7 +335,7 @@ void audio_set_dmic_pin(dmic_pin_group_e pin_gp)
 	else if(pin_gp == DMIC_B2_DAT_B3_CLK)
 	{
 		reg_gpio_pad_mul_sel=BIT(2);
-		reg_gpio_pb_fuc_l=(reg_gpio_pb_fuc_h&(~BIT_RNG(4,7)))|0x0f;
+		reg_gpio_pb_fuc_l=(reg_gpio_pb_fuc_l&(~BIT_RNG(4,7)));
 		gpio_function_dis(GPIO_PB2|GPIO_PB3);
 	}
 	else if(pin_gp == DMIC_C1_DAT_C2_CLK)

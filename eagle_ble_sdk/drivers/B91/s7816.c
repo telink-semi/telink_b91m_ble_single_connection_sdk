@@ -152,7 +152,7 @@ void s7816_set_pin(gpio_pin_e rst_pin,gpio_pin_e vcc_pin,s7816_clk_pin_e clk_pin
 	s7816_set_vcc_pin(vcc_pin);
 	s7816_vcc_pin=vcc_pin;
 
-	reg_gpio_func_mux(clk_pin)=(reg_gpio_func_mux(clk_pin)&(~BIT_RNG(0,1)))|BIT(0);
+    reg_gpio_func_mux(clk_pin)=(reg_gpio_func_mux(clk_pin)&(~BIT_RNG(0,1)))|BIT(0);
 	gpio_function_dis(clk_pin);
 
 	s7816_rtx_pin=rtx_pin;//if the trx function set to early,it may trigger interrupt by accident.so we set the function in coldreset.
