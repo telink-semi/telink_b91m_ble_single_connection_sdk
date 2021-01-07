@@ -43,8 +43,6 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *******************************************************************************************************/
-#include "conn_stack.h"
-
 #ifndef LL_SLAVE_H_
 #define LL_SLAVE_H_
 
