@@ -63,8 +63,6 @@
 
 #include <string.h>
 
-#include "common/usb_dbg/myudb.h"
-#include "common/usb_dbg/log_def_stack.h"
 
 #include "application/print/printf.h"
 

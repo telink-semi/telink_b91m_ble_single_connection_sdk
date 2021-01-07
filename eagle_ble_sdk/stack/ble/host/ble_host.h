@@ -50,15 +50,12 @@
 #include "stack/ble/ble_common.h"
 #include "stack/ble/ble_format.h"
 
-#include "stack/ble/host/l2cap/l2cap_stack.h"
 #include "stack/ble/host/l2cap/l2cap.h"
 
 
-#include "stack/ble/host/attr/attr_stack.h"
 #include "stack/ble/host/attr/att.h"
 #include "stack/ble/host/attr/gatt.h"
 
-#include "stack/ble/host/smp/smp_stack.h"
 #include "stack/ble/host/smp/smp.h"
 #include "stack/ble/host/smp/smp_alg.h"
 #include "stack/ble/host/smp/smp_peripheral.h"
@@ -74,10 +71,6 @@
 #include "stack/ble/ble_config.h"
 //#include "stack/ble/debug.h"
 
-#include "stack/ble/host/l2cap/l2cap_stack.h"
-#include "stack/ble/host/attr/attr_stack.h"
-#include "stack/ble/host/smp/smp_stack.h"
-#include "stack/ble/host/gap/gap_stack.h"
 //#include "stack/ble/host/gap/gap_stack.h"
 /*********************************************************/
 
