@@ -171,9 +171,11 @@ _attribute_ram_code_ void app_battery_power_check(u16 threshold_deep_vol_mv, u16
 ////////////////// adc sample data convert to voltage(mv) ////////////////
 	//(adc_result * g_adc_vref * g_adc_vbat_divider * g_adc_pre_scale) >> 13
 #if VBAT_CHANNEL_EN
-	batt_vol_mv  = (adc_result * 1175 * 3)>>13;
+//	batt_vol_mv  = (adc_result * 1175 * 3)>>13;
+	batt_vol_mv  = adc_calculate_voltage(adc_result);
 #else
-	batt_vol_mv  = (adc_result * 1175)>>10;
+//	batt_vol_mv  = (adc_result * 1175)>>10;
+	batt_vol_mv  = adc_calculate_voltage(adc_result);
 #endif
 
 	u8 analog_used_deep_reg = analog_read_reg8(USED_DEEP_ANA_REG);
