@@ -9,43 +9,22 @@
  * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
  *
- *          Redistribution and use in source and binary forms, with or without
- *          modification, are permitted provided that the following conditions are met:
+ *          Licensed under the Apache License, Version 2.0 (the "License");
+ *          you may not use this file except in compliance with the License.
+ *          You may obtain a copy of the License at
  *
- *              1. Redistributions of source code must retain the above copyright
- *              notice, this list of conditions and the following disclaimer.
+ *              http://www.apache.org/licenses/LICENSE-2.0
  *
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions
- *              in binary form must reproduce the above copyright notice, this list of
- *              conditions and the following disclaimer in the documentation and/or other
- *              materials provided with the distribution.
- *
- *              3. Neither the name of TELINK, nor the names of its contributors may be
- *              used to endorse or promote products derived from this software without
- *              specific prior written permission.
- *
- *              4. This software, with or without modification, must only be used with a
- *              TELINK integrated circuit. All other usages are subject to written permission
- *              from TELINK and different commercial license may apply.
- *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
- *              relating to such deletion(s), modification(s) or alteration(s).
- *
- *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
- *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *          Unless required by applicable law or agreed to in writing, software
+ *          distributed under the License is distributed on an "AS IS" BASIS,
+ *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *          See the License for the specific language governing permissions and
+ *          limitations under the License.
  *
  *******************************************************************************************************/
+#include "lib/include/plic.h"
 #include "s7816.h"
 #include "dma.h"
-#include "plic.h"
 
 volatile unsigned int  s7816_rst_pin;
 volatile unsigned int  s7816_vcc_pin;
@@ -57,13 +36,12 @@ volatile int s7816_rst_time;//us
  * @param[in]  	div	- set the divider of clock of 7816 module.
  * @return     	none.
  * @note        the clk-source of s7816 is 24M-pad,the clk of clk-pin can be divided as follow.
- * 				div:        0x60-4Mhz     0x40-6Mhz   0x20-12Mhz
- * 				baudrate:   0x60-10752    0x40-16194  0x20-32388
+ * 				div:        0x06-4Mhz     0x04-6Mhz   0x02-12Mhz
+ * 				baudrate:   0x06-10752    0x04-16194  0x02-32388
  */
 void s7816_set_clk(unsigned char div)
 {
-	reg_7816_clk_div&=0x0f;
-	reg_7816_clk_div|=(unsigned char)div;
+	reg_7816_clk_div = ((reg_7816_clk_div & (~FLD_7816_CLK_DIV)) | (div << 4 ));
 }
 
 /**
@@ -83,10 +61,10 @@ void s7816_set_time(int rst_time_us)
 void s7816_set_rst_pin(gpio_pin_e pin_7816_rst)
 {
 	s7816_rst_pin=pin_7816_rst;
-	gpio_function_en(pin_7816_rst);
+	gpio_set_low_level(pin_7816_rst);
 	gpio_output_en(pin_7816_rst);
 	gpio_input_dis(pin_7816_rst);
-	gpio_set_low_level(pin_7816_rst);
+	gpio_function_en(pin_7816_rst);
 }
 
 /**
@@ -97,10 +75,11 @@ void s7816_set_rst_pin(gpio_pin_e pin_7816_rst)
 void s7816_set_vcc_pin(gpio_pin_e pin_7816_vcc)
 {
 	s7816_vcc_pin=pin_7816_vcc;
-	gpio_function_en(pin_7816_vcc);
+	gpio_set_low_level(pin_7816_vcc);
 	gpio_output_en(pin_7816_vcc);
 	gpio_input_dis(pin_7816_vcc);
-	gpio_set_low_level(pin_7816_vcc);
+	gpio_function_en(pin_7816_vcc);
+
 }
 
 /**
@@ -121,15 +100,15 @@ void s7816_init(uart_num_e uart_num,s7816_clock_e clock,int f,int d)
 	int baud=clock*1000000*d/f;
 	if(clock==S7816_4MHZ)
 	{
-		s7816_set_clk(0x60);
+		s7816_set_clk(0x06);
 	}
 	else if(clock==S7816_6MHZ)
 	{
-		s7816_set_clk(0x40);
+		s7816_set_clk(0x04);
 	}
 	else if(clock==S7816_12MHZ)
 	{
-		s7816_set_clk(0x20);
+		s7816_set_clk(0x02);
 	}
 	uart_reset(uart_num);
 	uart_cal_div_and_bwpc(baud, 24*1000*1000, &div, &bwpc);

@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -43,7 +43,6 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *******************************************************************************************************/
-
 #ifndef STACK_BLE_HOST_BLE_HOST_H_
 #define STACK_BLE_HOST_BLE_HOST_H_
 
@@ -56,23 +55,22 @@
 #include "stack/ble/host/attr/att.h"
 #include "stack/ble/host/attr/gatt.h"
 
+
 #include "stack/ble/host/smp/smp.h"
 #include "stack/ble/host/smp/smp_alg.h"
 #include "stack/ble/host/smp/smp_peripheral.h"
+#if (MCU_CORE_TYPE == MCU_CORE_825x || MCU_CORE_TYPE == MCU_CORE_827x)
+#include "stack/ble/host/smp/smp_central.h"
+#endif
 #include "stack/ble/host/smp/smp_storage.h"
 
 
 #include "stack/ble/host/gap/gap.h"
 #include "stack/ble/host/gap/gap_event.h"
 
+#include "stack/ble/device/multi_device.h"
 
-/*********************************************************/
-//Remove when file merge to SDK //
-#include "stack/ble/ble_config.h"
-//#include "stack/ble/debug.h"
 
-//#include "stack/ble/host/gap/gap_stack.h"
-/*********************************************************/
 
 
 #endif /* STACK_BLE_HOST_BLE_HOST_H_ */

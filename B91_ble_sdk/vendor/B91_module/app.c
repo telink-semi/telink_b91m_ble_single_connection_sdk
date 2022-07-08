@@ -350,14 +350,32 @@ _attribute_no_inline_ void user_init_normal(void)
 	#if (BATT_CHECK_ENABLE)  //battery check must do before OTA relative operation
 		u8 battery_check_returnVaule = 0;
 		if(analog_read(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
-			do{
-				battery_check_returnVaule = app_battery_power_check(VBAT_ALRAM_THRES_MV + 200);  //2.2 V
-			}while(battery_check_returnVaule);
+			battery_check_returnVaule = app_battery_power_check(VBAT_ALRAM_THRES_MV + 200);  //2.2 V
 		}
 		else{
-			do{
-				battery_check_returnVaule = app_battery_power_check(VBAT_ALRAM_THRES_MV);  //2.0 V
-			}while(battery_check_returnVaule);
+			battery_check_returnVaule = app_battery_power_check(VBAT_ALRAM_THRES_MV);  //2.0 V
+		}
+		if(battery_check_returnVaule){
+			analog_write(USED_DEEP_ANA_REG,  analog_read(USED_DEEP_ANA_REG)&(~LOW_BATT_FLG));  //clr
+		}
+		else{
+			#if (UI_LED_ENABLE)  //led indicate
+				for(int k=0;k<3;k++){
+					gpio_write(GPIO_LED_BLUE, LED_ON_LEVAL);
+					sleep_us(200000);
+					gpio_write(GPIO_LED_BLUE, !LED_ON_LEVAL);
+					sleep_us(200000);
+				}
+			#endif
+			analog_write(USED_DEEP_ANA_REG,  analog_read(USED_DEEP_ANA_REG) | LOW_BATT_FLG);  //mark
+
+			u32 pin[] = KB_DRIVE_PINS;
+			for (int i=0; i<(sizeof (pin)/sizeof(*pin)); i++)
+			{
+				cpu_set_gpio_wakeup (pin[i], Level_High, 1);  //drive pin pad high wakeup deepsleep
+			}
+
+			cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
 		}
 	#endif
 
@@ -381,7 +399,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	//////////// Controller Initialization  Begin /////////////////////////
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);		//mandatory
-	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initLegacyAdvertising_module(); 		//legacy advertising module: mandatory for BLE slave
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
@@ -476,7 +494,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	uart_reset(UART0);
 	uart_set_pin(UART0_TX_PB2 ,UART0_RX_PB3 );// uart tx/rx pin set
 	uart_cal_div_and_bwpc(115200, sys_clk.pclk*1000*1000, &div, &bwpc);
-	uart_set_dma_rx_timeout(UART0, bwpc, 12, UART_BW_MUL1);
+	uart_set_rx_timeout(UART0, bwpc, 12, UART_BW_MUL1);
 	uart_init(UART0, div, bwpc, UART_PARITY_NONE, UART_STOP_BIT_ONE);
 
 	uart_clr_irq_mask(UART0, UART_RX_IRQ_MASK | UART_TX_IRQ_MASK | UART_TXDONE_MASK|UART_RXDONE_MASK);
@@ -566,7 +584,7 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 	uart_reset(UART0);
 	uart_set_pin(UART0_TX_PB2 ,UART0_RX_PB3 );// uart tx/rx pin set
 	uart_cal_div_and_bwpc(115200, sys_clk.pclk*1000*1000, &div, &bwpc);
-	uart_set_dma_rx_timeout(UART0, bwpc, 12, UART_BW_MUL1);
+	uart_set_rx_timeout(UART0, bwpc, 12, UART_BW_MUL1);
 	uart_init(UART0, div, bwpc, UART_PARITY_NONE, UART_STOP_BIT_ONE);
 
 	uart_clr_irq_mask(UART0, UART_RX_IRQ_MASK | UART_TX_IRQ_MASK | UART_TXDONE_MASK|UART_RXDONE_MASK);
@@ -624,11 +642,32 @@ _attribute_no_inline_ void main_loop (void)
 #if (BATT_CHECK_ENABLE)
 	if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 500000) ){
 		lowBattDet_tick = clock_time();
+		u8 battery_check_returnVaule=0;
 		if(analog_read_reg8(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
-			app_battery_power_check(VBAT_ALRAM_THRES_MV + 200);  //2.2 V
+			battery_check_returnVaule=app_battery_power_check(VBAT_ALRAM_THRES_MV + 200);  //2.2 V
 		}
 		else{
-			app_battery_power_check(VBAT_ALRAM_THRES_MV);  //2.0 V
+			battery_check_returnVaule=app_battery_power_check(VBAT_ALRAM_THRES_MV);  //2.0 V
+		}
+		if(!battery_check_returnVaule)
+		{
+			#if (UI_LED_ENABLE)  //led indicate
+				for(int k=0;k<3;k++){
+					gpio_write(GPIO_LED_BLUE, LED_ON_LEVAL);
+					sleep_us(200000);
+					gpio_write(GPIO_LED_BLUE, !LED_ON_LEVAL);
+					sleep_us(200000);
+				}
+			#endif
+			analog_write_reg8(USED_DEEP_ANA_REG,  analog_read_reg8(USED_DEEP_ANA_REG) | LOW_BATT_FLG);  //mark
+
+			u32 pin[] = KB_DRIVE_PINS;
+			for (int i=0; i<(sizeof (pin)/sizeof(*pin)); i++)
+			{
+				cpu_set_gpio_wakeup (pin[i], Level_High, 1);  //drive pin pad high wakeup deepsleep
+			}
+
+			cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
 		}
 	}
 #endif

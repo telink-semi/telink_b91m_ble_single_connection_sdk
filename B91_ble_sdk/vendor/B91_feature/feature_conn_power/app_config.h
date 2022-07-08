@@ -58,19 +58,6 @@
 
 #define APP_DEFAULT_HID_BATTERY_OTA_ATTRIBUTE_TABLE				1
 
-#define JTAG_DEBUG_DISABLE										1
-
-
-#if (JTAG_DEBUG_DISABLE)	//2-wire jtag mode
-
-#define PE6_FUNC			AS_GPIO
-#define PE7_FUNC			AS_GPIO
-
-#define PE6_INPUT_ENABLE	0
-#define PE7_INPUT_ENABLE	0
-
-#endif
-
 
 
 

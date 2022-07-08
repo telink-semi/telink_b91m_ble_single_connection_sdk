@@ -9,56 +9,50 @@
  * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
  *
- *          Redistribution and use in source and binary forms, with or without
- *          modification, are permitted provided that the following conditions are met:
+ *          Licensed under the Apache License, Version 2.0 (the "License");
+ *          you may not use this file except in compliance with the License.
+ *          You may obtain a copy of the License at
  *
- *              1. Redistributions of source code must retain the above copyright
- *              notice, this list of conditions and the following disclaimer.
+ *              http://www.apache.org/licenses/LICENSE-2.0
  *
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions
- *              in binary form must reproduce the above copyright notice, this list of
- *              conditions and the following disclaimer in the documentation and/or other
- *              materials provided with the distribution.
- *
- *              3. Neither the name of TELINK, nor the names of its contributors may be
- *              used to endorse or promote products derived from this software without
- *              specific prior written permission.
- *
- *              4. This software, with or without modification, must only be used with a
- *              TELINK integrated circuit. All other usages are subject to written permission
- *              from TELINK and different commercial license may apply.
- *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
- *              relating to such deletion(s), modification(s) or alteration(s).
- *
- *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
- *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *          Unless required by applicable law or agreed to in writing, software
+ *          distributed under the License is distributed on an "AS IS" BASIS,
+ *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *          See the License for the specific language governing permissions and
+ *          limitations under the License.
  *
  *******************************************************************************************************/
+#include "lib/include/plic.h"
+#include "lib/include/sys.h"
 #include "flash.h"
 #include "mspi.h"
-#include "plic.h"
 #include "timer.h"
-#include "sys.h"
 #include "core.h"
 #include "stimer.h"
 #include "ext_driver/ext_misc.h"
+#include "string.h"
+#include "watchdog.h"
+/*
+ *	If add flash type, need pay attention to the read uid command and the bit number of status register
+ *  Flash trim scheme has been added for P25Q80U.If other types of flash adds this scheme, user need to modify "flash_trim" and "flash_trim_check" function.
+	Flash Type	uid CMD		MID		    Company		Sector Erase Time(MAX)
+	P25Q80U		0x4b		0x146085	PUYA		20ms
+ */
+unsigned int flash_support_mid[] = {0x146085};
+const unsigned int FLASH_CNT = sizeof(flash_support_mid)/sizeof(*flash_support_mid);
 
-volatile unsigned char flash_cnt = 1;
+_attribute_data_retention_sec_ flash_hander_t flash_read_page = flash_dread;
+_attribute_data_retention_sec_ flash_hander_t flash_write_page = flash_page_program;
 
-static preempt_config_t s_flash_preempt_config =
+_attribute_data_retention_sec_ static preempt_config_t s_flash_preempt_config =
 {
 	.preempt_en =0,
 	.threshold  =1,
 };
+
+/*******************************************************************************************************************
+ *												Primary interface
+ ******************************************************************************************************************/
 
 /**
  * @brief 		This function serves to set priority threshold. when the interrupt priority > Threshold flash process will disturb by interrupt.
@@ -66,23 +60,22 @@ static preempt_config_t s_flash_preempt_config =
  * @param[in]	threshold	- priority Threshold.
  * @return    	none.
  */
-void flash_plic_preempt_config(unsigned char preempt_en,unsigned char threshold)
+void flash_plic_preempt_config(unsigned char preempt_en, unsigned char threshold)
 {
-	s_flash_preempt_config.preempt_en=preempt_en;
-	s_flash_preempt_config.threshold=threshold;
+	s_flash_preempt_config.preempt_en = preempt_en;
+	s_flash_preempt_config.threshold = threshold;
 }
 
-/********************************************************************************************************
+/*******************************************************************************************************************
  *								Functions for internal use in flash,
  *		There is no need to add an evasion solution to solve the problem of access flash conflicts.
- *******************************************************************************************************/
+ ******************************************************************************************************************/
 /**
  * @brief		This function to determine whether the flash is busy..
  * @return		1:Indicates that the flash is busy. 0:Indicates that the flash is free
  */
-static inline int flash_is_busy(void)
-{
-	return mspi_read() & 0x01;				//  the busy bit, pls check flash spec
+_attribute_ram_code_sec_ static inline int flash_is_busy(void){
+	return mspi_read() & 0x01;		//the busy bit, pls check flash spec
 }
 
 /**
@@ -92,7 +85,7 @@ static inline int flash_is_busy(void)
  * @param[in]	cmd	- set command.
  * @return		none.
  */
-_attribute_ram_code_sec_noinline_ void flash_send_cmd(unsigned char cmd)
+_attribute_ram_code_sec_noinline_ void flash_send_cmd(flash_command_e cmd)
 {
 	mspi_high();
 	CLOCK_DLY_10_CYC;
@@ -106,8 +99,7 @@ _attribute_ram_code_sec_noinline_ void flash_send_cmd(unsigned char cmd)
  * @param[in]	addr	- the flash address.
  * @return		none.
  */
-_attribute_ram_code_sec_noinline_ static void flash_send_addr(unsigned int addr)
-{
+_attribute_ram_code_sec_noinline_ static void flash_send_addr(unsigned int addr){
 	mspi_write((unsigned char)(addr>>16));
 	mspi_wait();
 	mspi_write((unsigned char)(addr>>8));
@@ -122,97 +114,250 @@ _attribute_ram_code_sec_noinline_ static void flash_send_addr(unsigned int addr)
  */
 _attribute_ram_code_sec_noinline_ static void flash_wait_done(void)
 {
-	flash_send_cmd(FLASH_READ_STATUS_CMD);
+	flash_send_cmd(FLASH_READ_STATUS_CMD_LOWBYTE);
 
 	int i;
 	for(i = 0; i < 10000000; ++i){
 		if(!flash_is_busy()){
-			flash_cnt++;
 			break;
 		}
 	}
 	mspi_high();
 }
 
-
-/********************************************************************************************************
+/*******************************************************************************************************************
  *		It is necessary to add an evasion plan to solve the problem of access flash conflict.
- *******************************************************************************************************/
+ ******************************************************************************************************************/
+
+/**
+ * @brief 		This function is used to read data from flash or read the status of flash.
+ * @param[in]   cmd			- the read command.
+ * @param[in]   addr		- starting address.
+ * @param[in]   addr_en		- whether need to send an address.
+ * @param[in]   dummy_cnt	- the length(in byte) of dummy.
+ * @param[out]  data		- the start address of the data buffer.
+ * @param[in]   data_len	- the length(in byte) of content needs to read out.
+ * @return 		none.
+ */
+_attribute_ram_code_sec_noinline_ void flash_mspi_read_ram(flash_command_e cmd, unsigned long addr, unsigned char addr_en, unsigned char dummy_cnt, unsigned char *data, unsigned long data_len)
+{
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r=plic_enter_critical_sec(s_flash_preempt_config.preempt_en,s_flash_preempt_config.threshold);
+#endif
+	mspi_stop_xip();
+	/*Flash single line mode does not distinguish between mspi read and mspi write.This is just to be compatible with single line, dual line and quad line.*/
+	mspi_fm_write_en();			/* write mode */
+	mspi_fm_data_line(MSPI_SINGLE_LINE);
+	flash_send_cmd(cmd);
+	if(cmd == FLASH_X4READ_CMD)
+	{
+		mspi_fm_data_line(MSPI_QUAD_LINE);
+	}
+	if(addr_en)
+	{
+		flash_send_addr(addr);
+	}
+	for(unsigned int i = 0; i < dummy_cnt; ++i)
+	{
+		mspi_write(0x00);		/* dummy */
+		mspi_wait();
+	}
+	if(cmd == FLASH_DREAD_CMD)
+	{
+		mspi_fm_data_line(MSPI_DUAL_LINE);
+	}
+	mspi_fm_read_en();			/* read mode */
+	mspi_write(0x00);			/* to issue clock */
+	mspi_wait();
+	mspi_fm_rd_trig_en();		/* auto mode, mspi_get() automatically triggers mspi_write(0x00) once. */
+	mspi_wait();
+	for(unsigned int i = 0; i < data_len; ++i)
+	{
+		*data++ = mspi_get();
+		mspi_wait();
+	}
+	mspi_fm_rd_trig_dis();		/* off read auto mode */
+	if((cmd == FLASH_X4READ_CMD)||(cmd == FLASH_DREAD_CMD))
+	{
+		mspi_fm_data_line(MSPI_SINGLE_LINE);
+	}
+	mspi_high();
+
+	CLOCK_DLY_5_CYC;
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	plic_exit_critical_sec(s_flash_preempt_config.preempt_en,r);
+#endif
+}
+
+/**
+ * @brief 		This function is used to write data or status to flash.
+ * @param[in]   cmd			- the write command.
+ * @param[in]   addr		- starting address.
+ * @param[in]   addr_en		- whether need to send an address.
+ * @param[out]  data		- the start address of the data buffer.
+ * @param[in]   data_len	- the length(in byte) of content needs to be written.
+ * @return 		none.
+ * @note		important:  "data" must not reside at flash, such as constant string.If that case, pls copy to memory first before write.
+ */
+_attribute_ram_code_sec_noinline_ void flash_mspi_write_ram(flash_command_e cmd, unsigned long addr, unsigned char addr_en, unsigned char *data, unsigned long data_len)
+{
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
+	unsigned int r=plic_enter_critical_sec(s_flash_preempt_config.preempt_en,s_flash_preempt_config.threshold);
+#endif
+	mspi_stop_xip();
+	/*Flash single line mode does not distinguish between mspi read and mspi write.This is just to be compatible with single line, dual line and quad line.*/
+	mspi_fm_write_en();			/* write mode */
+	mspi_fm_data_line(MSPI_SINGLE_LINE);
+	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
+	flash_send_cmd(cmd);
+	if(addr_en)
+	{
+		flash_send_addr(addr);
+	}
+	if(cmd == FLASH_QUAD_PAGE_PROGRAM_CMD)
+	{
+		mspi_fm_data_line(MSPI_QUAD_LINE);
+	}
+	for(unsigned int i = 0; i < data_len; ++i)
+	{
+		mspi_write(data[i]);
+		mspi_wait();
+	}
+	mspi_high();
+	if(cmd == FLASH_QUAD_PAGE_PROGRAM_CMD)
+	{
+		mspi_fm_data_line(MSPI_SINGLE_LINE);
+	}
+	flash_wait_done();
+
+	CLOCK_DLY_5_CYC;
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
+	plic_exit_critical_sec(s_flash_preempt_config.preempt_en,r);
+#endif
+}
+
 /**
  * @brief 		This function serves to erase a sector.
  * @param[in]   addr	- the start address of the sector needs to erase.
  * @return 		none.
+ * @note        Attention: The block erase takes a long time, please pay attention to feeding the dog in advance.
+ * 				The maximum block erase time is listed at the beginning of this document and is available for viewing.
+ *
+ * 				Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
  */
-_attribute_ram_code_sec_noinline_ void flash_erase_sector_ram(unsigned long addr)
-{
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
-	flash_send_cmd(FLASH_SECT_ERASE_CMD);
-	flash_send_addr(addr);
-	mspi_high();
-	flash_wait_done();
-	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);
-#endif
-}
 _attribute_text_sec_ void flash_erase_sector(unsigned long addr)
 {
+	wd_clear(); //clear watch dog
 	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_erase_sector_ram(addr);
+	flash_mspi_write_ram(FLASH_SECT_ERASE_CMD, addr, 1, NULL, 0);
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
- * @brief 		This function writes the buffer's content to a page.
+ * @brief 		This function reads the content from a page to the buf with single mode.
  * @param[in]   addr	- the start address of the page.
- * @param[in]   len		- the length(in byte) of content needs to write into the page.
+ * @param[in]   len		- the length(in byte) of content needs to read out from the page.
+ * @param[out]  buf		- the start address of the buffer.
+ * @return 		none.
+ * @note        cmd:1x, addr:1x, data:1x, dummy:0
+ * 				Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
+ */
+_attribute_text_sec_ void flash_read_data(unsigned long addr, unsigned long len, unsigned char *buf)
+{
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_mspi_read_ram(FLASH_READ_CMD, addr, 1, 0, buf, len);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+}
+
+/**
+ * @brief 		This function reads the content from a page to the buf with dual read mode.
+ * @param[in]   addr	- the start address of the page.
+ * @param[in]   len		- the length(in byte) of content needs to read out from the page.
+ * @param[out]  buf		- the start address of the buffer.
+ * @return 		none.
+ * @note        cmd:1x, addr:1x, data:2x, dummy:8
+ * 				Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
+ */
+_attribute_text_sec_ void flash_dread(unsigned long addr, unsigned long len, unsigned char *buf)
+{
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_mspi_read_ram(FLASH_DREAD_CMD, addr, 1, 1, buf, len);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+}
+
+/**
+ * @brief 		This function reads the content from a page to the buf with 4*IO read mode.
+ * @param[in]   addr	- the start address of the page.
+ * @param[in]   len		- the length(in byte) of content needs to read out from the page.
+ * @param[out]  buf		- the start address of the buffer.
+ * @return 		none.
+ * @note        cmd:1x, addr:4x, data:4x, dummy:6
+ * 				Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
+ */
+_attribute_text_sec_ void flash_4read(unsigned long addr, unsigned long len, unsigned char *buf)
+{
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_mspi_read_ram(FLASH_X4READ_CMD, addr, 1, 3, buf, len);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+}
+
+/**
+ * @brief 		This function writes the buffer's content to the flash.
+ * @param[in]   addr	- the start address of the area.
+ * @param[in]   len		- the length(in byte) of content needs to write into the flash.
  * @param[in]   buf		- the start address of the content needs to write into.
+ * @param[in]   cmd		- the write command. FLASH_WRITE_CMD or FLASH_QUAD_PAGE_PROGRAM_CMD.
  * @return 		none.
  */
-_attribute_ram_code_sec_noinline_ void flash_write_page_ram(unsigned long addr, unsigned long len, unsigned char *buf)
+_attribute_text_sec_ void flash_write(unsigned long addr, unsigned long len, unsigned char *buf, flash_command_e cmd)
 {
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();//???irq_disable();
-#endif
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
-	flash_send_cmd(FLASH_WRITE_CMD);
-	flash_send_addr(addr);
-
-	unsigned int i;
-	for(i = 0; i < len; ++i){
-		mspi_write(buf[i]);			/* write data */
-		mspi_wait();
-	}
-	mspi_high();
-	flash_wait_done();
-	CLOCK_DLY_5_CYC;
-
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_write_page(unsigned long addr, unsigned long len, unsigned char *buf)
-{
-	unsigned int ns = PAGE_SIZE - (addr & 0xff);
+	unsigned int ns = PAGE_SIZE - (addr & (PAGE_SIZE - 1));
 	int nw = 0;
 
 	do{
 		nw = len > ns ? ns : len;
 		__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-		flash_write_page_ram(addr,nw,buf);
+		flash_mspi_write_ram(cmd, addr, 1, buf, nw);
 		__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 		ns = PAGE_SIZE;
 		addr += nw;
@@ -222,505 +367,240 @@ _attribute_text_sec_ void flash_write_page(unsigned long addr, unsigned long len
 }
 
 /**
- * @brief 		This function reads the content from a page to the buf.
- * @param[in]   addr	- the start address of the page.
- * @param[in]   len		- the length(in byte) of content needs to read out from the page.
- * @param[out]  buf		- the start address of the buffer.
+ * @brief 		This function writes the buffer's content to the flash with single mode.It is necessary to confirm whether this area
+ * 				has been erased before writing. If not, you need to erase and then write, otherwise the write may be unsuccessful
+ * 				and the data will become the wrong value. Note that when erasing, the minimum is erased by sector (4k bytes).
+ * 				Do not erase the useful information in other locations of the sector during erasing.
+ * @param[in]   addr	- the start address of the area.
+ * @param[in]   len		- the length(in byte) of content needs to write into the flash.
+ * @param[in]   buf		- the start address of the content needs to write into.
  * @return 		none.
+ * @note        cmd:1x, addr:1x, data:1x
+ * 				the funciton support cross-page writing,which means the len of buf can bigger than 256.
+ *
+ *              Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
  */
-_attribute_ram_code_sec_noinline_ void flash_read_page_ram(unsigned long addr, unsigned long len, unsigned char *buf)
+_attribute_text_sec_ void flash_page_program(unsigned long addr, unsigned long len, unsigned char *buf)
 {
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();//???irq_disable();
-#endif
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_READ_CMD);
-	flash_send_addr(addr);
-
-	mspi_write(0x00);			/* dummy,  to issue clock */
-	mspi_wait();
-	mspi_fm_rd_en();			/* auto mode, mspi_get() automatically triggers mspi_write(0x00) once. */
-	mspi_wait();
-	/* get data */
-	for(unsigned int i = 0; i < len; ++i){
-		*buf++ = mspi_get();
-		mspi_wait();
-	}
-	mspi_fm_rd_dis();			/* off read auto mode */
-	mspi_high();
-	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_read_page(unsigned long addr, unsigned long len, unsigned char *buf)
-{
-	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_read_page_ram(addr,len,buf);
-	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+	flash_write(addr, len, buf, FLASH_WRITE_CMD);
 }
 
 /**
- * @brief     	This function serves to erase a chip.
- * @return    	none.
- */
-_attribute_ram_code_sec_noinline_ void flash_erase_chip_ram(void)
-{
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
-	flash_send_cmd(FLASH_CHIP_ERASE_CMD);
-	mspi_high();
-	flash_wait_done();
-	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);
-#endif
-}
-_attribute_text_sec_ void flash_erase_chip(void)
-{
-	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_erase_chip_ram();
-	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
-}
-
-/**
- * @brief     	This function serves to erase a page(256 bytes).
- * @param[in] 	addr	- the start address of the page needs to erase.
- * @return    	none.
- */
-_attribute_ram_code_sec_noinline_ void flash_erase_page_ram(unsigned int addr)
-{
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
-	flash_send_cmd(FLASH_PAGE_ERASE_CMD);
-	flash_send_addr(addr);
-	mspi_high();
-	flash_wait_done();
-	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_erase_page(unsigned int addr)
-{
-	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_erase_page_ram(addr);
-	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
-}
-
-/**
- * @brief 		This function serves to erase a block(32k).
- * @param[in]   addr	- the start address of the block needs to erase.
+ * @brief 		This function writes the buffer's content to the flash with quad page program mode.It is necessary to confirm whether this area
+ * 				has been erased before writing. If not, you need to erase and then write, otherwise the write may be unsuccessful
+ * 				and the data will become the wrong value. Note that when erasing, the minimum is erased by sector (4k bytes).
+ * 				Do not erase the useful information in other locations of the sector during erasing.
+ * @param[in]   addr	- the start address of the area.
+ * @param[in]   len		- the length(in byte) of content needs to write into the flash.
+ * @param[in]   buf		- the start address of the content needs to write into.
  * @return 		none.
+ * @note        cmd:1x, addr:1x, data:4x
+ * 				the funciton support cross-page writing,which means the len of buf can bigger than 256.
+ *
+ *              Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
  */
-_attribute_ram_code_sec_noinline_ void flash_erase_32kblock_ram(unsigned int addr)
+_attribute_text_sec_ void flash_quad_page_program(unsigned long addr, unsigned long len, unsigned char *buf)
 {
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
-	flash_send_cmd(FLASH_32KBLK_ERASE_CMD);
-	flash_send_addr(addr);
-	mspi_high();
-	flash_wait_done();
-	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_erase_32kblock(unsigned int addr)
-{
-	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_erase_32kblock_ram(addr);
-	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+	flash_write(addr, len, buf, FLASH_QUAD_PAGE_PROGRAM_CMD);
 }
 
 /**
- * @brief 		This function serves to erase a block(64k).
- * @param[in]   addr	- the start address of the block needs to erase.
- * @return 		none.
+ * @brief		This function reads the status of flash.
+ * @param[in] 	cmd	- the cmd of read status. FLASH_READ_STATUS_CMD_LOWBYTE or FLASH_READ_STATUS_CMD_HIGHBYTE.
+ * @return 		the value of status.
+ * @note        Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
  */
-_attribute_ram_code_sec_noinline_ void flash_erase_64kblock_ram(unsigned int addr)
+_attribute_text_sec_ unsigned char flash_read_status(flash_command_e cmd)
 {
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
-	flash_send_cmd(FLASH_64KBLK_ERASE_CMD);
-	flash_send_addr(addr);
-	mspi_high();
-	flash_wait_done();
-	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_erase_64kblock(unsigned int addr)
-{
+	unsigned char status = 0;
 	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_erase_64kblock_ram(addr);
+	flash_mspi_read_ram(cmd, 0, 0, 0, &status, 1);
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+	return status;
 }
 
 /**
  * @brief 		This function write the status of flash.
+ * @param[in]  	type	- the type of status.8 bit or 16 bit.
  * @param[in]  	data	- the value of status.
  * @return 		none.
+ * @note        Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
  */
-_attribute_ram_code_sec_noinline_ void flash_write_status_ram(unsigned short data)
+_attribute_text_sec_ void flash_write_status(flash_status_typedef_e type, unsigned short data)
 {
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
-	flash_send_cmd(FLASH_WRITE_STATUS_CMD);
-	mspi_write((unsigned char)data);
-	mspi_wait();
-	mspi_write((unsigned char)(data>>8));
-	mspi_wait();
-	mspi_high();
-	flash_wait_done();
-	mspi_high();
-	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_write_status(unsigned short data)
-{
+	unsigned char buf[2];
+
+	buf[0] = data;
+	buf[1] = data>>8;
 	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_write_status_ram(data);
+	if(type == FLASH_TYPE_8BIT_STATUS){
+		flash_mspi_write_ram(FLASH_WRITE_STATUS_CMD_LOWBYTE, 0, 0, buf, 1);
+	}else if(type == FLASH_TYPE_16BIT_STATUS_ONE_CMD){
+		flash_mspi_write_ram(FLASH_WRITE_STATUS_CMD_LOWBYTE, 0, 0, buf, 2);
+	}
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
- * @brief 		This function reads the status of flash.
- * @return 		the value of status.
- */
-_attribute_ram_code_sec_noinline_ unsigned short flash_read_status_ram(void)
-{
-	unsigned short status = 0;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_READ_STATUS_1_CMD);	/* get high 8 bit status */
-	status = (mspi_read()<<8);
-	mspi_high();
-	flash_send_cmd(FLASH_READ_STATUS_CMD);		/* get low 8 bit status */
-	status |= mspi_read();
-	mspi_high();
-	CLOCK_DLY_5_CYC;
-
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-	return status;
-}
-_attribute_text_sec_  unsigned short flash_read_status(void)
-{
-	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	unsigned short status = flash_read_status_ram();
-	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
-	return status;
-}
-
-/**
- * @brief		Deep Power Down mode to put the device in the lowest consumption mode
- * 				it can be used as an extra software protection mechanism,while the device
- * 				is not in active use,since in the mode,  all write,Program and Erase commands
- * 				are ignored,except the Release from Deep Power-Down and Read Device ID(RDI)
- * 				command.This release the device from this mode
+ * @brief 		This function serves to read data from the Security Registers of the flash.
+ * @param[in]   addr	- the start address of the Security Registers.
+ * @param[in]   len		- the length of the content to be read.
+ * @param[out]  buf		- the starting address of the content to be read.
  * @return 		none.
+ * @note        Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
  */
-_attribute_ram_code_sec_noinline_ void flash_deep_powerdown_ram(void)
-{
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_POWER_DOWN);
-	mspi_high();
-	delay_us(1);
-	CLOCK_DLY_5_CYC;
-
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_deep_powerdown(void)
+_attribute_text_sec_ void flash_read_otp(unsigned long addr, unsigned long len, unsigned char* buf)
 {
 	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_deep_powerdown_ram();
+	flash_mspi_read_ram(FLASH_READ_SECURITY_REGISTERS_CMD, addr, 1, 1, buf, len);
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
- * @brief		The Release from Power-Down or High Performance Mode/Device ID command is a
- * 				Multi-purpose command.it can be used to release the device from the power-Down
- * 				State or High Performance Mode or obtain the devices electronic identification
- * 				(ID)number.Release from Power-Down will take the time duration of tRES1 before
- * 				the device will resume normal operation and other command are accepted.The CS#
- * 				pin must remain high during the tRES1(8us) time duration.
- * @return      none.
+ * @brief 		This function serves to write data to the Security Registers of the flash you choose.
+ * @param[in]   addr	- the start address of the Security Registers.
+ * @param[in]   len		- the length of content to be written.
+ * @param[in]   buf		- the starting address of the content to be written.
+ * @return 		none.
+ * @note        Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
  */
-_attribute_ram_code_sec_noinline_ void flash_release_deep_powerdown_ram(void)
+_attribute_text_sec_ void flash_write_otp(unsigned long addr, unsigned long len, unsigned char *buf)
 {
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
+	unsigned int ns = PAGE_SIZE_OTP - (addr & (PAGE_SIZE_OTP - 1));
+	int nw = 0;
 
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_POWER_DOWN_RELEASE);
-	mspi_high();
-	flash_wait_done();
-	mspi_high();
-	CLOCK_DLY_5_CYC;
-
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
+	do{
+		nw = len > ns ? ns : len;
+		__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+		flash_mspi_write_ram(FLASH_WRITE_SECURITY_REGISTERS_CMD, addr, 1, buf, nw);
+		__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+		ns = PAGE_SIZE_OTP;
+		addr += nw;
+		buf += nw;
+		len -= nw;
+	}while(len > 0);
 }
-_attribute_text_sec_ void flash_release_deep_powerdown(void)
+
+/**
+ * @brief 		This function serves to erase the data of the Security Registers that you choose.
+ * @param[in]   addr	- the address that you want to erase.
+ * @return 		none.
+ * @Attention	Even you choose the middle area of the Security Registers,it will erase the whole area.
+ * @note        Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
+ */
+_attribute_text_sec_ void flash_erase_otp(unsigned long addr)
 {
 	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_release_deep_powerdown_ram();
+	flash_mspi_write_ram(FLASH_ERASE_SECURITY_REGISTERS_CMD, addr, 1, NULL, 0);
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 /**
  * @brief	  	This function serves to read MID of flash(MAC id). Before reading UID of flash,
  * 				you must read MID of flash. and then you can look up the related table to select
- * 				the idcmd and read UID of flash
- * @param[in] 	buf		- store MID of flash
+ * 				the idcmd and read UID of flash.
+ * @return    	MID of the flash(4 bytes).
+ * @note        Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
+ */
+_attribute_text_sec_ unsigned int flash_read_mid(void)
+{
+	unsigned int flash_mid = 0;
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_mspi_read_ram(FLASH_GET_JEDEC_ID, 0, 0, 0, (unsigned char*)(&flash_mid), 3);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+	return flash_mid;
+}
+
+/**
+ * @brief	  	This function serves to read UID of flash.Before reading UID of flash, you must read MID of flash.
+ * 				and then you can look up the related table to select the idcmd and read UID of flash.
+ * @param[in] 	idcmd	- different flash vendor have different read-uid command. E.g: GD/PUYA:0x4B; XTX: 0x5A.
+ * @param[in] 	buf		- store UID of flash.
  * @return    	none.
+ * @note        Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
  */
-_attribute_ram_code_sec_noinline_ void flash_read_mid_ram(unsigned char *buf){
-
-	unsigned char j = 0;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_GET_JEDEC_ID);
-	mspi_write(0x00);			/* dummy,  to issue clock */
-	mspi_wait();
-	mspi_fm_rd_en();			/* auto mode, mspi_get() automatically triggers mspi_write(0x00) once. */
-	mspi_wait();
-
-	for(j = 0; j < 3; ++j){
-		*buf++ = mspi_get();
-		mspi_wait();
-	}
-	mspi_fm_rd_dis();			/* off read auto mode */
-	mspi_high();
-	CLOCK_DLY_5_CYC;
-
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_read_mid(unsigned char *buf){
-
+_attribute_text_sec_ void flash_read_uid(unsigned char idcmd, unsigned char *buf)
+{
 	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_read_mid_ram(buf);
+	if(idcmd == FLASH_READ_UID_CMD_GD_PUYA_ZB_TH)	//< GD/PUYA/ZB/TH
+	{
+		flash_mspi_read_ram(idcmd, 0, 0, 4, buf, 16);
+	}
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
-/**
- * @brief	  	This function serves to read UID of flash
- * @param[in] 	idcmd	- different flash vendor have different read-uid command. E.g: GD/PUYA:0x4B; XTX: 0x5A
- * @param[in] 	buf		- store UID of flash
- * @return    	none.
- */
-_attribute_ram_code_sec_noinline_ void flash_read_uid_ram(unsigned char idcmd,unsigned char *buf)
-{
-	unsigned char j = 0;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-
-	mspi_stop_xip();
-	flash_send_cmd(idcmd);
-	if(idcmd==FLASH_GD_PUYA_READ_UID_CMD)		//< GD/puya
-	{
-		flash_send_addr(0x00);
-		mspi_write(0x00);			/* dummy,  to issue clock */
-		mspi_wait();
-	}
-	else if (idcmd==FLASH_XTX_READ_UID_CMD)		//< XTX
-	{
-		flash_send_addr(0x80);
-		mspi_write(0x00);			/* dummy,  to issue clock */
-		mspi_wait();
-
-	}
-	mspi_write(0x00);				/* dummy,  to issue clock */
-	mspi_wait();
-	mspi_fm_rd_en();				/* auto mode, mspi_get() automatically triggers mspi_write(0x00) once. */
-	mspi_wait();
-
-	for(j = 0; j < 16; ++j){
-		*buf++ = mspi_get();
-		mspi_wait();
-	}
-	mspi_fm_rd_dis();				/* off read auto mode */
-	mspi_high();
-	CLOCK_DLY_5_CYC;
-
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_read_uid(unsigned char idcmd,unsigned char *buf)
-{
-	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_read_uid_ram(idcmd,buf);
-	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
-}
-
-
-/**
- * @brief 		This function serves to set the protection area of the flash.
- * @param[in]   type	- flash type include Puya.
- * @param[in]   data	- refer to Driver API Doc.
- * @return 		none.
- */
-_attribute_ram_code_sec_noinline_ void flash_lock_ram(flash_type_e type , unsigned short data)
-{
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
-	flash_send_cmd(FLASH_WRITE_STATUS_CMD);
-	if(type == FLASH_TYPE_PUYA)
-	{
-		mspi_write((unsigned char)data);
-		mspi_wait();
-		mspi_write((unsigned char)(data>>8));//16bit status
-
-	}
-	mspi_wait();
-	mspi_high();
-	flash_wait_done();
-	mspi_high();
-	CLOCK_DLY_5_CYC;
-
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_lock(flash_type_e type , unsigned short data)
-{
-	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_lock_ram(type,data);
-	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
-}
-
-/**
- * @brief 		This function serves to flash release protection.
- * @param[in]   type	- flash type include Puya.
- * @return 		none.
- */
-_attribute_ram_code_sec_noinline_ void flash_unlock_ram(flash_type_e type)
-{
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
-	unsigned int r= core_interrupt_disable();
-#endif
-
-	mspi_stop_xip();
-	flash_send_cmd(FLASH_WRITE_ENABLE_CMD);
-	flash_send_cmd(FLASH_WRITE_STATUS_CMD);
-	if(type == FLASH_TYPE_PUYA)
-	{
-		mspi_write(0);
-		mspi_wait();
-		mspi_write(0);//16bit status
-	}
-	mspi_wait();
-	mspi_high();
-	flash_wait_done();
-	mspi_high();
-	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
-	core_restore_interrupt(r);//???irq_restore(r);
-#endif
-}
-_attribute_text_sec_ void flash_unlock(flash_type_e type)
-{
-	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
-	flash_unlock_ram(type);
-	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
-}
 /**
  * @brief 		This function is used to update the configuration parameters of xip(eXecute In Place),
  * 				this configuration will affect the speed of MCU fetching,
@@ -730,13 +610,19 @@ _attribute_text_sec_ void flash_unlock(flash_type_e type)
  */
 _attribute_ram_code_sec_noinline_ void flash_set_xip_config_sram(flash_xip_config_t config)
 {
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 1;
+#else
 	unsigned int r=plic_enter_critical_sec(s_flash_preempt_config.preempt_en,s_flash_preempt_config.threshold);
-
+#endif
 	mspi_stop_xip();
 	reg_mspi_xip_config = *((unsigned short*)(&config));
 	CLOCK_DLY_5_CYC;
-
+#if SUPPORT_PFT_ARCH
+	reg_irq_threshold = 0;
+#else
 	plic_exit_critical_sec(s_flash_preempt_config.preempt_en,r);
+#endif
 }
 _attribute_text_sec_ void flash_set_xip_config(flash_xip_config_t config)
 {
@@ -745,41 +631,77 @@ _attribute_text_sec_ void flash_set_xip_config(flash_xip_config_t config)
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
-/********************************************************************************************************
+/*******************************************************************************************************************
  *									secondary calling function,
  *	there is no need to add an circumvention solution to solve the problem of access flash conflicts.
- *******************************************************************************************************/
+ ******************************************************************************************************************/
 /**
  * @brief		This function serves to read flash mid and uid,and check the correctness of mid and uid.
- * @param[out]	flash_mid	- Flash Manufacturer ID
- * @param[out]	flash_uid	- Flash Unique ID
+ * @param[out]	flash_mid	- Flash Manufacturer ID.
+ * @param[out]	flash_uid	- Flash Unique ID.
  * @return		0: flash no uid or not a known flash model 	 1:the flash model is known and the uid is read.
+ * @note        Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
  */
-_attribute_text_sec_ int flash_read_mid_uid_with_check( unsigned int *flash_mid ,unsigned char *flash_uid){
-
+_attribute_text_sec_ int flash_read_mid_uid_with_check(unsigned int *flash_mid, unsigned char *flash_uid)
+{
 	unsigned char no_uid[16]={0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01,0x51,0x01};
-	int i,f_cnt=0;
-	unsigned int mid;
+	unsigned int i,f_cnt=0;
+	*flash_mid = flash_read_mid();
 
-	flash_read_mid((unsigned char*)&mid);
-	mid = mid&0xffff;
-	*flash_mid = mid;
-	//     	  			CMD         MID
-	//  P25Q80U			0x4b		0x6085
-	if(mid == 0x6085){
-		flash_read_uid(FLASH_GD_PUYA_READ_UID_CMD,(unsigned char *)flash_uid);
-	}else{
+	for(i=0; i<FLASH_CNT; i++){
+		if(flash_support_mid[i] == *flash_mid){
+			flash_read_uid(FLASH_READ_UID_CMD_GD_PUYA_ZB_TH, (unsigned char *)flash_uid);
+			break;
+		}
+	}
+	if(i == FLASH_CNT){
 		return 0;
 	}
-	for(i=0;i<16;i++){
-		if(flash_uid[i]==no_uid[i]){
+
+	for(i=0; i<16; i++){
+		if(flash_uid[i] == no_uid[i]){
 			f_cnt++;
 		}
 	}
-	if(f_cnt==16){		//no uid flash
+
+	if(f_cnt == 16){	//no uid flash
 		return 0;
 	}else{
-		return  1;
+		return 1;
+	}
+}
+
+/**
+ * @brief		This function serves to get flash vendor.
+ * @param[in]	none.
+ * @return		0 - err, other - flash vendor.
+ */
+unsigned int flash_get_vendor(unsigned int flash_mid)
+{
+	switch(flash_mid&0x0000ffff)
+	{
+	case 0x0000325E:
+		return FLASH_ETOX_ZB;
+	case 0x000060C8:
+		return FLASH_ETOX_GD;
+	case 0x00004051:
+		return FLASH_ETOX_GD;
+	case 0x00006085:
+		return FLASH_SONOS_PUYA;
+	case 0x000060EB:
+		return FLASH_SONOS_TH;
+	case 0x000060CD:
+		return FLASH_SST_TH;
+	default:
+		return 0;
 	}
 }
 

@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -50,14 +50,11 @@
 
 #include "stack/ble/ble_common.h"
 
-
-
-
 /******************************************** Link Layer **************************************************************/
 
 typedef struct {
 	u8 type;
-	u8 address[BLE_ADDR_LEN];
+	u8 address[6];//BLE_ADDR_LEN];
 } addr_t;
 
 
@@ -210,7 +207,6 @@ typedef struct {
 	u16 timeout;
 	u16 instant;
 } rf_packet_ll_updateConnPara_t;
-
 
 typedef struct {
 	u8 	type;
@@ -390,7 +386,7 @@ typedef struct{
 
 //AuxPrt
 typedef struct{
-	u8  chn_index    :6;
+	u8  chn_index   :6;
 	u8  ca 		 	:1;
 	u8  offset_unit	:1;
 	u16 aux_offset  :13;
@@ -427,7 +423,7 @@ typedef struct{
 	u8 data[1];
 }rf_packet_l2cap_t;
 
-
+#if (MCU_CORE_TYPE == MCU_CORE_9518)
 typedef struct{
 	rf_data_head_t	header;
 	u8  rf_len;
@@ -437,7 +433,18 @@ typedef struct{
 	u16  handle;
 	u8	dat[20];
 }rf_packet_att_t;
-
+#elif (MCU_CORE_TYPE == MCU_CORE_825x || MCU_CORE_TYPE == MCU_CORE_827x)
+typedef struct{
+	rf_data_head_t	header;
+	u8  rf_len;
+	u16	l2capLen;
+	u16	chanId;
+	u8  opcode;
+	u8  handle0;
+	u8  handle1;
+	u8	dat[20];
+}rf_packet_att_t;
+#endif
 
 typedef struct{
 	u8	type;
@@ -447,7 +454,6 @@ typedef struct{
 	u8  opcode;
 	u8 data[1];
 }rf_packet_l2cap_req_t;
-
 
 typedef struct{
 	u8	type;
@@ -474,6 +480,7 @@ typedef struct{
 	u16 init_credits;
 	u16 scid[5];
 }rf_pkt_l2cap_credit_based_connection_req_t;
+
 typedef struct{
 	u8	type;
 	u8  rf_len;
@@ -488,6 +495,7 @@ typedef struct{
 	u16 result;
 	u16 dcid[5];
 }rf_pkt_l2cap_credit_based_connection_rsp_t;
+
 typedef struct{
 	u8	type;
 	u8  rf_len;
@@ -500,6 +508,7 @@ typedef struct{
 	u16 mps;
 	u16 dcid[5];
 }rf_pkt_l2cap_credit_based_reconfigure_req_t;
+
 typedef struct{
 	u8	type;
 	u8  rf_len;
@@ -520,7 +529,6 @@ typedef struct{
 	u8 data[1];
 }rf_pkt_l2cap_req_t;
 
-
 typedef struct{
 	u8	llid;
 	u8  rf_len;
@@ -534,6 +542,7 @@ typedef struct{
 	u16 latency;
 	u16 timeout;
 }rf_packet_l2cap_connParaUpReq_t;
+
 typedef struct{
 	u8	llid;
 	u8  rf_len;
@@ -549,7 +558,6 @@ typedef struct{
 	u16 scid[5];
 }rf_packet_l2cap_credit_based_connection_req_t;
 
-
 typedef struct{
 	u8	llid;
 	u8  rf_len;
@@ -561,8 +569,6 @@ typedef struct{
 	u16 result;
 }rf_packet_l2cap_connParaUpRsp_t;
 
-
-/******************************************** ATT **************************************************************/
 typedef struct{
 	u8	type;
 	u8  rf_len;
@@ -570,8 +576,7 @@ typedef struct{
 	u16	chanid;
 
 	u8	att;
-	u8	hl;
-	u8	hh;
+	u16 handle;
 
 	u8	dat[20];
 
@@ -595,10 +600,8 @@ typedef struct{
 	u16	l2capLen;
 	u16	chanId;
 	u8  opcode;
-	u8	startingHandle;
-	u8	startingHandle1;
-	u8	endingHandle;
-	u8	endingHandle1;
+	u16	startingHandle;
+	u16	endingHandle;
 	u8	attType[2];				//
 }rf_packet_att_readByType_t;
 
@@ -609,10 +612,8 @@ typedef struct{
 	u16	l2capLen;
 	u16	chanId;
 	u8  opcode;
-	u8	startingHandle;
-	u8	startingHandle1;
-	u8	endingHandle;
-	u8	endingHandle1;
+	u16	startingHandle;
+	u16	endingHandle;
 	u8	attType[2];
 	u8  attValue[2];
 }rf_packet_att_findByTypeReq_t;
@@ -624,9 +625,8 @@ typedef struct{
 	u16	l2capLen;
 	u16	chanId;
 	u8  opcode;
-	u16 	data[1];
+	u16 data[1];
 }rf_packet_att_findByTypeRsp_t;
-
 
 typedef struct{
 	u8	type;
@@ -634,8 +634,7 @@ typedef struct{
 	u16	l2capLen;
 	u16	chanId;
 	u8  opcode;
-	u8 handle;
-	u8 handle1;
+	u16 handle;
 }rf_packet_att_read_t;
 
 typedef struct{
@@ -644,10 +643,8 @@ typedef struct{
 	u16	l2capLen;
 	u16	chanId;
 	u8  opcode;
-	u8 handle;
-	u8 handle1;
-	u8 offset0;
-	u8 offset1;
+	u16 handle;
+	u16 offset;
 }rf_packet_att_readBlob_t;
 
 typedef struct{
@@ -658,7 +655,6 @@ typedef struct{
 	u8  opcode;
 	u8 	value[22];
 }rf_packet_att_readRsp_t;
-
 
 typedef struct{
 	u8	type;
@@ -679,6 +675,16 @@ typedef struct{
 	u8  datalen;
 	u8  data[1];			// character_handle / property / value_handle / value
 }rf_packet_att_readByTypeRsp_t;
+
+typedef struct{
+	u8	type;
+	u8  rf_len;
+	u16	l2capLen;
+	u16	chanId;
+	u8  opcode;
+	u8  datalen;
+	u8  data[1];			// character_handle / property / value_handle / value
+}rf_packet_att_data_readByTypeRsp_t;
 
 typedef struct{
 	u8	type;
@@ -715,8 +721,7 @@ typedef struct{
 	u16	l2capLen;
 	u16	chanId;
 	u8  opcode;
-	u8 handle;
-	u8 handle1;
+	u16 handle;
 	u8 value;
 }rf_packet_att_write_t;
 
@@ -730,15 +735,13 @@ typedef struct{
 	u8 data;
 }rf_packet_att_notification_t;
 
-
-
 typedef struct{
 	u8	type;
 	u8  rf_len;
 	u16	l2capLen;
 	u16	chanId;
 	u8  opcode;
-	u8 mtu[2];
+	u8  mtu[2];
 }rf_packet_att_mtu_t;
 
 typedef struct{
@@ -758,10 +761,12 @@ typedef struct{
 	u8  opcode;
 }rf_packet_att_writeRsp_t;
 
-
-
-
-
+typedef struct{
+	u8	type;				//RA(1)_TA(1)_RFU(2)_TYPE(4)
+	u8  rf_len;				//LEN(6)_RFU(2)
+	u8 	opcode;
+	u8	data[8];
+}rf_packet_feature_rsp_t;
 
 typedef struct{
 	u8	type;
@@ -791,6 +796,7 @@ typedef struct{
 	u8  opcode;
 	u8 	value[22];
 }att_readRsp_t;
+
 
 
 

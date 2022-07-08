@@ -9,38 +9,17 @@
  * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
  *
- *          Redistribution and use in source and binary forms, with or without
- *          modification, are permitted provided that the following conditions are met:
+ *          Licensed under the Apache License, Version 2.0 (the "License");
+ *          you may not use this file except in compliance with the License.
+ *          You may obtain a copy of the License at
  *
- *              1. Redistributions of source code must retain the above copyright
- *              notice, this list of conditions and the following disclaimer.
+ *              http://www.apache.org/licenses/LICENSE-2.0
  *
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions
- *              in binary form must reproduce the above copyright notice, this list of
- *              conditions and the following disclaimer in the documentation and/or other
- *              materials provided with the distribution.
- *
- *              3. Neither the name of TELINK, nor the names of its contributors may be
- *              used to endorse or promote products derived from this software without
- *              specific prior written permission.
- *
- *              4. This software, with or without modification, must only be used with a
- *              TELINK integrated circuit. All other usages are subject to written permission
- *              from TELINK and different commercial license may apply.
- *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
- *              relating to such deletion(s), modification(s) or alteration(s).
- *
- *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
- *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *          Unless required by applicable law or agreed to in writing, software
+ *          distributed under the License is distributed on an "AS IS" BASIS,
+ *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *          See the License for the specific language governing permissions and
+ *          limitations under the License.
  *
  *******************************************************************************************************/
 #include "uart.h"
@@ -128,6 +107,7 @@ dma_config_t uart_rx_dma_config[2]={
  *********************************************************************************************************************/
  static unsigned char uart_dma_tx_chn[2];
  static unsigned char uart_dma_rx_chn[2];
+ static unsigned int uart_dma_rev_size[2];
 /**********************************************************************************************************************
  *                                          local function prototype                                               *
  *********************************************************************************************************************/
@@ -145,6 +125,7 @@ dma_config_t uart_rx_dma_config[2]={
   *	@return	none
   */
 static void uart_set_fuc_pin(uart_tx_pin_e tx_pin,uart_rx_pin_e rx_pin);
+
 
 /**********************************************************************************************************************
  *                                         global function implementation                                             *
@@ -178,8 +159,7 @@ static void uart_set_fuc_pin(uart_tx_pin_e tx_pin,uart_rx_pin_e rx_pin);
 */
 void uart_init(uart_num_e uart_num,unsigned short div, unsigned char bwpc, uart_parity_e parity, uart_stop_bit_e stop_bit)
 {
-	reg_uart_ctrl0(uart_num) &= ~ (FLD_UART_BPWC_O); 
-	reg_uart_ctrl0(uart_num) |= bwpc; //set bwpc
+	reg_uart_ctrl0(uart_num) = ((reg_uart_ctrl0(uart_num) & (~FLD_UART_BPWC_O))| bwpc);//set bwpc
     reg_uart_clk_div(uart_num) = (div | FLD_UART_CLK_DIV_EN); //set div_clock
 
     //parity config
@@ -197,18 +177,17 @@ void uart_init(uart_num_e uart_num,unsigned short div, unsigned char bwpc, uart_
     }
 
     //stop bit config
-    reg_uart_ctrl1(uart_num)  &= (~FLD_UART_STOP_SEL);
-    reg_uart_ctrl1(uart_num)  |= stop_bit;
+    reg_uart_ctrl1(uart_num) = ((reg_uart_ctrl1(uart_num) & (~FLD_UART_STOP_SEL)) | stop_bit);
 }
 
 /***********************************************************
  * @brief  		This function serves to calculate the best bwpc(bit width) .i.e reg0x96.
  * @param[in]	baudrate - baut rate of UART.
- * @param[in]	pclk   - system clock.
- * @param[out]	div      - uart clock divider.
- * @param[out]	bwpc     - bitwidth, should be set to larger than 2.
+ * @param[in]	pclk     - p-clock.
+ * @param[out]	div      - uart clock divider. range[0-127]
+ * @param[out]	bwpc     - bitwidth, should be set to larger than 2. range[3-15]
  * @return 		none
- * @note        BaudRate*(div+1)*(bwpc+1) = system clock
+ * @note        BaudRate*(div+1)*(bwpc+1) = p-clock
  *  		    simplify the expression: div*bwpc =  constant(z)
  * 		        bwpc range from 3 to 15.so loop and get the minimum one decimal point
  */
@@ -276,20 +255,20 @@ void uart_cal_div_and_bwpc(unsigned int baudrate, unsigned int pclk, unsigned sh
 }
 
 /**
- * @brief  		This funtion serves to set r_rxtimeout. this setting is transfer one bytes need cycles base on uart_clk.
+ * @brief  		This function serves to set r_rxtimeout. this setting is transfer one bytes need cycles base on uart_clk.
  * 				For example, if  transfer one bytes (1start bit+8bits data+1 priority bit+2stop bits) total 12 bits,
  * 				this register setting should be (bpwc+1)*12.
  * @param[in]	uart_num - UART0 or UART1.
  * @param[in]	bwpc     - bitwidth, should be set to larger than 2.
  * @param[in]	bit_cnt  - bit number.
- * @param[in]	mul	     - mul.
+ * @param[in]	mul	     - rx_timeout config,it decide the time of a packet.
  * @return 		none
  */
-void uart_set_dma_rx_timeout(uart_num_e uart_num,unsigned char bwpc, unsigned char bit_cnt, uart_timeout_mul_e mul)
+void uart_set_rx_timeout(uart_num_e uart_num,unsigned char bwpc, unsigned char bit_cnt, uart_timeout_mul_e mul)
 {
     reg_uart_rx_timeout0(uart_num) = (bwpc+1) * bit_cnt; //one byte includes 12 bits at most
-    reg_uart_rx_timeout1(uart_num) &= (~FLD_UART_TIMEOUT_MUL);
-	reg_uart_rx_timeout1(uart_num) |= mul; //if over 2*(tmp_bwpc+1),one transaction end.
+
+    reg_uart_rx_timeout1(uart_num) = (((reg_uart_rx_timeout1(uart_num))&(~FLD_UART_TIMEOUT_MUL))|mul); //if over 2*(tmp_bwpc+1),one transaction end.
 }
 
  unsigned char uart_tx_byte_index[2] = {0};
@@ -380,7 +359,7 @@ void uart_set_rts_level(uart_num_e uart_num, unsigned char polarity)
 }
 
 /**
- *	@brief		This function serves to set pin for UART0 cts function .
+ *	@brief		This function serves to set pin for UART cts function .
  *	@param[in]  cts_pin -To set cts pin.
  *	@return		none
  */
@@ -477,23 +456,25 @@ void uart_set_rts_pin(uart_rts_pin_e rts_pin)
 */
 void uart_set_pin(uart_tx_pin_e tx_pin,uart_rx_pin_e rx_pin)
 {
+	//When the pad is configured with mux input and a pull-up resistor is required, gpio_input_en needs to be placed before gpio_function_dis,
+	//otherwise first set gpio_input_disable and then call the mux function interface,the mux pad will misread the short low-level timing.confirmed by minghai.20210709.
+	gpio_input_en(tx_pin);
+	gpio_input_en(rx_pin);
 	gpio_set_up_down_res(tx_pin, GPIO_PIN_PULLUP_10K);
 	gpio_set_up_down_res(rx_pin, GPIO_PIN_PULLUP_10K);
 	uart_set_fuc_pin(tx_pin,rx_pin);//set tx and rx pin
-	gpio_input_en(tx_pin);
-	gpio_input_en(rx_pin);
 }
 
 /**
-* @brief      This function serves to set rtx pin for UART module.
-* @param[in]  rx_pin  - the rtx pin need to set.
+* @brief      This function serves to set rx pin for UART module,
+*             this pin can be used as either tx or rx. this pin is only used as tx when there is a sending action, but it is used as an rx at all times.
+* @param[in]  rx_pin  - the rx pin need to set.
 * @return     none
 */
 void uart_set_rtx_pin(uart_rx_pin_e rx_pin)
 {
 	unsigned char val = 0;
  	unsigned char mask = 0xff;
-	gpio_set_up_down_res(rx_pin, GPIO_PIN_PULLUP_10K);
 	if(rx_pin == UART0_RX_PA4)
 	{
 	 	mask= (unsigned char)~(BIT(1)|BIT(0));
@@ -526,8 +507,11 @@ void uart_set_rtx_pin(uart_rx_pin_e rx_pin)
 	    mask = (unsigned char)~(BIT(5)|BIT(4));
 	    val = BIT(4);
 	}
-	reg_gpio_func_mux(rx_pin)=(reg_gpio_func_mux(rx_pin)& mask)|val;
+	//When the pad is configured with mux input and a pull-up resistor is required, gpio_input_en needs to be placed before gpio_function_dis,
+	//otherwise first set gpio_input_disable and then call the mux function interface,the mux pad will misread the short low-level timing.confirmed by minghai.20210709.
 	gpio_input_en(rx_pin);
+	gpio_set_up_down_res(rx_pin, GPIO_PIN_PULLUP_10K);
+	reg_gpio_func_mux(rx_pin)=(reg_gpio_func_mux(rx_pin)& mask)|val;
 	gpio_function_dis(rx_pin);
 }
 
@@ -559,8 +543,10 @@ unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * addr, unsigned 
 {
 	if(len!=0)
 	{
+		//In order to prevent the time between the last piece of data and the next piece of data is less than the set timeout time,
+		//causing the receiver to treat the next piece of data as the last piece of data.
 	    uart_clr_tx_done(uart_num);
-	    dma_set_address(uart_dma_tx_chn[uart_num],(unsigned int)convert_ram_addr_cpu2bus(addr),reg_uart_data_buf_adr(uart_num));
+	    dma_set_address(uart_dma_tx_chn[uart_num],(unsigned int)(addr),reg_uart_data_buf_adr(uart_num));
 	    dma_set_size(uart_dma_tx_chn[uart_num],len,DMA_WORD_WIDTH);
 	    dma_chn_en(uart_dma_tx_chn[uart_num]);
 	    return 1;
@@ -576,38 +562,50 @@ unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * addr, unsigned 
  * @param[in]  	uart_num - UART0 or UART1.
  * @param[in] 	addr     - pointer to the buffer  receive data.
  * @param[in]   rev_size - the receive length of DMA,The maximum transmission length of DMA is 0xFFFFFC bytes, so dont'n over this length.
- * @note        The DMA version of A0 has some limitians.
- *              0:We should know the real receive length-len.
- *              1:If the data length we receive isn't the multiple of 4(the DMA carry 4-byte one time),like 5,it will carry 8 byte,
- *                while the last 3-byte data is random.
- *              2:The receive buff length sholud be equal to rec_size.The relation of the receive buff length and rec_size and
- *                the real receive data length-len : REC_BUFF_LEN=rec_size= ((len%4)==0 ? len : ((len/4)+1)*4).
- *              The DMA version of A1 can receive any length of data,the rev_size is useless.
+ * @note        1. rev_size must be larger than the data you received actually.
+ *              2. the data length can be arbitrary if less than rev_size.
  * @return    	none
  */
  void uart_receive_dma(uart_num_e uart_num, unsigned char * addr,unsigned int rev_size)
 {
+	uart_dma_rev_size[uart_num] = rev_size;
 	dma_chn_dis(uart_dma_rx_chn[uart_num]);
 	/*In order to be able to receive data of unknown length(A0 doesn't suppport),the DMA SIZE is set to the longest value 0xffffffff.After entering suspend and wake up, and then continue to receive, 
 	DMA will no longer move data from uart fifo, because DMA thinks that the last transmission was not completed and must disable dma_chn first.modified by minghai,confirmed qiangkai 2020.11.26.*/
-	dma_set_address(uart_dma_rx_chn[uart_num],reg_uart_data_buf_adr(uart_num),(unsigned int)convert_ram_addr_cpu2bus(addr));
-	if(0xff== g_chip_version)
-	{
-		dma_set_size(uart_dma_rx_chn[uart_num], rev_size, DMA_WORD_WIDTH);
-	}
-	else
-	{
-	    reg_dma_size(uart_dma_rx_chn[uart_num])=0xffffffff;
-	}
-
+	dma_set_address(uart_dma_rx_chn[uart_num],reg_uart_data_buf_adr(uart_num),(unsigned int)(addr));
+	dma_set_size(uart_dma_rx_chn[uart_num], rev_size, DMA_WORD_WIDTH);
 	dma_chn_en(uart_dma_rx_chn[uart_num]);
 }
 
- /**
-  * @brief     This function serves to set uart tx_dam channel and config dma tx default.
+/**
+ * @brief     This function serves to get the length of the data that dma received.
+ * @param[in] uart_num - UART0 or UART1.
+ * @param[in] chn      - dma channel.
+ * @return    data length.
+ */
+unsigned int uart_get_dma_rev_data_len(uart_num_e uart_num,dma_chn_e chn)
+{
+	unsigned int data_len=0;
+	unsigned int buff_data_len = (reg_uart_status1(uart_num)&FLD_UART_RBCNT)%4;
+	if(buff_data_len==0)
+	{
+		data_len=4*((uart_dma_rev_size[uart_num]/4)-reg_dma_size(chn));
+	}
+	else
+	{
+		data_len=4*((uart_dma_rev_size[uart_num]/4)-reg_dma_size(chn)-1)+buff_data_len;
+	}
+	return data_len;
+}
+
+/**
+  * @brief     This function serves to set uart tx_dma channel and config dma tx default.
   * @param[in] uart_num - UART0 or UART1.
   * @param[in] chn      - dma channel.
   * @return    none
+  * @note      In the case that the DMA transfer is not completed(bit 0 of reg_dma_ctr0(chn): 1-the transmission has not been completed,0-the transmission is completed), re-calling the DMA-related functions may cause problems.
+  *            If you must do this, you must perform the following sequence:
+  *            1. dma_chn_dis(uart_dma_tx_chn[uart_num]) 2.uart_reset() 3.uart_send_dma()
   */
  void uart_set_tx_dma_config(uart_num_e uart_num, dma_chn_e chn)
  {
@@ -616,10 +614,13 @@ unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * addr, unsigned 
  }
 
  /**
-  * @brief     This function serves to set uart rx_dam channel and config dma rx default.
+  * @brief     This function serves to set uart rx_dma channel and config dma rx default.
   * @param[in] uart_num - UART0 or UART1.
   * @param[in] chn      - dma channel.
   * @return    none
+  * @note      In the case that the DMA transfer is not completed(bit 0 of reg_dma_ctr0(chn): 1-the transmission has not been completed,0-the transmission is completed), re-calling the DMA-related functions may cause problems.
+  *            If you must do this, you must perform the following sequence:
+  *            1. dma_chn_dis(uart_dma_rx_chn[uart_num]) 2.uart_reset() 3.uart_receive_dma()
   */
  void uart_set_rx_dma_config(uart_num_e uart_num, dma_chn_e chn)
  {
@@ -636,10 +637,10 @@ unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * addr, unsigned 
   */
  void uart_cts_config(uart_num_e uart_num,uart_cts_pin_e cts_pin,unsigned char cts_parity)
  {
-	uart_set_cts_pin(cts_pin);
-
-	gpio_input_en(cts_pin);//enable input
-
+	//When the pad is configured with mux input and a pull-up resistor is required, gpio_input_en needs to be placed before gpio_function_dis,
+	//otherwise first set gpio_input_disable and then call the mux function interface,the mux pad will misread the short low-level timing.confirmed by minghai.20210709.
+	 gpio_input_en(cts_pin);//enable input
+	 uart_set_cts_pin(cts_pin);
 	if (cts_parity)
 	{
 		reg_uart_ctrl1(uart_num) |= FLD_UART_TX_CTS_POLARITY;
@@ -692,7 +693,7 @@ unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * addr, unsigned 
  {
  	unsigned int i = 5;
  	if(n <= 3){
- 		return 1; //althought n is prime, the bwpc must be larger than 2.
+ 		return 1; //although n is prime, the bwpc must be larger than 2.
  	}
  	else if((n %2 == 0) || (n % 3 == 0)){
  		return 0;

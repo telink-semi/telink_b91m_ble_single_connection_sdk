@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -55,15 +55,8 @@
 
 
 
-/**
- * @brief	LE connection role
- */
-#define 		LL_ROLE_MASTER              					0
-#define 		LL_ROLE_SLAVE               					1
-
-
-#define 	BLE_INVALID_CONNECTION_HANDLE    					0xffff
-#define 	IS_CONNECTION_HANDLE_VALID(handle)  				( handle != BLE_INVALID_CONNECTION_HANDLE )
+#define 		BLE_INVALID_CONNECTION_HANDLE    				0xffff
+#define 		IS_CONNECTION_HANDLE_VALID(handle)  			( handle != BLE_INVALID_CONNECTION_HANDLE )
 
 /**
  * @brief      for user to initialize ACL connection module.
@@ -106,6 +99,9 @@ ble_sts_t	blc_ll_initAclConnRxFifo(u8 *pRxbuf, int size, int number);
  * 					   other: failed
  */
 ble_sts_t	blc_ll_setAclConnMaxOctetsNumber(u8 maxRxOct, u8 maxTxOct);
+
+
+
 
 
 #endif /* LL_CONN_H_ */

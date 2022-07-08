@@ -44,11 +44,10 @@
  *
  *******************************************************************************************************/
 #if 1
+#include "drivers.h"
 #include "flash_fw_check.h"
-#include "../../drivers/B91/flash.h"
 
-extern _attribute_data_retention_   int		ota_program_offset;
-extern _attribute_data_retention_	int		ota_program_bootAddr;
+
 extern unsigned long crc32_half_cal(unsigned long crc, unsigned char* input, unsigned long* table, int len);
 
 static const unsigned long fw_crc32_half_tbl[16] = {

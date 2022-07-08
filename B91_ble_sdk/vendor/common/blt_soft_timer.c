@@ -43,7 +43,6 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *******************************************************************************************************/
-#if 1
 
 #include "stack/ble/ble.h"
 #include "tl_common.h"
@@ -265,4 +264,3 @@ void 	blt_soft_timer_init(void)
 
 
 #endif  //end of  BLT_SOFTWARE_TIMER_ENABLE
-#endif

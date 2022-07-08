@@ -49,6 +49,10 @@
 
 
 /////////////////// TEST FEATURE SELECTION /////////////////////////////////
+//ble link layer test
+#define TEST_ADVERTISING_ONLY							1
+#define TEST_ADVERTISING_IN_CONN_SLAVE_ROLE				2
+#define TEST_SCANNING_IN_ADV_AND_CONN_SLAVE_ROLE        3
 
 //power test
 #define TEST_POWER_ADV									10

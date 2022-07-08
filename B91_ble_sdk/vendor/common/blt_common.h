@@ -64,11 +64,11 @@
 
 /**************************** 512 K Flash *****************************/
 #ifndef		CFG_ADR_MAC_512K_FLASH
-#define		CFG_ADR_MAC_512K_FLASH								0x7F000	//Eagle and later IC
+#define		CFG_ADR_MAC_512K_FLASH								0x7F000	//B91 and later IC
 #endif
 
 #ifndef		CFG_ADR_CALIBRATION_512K_FLASH
-#define		CFG_ADR_CALIBRATION_512K_FLASH						0x7E000	//Eagle and later IC
+#define		CFG_ADR_CALIBRATION_512K_FLASH						0x7E000	//B91 and later IC
 #endif
 
 /**************************** 1 M Flash *******************************/
@@ -91,6 +91,16 @@
 #define		CFG_ADR_CALIBRATION_2M_FLASH						0x1FE000
 #endif
 
+/**************************** 4 M Flash *******************************/
+#ifndef		CFG_ADR_MAC_4M_FLASH
+#define		CFG_ADR_MAC_4M_FLASH		   						0x3FF000
+#endif
+
+
+#ifndef		CFG_ADR_CALIBRATION_4M_FLASH
+#define		CFG_ADR_CALIBRATION_4M_FLASH						0x3FE000
+#endif
+
 /** Calibration Information FLash Address Offset of  CFG_ADR_CALIBRATION_xx_FLASH ***/
 #define		CALIB_OFFSET_CAP_INFO								0x0
 #define		CALIB_OFFSET_TP_INFO								0x40
@@ -107,6 +117,7 @@
 
 extern u32 flash_sector_mac_address;
 extern u32 flash_sector_calibration;
+extern bool    adc_check_efuse_flag;
 
 
 
@@ -132,18 +143,63 @@ static inline void blc_app_setExternalCrystalCapEnable(u8  en)
  */
 static inline void blc_app_loadCustomizedParameters(void)
 {
-	 if(!blt_miscParam.ext_cap_en)
-	 {
-		 //customize freq_offset adjust cap value, if not customized, default ana_8A is 0x60
-		 //for 1M  Flash, flash_sector_calibration equals to 0xFE000
-		 if(flash_sector_calibration){
-			 u8 cap_frqoft;
-			 flash_read_page(flash_sector_calibration + CALIB_OFFSET_CAP_INFO, 1, &cap_frqoft);
-			 if( cap_frqoft != 0xff ){
-				 analog_write_reg8(0x8A, (analog_read_reg8(0x8A) & 0xc0)|(cap_frqoft & 0x3f));
-			 }
-		 }
-	 }
+	/* Attention:
+	 * for 1M  Flash, flash_sector_calibration equals to 0xFE000
+	 * for 2M  Flash, flash_sector_calibration equals to 0x1FE000
+	 * Other Size, SDK do not support now, user should contact Telink to process this special situation */
+	if(flash_sector_calibration)
+	{
+		if(!blt_miscParam.ext_cap_en){
+			//customize freq_offset adjust cap value, if not customized, default ana_8A is 0x60
+			u8 cap_frqoft;
+			flash_read_page(flash_sector_calibration + CALIB_OFFSET_CAP_INFO, 1, &cap_frqoft);
+			if( cap_frqoft != 0xff ){
+				analog_write_reg8(0x8A, (analog_read_reg8(0x8A) & 0xc0)|(cap_frqoft & 0x3f));
+			}
+		}
+
+
+
+		//read flash value-->efuse value-->one point value
+		unsigned char adc_vref_calib_value[7] = {0};
+		//load adc vref value from flash
+		if(adc_vref_cfg.adc_calib_en)
+		{
+			flash_read_page(flash_sector_calibration + CALIB_OFFSET_ADC_VREF, 7, adc_vref_calib_value);
+			if((adc_vref_calib_value[4] != 0xff) && (((adc_vref_calib_value[6] << 8) | adc_vref_calib_value[5]) != 0xffff)){
+				/****** Method of calculating two-point gpio calibration Flash_gain and Flash_offset value: ********/
+				/****** Vref = [(Seven_Byte << 8) + Six_Byte + 1000]mv ********/
+				/****** offset = [Five_Byte - 20] mv. The range of the offset value must be between -20 and 20.********/
+				/****** The range of the offset value must be between -20 and 20.********/
+				if(adc_vref_calib_value[4] <= 0x7f){
+					adc_vref_cfg.adc_vref = ((adc_vref_calib_value[6] << 8) | adc_vref_calib_value[5]) + 1000;
+					adc_vref_cfg.adc_vref_offset = adc_vref_calib_value[4] - 20;
+					adc_set_gpio_calib_vref(adc_vref_cfg.adc_vref);
+					adc_set_gpio_two_point_calib_offset(adc_vref_cfg.adc_vref_offset);
+				}
+			}
+			else{
+				/* if no ADC Vref calibration value on EFUSE, check if ADC Vref one_point calibration value on Flash */
+				if(!blt_miscParam.adc_efuse_calib_flag){
+					if(((adc_vref_calib_value[1] << 8) | adc_vref_calib_value[0]) != 0xffff)
+					{
+						/****** Method of calculating one-point calibration Flash_gpio_Vref value: ********/
+						/****** Vref = [1175 +First_Byte-255+Second_Byte] mV = [920 + First_Byte + Second_Byte] mV ********/
+						adc_vref_cfg.adc_vref = 920 + adc_vref_calib_value[0] + adc_vref_calib_value[1];
+						/****** Check the calibration value whether is correct ********/
+						if ((adc_vref_cfg.adc_vref > 1047) && (adc_vref_cfg.adc_vref < 1302)){
+							adc_set_gpio_calib_vref(adc_vref_cfg.adc_vref);
+						}
+						else
+						{
+							adc_vref_cfg.adc_vref = 1175;//Use default values
+						}
+					}
+				}
+			}
+		}//if(adc_vref_cfg.adc_calib_en)
+	}
+
 }
 
 /**

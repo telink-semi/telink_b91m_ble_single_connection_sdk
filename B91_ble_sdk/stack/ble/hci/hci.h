@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -77,24 +77,24 @@ typedef int (*blc_hci_app_handler_t) (unsigned char *p);
 
 
 
+#if (MCU_CORE_TYPE == MCU_CORE_9518)
+	extern  my_fifo_t	hci_tx_iso_fifo;
 
-extern  my_fifo_t	hci_tx_iso_fifo;
+	typedef	struct {
+		u32		size;
+		u8		num;
+		u8		mask;
+		u8		wptr;
+		u8		rptr;
+		u8*		p;
+	}hci_fifo_t;
 
-typedef	struct {
-	u32		size;
-	u8		num;
-	u8		mask;
-	u8		wptr;
-	u8		rptr;
-	u8*		p;
-}hci_fifo_t;
-
-u8*  hci_fifo_wptr (hci_fifo_t *f);
-u8*  hci_fifo_wptr_v2 (hci_fifo_t *f);
-u8*  hci_fifo_get (hci_fifo_t *f);
-void hci_fifo_pop (hci_fifo_t *f);
-void hci_fifo_next (hci_fifo_t *f);
-
+	u8*  hci_fifo_wptr (hci_fifo_t *f);
+	u8*  hci_fifo_wptr_v2 (hci_fifo_t *f);
+	u8*  hci_fifo_get (hci_fifo_t *f);
+	void hci_fifo_pop (hci_fifo_t *f);
+	void hci_fifo_next (hci_fifo_t *f);
+#endif
 
 /**
  *  @brief  Definition for HCI packet type & HCI packet indicator
@@ -163,27 +163,32 @@ typedef int (*hci_event_handler_t) (u32 h, u8 *para, int n);
 extern hci_event_handler_t		blc_hci_event_handler;
 
 
+#if (MCU_CORE_TYPE == MCU_CORE_825x || MCU_CORE_TYPE == MCU_CORE_827x)
+	int 	blc_acl_from_btusb ();
+	int 	blc_hci_tx_to_btusb (void);
+#endif
 
-/**
- * @brief      for user to initialize HCI TX FIFO.
- * @param[in]  pRxbuf - TX FIFO buffer address.
- * @param[in]  fifo_size - RX FIFO size
- * @param[in]  fifo_number - RX FIFO number, can only be 4, 8, 16 or 32
- * @return     status, 0x00:  succeed
- * 					   other: failed
- */
-ble_sts_t 	blc_ll_initHciTxFifo(u8 *pTxbuf, int fifo_size, int fifo_number);
+#if (MCU_CORE_TYPE == MCU_CORE_9518)
+	/**
+	 * @brief      for user to initialize HCI TX FIFO.
+	 * @param[in]  pRxbuf - TX FIFO buffer address.
+	 * @param[in]  fifo_size - RX FIFO size
+	 * @param[in]  fifo_number - RX FIFO number, can only be 4, 8, 16 or 32
+	 * @return     status, 0x00:  succeed
+	 * 					   other: failed
+	 */
+	ble_sts_t 	blc_ll_initHciTxFifo(u8 *pTxbuf, int fifo_size, int fifo_number);
 
-/**
- * @brief      for user to initialize HCI RX FIFO.
- * @param[in]  pRxbuf - RX FIFO buffer address.
- * @param[in]  fifo_size - RX FIFO size
- * @param[in]  fifo_number - RX FIFO number, can only be 4, 8, 16 or 32
- * @return     status, 0x00:  succeed
- * 					   other: failed
- */
-ble_sts_t 	blc_ll_initHciRxFifo(u8 *pRxbuf, int fifo_size, int fifo_number);
-
+	/**
+	 * @brief      for user to initialize HCI RX FIFO.
+	 * @param[in]  pRxbuf - RX FIFO buffer address.
+	 * @param[in]  fifo_size - RX FIFO size
+	 * @param[in]  fifo_number - RX FIFO number, can only be 4, 8, 16 or 32
+	 * @return     status, 0x00:  succeed
+	 * 					   other: failed
+	 */
+	ble_sts_t 	blc_ll_initHciRxFifo(u8 *pRxbuf, int fifo_size, int fifo_number);
+#endif
 
 
 
@@ -239,21 +244,21 @@ int blc_hci_proc (void);
 /******************************* User Interface  Begin *****************************************************************/
 /**
  * @brief      this function is used to set HCI EVENT mask
- * @param[in]  evtMask  -  HCI　EVENT　mask
+ * @param[in]  evtMask  -  HCI EVENT mask
  * @return     0
  */
 ble_sts_t	blc_hci_setEventMask_cmd(u32 evtMask);      //eventMask: BT/EDR
 
 /**
  * @brief      this function is used to set HCI LE EVENT mask
- * @param[in]  evtMask  -  HCI　LE EVENT　mask(BIT<0-31>)
+ * @param[in]  evtMask  -  HCI LE EVENT mask(BIT<0-31>)
  * @return     0
  */
 ble_sts_t	blc_hci_le_setEventMask_cmd(u32 evtMask);   //eventMask: LE event  0~31
 
 /**
  * @brief      this function is used to set HCI LE EVENT mask
- * @param[in]  evtMask  -  HCI　LE EVENT　mask(BIT<32-63>)
+ * @param[in]  evtMask  -  HCI LE EVENT mask(BIT<32-63>)
  * @return     0
  */
 ble_sts_t 	blc_hci_le_setEventMask_2_cmd(u32 evtMask_2);   //eventMask: LE event 32~63

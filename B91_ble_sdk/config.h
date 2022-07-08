@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -67,8 +67,15 @@
 
 #if(CHIP_TYPE == CHIP_TYPE_9518)
 	#define MCU_CORE_TYPE	MCU_CORE_9518
+#elif(CHIP_TYPE == CHIP_TYPE_825x)
+	#define MCU_CORE_TYPE	MCU_CORE_825x
+#elif(CHIP_TYPE == CHIP_TYPE_827x)
+	#define MCU_CORE_TYPE	MCU_CORE_827x
+#else
+	#define MCU_CORE_TYPE	1000
 #endif
 
+#define FREERTOS_ENABLE		0
 
 
 #endif /* CONFIG_H_ */

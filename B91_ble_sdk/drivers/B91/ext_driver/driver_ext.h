@@ -52,6 +52,7 @@
 #include "ext_gpio.h"
 #include "ext_misc.h"
 #include "software_pa.h"
+#include "mcu_boot.h"
 
 
 #endif /* DRIVERS_B91_EXT_DRIVER_DRIVER_EXT_H_ */

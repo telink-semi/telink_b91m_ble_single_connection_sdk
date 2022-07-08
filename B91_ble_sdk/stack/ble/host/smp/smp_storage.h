@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -49,6 +49,11 @@
 
 
 
+
+
+
+
+
 typedef enum {
 	Index_Update_by_Pairing_Order = 0,     //default value
 	Index_Update_by_Connect_Order = 1,
@@ -58,19 +63,31 @@ typedef enum {
 /*
  * smp parameter need save to flash.
  * */
+
+#define DEVICE_IDX_MASK				0x03
+
+typedef union {
+	struct{
+		u8 	device_idx	 :2;
+		u8 	rsvd		 :6;
+	};
+	u8 cflg_pack;
+}comb_flg_t;  //combine flag type
+
+
 typedef struct {  //82
 	u8		flag;
 	u8		peer_addr_type;  //address used in link layer connection
 	u8		peer_addr[6];
 
-	u8 		peer_key_size;
+	comb_flg_t	cflg_union;
 	u8		peer_id_adrType; //peer identity address information in key distribution, used to identify
 	u8		peer_id_addr[6];
 
 
 	u8 		own_ltk[16];      //own_ltk[16]
 	u8		peer_irk[16];
-	u8		peer_csrk[16];
+	u8		local_irk[16];
 
 }smp_param_save_t;
 
@@ -130,6 +147,46 @@ void		bls_smp_setIndexUpdateMethod(index_updateMethod_t method);
  */
 void		bls_smp_eraseAllParingInformation(void);
 
+
+
+
+
+
+
+
+/**
+ * @brief      This function is used to get the number of currently bonding peer devices for multiple local device application.
+ * @param[in]  local_dev_idx - local device index
+ * @return     The number of currently bound devices.
+ */
+int			blc_smp_multi_device_param_getCurrentBondingDeviceNumber(int local_dev_idx);
+
+
+
+/**
+ * @brief      This function is used to obtain peer device binding information based on index for multiple local device application.
+ * @param[in]  bond_dev_idx - bonding peer device index.
+ * @param[in]  local_dev_idx - local device index
+ * @param[out] smp_param_load - The value can refer to the structure 'smp_param_save_t'.
+ * @return     0: Failed to load binding information;
+ *             others: FLASH address of the information area.
+ */
+u32 		bls_smp_multi_device_param_loadByIndex(int local_dev_idx, int bond_dev_idx, smp_param_save_t* smp_param_load);
+
+
+
+
+#if (LL_FEATURE_ENABLE_LL_PRIVACY)
+/*
+ *  Address resolution is not supported by default. After pairing and binding, we need to obtain the central Address Resolution
+ *  feature value of the opposite end to determine whether the opposite end supports the address resolution function, and write
+ *  the result to smp_bonding_flg. Currently, we leave it to the user to obtain this feature.
+ */
+#define 	IS_PEER_ADDR_RES_SUPPORT(peerAddrResSuppFlg)	(!(peerAddrResSuppFlg & BIT(7)))
+
+int			blc_smp_setPeerAddrResSupportFlg(u32 flash_addr, u8 support);
+
+#endif
 
 
 #endif /* SMP_STORAGE_H_ */

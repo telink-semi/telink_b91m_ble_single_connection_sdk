@@ -47,7 +47,7 @@
 #ifndef DRIVERS_B91_DRIVER_EXT_EXT_PM_H_
 #define DRIVERS_B91_DRIVER_EXT_EXT_PM_H_
 
-#include "../pm.h"
+#include "../lib/include/pm.h"
 #include "types.h"
 
 #ifndef	PM_32k_RC_CALIBRATION_ALGORITHM_EN
@@ -102,7 +102,7 @@ typedef struct{
 	unsigned char ext_cap_en;    //24xtal  cap
 	unsigned char pad32k_en;
 	unsigned char pm_enter_en;
-	unsigned char rsvd;
+	unsigned char adc_efuse_calib_flag;
 }misc_para_t;
 
 extern  _attribute_aligned_(4) misc_para_t 				blt_miscParam;
@@ -264,6 +264,19 @@ static inline int pm_get_mcu_status(void)
 	return g_pm_status_info.mcu_status;
 }
 
+
+
+/**
+ * @brief   internal oscillator or crystal calibration for environment change such as voltage, temperature
+ * 			to keep some critical PM or RF performance stable
+ * 			attention: this is a stack API, user can not call it
+ * @param	none
+ * @return	none
+ */
+void mcu_oscillator_crystal_calibration(void);
+
+
+
 #define cpu_set_gpio_wakeup				pm_set_gpio_wakeup
 
 /**********************************  Internal APIs (not for user)***************************************************/
@@ -274,5 +287,9 @@ extern  unsigned int 			g_pm_tick_32k_cur;
 extern  unsigned char       	g_pm_long_suspend;
 extern  unsigned int 			g_pm_multi_addr;
 
+
+extern unsigned int	ota_program_bootAddr;
+extern unsigned int	ota_firmware_max_size;
+extern unsigned int	ota_program_offset;
 
 #endif /* DRIVERS_B91_DRIVER_EXT_EXT_PM_H_ */

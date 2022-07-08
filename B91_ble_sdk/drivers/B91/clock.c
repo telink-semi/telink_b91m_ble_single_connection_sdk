@@ -9,43 +9,22 @@
  * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
  *
- *          Redistribution and use in source and binary forms, with or without
- *          modification, are permitted provided that the following conditions are met:
+ *          Licensed under the Apache License, Version 2.0 (the "License");
+ *          you may not use this file except in compliance with the License.
+ *          You may obtain a copy of the License at
  *
- *              1. Redistributions of source code must retain the above copyright
- *              notice, this list of conditions and the following disclaimer.
+ *              http://www.apache.org/licenses/LICENSE-2.0
  *
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions
- *              in binary form must reproduce the above copyright notice, this list of
- *              conditions and the following disclaimer in the documentation and/or other
- *              materials provided with the distribution.
- *
- *              3. Neither the name of TELINK, nor the names of its contributors may be
- *              used to endorse or promote products derived from this software without
- *              specific prior written permission.
- *
- *              4. This software, with or without modification, must only be used with a
- *              TELINK integrated circuit. All other usages are subject to written permission
- *              from TELINK and different commercial license may apply.
- *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
- *              relating to such deletion(s), modification(s) or alteration(s).
- *
- *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
- *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *          Unless required by applicable law or agreed to in writing, software
+ *          distributed under the License is distributed on an "AS IS" BASIS,
+ *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *          See the License for the specific language governing permissions and
+ *          limitations under the License.
  *
  *******************************************************************************************************/
+#include "lib/include/sys.h"
 #include "clock.h"
 #include "mspi.h"
-#include "sys.h"
 #include "stimer.h"
 /**********************************************************************************************************************
  *                                			  local constants                                                       *
@@ -264,25 +243,24 @@ unsigned int clock_get_32k_tick(void)
 {
     unsigned int t0 = 0;
     unsigned int t1 = 0;
-    unsigned int n = 0;
 
-    while (1) {
-
-        t0 = t1;
-        t1 = analog_read_reg32(0x60);
-
-        if (n)
-        {
-            if ((unsigned int)(t1 - t0) < 2) {
-                return t1;
-            }
-            else if ( (t0^t1) == 1 ) {
-                return t0;
-            }
-        }
-        n++;
-    }
-    return t1;
+    //In the system timer auto mode, when writing a tick value to the system tick, if the writing operation overlaps
+    //with the 32k rising edge, the writing operation will be unsuccessful. When reading the 32k tick value,
+    //first wait for the rising edge to pass to avoid overlap with the subsequent write tick value operation.
+    //modify by weihua.zhang, confirmed by jianzhi at 20210126
+	t0 = analog_read_reg32(0x60);
+	while(1)
+	{
+		t1 = analog_read_reg32(0x60);
+		if((t1-t0) == 1)
+		{
+			return t1;
+		}
+		else if(t1-t0)
+		{
+			t0 = t1;
+		}
+	}
 }
 #endif
 
@@ -293,7 +271,11 @@ unsigned int clock_get_32k_tick(void)
  * @param[in]	cclk_div - the cclk divide from pll.it is useless if src is not PAD_PLL_DIV. cclk max is 96M
  * @param[in]	hclk_div - the hclk divide from cclk.hclk max is 48M.
  * @param[in]	pclk_div - the pclk divide from hclk.pclk max is 24M.if hclk = 1/2 * cclk, the pclk can not be 1/4 of hclk.
- * @param[in]	mspi_clk_div - mspi_clk has two source. pll div and hclk.mspi max is 64M.
+ * @param[in]	mspi_clk_div - mspi_clk has two source - pll div and hclk. If it is built-in flash, the maximum speed of mspi is 64M.
+							   If it is an external flash, the maximum speed of mspi needs to be based on the board test.
+							   Because the maximum speed is related to the wiring of the board, and is also affected by temperature and GPIO voltage,
+							   the maximum speed needs to be tested at the highest and lowest voltage of the board,
+							   and the high and low temperature long-term stability test speed is no problem.
  * @return      none
  */
 void clock_init(sys_pll_clk_e pll,

@@ -51,7 +51,11 @@
 	#include "../B91_module/app_config.h"
 #elif (__PROJECT_B91_FEATURE_TEST__)
 	#include "../B91_feature/app_config.h"
+#elif(__PROJECT_B91_INTERNAL_TEST__)
+	#include "../B91_internal_test/app_config.h"
+#elif(__PROJECT_B91_DEBUG_DEMO__)
+	#include "../B91_debug_demo/app_config.h"
 #else
-
+	#include "../common/default_config.h"
 #endif
 

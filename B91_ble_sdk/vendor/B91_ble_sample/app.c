@@ -231,7 +231,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
  * @param[in]  n - data length of event
  * @return     none
  */
-_attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
+_attribute_ram_code_ void	task_suspend_exit (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
@@ -306,49 +306,35 @@ void blt_pm_proc(void)
 
 _attribute_data_retention_	u32	lowBattDet_tick   = 0;
 
-_attribute_ram_code_ void user_init_battery_power_check(void)
+_attribute_ram_code_ void user_battery_power_check(void)
 {
-	/*****************************************************************************************
-	 Note: battery check must do before any flash write/erase operation, cause flash write/erase
-		   under a low or unstable power supply will lead to error flash operation
-
-		   Some module initialization may involve flash write/erase, include: OTA initialization,
-				SMP initialization, ..
-				So these initialization must be done after  battery check
-	*****************************************************************************************/
-
-		#if(BAT_LEAKAGE_PROTECT_EN)
-		do{
-			u8 analog_deep = analog_read_reg8(USED_DEEP_ANA_REG);
-			u16 bat_deep_thres = BAT_DEEP_THRES_MV;
-			u16 bat_suspend_thres = BAT_SUSPEND_THRES_MV;
-			if(analog_deep & LOW_BATT_FLG){
-				if(analog_deep & LOW_BATT_SUSPEND_FLG){//<1.8v
-					bat_deep_thres += 200;
-					bat_suspend_thres += 100;
-				}
-				else{//1.8--2.0v
-					bat_deep_thres += 200;
-				}
-			}
-			app_battery_power_check(bat_deep_thres,bat_suspend_thres);
-
-			wd_clear(); //clear watch dog
-
-			if(analog_deep & LOW_BATT_SUSPEND_FLG){
-				sleep_us(100000);
-			}
-		}while(analog_read_reg8(USED_DEEP_ANA_REG) & LOW_BATT_SUSPEND_FLG);
-		#else
+			u8 battery_check_returnVaule=0;
 			if(analog_read(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
-				app_battery_power_check(BAT_DEEP_THRES_MV + 200);
+				battery_check_returnVaule=app_battery_power_check(BAT_DEEP_THRES_MV + 200);
 			}
 			else{
-				app_battery_power_check(BAT_DEEP_THRES_MV);
+				battery_check_returnVaule=app_battery_power_check(BAT_DEEP_THRES_MV);
 			}
-		#endif
+			if(!battery_check_returnVaule)
+			{
+				#if (UI_LED_ENABLE)  //led indicate
+					for(int k=0;k<3;k++){
+						gpio_write(GPIO_LED_BLUE, LED_ON_LEVAL);
+						sleep_us(200000);
+						gpio_write(GPIO_LED_BLUE, !LED_ON_LEVAL);
+						sleep_us(200000);
+					}
+				#endif
+				analog_write_reg8(USED_DEEP_ANA_REG,  analog_read_reg8(USED_DEEP_ANA_REG) | LOW_BATT_FLG);  //mark
 
+				u32 pin[] = KB_DRIVE_PINS;
+				for (int i=0; i<(sizeof (pin)/sizeof(*pin)); i++)
+				{
+					cpu_set_gpio_wakeup (pin[i], Level_High, 1);  //drive pin pad high wakeup deepsleep
+				}
 
+				cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
+			}
 }
 
 #endif
@@ -385,7 +371,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	//////////// Controller Initialization  Begin /////////////////////////
 	blc_ll_initBasicMCU();                      //mandatory
 	blc_ll_initStandby_module(mac_public);		//mandatory
-	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initLegacyAdvertising_module(); 		//legacy advertising module: mandatory for BLE slave
 	blc_ll_initConnection_module();				//connection module  mandatory for BLE slave/master
 	blc_ll_initSlaveRole_module();				//slave module: 	 mandatory for BLE slave,
 
@@ -485,12 +471,12 @@ _attribute_no_inline_ void user_init_normal(void)
 
 
 	//set rf power index, user must set it after every suspend wakeup, cause relative setting will be reset in suspend
-	user_set_rf_power(0, 0, 0);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 
 	bls_app_registerEventCallback (BLT_EV_FLAG_CONNECT, &task_connect);
 	bls_app_registerEventCallback (BLT_EV_FLAG_TERMINATE, &task_terminate);
-	bls_app_registerEventCallback (BLT_EV_FLAG_SUSPEND_EXIT, &user_set_rf_power);
+	bls_app_registerEventCallback (BLT_EV_FLAG_SUSPEND_EXIT, &task_suspend_exit);
 
 	///////////////////// Power Management initialization///////////////////
 #if(BLE_APP_PM_ENABLE)
@@ -500,7 +486,9 @@ _attribute_no_inline_ void user_init_normal(void)
 		bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 		blc_pm_setDeepsleepRetentionThreshold(95, 95);
 		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 370 : 400);
-		//blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW64K); //default use 32k deep retention
+#if( FREERTOS_ENABLE )
+		blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW64K); //default use 32k deep retention
+#endif
 	#else
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 	#endif
@@ -524,7 +512,6 @@ _attribute_no_inline_ void user_init_normal(void)
 
 #if (BLE_OTA_SERVER_ENABLE)
 	////////////////// OTA relative ////////////////////////
-	/* OTA module initialization must be called after "blc_ota_setNewFirmwwareStorageAddress"(if used), and before any other OTA API.*/
 	blc_ota_initOtaServer_module();
 
 	blc_ota_setOtaProcessTimeout(30);   //OTA process timeout:  30 seconds
@@ -597,34 +584,16 @@ _attribute_no_inline_ void main_loop (void)
 
 
 	////////////////////////////////////// UI entry /////////////////////////////////
-#if (BATT_CHECK_ENABLE)
-	if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 500000) ){
-		lowBattDet_tick = clock_time();
-		#if(BAT_LEAKAGE_PROTECT_EN)
-
-		u8 analog_deep = analog_read_reg8(USED_DEEP_ANA_REG);
-		u16 bat_deep_thres = BAT_DEEP_THRES_MV;
-		u16 bat_suspend_thres = BAT_SUSPEND_THRES_MV;
-		if(analog_deep & LOW_BATT_FLG){
-			if(analog_deep & LOW_BATT_SUSPEND_FLG){//<1.8v
-				bat_deep_thres += 200;
-				bat_suspend_thres += 100;
-			}
-			else{//1.8--2.0v
-				bat_deep_thres += 200;
-			}
+	#if (BATT_CHECK_ENABLE)
+		if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 500000) ){
+			lowBattDet_tick = clock_time();
+			user_battery_power_check();
 		}
-		app_battery_power_check(bat_deep_thres,bat_suspend_thres);
-
-		#else
-			app_battery_power_check(BAT_DEEP_THRES_MV);  //2000 mV low battery
-		#endif
-	}
-#endif
+	#endif
 
 
 	#if (UI_KEYBOARD_ENABLE)
-			proc_keyboard (0,0, 0);
+			proc_keyboard (0, 0, 0);
 	#elif (UI_BUTTON_ENABLE)
 			// process button 1 second later after power on, to avoid power unstable
 			if(!button_detect_en && clock_time_exceed(0, 1000000)){

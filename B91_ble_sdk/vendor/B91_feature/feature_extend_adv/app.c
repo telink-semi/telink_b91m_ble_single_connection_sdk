@@ -174,7 +174,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
  * @param[in]  n - data length of event
  * @return     none
  */
-_attribute_ram_code_ void	user_set_rf_power (u8 e, u8 *p, int n)
+_attribute_ram_code_ void	task_suspend_exit (u8 e, u8 *p, int n)
 {
 	rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
@@ -366,7 +366,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_ll_initExtAdvDataBuffer(app_advData, APP_MAX_LENGTH_ADV_DATA);
 	blc_ll_initExtScanRspDataBuffer(app_scanRspData, APP_MAX_LENGTH_SCAN_RESPONSE_DATA);
 #else
-	blc_ll_initAdvertising_module(); 	//adv module: 		 mandatory for BLE slave,
+	blc_ll_initLegacyAdvertising_module(); 		//legacy advertising module: mandatory for BLE slave
 #endif
 
 	blc_ll_setAclConnMaxOctetsNumber(ACL_CONN_MAX_RX_OCTETS, ACL_CONN_MAX_TX_OCTETS);
@@ -591,13 +591,13 @@ _attribute_no_inline_ void user_init_normal(void)
 #endif
 
 	//set rf power index, user must set it after every suspend wakeup, cause relative setting will be reset in suspend
-	user_set_rf_power(0, 0, 0);
+	rf_set_power_level_index (MY_RF_POWER_INDEX);
 
 	blc_ll_init2MPhyCodedPhy_feature();
 
 	bls_app_registerEventCallback (BLT_EV_FLAG_CONNECT, &task_connect);
 	bls_app_registerEventCallback (BLT_EV_FLAG_TERMINATE, &task_terminate);
-	bls_app_registerEventCallback (BLT_EV_FLAG_SUSPEND_EXIT, &user_set_rf_power);
+	bls_app_registerEventCallback (BLT_EV_FLAG_SUSPEND_EXIT, &task_suspend_exit);
 
 	///////////////////// Power Management initialization///////////////////
 #if(BLE_APP_PM_ENABLE)
@@ -681,7 +681,7 @@ _attribute_no_inline_ void main_loop (void)
 
 
 	////////////////////////////////////// UI entry /////////////////////////////////
-	proc_keyboard (0,0, 0);
+	proc_keyboard (0, 0, 0);
 
 	////////////////////////////////////// PM Process /////////////////////////////////
 	blt_pm_proc();

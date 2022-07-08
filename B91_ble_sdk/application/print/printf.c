@@ -108,7 +108,7 @@ _attribute_ram_code_sec_noinline_  void dr_putchar(unsigned char byte){
 	bit[8] = ((byte>>7) & 0x01)? tmp_bit1 : tmp_bit0;
 	bit[9] = tmp_bit1;
 
-	t1 = clock_time();//eagle stimer register
+	t1 = clock_time();//B91 stimer register
 	for(j = 0;j<10;j++)
 	{
 		t2=t1;

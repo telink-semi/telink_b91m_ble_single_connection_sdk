@@ -162,6 +162,12 @@ typedef enum
 }ATT_HANDLE;
 
 
+/**
+ * @brief      Initialize the attribute table
+ * @param[in]  none
+ * @return     none
+ */
+void my_att_init(void);
 
 
 

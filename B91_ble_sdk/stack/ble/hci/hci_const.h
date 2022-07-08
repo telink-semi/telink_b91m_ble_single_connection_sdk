@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -43,8 +43,6 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *******************************************************************************************************/
-
-
 #ifndef HCI_CONST_H_
 #define HCI_CONST_H_
 
@@ -119,7 +117,7 @@
 
 
 
-#define HCI_SUB_EVT_LE_CONNECTION_ESTABLISH					         0xFF   //private
+#define HCI_SUB_EVT_LE_CONNECTION_ESTABLISH					         0xFF   //Telink private
 
 
 
@@ -135,6 +133,7 @@
 #define HCI_EVT_MASK_REMOTE_NAME_REQUEST_COMPLETE                	 0x0000000040
 #define HCI_EVT_MASK_ENCRYPTION_CHANGE                           	 0x0000000080
 #define HCI_EVT_MASK_CHANGE_CONECTION_LINK_KEY_COMPLETE              0x0000000100
+#define HCI_EVT_MASK_CHANGE_CONNECTION_LINK_KEY_COMPLETE   			 0x0000000100	
 #define HCI_EVT_MASK_MASTER_LINK_KEY_COMPLETE                        0x0000000200
 #define HCI_EVT_MASK_READ_REMOTE_SUPPORTED_FEATURES_COMPLETE     	 0x0000000400
 #define HCI_EVT_MASK_READ_REMOTE_VERSION_INFORMATION_COMPLETE    	 0x0000000800     //
@@ -184,7 +183,7 @@
 
 
 
-#define HCI_LE_EVT_MASK_CONNECTION_ESTABLISH                         0x80000000  //private
+#define HCI_LE_EVT_MASK_CONNECTION_ESTABLISH                         0x80000000  //TODO
 
 
 
@@ -300,11 +299,10 @@
 #define HCI_CMD_LE_LONG_TERM_KEY_REQUESTED_NEGATIVE_REPLY            0x1B
 #define HCI_CMD_LE_READ_SUPPORTED_STATES                             0x1C
 #define HCI_CMD_LE_RECEIVER_TEST                                     0x1D
-#define HCI_CMD_LE_RECEIVER_TEST_V1                                  (HCI_CMD_LE_RECEIVER_TEST)
 #define HCI_CMD_LE_TRANSMITTER_TEST                                  0x1E
 #define HCI_CMD_LE_TEST_END                                          0x1F
 //core_4.0 end
-//core_4.2 begin
+//core_4.1 begin
 #define HCI_CMD_LE_REMOTE_CONNECTION_PARAM_REQ_REPLY             	 0x20
 #define HCI_CMD_LE_REMOTE_CONNECTION_PARAM_REQ_NEGATIVE_REPLY    	 0x21
 //core_4.1 end
@@ -329,7 +327,6 @@
 #define HCI_CMD_LE_SET_DEFAULT_PHY              					 0x31//LE Set Default PHY Command - [5] 7.8.48
 #define HCI_CMD_LE_SET_PHY                      					 0x32//LE Set PHY Command - [5] 7.8.49
 #define HCI_CMD_LE_ENHANCED_RECEIVER_TEST                			 0x33//LE Enhanced Receiver Test Command - [5] 7.8.50
-#define	HCI_CMD_LE_RECEIVER_TEST_V2									 HCI_CMD_LE_ENHANCED_RECEIVER_TEST //LE Receiver Test command - [5] 7.8.28
 #define HCI_CMD_LE_ENHANCED_TRANSMITTER_TEST               			 0x34//LE Enhanced Transmitter Test Command - [5] 7.8.51
 #define HCI_CMD_LE_SET_ADVERTISING_SET_RANDOM_ADDRESS         		 0x35//LE Set Advertising Set Random Address Command - [5] 7.8.52
 #define HCI_CMD_LE_SET_EXTENDED_ADVERTISING_PARAMETERS            	 0x36//LE Set Extended Advertising Parameters Command - [5] 7.8.53

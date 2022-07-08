@@ -66,9 +66,9 @@ _attribute_data_retention_	u32 flash_sector_calibration = CFG_ADR_CALIBRATION_1M
  */
 _attribute_no_inline_ void blc_readFlashSize_autoConfigCustomFlashSector(void)
 {
-	u8 temp_buf[4];
-	flash_read_mid(temp_buf);
-	u8	flash_cap = temp_buf[2];
+	u32 temp_buf;
+	temp_buf = flash_read_mid();
+	u8	flash_cap = (u8)(temp_buf>>16);
 
 	if(flash_cap == FLASH_SIZE_512K){
 		flash_sector_mac_address = CFG_ADR_MAC_512K_FLASH;
@@ -81,6 +81,10 @@ _attribute_no_inline_ void blc_readFlashSize_autoConfigCustomFlashSector(void)
 	else if(flash_cap == FLASH_SIZE_2M){
 		flash_sector_mac_address = CFG_ADR_MAC_2M_FLASH;
 		flash_sector_calibration = CFG_ADR_CALIBRATION_2M_FLASH;
+	}
+	else if(flash_cap == FLASH_SIZE_4M){
+		flash_sector_mac_address = CFG_ADR_MAC_4M_FLASH;
+		flash_sector_calibration = CFG_ADR_CALIBRATION_4M_FLASH;
 	}
 	else{
 		//This SDK do not support flash size other than 1M/2M
@@ -96,13 +100,13 @@ _attribute_no_inline_ void blc_readFlashSize_autoConfigCustomFlashSector(void)
 
 
 /*
- *Kite: 	VVWWXX38C1A4YYZZ
- *Vulture:  VVWWXXD119C4YYZZ
- *Eagle:  	VVWWXX
+ *B85: 	VVWWXX38C1A4YYZZ
+ *B87:  VVWWXXD119C4YYZZ
+ *B91:  	VVWWXX
  * public_mac:
- * 				Kite 	: VVWWXX 38C1A4
- * 				Vulture : VVWWXX D119C4
- * 				Eagle	: VVWWXX
+ * 				B85 : VVWWXX 38C1A4
+ * 				B87 : VVWWXX D119C4
+ * 				B91	: VVWWXX
  * random_static_mac: VVWWXXYYZZ C0
  */
 /**

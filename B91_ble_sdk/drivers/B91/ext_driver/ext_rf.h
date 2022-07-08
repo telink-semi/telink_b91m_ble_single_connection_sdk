@@ -55,7 +55,6 @@
 #define DMA_RFRX_OFFSET_RFLEN				5   // 826x: 13
 #define DMA_RFRX_OFFSET_DATA				6	// 826x: 14
 
-#define RF_TX_PAKET_DMA_LEN(rf_data_len)		(((rf_data_len)+3)/4)|(((rf_data_len) % 4)<<22)
 #define DMA_RFRX_OFFSET_CRC24(p)			(p[DMA_RFRX_OFFSET_RFLEN]+6)  //data len:3
 #define DMA_RFRX_OFFSET_TIME_STAMP(p)		(p[DMA_RFRX_OFFSET_RFLEN]+9)  //data len:4
 #define DMA_RFRX_OFFSET_FREQ_OFFSET(p)		(p[DMA_RFRX_OFFSET_RFLEN]+13) //data len:2
@@ -64,6 +63,8 @@
 #define	RF_BLE_RF_PAYLOAD_LENGTH_OK(p)					(p[5] <= reg_rf_rxtmaxlen)
 #define	RF_BLE_RF_PACKET_CRC_OK(p)						((p[p[5]+5+11] & 0x01) == 0x0)
 #define	RF_BLE_PACKET_VALIDITY_CHECK(p)					(RF_BLE_RF_PAYLOAD_LENGTH_OK(p) && RF_BLE_RF_PACKET_CRC_OK(p))
+
+#define			STOP_RF_STATE_MACHINE						( REG_ADDR8(0x80140a00) = 0x80 )
 
 typedef enum {
 	 RF_ACC_CODE_TRIGGER_AUTO   =    BIT(0),	/**< auto trigger */
@@ -104,6 +105,8 @@ static inline void rf_reset_baseband(void)
 	REG_ADDR8(0x801404e3) = BIT(0);			//release reset signal
 }
 
+#define reset_baseband			rf_reset_baseband
+
 /**
  * @brief   This function serves to set RF access code value.
  * @param[in]   ac - the address value.
@@ -113,7 +116,6 @@ static inline void rf_set_ble_access_code_value (unsigned int ac)
 {
 	write_reg32 (0x80140808, ac);
 }
-
 /**
  * @brief   This function serves to set RF access code.
  * @param[in]   p - the address to access.
@@ -176,7 +178,34 @@ static inline void rf_ble_tx_done ()
 	write_reg8  (0x80140a02, 0x45);
 }
 
-#define	rf_set_ble_channel	rf_set_ble_chn
+/**
+ * @brief   This function serves to set RX first timeout value.
+ * @param[in]   tm - timeout, unit: uS.
+ * @return  none.
+ */
+static inline void rf_set_1st_rx_timeout(unsigned int tm)
+{
+	reg_rf_ll_rx_fst_timeout = tm;
+}
+
+
+/**
+ * @brief   This function serves to set RX timeout value.
+ * @param[in]   tm - timeout, unit: uS, range: 0 ~ 0xfff
+ * @return  none.
+ */
+static inline void rf_ble_set_rx_timeout(u16 tm)
+{
+	reg_rf_rx_timeout = tm;
+}
+
+
+static inline void rf_set_dma_tx_addr(unsigned int src_addr)//Todo:need check by sunwei
+{
+	reg_dma_src_addr(DMA0)=convert_ram_addr_cpu2bus(src_addr);
+}
+
+
 
 
 /**
@@ -186,6 +215,70 @@ static inline void rf_ble_tx_done ()
  */
 void rf_switchPhyTestMode(rf_mode_e mode);
 
+typedef enum{
+	FSM_BTX 	= 0x81,
+	FSM_BRX 	= 0x82,
+	FSM_STX 	= 0x85,
+	FSM_SRX 	= 0x86,
+	FSM_TX2RX	= 0x87,
+	FSM_RX2TX	= 0x88,
+}fsm_mode_e;
+
+
+/**
+ * @brief     	This function serves to RF trigger RF state machine.
+ * @param[in] 	mode  - FSM mode.
+ * @param[in] 	tx_addr  - DMA TX buffer, if not TX, must be "NULL"
+ * @param[in] 	tick  - FAM Trigger tick.
+ * @return	   	none.
+ */
+void rf_start_fsm(fsm_mode_e mode, void* tx_addr, unsigned int tick);
+
+
+
+
+
+/**
+ * @brief    This function serves to enable zb_rt interrupt source.
+ * @return  none
+ */
+static inline void zb_rt_irq_enable(void)
+{
+	plic_interrupt_enable(IRQ15_ZB_RT);
+}
+
+
+void rf_set_ble_channel (signed char chn_num);
+
+
+
+#if RF_RX_SHORT_MODE_EN//open rx dly
+	//TX settle time
+	#define			LL_ADV_TX_SETTLE								84
+	#define 		LL_SCAN_TX_SETTLE								63
+	#define 		LL_INIT_TX_SETTLE								63
+	#define 		LL_SCANRSP_TX_SETTLE							78  //84-6=78
+	/* Tdma + else settle + tx_settle = 150us .
+	but Tdma is a variable value , it turns shorter with cclk getting faster
+	so when cclk=64m/96m, 150us turns to 148.5us around, lead to packet loss.
+	need to add tx settle time to ensure 150us . */
+	#define 		LL_SLAVE_TX_SETTLE								86
+	#define 		LL_SLAVE_TX_SETTLE_HIGH_FREQ					87
+	#define 		LL_MASTER_TX_SETTLE								87
+
+	#define			LL_ADV_TX_STL_2M								115
+	#define			LL_SCANRSP_TX_STL_2M							109 //115-6=109
+	#define			LL_ADV_TX_STL_CODED								124
+	#define			LL_SCANRSP_TX_STL_CODED							118 //124-6=118
+
+	#define 		LL_SLAVE_TX_STL_2M								117
+	#define 		LL_SLAVE_TX_STL_CODED							125
+
+	#define			LL_MASTER_TX_STL_2M								117
+	#define			LL_MASTER_TX_STL_CODED							125
+#else// close rx dly
+	#error "add code here, TX settle time"
+#endif
 
 
 #endif /* DRIVERS_B91_DRIVER_EXT_EXT_RF_H_ */

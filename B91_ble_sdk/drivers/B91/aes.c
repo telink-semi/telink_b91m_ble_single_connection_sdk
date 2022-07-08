@@ -9,38 +9,17 @@
  * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
  *
- *          Redistribution and use in source and binary forms, with or without
- *          modification, are permitted provided that the following conditions are met:
+ *          Licensed under the Apache License, Version 2.0 (the "License");
+ *          you may not use this file except in compliance with the License.
+ *          You may obtain a copy of the License at
  *
- *              1. Redistributions of source code must retain the above copyright
- *              notice, this list of conditions and the following disclaimer.
+ *              http://www.apache.org/licenses/LICENSE-2.0
  *
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions
- *              in binary form must reproduce the above copyright notice, this list of
- *              conditions and the following disclaimer in the documentation and/or other
- *              materials provided with the distribution.
- *
- *              3. Neither the name of TELINK, nor the names of its contributors may be
- *              used to endorse or promote products derived from this software without
- *              specific prior written permission.
- *
- *              4. This software, with or without modification, must only be used with a
- *              TELINK integrated circuit. All other usages are subject to written permission
- *              from TELINK and different commercial license may apply.
- *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
- *              relating to such deletion(s), modification(s) or alteration(s).
- *
- *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
- *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *          Unless required by applicable law or agreed to in writing, software
+ *          distributed under the License is distributed on an "AS IS" BASIS,
+ *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *          See the License for the specific language governing permissions and
+ *          limitations under the License.
  *
  *******************************************************************************************************/
 #include "aes.h"
@@ -66,6 +45,7 @@
  *********************************************************************************************************************/
 _attribute_aes_data_sec_ unsigned int aes_data_buff[8];
 unsigned int aes_base_addr = 0xc0000000;
+static unsigned int embase_offset = 0;    //the embase address offset with IRAM head address.
 /**********************************************************************************************************************
  *                                              local variable                                                     *
  *********************************************************************************************************************/
@@ -99,7 +79,7 @@ void aes_set_key_data(unsigned char *key, unsigned char* data)
 		aes_data_buff[i] = temp;
 	}
 
-	reg_aes_ptr = (unsigned int)aes_data_buff;
+	reg_aes_ptr = (unsigned int)aes_data_buff - embase_offset;  //the aes data ptr is base on embase address.
 }
 
 /**
@@ -129,7 +109,7 @@ int aes_encrypt(unsigned char *key, unsigned char* plaintext, unsigned char *res
 	//set the key
 	aes_set_key_data(key, plaintext);
 
-    aes_set_mode(AES_ENCRYPT_MODE);      //cipher mode
+	aes_set_mode(AES_ENCRYPT_MODE);      //cipher mode
 
     aes_wait_done();
 
@@ -147,6 +127,7 @@ int aes_encrypt(unsigned char *key, unsigned char* plaintext, unsigned char *res
  */
 int aes_decrypt(unsigned char *key, unsigned char* decrypttext, unsigned char *result)
 {
+
     //set the key
 	aes_set_key_data(key, decrypttext);
 
@@ -163,11 +144,13 @@ int aes_decrypt(unsigned char *key, unsigned char* decrypttext, unsigned char *r
   *********************************************************************************************************************/
 /**
  * @brief     This function refer to set the embase addr.
- * @param[in] addr - the base addr of CEVA data.
+ * @param[in] addr - the base addr of CEVA data.the [addr,addr+64k) need to cover the head address of the session of aes_data,
+ * 						Maybe you should to modify the link file to change the aes_data session address.
  * @return    none.
  */
 void aes_set_em_base_addr(unsigned int addr){
 	aes_base_addr = addr;   //set the embase addr
+	embase_offset = convert_ram_addr_bus2cpu(addr);
 }
 
 /**

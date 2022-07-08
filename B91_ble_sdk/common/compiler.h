@@ -69,9 +69,7 @@
 #define _attribute_no_inline_   		__attribute__((noinline))
 #define _inline_ 						inline
 #define _attribute_data_dlm_   			_attribute_session_(".dlm_data")//dlm:Data Local Memory
-#ifndef	BLC_PM_EN
-#define	BLC_PM_EN							1
-#endif
+
 
 #ifndef	BLC_PM_DEEP_RETENTION_MODE_EN
 #define	BLC_PM_DEEP_RETENTION_MODE_EN		1
@@ -79,9 +77,13 @@
 
 
 #if (BLC_PM_DEEP_RETENTION_MODE_EN)
-	#define _attribute_data_retention_   	_attribute_session_(".retention_data")
+	#define _attribute_data_retention_sec_   		__attribute__((section(".retention_data")))
+	#define _attribute_data_retention_   			__attribute__((section(".retention_data")))
+	#define _attribute_ble_data_retention_   		__attribute__((section(".retention_data")))
 #else
+    #define _attribute_data_retention_sec_
     #define _attribute_data_retention_
+    #define _attribute_ble_data_retention_
 #endif
 
 #define _attribute_ram_code_      __attribute__((section(".ram_code"))) __attribute__((noinline))

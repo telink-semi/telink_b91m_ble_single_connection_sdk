@@ -48,7 +48,10 @@
 #include "stack/ble/ble.h"
 #include "app.h"
 
-
+#if(FREERTOS_ENABLE)
+#include <FreeRTOS.h>
+#include <task.h>
+#endif
 /**
  * @brief		BLE SDK RF interrupt handler.
  * @param[in]	none
@@ -81,9 +84,60 @@ void stimer_irq_handler(void)
 	DBG_CHN15_LOW;
 }
 
+#if EXCEPT_HANDLE_DEBUG_ENABLE
+volatile u32 dbg_except_handler = 0;
+
+volatile u32 g_mcause;
+volatile u32 g_mepc;
+volatile u32 g_mtval;
+volatile u32 g_mdcause;
+volatile u32 g_mscratch;
+/**
+ * @brief		BLE SDK System except handler.
+ * @param[in]	none
+ * @return      none
+ */
+_attribute_ram_code_
+void except_handler()
+{
+	gpio_write(GPIO_LED_WHITE, LED_ON_LEVAL);
+
+	g_mcause = read_csr(NDS_MCAUSE);
+	g_mepc = read_csr(NDS_MEPC);
+	g_mtval = read_csr(NDS_MTVAL);
+	g_mdcause = read_csr(NDS_MDCAUSE);
+	g_mscratch = read_csr(NDS_MSCRATCH);
+	#if 0		//Enable this if you need to read values of the exception by BDT.
+		while(1){
+			printf("enter except_handler.\r\n");
+
+			for(volatile unsigned int i = 0; i < 0xffff; i++)
+			{
+				asm("nop");
+				dbg_except_handler++;
+			}
+		}
+	#else		//If the exception may occur and the system need to be rebooted , enable this.
+		start_reboot(); //reboot the MCU
+	#endif
+}
+#endif
 
 
-
+#if (FREERTOS_ENABLE)
+static void led_task(void *pvParameters){
+	reg_gpio_pb_oen &= ~ GPIO_PB7;
+	while(1){
+		reg_gpio_pb_out |= GPIO_PB7;
+		printf("LED ON;\r\n");
+		vTaskDelay(1000);
+		printf("LED OFF;\r\n");
+		reg_gpio_pb_out &= ~GPIO_PB7;
+		vTaskDelay(1000);
+	}
+}
+void proto_task( void *pvParameters );
+#endif
 
 /**
  * @brief		This is main function
@@ -110,7 +164,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 
 	if(!deepRetWakeUp){//read flash size
 		#if (BATT_CHECK_ENABLE)
-			user_init_battery_power_check();
+			user_battery_power_check();
 		#endif
 
 		blc_readFlashSize_autoConfigCustomFlashSector();
@@ -132,14 +186,37 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 	}
 	else{ //MCU power_on or wake_up from deepSleep mode
 		user_init_normal();
+#if (FREERTOS_ENABLE)
+		extern void blc_ll_set_freertos_en(u8 en);
+		blc_ll_set_freertos_en(1);
+#endif
 	}
 
+#if (FREERTOS_ENABLE)
+
+	extern void vPortRestoreTask();
+	if( deepRetWakeUp ){
+		printf("enter restor work.\r\n");
+		vPortRestoreTask();
+
+	}else{
+		xTaskCreate( led_task, "tLed", configMINIMAL_STACK_SIZE, (void*)0, (tskIDLE_PRIORITY+1), 0 );
+		xTaskCreate( proto_task, "tProto", 2*configMINIMAL_STACK_SIZE, (void*)0, (tskIDLE_PRIORITY+1), 0 );
+	//	xTaskCreate( ui_task, "tUI", configMINIMAL_STACK_SIZE, (void*)0, tskIDLE_PRIORITY + 1, 0 );
+		vTaskStartScheduler();
+	}
+#else
 	irq_enable();
 
 	while (1) {
 		main_loop ();
 	}
 	return 0;
+#endif
 }
 
-
+#if (FREERTOS_ENABLE)
+//  !!! should notify those tasks that ulTaskNotifyTake long time and should be wakeup every time PM wakeup
+void vPortWakeupNotify(){
+}
+#endif

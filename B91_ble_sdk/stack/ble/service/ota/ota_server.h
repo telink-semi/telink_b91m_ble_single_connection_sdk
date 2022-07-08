@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -72,24 +72,22 @@ typedef void (*ota_resIndicateCb_t)(int result);
 
 /**
  * @brief      this function is used for user to initialize OTA server module.
- * 			   //attention: this API must called before any other OTA relative settings.
  * @param	   none
  * @return     none
  */
-void blc_ota_initOtaServer_module(void);
-
-
+void		blc_ota_initOtaServer_module(void);
 
 
 
 /**
  * @brief      This function is used to set OTA new firmware storage address on Flash.
- * @param[in]  new_fw_addr - new firmware storage address, can only choose from multiple boot address
+ * 			   note: this function must be called before "sys_init" or "cpu_wakeup_init".
+ * @param[in]  firmware_size_k - firmware maximum size unit: K Byte; must be 4K aligned
+ * @param[in]  boot_addr - new firmware storage address, can only choose from multiple boot address
  * 							 supported by MCU
  * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
-ble_sts_t blc_ota_setNewFirmwwareStorageAddress(multi_boot_addr_e new_fw_addr);
-
+ble_sts_t	blc_ota_setFirmwareSizeAndBootAddress(int firmware_size_k, multi_boot_addr_e boot_addr);
 
 
 
@@ -99,14 +97,7 @@ ble_sts_t blc_ota_setNewFirmwwareStorageAddress(multi_boot_addr_e new_fw_addr);
  * @param[in]  version_number - firmware version number
  * @return     none
  */
-void blc_ota_setFirmwareVersionNumber(u16 version_number);
-
-
-
-
-
-
-
+void		blc_ota_setFirmwareVersionNumber(u16 version_number);
 
 
 
@@ -117,10 +108,7 @@ void blc_ota_setFirmwareVersionNumber(u16 version_number);
  * @param[in]  cb - callback function
  * @return     none
  */
-void blc_ota_registerOtaStartCmdCb(ota_startCb_t cb);
-
-
-
+void		blc_ota_registerOtaStartCmdCb(ota_startCb_t cb);
 
 
 
@@ -130,7 +118,7 @@ void blc_ota_registerOtaStartCmdCb(ota_startCb_t cb);
  * @param[in]  cb - callback function
  * @return     none
  */
-void blc_ota_registerOtaFirmwareVersionReqCb(ota_versionCb_t cb);
+void		blc_ota_registerOtaFirmwareVersionReqCb(ota_versionCb_t cb);
 
 
 
@@ -141,7 +129,7 @@ void blc_ota_registerOtaFirmwareVersionReqCb(ota_versionCb_t cb);
  * @param[in]  cb - callback function
  * @return     none
  */
-void blc_ota_registerOtaResultIndicationCb(ota_resIndicateCb_t cb);
+void		blc_ota_registerOtaResultIndicationCb(ota_resIndicateCb_t cb);
 
 
 
@@ -149,10 +137,10 @@ void blc_ota_registerOtaResultIndicationCb(ota_resIndicateCb_t cb);
 /**
  * @brief      This function is used to set OTA whole process timeout value
  * 			   if not set, default value is 30 S
- * @param[in]  timeout_second - timeout value, unit: S, should in range of 4 ~ 250
+ * @param[in]  timeout_second - timeout value, unit: S, should in range of 5 ~ 1000
  * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
-ble_sts_t blc_ota_setOtaProcessTimeout(int timeout_second);
+ble_sts_t	blc_ota_setOtaProcessTimeout(int timeout_second);
 
 
 
@@ -162,22 +150,34 @@ ble_sts_t blc_ota_setOtaProcessTimeout(int timeout_second);
  * @param[in]  timeout_ms - timeout value, unit: mS, should in range of 1 ~ 20
  * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
-ble_sts_t blc_ota_setOtaDataPacketTimeout(int timeout_second);
+ble_sts_t	blc_ota_setOtaDataPacketTimeout(int timeout_second);
 
 
+/**
+ * @brief      This function is used to set resolution of OTA schedule indication by PDU number
+ * 			   This API must be called when initialization, after "blc_ota_initOtaServer_module"
+ * @param[in]  pdu_num -
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
+ble_sts_t	blc_ota_setOtaScheduleIndication_by_pduNum(int pdu_num);
 
 
-extern int otaWrite(u16 connHandle, void * p);
+/**
+ * @brief      This function is used to calculate OTA notify data ATT handle by OTA write data ATT handle
+ * @param[in]  attHandle_offset - offset value from OTA write handle to OTA notify handle.
+ * 			   If not set, default value is 0 which means OTA write and notify in a same ATT handle.
+ * @return     none
+ */
+void		blc_ota_setAttHandleOffset(s8 attHandle_offset);
 
 
-
-
-
-void bls_ota_clearNewFwDataArea(void);
-
-
-
-
+/**
+ * @brief      This function is used to write OTA data to flash
+ * @param[in]  connHandle - ACL connection handle
+ * @param[in]  p - GATT data buffer pointer of write_req or write_cmd
+ * @return     0
+ */
+int			otaWrite(u16 connHandle, void * p);
 
 
 

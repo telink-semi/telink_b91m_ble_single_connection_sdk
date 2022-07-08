@@ -48,8 +48,8 @@
 #define ECC_LL_H_
 
 
-const u8 blt_ecc_dbg_priv_key[32];
-const u8 blt_ecc_dbg_pub_key[64];
+extern const u8 blt_ecc_dbg_priv_key[32];
+extern const u8 blt_ecc_dbg_pub_key[64];
 
 
 /**

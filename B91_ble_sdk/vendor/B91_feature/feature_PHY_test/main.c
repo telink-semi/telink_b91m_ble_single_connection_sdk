@@ -104,15 +104,8 @@ void uart0_irq_handler(void)
     if(uart_get_irq_status(UART0,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can noly used in A1-SOC.
     {
     	/************************get the length of receive data****************************/
-    	if(((reg_uart_status1(UART0)&FLD_UART_RBCNT)%4)==0)
-    	{
-			rev_data_len=4*(0xffffff-reg_dma_size(DMA2));
-    	}
-    	else
-    	{
-    		rev_data_len=4*(0xffffff-reg_dma_size(DMA2)-1)+(reg_uart_status1(UART0)&FLD_UART_RBCNT)%4;
-    	}
-    	/************************cll rx_irq****************************/
+		rev_data_len = uart_get_dma_rev_data_len(UART0,DMA2);
+    	/************************clr rx_irq****************************/
     	uart_clr_irq_status(UART0,UART_CLR_RX);
 		if(rev_data_len!=0)
 		{

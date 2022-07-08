@@ -202,7 +202,7 @@ static const u8 my_OtaCharVal[19] = {
  */
 int module_onReceiveData(u16 connHandle, rf_packet_att_write_t *p)
 {
-	u8 len = p->l2capLen - 3;
+	u16 len = p->l2capLen - 3;
 	if(len > 0)
 	{
 

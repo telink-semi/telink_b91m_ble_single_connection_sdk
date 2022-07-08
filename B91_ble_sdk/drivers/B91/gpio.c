@@ -9,38 +9,17 @@
  * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
  *
- *          Redistribution and use in source and binary forms, with or without
- *          modification, are permitted provided that the following conditions are met:
+ *          Licensed under the Apache License, Version 2.0 (the "License");
+ *          you may not use this file except in compliance with the License.
+ *          You may obtain a copy of the License at
  *
- *              1. Redistributions of source code must retain the above copyright
- *              notice, this list of conditions and the following disclaimer.
+ *              http://www.apache.org/licenses/LICENSE-2.0
  *
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions
- *              in binary form must reproduce the above copyright notice, this list of
- *              conditions and the following disclaimer in the documentation and/or other
- *              materials provided with the distribution.
- *
- *              3. Neither the name of TELINK, nor the names of its contributors may be
- *              used to endorse or promote products derived from this software without
- *              specific prior written permission.
- *
- *              4. This software, with or without modification, must only be used with a
- *              TELINK integrated circuit. All other usages are subject to written permission
- *              from TELINK and different commercial license may apply.
- *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
- *              relating to such deletion(s), modification(s) or alteration(s).
- *
- *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
- *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *          Unless required by applicable law or agreed to in writing, software
+ *          distributed under the License is distributed on an "AS IS" BASIS,
+ *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *          See the License for the specific language governing permissions and
+ *          limitations under the License.
  *
  *******************************************************************************************************/
 #include "gpio.h"
@@ -187,7 +166,7 @@ void gpio_set_input(gpio_pin_e pin, unsigned char value)
 
 /**
  * @brief      This function servers to set the specified GPIO as high resistor.
- * @param[in]  pin  - select the specified GPIO
+ * @param[in]  pin  - select the specified GPIO, GPIOF group is not included in GPIO_ALL
  * @return     none.
  */
 void gpio_shutdown(gpio_pin_e pin)
@@ -197,30 +176,42 @@ void gpio_shutdown(gpio_pin_e pin)
 	switch(group)
 	{
 		case GPIO_GROUPA:
+			reg_gpio_pa_out &= (~bit);
 			reg_gpio_pa_oen |= bit;//disable output
-			reg_gpio_pa_out &= (~bit);//set low level
+ 			reg_gpio_pa_gpio |= bit;
 			reg_gpio_pa_ie &= (~bit);//disable input
 			break;
 		case GPIO_GROUPB:
-			reg_gpio_pb_oen |= bit;
 			reg_gpio_pb_out &= (~bit);
+			reg_gpio_pb_oen |= bit;
+			reg_gpio_pb_gpio |= bit;
 			reg_gpio_pb_ie &= (~bit);
 			break;
 		case GPIO_GROUPC:
-			reg_gpio_pc_oen |= bit;
 			reg_gpio_pc_out &= (~bit);
+			reg_gpio_pc_oen |= bit;
+			reg_gpio_pc_gpio |= bit;
 			analog_write_reg8(areg_gpio_pc_ie, analog_read_reg8(areg_gpio_pc_ie) & (~bit));
 			break;
 		case GPIO_GROUPD:
-			reg_gpio_pd_oen |= bit;
 			reg_gpio_pd_out &= (~bit);
+			reg_gpio_pd_oen |= bit;
+			reg_gpio_pd_gpio |= bit;
 			analog_write_reg8(areg_gpio_pd_ie, analog_read_reg8(areg_gpio_pd_ie) & (~bit));
 			break;
 
 		case GPIO_GROUPE:
-			reg_gpio_pe_oen |= bit;
 			reg_gpio_pe_out &= (~bit);
+			reg_gpio_pe_oen |= bit;
+			reg_gpio_pe_gpio |= bit;
 			reg_gpio_pe_ie &= (~bit);
+			break;
+
+		case GPIO_GROUPF:
+			reg_gpio_pf_out &= (~bit);
+			reg_gpio_pf_oen |= bit;
+			reg_gpio_pf_gpio |= bit;
+			reg_gpio_pf_ie &= (~bit);
 			break;
 
 		case GPIO_ALL:
@@ -232,19 +223,19 @@ void gpio_shutdown(gpio_pin_e pin)
 			reg_gpio_pd_gpio = 0xff;
 			reg_gpio_pe_gpio = 0xff;
 
-			//output disable
-			reg_gpio_pa_oen = 0xff;
-			reg_gpio_pb_oen = 0xff;
-			reg_gpio_pc_oen = 0xff;
-			reg_gpio_pd_oen = 0xff;
-			reg_gpio_pe_oen = 0xff;
-
 			//set low level
 			reg_gpio_pa_out = 0x00;
 			reg_gpio_pb_out = 0x00;
 			reg_gpio_pc_out = 0x00;
 			reg_gpio_pd_out = 0x00;
 			reg_gpio_pe_out = 0x00;
+
+			//output disable
+			reg_gpio_pa_oen = 0xff;
+			reg_gpio_pb_oen = 0xff;
+			reg_gpio_pc_oen = 0xff;
+			reg_gpio_pd_oen = 0xff;
+			reg_gpio_pe_oen = 0xff;
 
 			//disable input
 			reg_gpio_pa_ie = 0x80;					//SWS
@@ -270,6 +261,11 @@ void gpio_shutdown(gpio_pin_e pin)
  */
 void gpio_set_irq(gpio_pin_e pin, gpio_irq_trigger_type_e trigger_type)
 {
+	/*
+		When selecting pull-up resistance and rising edge to trigger gpio interrupt, gpio_irq_en should be placed before setting gpio_set_irq,
+		otherwise an interrupt will be triggered by mistake.
+	 */
+	gpio_irq_en(pin);
 	switch(trigger_type)
 	{
 	case INTR_RISING_EDGE:
@@ -291,8 +287,7 @@ void gpio_set_irq(gpio_pin_e pin, gpio_irq_trigger_type_e trigger_type)
 	}
 	reg_gpio_irq_ctrl |= FLD_GPIO_CORE_INTERRUPT_EN;
 	reg_gpio_irq_clr = FLD_GPIO_IRQ_CLR;//must clear cause to unexpected interrupt.
-	BM_SET(reg_gpio_irq_risc_mask, FLD_GPIO_IRQ_MASK_GPIO);
-
+	gpio_set_irq_mask(GPIO_IRQ_MASK_GPIO);
 }
 
 /**
@@ -303,7 +298,11 @@ void gpio_set_irq(gpio_pin_e pin, gpio_irq_trigger_type_e trigger_type)
  */
 void gpio_set_gpio2risc0_irq(gpio_pin_e pin, gpio_irq_trigger_type_e trigger_type)
 {
-
+	/*
+	   When selecting pull-up resistance and rising edge to trigger gpio interrupt, gpio_gpio2risc0_irq_en should be placed before setting gpio_set_gpio2risc0_irq,
+	   otherwise an interrupt will be triggered by mistake.
+	*/
+	gpio_gpio2risc0_irq_en(pin);
 	switch(trigger_type)
 	{
 	case INTR_RISING_EDGE:
@@ -324,7 +323,7 @@ void gpio_set_gpio2risc0_irq(gpio_pin_e pin, gpio_irq_trigger_type_e trigger_typ
 	   break;
 	}
 	reg_gpio_irq_clr = FLD_GPIO_IRQ_GPIO2RISC0_CLR;//must clear cause to unexpected interrupt.
-	BM_SET(reg_gpio_irq_risc_mask, FLD_GPIO_IRQ_MASK_GPIO2RISC0);
+	gpio_set_irq_mask(GPIO_IRQ_MASK_GPIO2RISC0);
 
 }
 
@@ -336,6 +335,11 @@ void gpio_set_gpio2risc0_irq(gpio_pin_e pin, gpio_irq_trigger_type_e trigger_typ
  */
 void gpio_set_gpio2risc1_irq(gpio_pin_e pin, gpio_irq_trigger_type_e trigger_type)
 {
+	/*
+	   When selecting pull-up resistance and rising edge to trigger gpio interrupt, gpio_gpio2risc1_irq_en should be placed before setting gpio_set_gpio2risc1_irq,
+	   otherwise an interrupt will be triggered by mistake.
+	*/
+	gpio_gpio2risc1_irq_en(pin);
 	switch(trigger_type)
 	{
 	case INTR_RISING_EDGE:
@@ -356,7 +360,7 @@ void gpio_set_gpio2risc1_irq(gpio_pin_e pin, gpio_irq_trigger_type_e trigger_typ
 	   break;
 	}
 	reg_gpio_irq_clr =FLD_GPIO_IRQ_GPIO2RISC1_CLR;//must clear cause to unexpected interrupt.
-	BM_SET(reg_gpio_irq_risc_mask, FLD_GPIO_IRQ_MASK_GPIO2RISC1);
+	gpio_set_irq_mask(GPIO_IRQ_MASK_GPIO2RISC1);
 
 }
 

@@ -9,38 +9,17 @@
  * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
  *
- *          Redistribution and use in source and binary forms, with or without
- *          modification, are permitted provided that the following conditions are met:
+ *          Licensed under the Apache License, Version 2.0 (the "License");
+ *          you may not use this file except in compliance with the License.
+ *          You may obtain a copy of the License at
  *
- *              1. Redistributions of source code must retain the above copyright
- *              notice, this list of conditions and the following disclaimer.
+ *              http://www.apache.org/licenses/LICENSE-2.0
  *
- *              2. Unless for usage inside a TELINK integrated circuit, redistributions
- *              in binary form must reproduce the above copyright notice, this list of
- *              conditions and the following disclaimer in the documentation and/or other
- *              materials provided with the distribution.
- *
- *              3. Neither the name of TELINK, nor the names of its contributors may be
- *              used to endorse or promote products derived from this software without
- *              specific prior written permission.
- *
- *              4. This software, with or without modification, must only be used with a
- *              TELINK integrated circuit. All other usages are subject to written permission
- *              from TELINK and different commercial license may apply.
- *
- *              5. Licensee shall be solely responsible for any claim to the extent arising out of or
- *              relating to such deletion(s), modification(s) or alteration(s).
- *
- *          THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- *          ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- *          WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- *          DISCLAIMED. IN NO EVENT SHALL COPYRIGHT HOLDER BE LIABLE FOR ANY
- *          DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- *          (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- *          LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- *          ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- *          (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *          Unless required by applicable law or agreed to in writing, software
+ *          distributed under the License is distributed on an "AS IS" BASIS,
+ *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *          See the License for the specific language governing permissions and
+ *          limitations under the License.
  *
  *******************************************************************************************************/
 /**	@page AUDIO
@@ -56,7 +35,7 @@
 #ifndef audio_H
 #define audio_H
 
-#include "reg_include/register_b91.h"
+#include "reg_include/register.h"
 #include "i2c.h"
 #include "pwm.h"
 #include "compiler.h"
@@ -183,20 +162,43 @@ typedef enum{
 	I2S_DATA_INVERT_EN ,
 }audio_data_invert_e;
 
+typedef enum{
+	I2S_LR_CLK_INVERT_DIS,
+	I2S_LR_CLK_INVERT_EN,
+}audio_i2s_lr_clk_invert_e;
+
+typedef enum
+{
+	DAC_OUTPUT_L_R_CHN,
+	DAC_OUTPUT_L_CHN,
+}audio_output_chn_e;
+
+typedef enum
+{
+	SINGLE_ENDED_INPUT,
+	DIFF_ENDED_INPUT,
+}audio_input_mode_select_e;
+
 typedef struct {
 	unsigned char  audio_in_mode;
 	unsigned char  audio_out_mode;
 	unsigned char 	i2s_data_select;
 	unsigned char  codec_data_select;
 	unsigned char  i2s_codec_m_s_mode;
-	unsigned char  i2s_data_invert_select;
 	unsigned char  in_digital_gain;
 	unsigned char  in_analog_gain;
 	unsigned char  out_digital_gain;
 	unsigned char  out_analog_gain;
 	unsigned char  mic_input_mode_select;
-	unsigned char  adc_wnf_mode_select;
-}aduio_i2s_codec_config_t;
+	unsigned char  dac_output_chn_select;
+}audio_i2s_codec_config_t;
+
+
+typedef struct {
+	unsigned char  i2s_lr_clk_invert_select;
+	unsigned char  i2s_data_invert_select;
+}audio_i2s_invert_config_t;
+
 
 
 typedef enum{
@@ -221,6 +223,7 @@ typedef enum{
 	AUDIO_32K=6,
 	AUDIO_44EP1K,
 	AUDIO_48K,
+	AUDIO_192K=12,
 	AUDIO_ADC_16K_DAC_48K,
 }audio_sample_rate_e;
 
@@ -248,6 +251,7 @@ typedef enum{
 	AUDIO_RATE_GT_L1,
 	AUDIO_RATE_LT_L0,
 	AUDIO_RATE_LT_L1,
+	AUDIO_MATCH_SIZE,
 }audio_rate_match_e;
 
 
@@ -411,7 +415,13 @@ typedef enum
 	CODEC_2P8V,
 }codec_volt_supply_e;
 
-
+typedef struct {
+	unsigned char    i2s_clk_step;
+	unsigned char    i2s_clk_mode;
+	unsigned char 	 i2s_bclk_div;
+	unsigned short   i2s_lrclk_adc_div;
+	unsigned short   i2s_lrclk_dac_div;
+}audio_i2s_clk_config_t;
 /**
  * 	@brief      This function serves to set the clock of i2s
  * 	@param[in]  step - the dividing factor of step.
@@ -531,7 +541,8 @@ static inline void audio_set_rx_buff_len(unsigned short len)
  */
 static inline void audio_write_codec_reg(unsigned char addr,unsigned char  data)
 {
-	write_reg8(REG_AUDIO_AHB_BASE+((0x80+addr)<<2), data);
+
+	reg_audio_codec_reg(addr)=data;
 
 }
 
@@ -542,7 +553,7 @@ static inline void audio_write_codec_reg(unsigned char addr,unsigned char  data)
  */
 static inline unsigned char audio_read_codec_reg(unsigned char addr)
 {
-	return read_reg8(REG_AUDIO_AHB_BASE+((0x80+addr)<<2));
+	return reg_audio_codec_reg(addr);
 
 }
 
@@ -635,6 +646,33 @@ static inline void audio_data_fifo1_path_sel ( audio_mux_ain_e ain1_sel, audio_m
 }
 
 
+/**
+ *  @brief      This function serves to write codec indirect register .
+ *  @param[in]  reg -  the address of codec  direct register  corresponding indirect access
+ *  @param[in]  addr - the indirect access register address
+ *  @param[in]  data - the data of indirect access register
+ *  @return     none
+ */
+static inline void audio_write_codec_ind_reg(unsigned char reg ,unsigned char addr,unsigned char data )
+{
+	reg_audio_codec_reg(reg) = addr&0x3f;
+	reg_audio_codec_reg(reg+1) = data;
+	reg_audio_codec_reg(reg) = (addr&0x3f)|0x40;
+}
+
+
+/**
+ *  @brief      This function serves to read codec indirect register.
+ *  @param[in]  reg -  the address of codec  direct register  corresponding indirect access
+ *  @param[in]  addr - the indirect access register address
+ *  @return     data - the data of indirect access register
+ */
+static inline unsigned char audio_read_codec_ind_reg(unsigned char reg ,unsigned char addr )
+{
+	reg_audio_codec_reg(reg) = (addr&0x3f);
+	return  reg_audio_codec_reg(reg+1);
+}
+
 
 /**
  * @brief      This function serves to invert data between R channel and L channel.
@@ -643,6 +681,132 @@ static inline void audio_data_fifo1_path_sel ( audio_mux_ain_e ain1_sel, audio_m
 static inline void audio_invert_data_dis(void)
 {
 	BM_CLR(reg_i2s_cfg,FLD_AUDIO_I2S_LRSWAP);
+}
+
+/**
+ * @brief      This function reset AUDIO module.
+ * @return     none
+ */
+static inline void audio_reset(void)
+{
+	reg_rst2&=(~FLD_RST2_AUD);
+	reg_rst2 |=FLD_RST2_AUD;
+}
+
+/**
+ * @brief      This function reset CODEC module.
+ * @return     none
+ */
+static inline void codec_reset(void)
+{
+	reg_rst3&=(~FLD_RST3_CODEC);
+	reg_rst3 |=FLD_RST3_CODEC;
+}
+
+/**
+ * @brief  This function serves to set wind noise filter(WNF),it is a programmable high pass filter feature enabling to reduce wind noise.
+ * @param[in] mode - the wind noise filter mode,the wind noise filter is a 1st order filter.
+ *                                             CODEC_ADC_WNF_INACTIVE  disable
+ *
+ *                                             CODEC_ADC_WNF_MODE1  -3dB   59Hz
+ *  Wind Noise Filter corner frequency         CODEC_ADC_WNF_MODE2  -3dB   117Hz
+ *			                                   CODEC_ADC_WNF_MODE3  -3dB   235Hz
+ * @return    none
+ */
+static inline void audio_set_codec_adc_wnf(adc_wnf_mode_sel_e mode)
+{
+	reg_audio_codec_adc_wnf_ctr = mode;
+}
+
+/**
+ * @brief      This function serves to mute adc.
+ * @return     none
+ */
+static inline void audio_set_codec_adc_mute(void)
+{
+	BM_SET(reg_audio_codec_adc12_ctr,FLD_AUDIO_CODEC_ADC12_SOFT_MUTE); //adc mute
+	while(reg_audio_codec_stat2_ctr&FLD_AUDIO_CODEC_ADC12_SMUTE_IN_PROG);//wait codec adc mute is completed
+}
+
+/**
+ * @brief      This function serves to unmute adc.
+ * @return     none
+ */
+static inline void audio_set_codec_adc_unmute(void)
+{
+	 BM_CLR(reg_audio_codec_adc12_ctr,FLD_AUDIO_CODEC_ADC12_SOFT_MUTE);//adc unmute
+	 while(reg_audio_codec_stat2_ctr&FLD_AUDIO_CODEC_ADC12_SMUTE_IN_PROG);//wait codec adc unmute is completed
+}
+
+/**
+ * @brief      This function serves to mute dac.
+ * @return     none
+ */
+static inline void audio_set_codec_dac_mute(void)
+{
+	BM_SET(reg_audio_codec_dac_ctr,FLD_AUDIO_CODEC_DAC_SOFT_MUTE); //dac mute
+	while(reg_audio_codec_stat2_ctr&FLD_AUDIO_CODEC_DAC_SMUTE_IN_PROG);//wait codec dac mute is completed
+}
+
+/**
+ * @brief      This function serves to unmute dac.
+ * @return     none
+ */
+static inline void audio_set_codec_dac_unmute(void)
+{
+	BM_CLR(reg_audio_codec_dac_ctr,FLD_AUDIO_CODEC_DAC_SOFT_MUTE);//dac unmute
+	while(reg_audio_codec_stat2_ctr&FLD_AUDIO_CODEC_DAC_SMUTE_IN_PROG);//wait codec dac unmute is completed
+}
+
+/**
+ * 	@brief      This function serves to set adc analog gain.
+ * 	@param[in]  a_gain - analog  gain value
+ * 	@return     none
+ */
+static inline void audio_set_codec_adc_a_gain (codec_in_path_analog_gain_e a_gain )
+{
+	/*analog 0/4/8/12/16/20 dB boost gain*/
+	 reg_audio_codec_mic_l_R_gain= MASK_VAL( FLD_AUDIO_CODEC_AMIC_L_GAIN, a_gain,\
+	           FLD_AUDIO_CODEC_AMIC_R_GAIN, a_gain);
+}
+
+/**
+ * @brief      This function serves to set adc digital gain.
+ * @param[in]  d_gain - digital gain value
+ * @return     none
+ */
+static inline void audio_set_codec_adc_d_gain(codec_in_path_digital_gain_e d_gain)
+{
+	 /*0db~43db  1db step ,digital programmable gain*/
+	 reg_audio_adc1_gain=MASK_VAL(  FLD_AUDIO_CODEC_ADC_LRGID,1,\
+	       FLD_AUDIO_CODEC_ADC_GID1,d_gain);
+}
+
+/**
+ * @brief      This function serves to set dac analog gain.
+ * @param[in]  d_gain - digital gain value
+ * @return     none
+ */
+static inline void audio_set_codec_dac_a_gain(codec_out_path_analog_gain_e a_gain)
+{
+	 /*disable Headphone gain coupling, set Left channel HP amplifier gain*/
+			reg_audio_codec_hpl_gain=MASK_VAL(FLD_AUDIO_CODEC_HPL_LRGO,0,\
+												FLD_AUDIO_CODEC_HPL_GOL,a_gain);
+			reg_audio_codec_hpr_gain=MASK_VAL(FLD_AUDIO_CODEC_HPR_GOR, a_gain); /* Right channel HP amplifier gain programming*/
+}
+
+
+/**
+ * @brief      This function serves to set dac analog gain.
+ * @param[in]  d_gain - digital gain value
+ * @return     none
+ */
+static inline void audio_set_codec_dac_d_gain(codec_out_path_digital_gain_e d_gain)
+{
+	/*disable DAC digital gain coupling, Left channel DAC digital gain*/
+	reg_audio_codec_dacl_gain=MASK_VAL(FLD_AUDIO_CODEC_DAC_LRGOD,0,\
+											FLD_AUDIO_CODEC_DAC_GODL,d_gain);
+	reg_audio_codec_dacr_gain=MASK_VAL(FLD_AUDIO_CODEC_DAC_GODR,d_gain); /*Right channel DAC digital gain*/
 }
 
 /**
@@ -699,10 +863,15 @@ void audio_codec_adc_config(i2s_codec_m_s_mode_e mode,audio_input_mode_e in_mode
  * @param[in] i2s_format - interface protocol
  * @param[in] wl   		 - audio data word length
  * @param[in] m_s        - select i2s as master or slave
- * @param[in] en         - 1 enable audio data invert , 0 disable audio data invert .for example in mono mode switch R and L channel data to fifo0
+ * @param[in] i2s_config_t - the prt of i2s_config_t that configure i2s lr_clk phase and lr_clk swap.
+ *  i2s_config_t->i2s_lr_clk_invert_select-lr_clk phase control(in RJ,LJ or i2s modes),in i2s mode(opposite phasing in  RJ,LJ mode), 0=right channel data when lr_clk high ,1=right channel data when lr_clk low.
+ *                                                                                     in DSP mode(in DSP mode only), DSP mode A/B select,0=DSP mode A ,1=DSP mode B.
+ *            i2s_config_t->i2s_data_invert_select - 0=left channel data left,1=right channel data left.
+ * @attention:If the left and right channels are both active in i2s mode,there will be a phase difference(about 1 sample) between the left and right channels,you can set i2s_lr_clk_invert_select=1 to eliminate the phase difference,
+ * but data output channel will be inverted,you can also set i2s_config_t->i2s_data_invert_select=1 to recovery it.
  * @return    none
  */
-void audio_i2s_config(i2s_mode_select_e i2s_format,i2s_data_select_e wl,  i2s_codec_m_s_mode_e m_s , audio_data_invert_e en );
+void audio_i2s_config(i2s_mode_select_e i2s_format,i2s_data_select_e wl,  i2s_codec_m_s_mode_e m_s , audio_i2s_invert_config_t * i2s_config_t);
 
 /**
  * @brief     This function serves to set i2s clock and audio sampling rate when i2s as master.
@@ -827,6 +996,32 @@ void audio_rx_dma_chain_init (dma_chn_e chn,unsigned short * in_buff,unsigned in
  */
 void audio_tx_dma_chain_init (dma_chn_e chn,unsigned short * out_buff,unsigned int buff_size);
 
+/**
+ * @brief      This function serves to invert data between R channel and L channel.
+ * @param[in]  en - I2S_DATA_INVERT_DIS: L channel ( left channel data left);  I2S_DATA_INVERT_EN(right channel data left)
+ * @attention must be set before audio_init().
+ * @return     none
+ */
+void audio_set_mono_chn(audio_data_invert_e en);
+
+/**
+ * @brief      This function serves to invert LR-clk.
+ * @param[in]  en -lr_clk phase control(in RJ,LJ or i2s modes),in i2s mode(opposite phasing in  RJ,LJ mode), 0=right channel data when lr_clk high ,1=right channel data when lr_clk low.
+ *                                                             in DSP mode(in DSP mode only), DSP mode A/B select,0=DSP mode A ,1=DSP mode B
+ * @attention  If the left and right channels are both active,there will be a phase difference(about 1 sample) between the left and right channels,invert lr_clk can eliminate the phase difference,but data output channel will invert.
+ * @attention must be set before audio_init().
+ * @return     none
+ */
+void audio_invert_i2s_lr_clk(audio_i2s_lr_clk_invert_e en);
+
+
+/**
+ * @brief      This function serves to set mic input mode.
+ * @param[in]  input_mode - 0 single-ended input, 1 differential input.
+ * @attention must be set before audio_init().
+ * @return     none
+ */
+void audio_set_codec_mic_input_mode (audio_input_mode_select_e input_mode);
 
 /**
  * 	@brief      This function serves to set in path digital and analog gain  .
@@ -847,20 +1042,21 @@ void audio_set_codec_in_path_a_d_gain (codec_in_path_digital_gain_e d_gain,codec
  /**
   * @brief      This function serves to choose which is master to provide clock.
   * @param[in]  m_s - I2S_S_CODEC_M: i2s as slave ,codec as master; I2S_M_CODEC_S: i2s as  master, codec  as slave.
+  * @attention must be set before audio_init().
   * @return     none
   */
  void audio_set_i2s_codec_m_s (i2s_codec_m_s_mode_e m_s);
 
 
+
  /**
-  * @brief  This function serves to set wind noise filter(WNF),it is a programmable high pass filter feature enabling to reduce wind noise.
-  * @param[in] mode - the wind noise filter mode,the wind noise filter is a 1st order filter.
- *                                              Mode1  -3dB   59Hz
- *  Wind Noise Filter corner frequency          Mode2  -3dB   117Hz
- 			                                    Mode3  -3dB   235Hz
- * @return    none
+  * @brief  This function serves to set dac output channel.
+  * @param[in] chn -DAC_OUTPUT_L_R_CHN - right and left channel both active ; DAC_OUTPUT_L_CHN, only left channel active.
+  * @return    none
+  * @attention must be set before audio_init().
   */
- void audio_set_codec_wnf(adc_wnf_mode_sel_e mode);
+ void audio_set_output_chn(audio_output_chn_e chn);
+
  /**
   * @brief    This function serves to active soft mute dac and disable dma.
   * @return    none

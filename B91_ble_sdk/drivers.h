@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -45,7 +45,7 @@
  *******************************************************************************************************/
 #pragma once
 
-#include "drivers/B91/driver_b91.h"
+#include "drivers/B91/driver.h"
 #include "drivers/B91/ext_driver/driver_ext.h"
 #include "types.h"
 

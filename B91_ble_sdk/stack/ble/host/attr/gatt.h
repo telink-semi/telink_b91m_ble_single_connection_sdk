@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -163,5 +163,26 @@ ble_sts_t 	blc_gatt_pushReadBlobRequest (u16 connHandle, u16 attHandle, u16 offs
  */
 ble_sts_t 	blc_gatt_pushReadByGroupTypeRequest (u16 connHandle, u16 start_attHandle, u16 end_attHandle, u8 *uuid, int uuid_len);
 
+
+/**
+ * @brief	   This function is used to transmit prepare data to peer side.
+ * @param[in]  connHandle -  connection handle
+ * @param[in]  attHandle -  attribute handle.
+ * @param[in]  valOffset   - data offset.
+ * @param[in]  data - transmit data.
+ * @param[in]  data_len - transmit data len.
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
+ble_sts_t blc_gatt_pushPrepareWriteRequest (u16 connHandle, u16 attHandle, u16 valOffset,u8 *data, int data_len);
+
+
+/**
+ * @brief	   This function is used to execute prepare write.
+ * @param[in]  connHandle -  connection handle
+ * @param[in]  value - 0x00:Cancel all prepared writes
+ * 					   0x01:Immediately write all pending prepared values
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
+ble_sts_t blc_gatt_pushExecuteWriteRequest(u16 connHandle,u8 value);
 
 #endif /* GATT_H_ */

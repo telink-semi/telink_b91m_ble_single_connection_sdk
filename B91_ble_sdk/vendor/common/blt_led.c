@@ -43,14 +43,13 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *******************************************************************************************************/
-#if 1
 #include "tl_common.h"
 #include "drivers.h"
-#include "../common/blt_led.h"
+#include "blt_led.h"
 
 
 
-device_led_t device_led;
+_attribute_data_retention_ device_led_t device_led;
 
 /**
  * @brief		This function is used to control device led on or off
@@ -152,5 +151,3 @@ void led_proc(void)
 #endif
 }
 
-
-#endif

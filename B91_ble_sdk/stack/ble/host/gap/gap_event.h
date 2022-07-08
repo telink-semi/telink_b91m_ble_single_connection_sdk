@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -154,7 +154,7 @@ Situation 2:   SMP Fast Connect																		|
  */
 #define GAP_EVT_SMP_PAIRING_BEGIN		                             0	// Refer to SMP message sequence and event chart above
 #define GAP_EVT_SMP_PAIRING_SUCCESS			                         1	// Refer to SMP message sequence and event chart above
-#define GAP_EVT_SMP_PAIRING_FAIL			                             2
+#define GAP_EVT_SMP_PAIRING_FAIL			                         2
 #define GAP_EVT_SMP_CONN_ENCRYPTION_DONE							 3	// Refer to SMP message sequence and event chart above
 #define GAP_EVT_SMP_SECURITY_PROCESS_DONE							 4	// Refer to SMP message sequence and event chart above
 
@@ -167,7 +167,12 @@ Situation 2:   SMP Fast Connect																		|
 #define GAP_EVT_ATT_EXCHANGE_MTU									 16
 #define GAP_EVT_GATT_HANDLE_VLAUE_CONFIRM							 17
 
-
+#if(MCU_CORE_TYPE == MCU_CORE_825x || MCU_CORE_TYPE == MCU_CORE_827x)
+	///Correct spelling errors, but need to be compatible with the previous version
+	#define GAP_EVT_SMP_PARING_BEAGIN		                             GAP_EVT_SMP_PAIRING_BEGIN	// Refer to SMP message sequence and event chart above
+	#define GAP_EVT_SMP_PARING_SUCCESS			                         GAP_EVT_SMP_PAIRING_SUCCESS	// Refer to SMP message sequence and event chart above
+	#define GAP_EVT_SMP_PARING_FAIL			                             GAP_EVT_SMP_PAIRING_FAIL
+#endif
 
 /**
  * @brief      GAP event mask
@@ -175,7 +180,8 @@ Situation 2:   SMP Fast Connect																		|
 #define GAP_EVT_MASK_NONE                                        	 0x00000000
 #define GAP_EVT_MASK_SMP_PAIRING_BEGIN                          	 (1<<GAP_EVT_SMP_PAIRING_BEGIN)
 #define GAP_EVT_MASK_SMP_PAIRING_SUCCESS                           	 (1<<GAP_EVT_SMP_PAIRING_SUCCESS)
-#define GAP_EVT_MASK_SMP_PAIRING_FAIL                           		 (1<<GAP_EVT_SMP_PAIRING_FAIL)
+#define GAP_EVT_MASK_SMP_PAIRING_FAIL                           	 (1<<GAP_EVT_SMP_PAIRING_FAIL)
+
 #define GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE                     	 (1<<GAP_EVT_SMP_CONN_ENCRYPTION_DONE)
 #define GAP_EVT_MASK_SMP_SECURITY_PROCESS_DONE                     	 (1<<GAP_EVT_SMP_SECURITY_PROCESS_DONE)
 
@@ -194,7 +200,12 @@ Situation 2:   SMP Fast Connect																		|
 																	  GAP_EVT_MASK_ATT_EXCHANGE_MTU )
 
 
-
+#if(MCU_CORE_TYPE == MCU_CORE_825x || MCU_CORE_TYPE == MCU_CORE_827x)
+	///Correct spelling errors, but need to be compatible with the previous version
+	#define GAP_EVT_MASK_SMP_PARING_BEAGIN                               GAP_EVT_MASK_SMP_PAIRING_BEGIN
+	#define GAP_EVT_MASK_SMP_PARING_SUCCESS                              GAP_EVT_MASK_SMP_PAIRING_SUCCESS
+	#define GAP_EVT_MASK_SMP_PARING_FAIL                                 GAP_EVT_MASK_SMP_PAIRING_FAIL
+#endif
 
 /**
  * @brief      data structure of GAP event callback data

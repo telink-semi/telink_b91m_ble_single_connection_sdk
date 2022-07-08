@@ -43,12 +43,6 @@
  *          SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  *******************************************************************************************************/
-/*
- * blt_led.h
- *
- *  Created on: 2016-1-29
- *      Author: Administrator
- */
 
 #ifndef BLT_LED_H_
 #define BLT_LED_H_

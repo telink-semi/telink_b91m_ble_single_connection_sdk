@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -75,6 +75,9 @@
 #define HID_REPORT_ID_AUDIO_SECND_INPUT                 11//251
 #define HID_REPORT_ID_AUDIO_THIRD_INPUT                 12//247
 
+
+#define HID_REPORT_ID_OTA_INPUT							0x20
+#define HID_REPORT_ID_OTA_OUTPUT						0x21
 
 
 /**

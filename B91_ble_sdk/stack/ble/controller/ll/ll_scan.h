@@ -4,7 +4,7 @@
  * @brief	This is the header file for BLE SDK
  *
  * @author	BLE GROUP
- * @date	2020.06
+ * @date	06,2020
  *
  * @par     Copyright (c) 2020, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *          All rights reserved.
@@ -112,6 +112,12 @@ ble_sts_t    blc_ll_addScanningInConnSlaveRole(void);
 ble_sts_t    blc_ll_removeScanningFromConnSLaveRole(void);
 
 
+/**
+ * @brief      This function is used to determine whether scan request is sent for all advertising.
+ * @param[in]  scan_req_all_enable - Scan request is sent for all advertising.
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
+ble_sts_t   bls_ll_setScanReqAllEnable(u8 scan_req_all_enable);
 
 
 
