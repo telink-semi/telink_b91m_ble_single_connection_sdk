@@ -560,6 +560,9 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 			cpu_set_gpio_wakeup (pin[i], Level_High,1);  //drive pin pad high wakeup deepsleep
 		}
 	#endif
+	#if (BATT_CHECK_ENABLE)
+		adc_hw_initialized=0;
+	#endif
 
 #endif
 }

@@ -38,6 +38,9 @@
 #include "string.h"
 #include "compiler.h"
 
+extern bool blt_ota_isOtaBusy(void);
+extern bool blc_ll_isBrxWindowBusy(void);
+
 #if configCLINT_BASE_ADDRESS
 	#warning The configCLINT_BASE_ADDRESS constant has been deprecated.  configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS are currently being derived from the (possibly 0) configCLINT_BASE_ADDRESS setting.  Please update to define configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS dirctly in place of configCLINT_BASE_ADDRESS.  See https://www.FreeRTOS.org/Using-FreeRTOS-on-RISC-V.html
 #endif
@@ -266,9 +269,7 @@ void vPortRestoreTask(){
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 extern u32 blt_advExpectTime;
-//extern u8 ble_state;
-//extern u8 blt_state;
-extern _attribute_aligned_(4) volatile st_ll_para_t  bltParam;
+
 extern u32 blc_ll_cal_connwakeuptick();
 extern int blc_ll_allow_block();
 #define BLE_STATE_BRX_E_			7		//  that is the BLE_STATE_BRX_E in src
@@ -284,23 +285,23 @@ static u32 blc_ll_next_wakeup_duration(){
 }
 void proto_task( void *pvParameters ){
 	while (1){
-		if(!((bltParam.blt_state & BLS_LINK_STATE_CONN) && bltParam.ble_state != BLE_STATE_BRX_E_)){
+		if(!((blc_ll_getCurrentState() == BLS_LINK_STATE_CONN) && blc_ll_isBrxBusy() )){
 			//printf("enter blt_sdk_main_loop.\r\n");
 			blt_sdk_main_loop();
 			//printf("EXIT blt_sdk_main_loop.\r\n");
 		}
 		//printf("enter if.\r\n");
-		if( blotaSvr.ota_busy )		{continue;}
+		if( blc_ll_isBrxWindowBusy() )		{continue;}
 
 		if(blc_ll_allow_block()){
-			if(bltParam.blt_state & BLS_LINK_STATE_ADV){
+			if(blc_ll_getCurrentState() == BLS_LINK_STATE_ADV){
 				u32 dur = blt_advExpectTime - clock_time();
 				dur = dur < (((unsigned int)0xffffffff) / 2) ? dur : 0;
 				if(dur > 2 * SYSTEM_TIMER_TICK_1MS){
 					//printf("5A. %d",dur/SYSTICK_TO_OSTICK);
 					ulTaskNotifyTake( pdTRUE, dur / SYSTICK_TO_OSTICK);
 				}
-			}else if((bltParam.blt_state & BLS_LINK_STATE_CONN) && bltParam.ble_state == BLE_STATE_BRX_E_){
+			}else if((blc_ll_getCurrentState() == BLS_LINK_STATE_CONN) && !blc_ll_isBrxBusy()){
 				u32 dur = blc_ll_next_wakeup_duration();//blc_ll_cal_connwakeuptick() - clock_time();//blc_ll_next_wakeup_duration();
 				if(dur > 3 * SYSTEM_TIMER_TICK_1MS){
 					//printf("A %d",dur/SYSTICK_TO_OSTICK);

@@ -84,44 +84,7 @@ void stimer_irq_handler(void)
 	DBG_CHN15_LOW;
 }
 
-#if EXCEPT_HANDLE_DEBUG_ENABLE
-volatile u32 dbg_except_handler = 0;
 
-volatile u32 g_mcause;
-volatile u32 g_mepc;
-volatile u32 g_mtval;
-volatile u32 g_mdcause;
-volatile u32 g_mscratch;
-/**
- * @brief		BLE SDK System except handler.
- * @param[in]	none
- * @return      none
- */
-_attribute_ram_code_
-void except_handler()
-{
-	gpio_write(GPIO_LED_WHITE, LED_ON_LEVAL);
-
-	g_mcause = read_csr(NDS_MCAUSE);
-	g_mepc = read_csr(NDS_MEPC);
-	g_mtval = read_csr(NDS_MTVAL);
-	g_mdcause = read_csr(NDS_MDCAUSE);
-	g_mscratch = read_csr(NDS_MSCRATCH);
-	#if 0		//Enable this if you need to read values of the exception by BDT.
-		while(1){
-			printf("enter except_handler.\r\n");
-
-			for(volatile unsigned int i = 0; i < 0xffff; i++)
-			{
-				asm("nop");
-				dbg_except_handler++;
-			}
-		}
-	#else		//If the exception may occur and the system need to be rebooted , enable this.
-		start_reboot(); //reboot the MCU
-	#endif
-}
-#endif
 
 
 #if (FREERTOS_ENABLE)

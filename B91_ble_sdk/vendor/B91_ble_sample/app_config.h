@@ -80,7 +80,6 @@
 #define UART_PRINT_DEBUG_ENABLE  			0
 #define DEBUG_GPIO_ENABLE					0
 #define JTAG_DEBUG_ENABLE					0
-#define EXCEPT_HANDLE_DEBUG_ENABLE			0
 
 
 

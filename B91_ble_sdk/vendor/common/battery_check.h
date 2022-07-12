@@ -52,7 +52,7 @@
 
 #define DCDC_ADC_SOFTWARE_FILTER            0  // Filter ADC data in DCDC mode//Todo:need to check,by sunwei
 
-
+extern u8      adc_hw_initialized;   //note: can not be retention variable
 void battery_set_detect_enable (int en);
 int  battery_get_detect_enable (void);
 
