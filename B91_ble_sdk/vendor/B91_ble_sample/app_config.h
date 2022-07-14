@@ -51,7 +51,7 @@
 /**
  *  @brief  Feature select in bLE Sample project
  */
-#define BLE_APP_PM_ENABLE					1
+#define BLE_APP_PM_ENABLE					0
 #define PM_DEEPSLEEP_RETENTION_ENABLE		1
 #define TEST_CONN_CURRENT_ENABLE            0 //test connection current, disable UI to have a pure power
 #define APP_SECURITY_ENABLE      			1

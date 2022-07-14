@@ -75,7 +75,7 @@
 	#define MCU_CORE_TYPE	1000
 #endif
 
-#define FREERTOS_ENABLE		0
+#define FREERTOS_ENABLE		1
 
 
 #endif /* CONFIG_H_ */
