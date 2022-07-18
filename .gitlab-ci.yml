@@ -68,8 +68,8 @@ build_ide:
     - date
     - echo "--------------- Will build Demo -----------------"
     - echo #$ECLIPSE_PROJECT/$ECLIPSE_BUILD_TARGET
-    - $ANDESRISCV_ECLIPSE_BUILD  -data ${CI_PIPELINE_ID}_WS  -import ./eagle_ble_sdk -cleanBuild eagle_ble_sdk/B91_ble_sample
-    #- bash $ANDESRISCV_ECLIPSE_BUILD  -data ${CI_PIPELINE_ID}_WS  -import ./eagle_ble_sdk -cleanBuild all
+    - $ANDESRISCV_ECLIPSE_BUILD  -data ${CI_PIPELINE_ID}_WS  -import ./B91_ble_sdk -cleanBuild B91_ble_sdk/B91_ble_sample
+    #- bash $ANDESRISCV_ECLIPSE_BUILD  -data ${CI_PIPELINE_ID}_WS  -import ./B91_ble_sdk -cleanBuild all
     - date
 #when: manual
 
