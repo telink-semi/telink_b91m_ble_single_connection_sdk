@@ -271,6 +271,12 @@
 ./B91_ble_sdk/vendor/B91_feature/feature_ll_state/app_buffer.h			TELINK_APACHE  
 ./B91_ble_sdk/vendor/B91_feature/feature_ll_state/app_config.h			TELINK_APACHE  
 ./B91_ble_sdk/vendor/B91_feature/feature_ll_state/main.c			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_multi_local_dev/app.c			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_multi_local_dev/app.h			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_multi_local_dev/app_buffer.c			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_multi_local_dev/app_buffer.h			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_multi_local_dev/app_config.h			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_multi_local_dev/main.c			TELINK_APACHE  
 ./B91_ble_sdk/vendor/B91_feature/feature_ota/app.c			TELINK_APACHE  
 ./B91_ble_sdk/vendor/B91_feature/feature_ota/app.h			TELINK_APACHE  
 ./B91_ble_sdk/vendor/B91_feature/feature_ota/app_buffer.c			TELINK_APACHE  
@@ -321,6 +327,14 @@
 ./B91_ble_sdk/vendor/B91_feature/feature_stuck_key/app_buffer.h			TELINK_APACHE  
 ./B91_ble_sdk/vendor/B91_feature/feature_stuck_key/app_config.h			TELINK_APACHE  
 ./B91_ble_sdk/vendor/B91_feature/feature_stuck_key/main.c			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_use_reg_buffer/app.c			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_use_reg_buffer/app.h			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_use_reg_buffer/app_att.c			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_use_reg_buffer/app_att.h			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_use_reg_buffer/app_buffer.c			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_use_reg_buffer/app_buffer.h			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_use_reg_buffer/app_config.h			TELINK_APACHE  
+./B91_ble_sdk/vendor/B91_feature/feature_use_reg_buffer/main.c			TELINK_APACHE  
 ./B91_ble_sdk/vendor/B91_feature/feature_whitelist/app.c			TELINK_APACHE  
 ./B91_ble_sdk/vendor/B91_feature/feature_whitelist/app.h			TELINK_APACHE  
 ./B91_ble_sdk/vendor/B91_feature/feature_whitelist/app_buffer.c			TELINK_APACHE  
