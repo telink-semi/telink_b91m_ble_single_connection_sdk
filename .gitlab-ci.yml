@@ -75,9 +75,9 @@ build_ide:
 
   artifacts:
     paths:
-    - "eagle_ble_sdk/B91_ble_sample/output/*.bin"
-    - "eagle_ble_sdk/B91_ble_sample/*.elf"
-    #- "eagle_ble_sdk/B91_ble_sample/*.lst"
+    - "B91_ble_sdk/B91_ble_sample/output/*.bin"
+    - "B91_ble_sdk/B91_ble_sample/*.elf"
+    #- "B91_ble_sdk/B91_ble_sample/*.lst"
 
 # The cov job definition
 cov:
@@ -89,7 +89,7 @@ cov:
     - COV
   before_script:
   script:
-    - $COV_B COV_$CI_PROJECT_NAME $COV_B_TEMPLATE/$CODE_COMPILE_ARCH $ANDESRISCV_ECLIPSE_BUILD  -data ${CI_PIPELINE_ID}_WS  -import ./eagle_ble_sdk -cleanBuild eagle_ble_sdk/B91_ble_sample
+    - $COV_B COV_$CI_PROJECT_NAME $COV_B_TEMPLATE/$CODE_COMPILE_ARCH $ANDESRISCV_ECLIPSE_BUILD  -data ${CI_PIPELINE_ID}_WS  -import ./B91_ble_sdk -cleanBuild B91_ble_sdk/B91_ble_sample
     - $COV_A COV_$CI_PROJECT_NAME
     - cov_add_commit_steam_project_2_platform.sh
   when: manual
