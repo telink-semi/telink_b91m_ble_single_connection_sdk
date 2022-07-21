@@ -68,11 +68,12 @@
 
 #define	TEST_OTA										95
 
+#define	TEST_MULTIPLE_LOCAL_DEVICE						96
 
 #define TEST_FEATURE_BACKUP								200
 
 
-#define FEATURE_TEST_MODE								TEST_OTA//TEST_FEATURE_BACKUP
+#define FEATURE_TEST_MODE								TEST_FEATURE_BACKUP
 
 
 

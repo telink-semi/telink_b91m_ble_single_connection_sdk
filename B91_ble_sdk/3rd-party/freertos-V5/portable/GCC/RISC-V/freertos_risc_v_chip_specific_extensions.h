@@ -58,6 +58,7 @@
 
 #ifndef __FREERTOS_RISC_V_EXTENSIONS_H__
 #define __FREERTOS_RISC_V_EXTENSIONS_H__
+#if( FREERTOS_ENABLE )
 
 #define portasmHAS_MTIME 	1
 
@@ -251,5 +252,5 @@
 	csrw mhsp_ctl, t0
 	.endm
 
-
+#endif
 #endif /* __FREERTOS_RISC_V_EXTENSIONS_H__ */

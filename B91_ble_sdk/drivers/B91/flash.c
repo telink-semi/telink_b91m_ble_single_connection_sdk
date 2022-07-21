@@ -37,8 +37,10 @@
  *  Flash trim scheme has been added for P25Q80U.If other types of flash adds this scheme, user need to modify "flash_trim" and "flash_trim_check" function.
 	Flash Type	uid CMD		MID		    Company		Sector Erase Time(MAX)
 	P25Q80U		0x4b		0x146085	PUYA		20ms
+	P25Q16SU    0x4b        0x156085    PUYA        30ms
+	P25Q32SH    0x4b        0x166085    PUYA        30ms
  */
-unsigned int flash_support_mid[] = {0x146085};
+unsigned int flash_support_mid[] = {0x146085,0x156085,0x166085};
 const unsigned int FLASH_CNT = sizeof(flash_support_mid)/sizeof(*flash_support_mid);
 
 _attribute_data_retention_sec_ flash_hander_t flash_read_page = flash_dread;
@@ -349,7 +351,7 @@ _attribute_text_sec_ void flash_4read(unsigned long addr, unsigned long len, uns
  * @param[in]   cmd		- the write command. FLASH_WRITE_CMD or FLASH_QUAD_PAGE_PROGRAM_CMD.
  * @return 		none.
  */
-_attribute_text_sec_ void flash_write(unsigned long addr, unsigned long len, unsigned char *buf, flash_command_e cmd)
+_attribute_text_sec_ static void flash_write(unsigned long addr, unsigned long len, unsigned char *buf, flash_command_e cmd)
 {
 	unsigned int ns = PAGE_SIZE - (addr & (PAGE_SIZE - 1));
 	int nw = 0;
@@ -469,6 +471,9 @@ _attribute_text_sec_ void flash_write_status(flash_status_typedef_e type, unsign
 		flash_mspi_write_ram(FLASH_WRITE_STATUS_CMD_LOWBYTE, 0, 0, buf, 1);
 	}else if(type == FLASH_TYPE_16BIT_STATUS_ONE_CMD){
 		flash_mspi_write_ram(FLASH_WRITE_STATUS_CMD_LOWBYTE, 0, 0, buf, 2);
+	}else if(type == FLASH_TYPE_16BIT_STATUS_TWO_CMD){
+		flash_mspi_write_ram(FLASH_WRITE_STATUS_CMD_LOWBYTE, 0, 0, (unsigned char *)&buf[0], 1);
+		flash_mspi_write_ram(FLASH_WRITE_STATUS_CMD_HIGHBYTE, 0, 0, (unsigned char *)&buf[1], 1);
 	}
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
@@ -629,6 +634,51 @@ _attribute_text_sec_ void flash_set_xip_config(flash_xip_config_t config)
 	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
 	flash_set_xip_config_sram(config);
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+}
+
+/**
+ * @brief 		This function is used to write the configure of the flash,P25Q16SU/P25Q32SH uses this function.
+ * @param[in]   cmd			- the write command.
+ * @param[out]  data		- the start address of the data buffer.
+ * @return 		none.
+ * @note		important:  "data" must not reside at flash, such as constant string.If that case, pls copy to memory first before write.
+ *              Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
+ */
+_attribute_text_sec_ void flash_write_config(flash_command_e cmd,unsigned char data)
+{
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_mspi_write_ram(cmd, 0, 0, &data, 1);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+}
+
+/**
+ * @brief 		This function is used to read the configure of the flash,P25Q16SU/P25Q32SH uses this function.
+ * @return 		the value of configure.
+ * @note        Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
+ *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.
+ *              Taking into account the factors such as power supply fluctuations, the safe voltage value needs to be greater
+ *              than the minimum chip operating voltage. For the specific value, please make a reasonable setting according
+ *              to the specific application and hardware circuit.
+ *
+ *              Risk description: When the chip power supply voltage is relatively low, due to the unstable power supply,
+ *              there may be a risk of error in the operation of the flash (especially for the write and erase operations.
+ *              If an abnormality occurs, the firmware and user data may be rewritten, resulting in the final Product failure)
+ */
+_attribute_text_sec_ unsigned char  flash_read_config(void)
+{
+	unsigned char config=0;
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	flash_mspi_read_ram(FLASH_READ_CONFIGURE_CMD, 0, 0, 0, &config, 1);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
+	return config;
 }
 
 /*******************************************************************************************************************

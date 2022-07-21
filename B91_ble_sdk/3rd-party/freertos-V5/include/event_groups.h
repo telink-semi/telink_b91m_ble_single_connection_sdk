@@ -40,6 +40,8 @@
 #endif
 /* *INDENT-ON* */
 
+#if( FREERTOS_ENABLE )
+
 /**
  * An event group is a collection of bits to which an application can assign a
  * meaning.  For example, an application may create an event group to convey
@@ -773,3 +775,5 @@ void vEventGroupClearBitsCallback( void * pvEventGroup,
 /* *INDENT-ON* */
 
 #endif /* EVENT_GROUPS_H */
+
+#endif	//#if( FREERTOS_ENABLE )

@@ -58,7 +58,7 @@
  * 1. must be: 2^n, (power of 2)
  * 2. at least 4; recommended value: 8, 16
  */
-#define ACL_RX_FIFO_SIZE				48  // ACL_CONN_MAX_RX_OCTETS + 21, then 16 Byte align
+#define ACL_RX_FIFO_SIZE				CAL_LL_ACL_RX_FIFO_SIZE(ACL_CONN_MAX_RX_OCTETS)  // ACL_CONN_MAX_RX_OCTETS + 21, then 16 Byte align
 #define ACL_RX_FIFO_NUM					8	// must be: 2^n
 
 
@@ -75,7 +75,7 @@
  * 1. (ACL_TX_FIFO_SIZE * (ACL_TX_FIFO_NUM - 1)) must be less than 4096 (4K)
  *    so when ACL TX FIFO size equal to or bigger than 256, ACL TX FIFO number can only be 9(can not use 17 or 33), cause 256*(17-1)=4096
  */
-#define ACL_TX_FIFO_SIZE				48	// ACL_CONN_MAX_TX_OCTETS + 10, then 16 Byte align
+#define ACL_TX_FIFO_SIZE				CAL_LL_ACL_TX_FIFO_SIZE(ACL_CONN_MAX_TX_OCTETS)	// ACL_CONN_MAX_TX_OCTETS + 10, then 16 Byte align
 #define ACL_TX_FIFO_NUM					17	// must be: (2^n) + 1
 
 

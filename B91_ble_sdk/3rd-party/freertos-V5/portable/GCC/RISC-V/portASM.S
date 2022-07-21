@@ -55,6 +55,8 @@
  * registers.
  *
  */
+ #include "config.h"
+#if( FREERTOS_ENABLE )
 
 .section .ram_code
  
@@ -480,3 +482,4 @@ vPortRestoreActiveTask:
 	ret
 .endfunc
 
+#endif

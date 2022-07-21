@@ -33,6 +33,8 @@
 
 #include "3rd-party/freertos-V5/include/list.h"
 
+#if( FREERTOS_ENABLE )
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     extern "C" {
@@ -749,3 +751,5 @@ BaseType_t xCoRoutineRemoveFromEventList( const List_t * pxEventList );
 /* *INDENT-ON* */
 
 #endif /* CO_ROUTINE_H */
+
+#endif

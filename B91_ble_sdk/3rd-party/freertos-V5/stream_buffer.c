@@ -37,7 +37,7 @@
 #include "3rd-party/freertos-V5/include/FreeRTOS.h"
 #include "3rd-party/freertos-V5/include/task.h"
 #include "3rd-party/freertos-V5/include/stream_buffer.h"
-
+#if( FREERTOS_ENABLE )
 #if ( configUSE_TASK_NOTIFICATIONS != 1 )
     #error configUSE_TASK_NOTIFICATIONS must be set to 1 to build stream_buffer.c
 #endif
@@ -1302,5 +1302,6 @@ static void prvInitialiseNewStreamBuffer( StreamBuffer_t * const pxStreamBuffer,
         return( xStreamBuffer->ucFlags & sbFLAGS_IS_MESSAGE_BUFFER );
     }
 
+#endif
 #endif /* configUSE_TRACE_FACILITY */
 /*-----------------------------------------------------------*/

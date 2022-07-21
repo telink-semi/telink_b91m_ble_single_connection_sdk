@@ -44,6 +44,8 @@
 * MACROS AND DEFINITIONS
 *----------------------------------------------------------*/
 
+#if( FREERTOS_ENABLE )
+
 #define tskKERNEL_VERSION_NUMBER       "V10.4.2"
 #define tskKERNEL_VERSION_MAJOR        10
 #define tskKERNEL_VERSION_MINOR        4
@@ -3051,3 +3053,4 @@ void vTaskInternalSetTimeOutState( TimeOut_t * const pxTimeOut ) PRIVILEGED_FUNC
 #endif
 /* *INDENT-ON* */
 #endif /* INC_TASK_H */
+#endif

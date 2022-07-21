@@ -35,6 +35,8 @@
 #include "3rd-party/freertos-V5/include/FreeRTOS.h"
 #include "3rd-party/freertos-V5/include/list.h"
 
+#if( FREERTOS_ENABLE )
+
 /* Lint e9021, e961 and e750 are suppressed as a MISRA exception justified
  * because the MPU ports require MPU_WRAPPERS_INCLUDED_FROM_API_FILE to be
  * defined for the header files above, but not in this file, in order to
@@ -208,3 +210,4 @@ __attribute__((section(".ram_code")))  UBaseType_t uxListRemove( ListItem_t * co
     return pxList->uxNumberOfItems;
 }
 /*-----------------------------------------------------------*/
+#endif

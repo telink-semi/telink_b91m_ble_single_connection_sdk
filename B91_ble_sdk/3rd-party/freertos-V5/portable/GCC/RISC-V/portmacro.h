@@ -44,6 +44,7 @@ extern "C" {
  * These settings should not be altered.
  *-----------------------------------------------------------
  */
+#if( FREERTOS_ENABLE )
 
 /* Type definitions. */
 #if __riscv_xlen == 64
@@ -196,5 +197,6 @@ definition is found. */
 }
 #endif
 
+#endif
 #endif /* PORTMACRO_H */
 

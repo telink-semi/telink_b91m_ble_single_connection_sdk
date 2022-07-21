@@ -26,7 +26,7 @@
 
 #ifndef PROJDEFS_H
 #define PROJDEFS_H
-
+#if( FREERTOS_ENABLE )
 /*
  * Defines the prototype to which task functions must conform.  Defined in this
  * file to ensure the type is known before portable.h is included.
@@ -116,5 +116,5 @@ typedef void (* TaskFunction_t)( void * );
 #define pdLITTLE_ENDIAN                   pdFREERTOS_LITTLE_ENDIAN
 #define pdBIG_ENDIAN                      pdFREERTOS_BIG_ENDIAN
 
-
+#endif
 #endif /* PROJDEFS_H */

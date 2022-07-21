@@ -36,6 +36,8 @@
 #ifndef MPU_PROTOTYPES_H
 #define MPU_PROTOTYPES_H
 
+#if( FREERTOS_ENABLE )
+
 /* MPU versions of tasks.h API functions. */
 BaseType_t MPU_xTaskCreate( TaskFunction_t pxTaskCode,
                             const char * const pcName,
@@ -259,5 +261,6 @@ StreamBufferHandle_t MPU_xStreamBufferGenericCreateStatic( size_t xBufferSizeByt
                                                            StaticStreamBuffer_t * const pxStaticStreamBuffer ) FREERTOS_SYSTEM_CALL;
 
 
+#endif
 
 #endif /* MPU_PROTOTYPES_H */

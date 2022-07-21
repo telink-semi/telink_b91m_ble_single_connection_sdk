@@ -50,7 +50,7 @@
 #ifndef portENTER_CRITICAL
     #include "3rd-party/freertos-V5/portable/GCC/RISC-V/portmacro.h"
 #endif
-
+#if( FREERTOS_ENABLE )
 #if portBYTE_ALIGNMENT == 32
     #define portBYTE_ALIGNMENT_MASK    ( 0x001f )
 #endif
@@ -214,3 +214,4 @@ void vPortEndScheduler( void ) PRIVILEGED_FUNCTION;
 /* *INDENT-ON* */
 
 #endif /* PORTABLE_H */
+#endif

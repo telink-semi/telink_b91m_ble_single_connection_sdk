@@ -37,9 +37,13 @@
 #include "3rd-party/freertos-V5/include/queue.h"
 #include "3rd-party/freertos-V5/include/timers.h"
 
+#if( FREERTOS_ENABLE )
+
 #if ( INCLUDE_xTimerPendFunctionCall == 1 ) && ( configUSE_TIMERS == 0 )
     #error configUSE_TIMERS must be set to 1 to make the xTimerPendFunctionCall() function available.
 #endif
+
+
 
 /* Lint e9021, e961 and e750 are suppressed as a MISRA exception justified
  * because the MPU ports require MPU_WRAPPERS_INCLUDED_FROM_API_FILE to be defined
@@ -1142,3 +1146,4 @@
  * to include software timer functionality.  If you want to include software timer
  * functionality then ensure configUSE_TIMERS is set to 1 in FreeRTOSConfig.h. */
 #endif /* configUSE_TIMERS == 1 */
+#endif

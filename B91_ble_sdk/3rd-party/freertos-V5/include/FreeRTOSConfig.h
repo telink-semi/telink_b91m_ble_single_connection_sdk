@@ -39,6 +39,8 @@
  *
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
+#include "config.h"
+#if( FREERTOS_ENABLE )
 
 #define configCLINT_BASE_ADDRESS		0x00000000
 
@@ -183,4 +185,4 @@ provided in this demo can be extended to save even more power. */
 #endif
 
 #endif /* FREERTOS_CONFIG_H */
-
+#endif	//#if( FREERTOS_ENABLE )

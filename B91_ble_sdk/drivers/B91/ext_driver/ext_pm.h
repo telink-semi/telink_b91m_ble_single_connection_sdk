@@ -98,22 +98,22 @@ void bls_pm_registerFuncBeforeSuspend (suspend_handler_t func );
  * 	      when MCU wakeup from deepsleep, read the information by by calling analog_read function
  * 	      Reset these analog registers only by power cycle
  */
-#define DEEP_ANA_REG0                       0x39 //initial value =0x00
-#define DEEP_ANA_REG1                       0x3a //initial value =0x00
-#define DEEP_ANA_REG2                       0x3b //initial value =0x00
-#define DEEP_ANA_REG3                      	0x3c //initial value =0x00
-#define DEEP_ANA_REG4                       0x3d //initial value =0x00
-#define DEEP_ANA_REG5                       0x3e //initial value =0x00
-#define DEEP_ANA_REG6                       0x3f //initial value =0x0f
+#define DEEP_ANA_REG0                       PM_ANA_REG_POWER_ON_CLR_BUF0 //initial value =0x00	[Bit0][Bit1] is already occupied. The customer cannot change!
+#define DEEP_ANA_REG1                       PM_ANA_REG_POWER_ON_CLR_BUF1 //initial value =0x00
+#define DEEP_ANA_REG2                       PM_ANA_REG_POWER_ON_CLR_BUF2 //initial value =0x00
+#define DEEP_ANA_REG3                      	PM_ANA_REG_POWER_ON_CLR_BUF3 //initial value =0x00
+#define DEEP_ANA_REG4                       PM_ANA_REG_POWER_ON_CLR_BUF4 //initial value =0x00
+#define DEEP_ANA_REG5                       PM_ANA_REG_POWER_ON_CLR_BUF5 //initial value =0x00
+#define DEEP_ANA_REG6                       PM_ANA_REG_POWER_ON_CLR_BUF6 //initial value =0x0f
 
 /**
  * @brief these analog register can store data in deepsleep mode or deepsleep with SRAM retention mode.
  * 	      Reset these analog registers by watchdog, chip reset, RESET Pin, power cycle
  */
 
-#define DEEP_ANA_REG7                       0x38 //initial value =0xff
+#define DEEP_ANA_REG7                       PM_ANA_REG_WD_CLR_BUF0 //initial value =0xff	[Bit0] is already occupied. The customer cannot change!
 
-//ana3e system used, user can not use
+//ana39 system used, user can not use
 #define SYS_DEEP_ANA_REG 					PM_ANA_REG_POWER_ON_CLR_BUF0
 
 

@@ -42,6 +42,8 @@
 #include "3rd-party/freertos-V5/include/FreeRTOS.h"
 #include "3rd-party/freertos-V5/include/task.h"
 
+#if( FREERTOS_ENABLE )
+
 #undef MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
 #if ( configSUPPORT_DYNAMIC_ALLOCATION == 0 )
@@ -492,3 +494,5 @@ void vPortGetHeapStats( HeapStats_t * pxHeapStats )
     }
     taskEXIT_CRITICAL();
 }
+
+#endif

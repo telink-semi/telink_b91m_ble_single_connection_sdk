@@ -28,6 +28,8 @@
 #include "3rd-party/freertos-V5/include/task.h"
 #include "3rd-party/freertos-V5/include/croutine.h"
 
+#if( FREERTOS_ENABLE )
+
 /* Remove the whole file is co-routines are not being used. */
 #if ( configUSE_CO_ROUTINES != 0 )
 
@@ -359,3 +361,4 @@
     }
 
 #endif /* configUSE_CO_ROUTINES == 0 */
+#endif

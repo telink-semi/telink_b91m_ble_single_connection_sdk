@@ -37,6 +37,8 @@
  * definitions below remain in the code for backward compatibility only.  New
  * projects should not use them. */
 
+#if( FREERTOS_ENABLE )
+
 #ifdef OPEN_WATCOM_INDUSTRIAL_PC_PORT
     #include "..\..\Source\portable\owatcom\16bitdos\pc\portmacro.h"
     typedef void ( __interrupt __far * pxISR )();
@@ -277,3 +279,5 @@
 #endif
 
 #endif /* DEPRECATED_DEFINITIONS_H */
+
+#endif

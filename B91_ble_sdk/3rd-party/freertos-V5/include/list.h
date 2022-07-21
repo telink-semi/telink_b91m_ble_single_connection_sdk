@@ -60,6 +60,7 @@
     #error "FreeRTOS.h must be included before list.h"
 #endif
 
+#if( FREERTOS_ENABLE )
 /*
  * The list structure members are modified from within interrupts, and therefore
  * by rights should be declared volatile.  However, they are only modified in a
@@ -413,5 +414,7 @@ UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove ) PRIVILEGED_FUNCTIO
     }
 #endif
 /* *INDENT-ON* */
+
+#endif	//#if( FREERTOS_ENABLE )
 
 #endif /* ifndef LIST_H */

@@ -38,6 +38,8 @@
 #include "3rd-party/freertos-V5/include/timers.h"
 #include "3rd-party/freertos-V5/include/event_groups.h"
 
+#if( FREERTOS_ENABLE )
+
 /* Lint e961, e750 and e9021 are suppressed as a MISRA exception justified
  * because the MPU ports require MPU_WRAPPERS_INCLUDED_FROM_API_FILE to be defined
  * for the header files above, but not in this file, in order to generate the
@@ -766,6 +768,7 @@ static BaseType_t prvTestWaitCondition( const EventBits_t uxCurrentEventBits,
     {
         ( ( EventGroup_t * ) xEventGroup )->uxEventGroupNumber = uxEventGroupNumber; /*lint !e9087 !e9079 EventGroupHandle_t is a pointer to an EventGroup_t, but EventGroupHandle_t is kept opaque outside of this file for data hiding purposes. */
     }
+#endif
 
 #endif /* configUSE_TRACE_FACILITY */
 /*-----------------------------------------------------------*/

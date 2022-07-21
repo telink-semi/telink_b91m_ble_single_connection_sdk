@@ -65,6 +65,8 @@
 	#include "feature_ota/app_config.h"
 #elif (FEATURE_TEST_MODE == TEST_L2CAP_PREPARE_WRITE_BUFF)
 	#include "feature_use_reg_buffer/app_config.h"
+#elif (FEATURE_TEST_MODE == TEST_MULTIPLE_LOCAL_DEVICE)
+	#include "feature_multi_local_dev/app_config.h"
 #elif (FEATURE_TEST_MODE == TEST_FEATURE_BACKUP)
 	#include "feature_backup/app_config.h"
 #endif

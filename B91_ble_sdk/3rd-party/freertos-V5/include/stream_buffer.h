@@ -59,7 +59,7 @@
     extern "C" {
 #endif
 /* *INDENT-ON* */
-
+#if( FREERTOS_ENABLE )
 /**
  * Type by which stream buffers are referenced.  For example, a call to
  * xStreamBufferCreate() returns an StreamBufferHandle_t variable that can
@@ -864,4 +864,5 @@ size_t xStreamBufferNextMessageLengthBytes( StreamBufferHandle_t xStreamBuffer )
 #endif
 /* *INDENT-ON* */
 
+#endif
 #endif /* !defined( STREAM_BUFFER_H ) */

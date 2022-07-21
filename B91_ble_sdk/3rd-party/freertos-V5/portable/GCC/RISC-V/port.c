@@ -38,6 +38,10 @@
 #include "string.h"
 #include "compiler.h"
 
+#include "stack/ble/service/ota/ota_stack.h"
+
+#if( FREERTOS_ENABLE )
+
 extern bool blt_ota_isOtaBusy(void);
 extern bool blc_ll_isBrxWindowBusy(void);
 
@@ -222,7 +226,9 @@ void vAssertCalled( const char * pcFile, unsigned long ulLine ){
 #include "user_config.h"
 #include "core.h"
 #include "stimer.h"
+#include "stack/ble/ble_config.h"
 #include "stack/ble/controller/ll/ll.h"
+#include "stack/ble/controller/ll/ll_stack.h"
 
 void vPortSetupTimerInterrupt( void );
 void vPortRestoreActiveTask();
@@ -269,7 +275,9 @@ void vPortRestoreTask(){
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 extern u32 blt_advExpectTime;
-
+//extern u8 ble_state;
+//extern u8 blt_state;
+extern _attribute_aligned_(4) volatile st_ll_para_t  bltParam;
 extern u32 blc_ll_cal_connwakeuptick();
 extern int blc_ll_allow_block();
 #define BLE_STATE_BRX_E_			7		//  that is the BLE_STATE_BRX_E in src
@@ -315,4 +323,4 @@ void proto_task( void *pvParameters ){
 		//printf("EXIT if.\r\n");
 	}
 }
-
+#endif

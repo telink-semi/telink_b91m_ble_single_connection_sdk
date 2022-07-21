@@ -176,6 +176,16 @@ ble_sts_t   blc_ll_addAdvertisingInConnSlaveRole(void);
 ble_sts_t   blc_ll_removeAdvertisingFromConnSLaveRole(void);
 
 
+
+/**
+ * @brief	   This function is used to set whether to check the adv_interval
+ * @param[in]  enable -  adv_interval_check_enable
+ * @return     none
+ */
+void blc_ll_setAdvIntervalCheckEnable(u8 enable);
+
+
+
 /**
  * @brief      This function is used to set ADV parameter in slave role.
  * @param[in]  cmdPara - command parameter

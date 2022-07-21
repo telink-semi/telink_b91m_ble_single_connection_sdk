@@ -33,6 +33,8 @@
 
 #include "3rd-party/freertos-V5/include/queue.h"
 
+#if( FREERTOS_ENABLE )
+
 typedef QueueHandle_t SemaphoreHandle_t;
 
 #define semBINARY_SEMAPHORE_QUEUE_LENGTH    ( ( uint8_t ) 1U )
@@ -1171,3 +1173,4 @@ typedef QueueHandle_t SemaphoreHandle_t;
 #define uxSemaphoreGetCount( xSemaphore )                uxQueueMessagesWaiting( ( QueueHandle_t ) ( xSemaphore ) )
 
 #endif /* SEMAPHORE_H */
+#endif

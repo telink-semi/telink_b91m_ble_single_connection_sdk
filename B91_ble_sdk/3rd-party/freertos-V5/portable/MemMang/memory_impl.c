@@ -22,6 +22,8 @@
 
 #include "3rd-party/freertos-V5/include/FreeRTOS.h"
 
+#if( FREERTOS_ENABLE )
+
 /* configSUPPORT_STATIC_ALLOCATION is set to 1, so the application must provide an
 implementation of vApplicationGetIdleTaskMemory() to provide the memory that is
 used by the Idle task. */
@@ -74,3 +76,4 @@ PRIVILEGED_DATA static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPT
     configTIMER_TASK_STACK_DEPTH is specified in words, not bytes. */
     *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
+#endif

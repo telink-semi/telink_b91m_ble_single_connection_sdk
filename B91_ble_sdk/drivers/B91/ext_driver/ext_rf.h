@@ -229,33 +229,158 @@ void rf_set_ble_channel (signed char chn_num);
 
 
 
+
+#define PRMBL_LENGTH_1M						6	//preamble length for 1M PHY
+#define PRMBL_LENGTH_2M						6   //preamble length for 2M PHY
+#define PRMBL_LENGTH_Coded					10  //preamble length for Coded PHY, never change this value !!!
+
+#define PRMBL_EXTRA_1M						(PRMBL_LENGTH_1M - 1)	// 1 byte for 1M PHY
+#define PRMBL_EXTRA_2M						(PRMBL_LENGTH_2M - 2)	// 2 byte for 2M
+#define PRMBL_EXTRA_Coded					0     					// 10byte for Coded, 80uS, no extra byte
+
+
+
 #if RF_RX_SHORT_MODE_EN//open rx dly
-	//TX settle time
-	#define			LL_ADV_TX_SETTLE								84
-	#define 		LL_SCAN_TX_SETTLE								63
-	#define 		LL_INIT_TX_SETTLE								63
-	#define 		LL_SCANRSP_TX_SETTLE							78  //84-6=78
+	/* TX settle time */
+	#define			TX_STL_ADV_1M									84
+	#define			TX_STL_ADV_2M									115
+	#define			TX_STL_ADV_CODED								124
+
+
+	#define 		LL_SCANRSP_TX_SETTLE							78
+
+
+	#define 		TX_STL_AUTO_MODE_1M								(126 - PRMBL_EXTRA_1M * 8)  //126 - 40 = 86
+	#define			TX_STL_AUTO_MODE_2M								(133 - PRMBL_EXTRA_2M * 4)  //133 - 16 = 117
+	#define			TX_STL_AUTO_MODE_CODED							125
+
+
 	/* Tdma + else settle + tx_settle = 150us .
 	but Tdma is a variable value , it turns shorter with cclk getting faster
 	so when cclk=64m/96m, 150us turns to 148.5us around, lead to packet loss.
 	need to add tx settle time to ensure 150us . */
-	#define 		LL_SLAVE_TX_SETTLE								86
-	#define 		LL_SLAVE_TX_SETTLE_HIGH_FREQ					87
-	#define 		LL_MASTER_TX_SETTLE								87
-
-	#define			LL_ADV_TX_STL_2M								115
-	#define			LL_SCANRSP_TX_STL_2M							109 //115-6=109
-	#define			LL_ADV_TX_STL_CODED								124
-	#define			LL_SCANRSP_TX_STL_CODED							118 //124-6=118
-
-	#define 		LL_SLAVE_TX_STL_2M								117
-	#define 		LL_SLAVE_TX_STL_CODED							125
-
-	#define			LL_MASTER_TX_STL_2M								117
-	#define			LL_MASTER_TX_STL_CODED							125
+	#define 		TX_STL_AUTO_MODE_1M_HIGH_FREQ					(127 - PRMBL_EXTRA_1M * 8)  //127 - 40 = 87
 #else// close rx dly
 	#error "add code here, TX settle time"
 #endif
+
+
+/* AD convert delay : timing cost on RF analog to digital convert signal process:
+ * 					Eagle	1M: 20uS	   2M: 10uS;      500K(S2): 14uS    125K(S8):  14uS
+ *					Jaguar	1M: 20uS	   2M: 10uS;      500K(S2): 14uS    125K(S8):  14uS
+ */
+#define AD_CONVERT_DLY_1M											20
+#define AD_CONVERT_DLY_2M											10
+#define AD_CONVERT_DLY_CODED										14
+
+
+static inline void rf_ble_set_1m_phy(void)
+{
+	write_reg8(0x140e3d,0x61);
+	write_reg32(0x140e20,0x23200a16);
+	write_reg8(0x140c20,0x84);			//Eagle multi_conn 0xc4
+	write_reg8(0x140c22,0x00);
+	write_reg8(0x140c4d,0x01);
+	write_reg8(0x140c4e,0x1e);
+	write_reg16(0x140c36,0x0eb7);
+	write_reg16(0x140c38,0x71c4);
+	write_reg8(0x140c73,0x01);
+	#if RF_RX_SHORT_MODE_EN
+		write_reg8(0x140c79,0x38);			//default:0x00;RX_DIS_PDET_BLANK
+	#else
+		write_reg8(0x140c79,0x08);
+	#endif
+	write_reg16(0x140cc2,0x4b39);
+	write_reg32(0x140cc4,0x796e6256);
+
+#if 1
+	write_reg32(0x140800,0x4440081f | PRMBL_LENGTH_1M<<16);
+#else
+	write_reg32(0x140800,0x4446081f);
+#endif
+
+	write_reg16(0x140804,0x04f5);
+}
+
+
+static inline void rf_ble_set_2m_phy(void)
+{
+	write_reg8(0x140e3d,0x41);
+	write_reg32(0x140e20,0x26432a06);
+	write_reg8(0x140c20,0x84);	//Eagle multi_conn 0xc4
+	write_reg8(0x140c22,0x01);
+	write_reg8(0x140c4d,0x01);
+	write_reg8(0x140c4e,0x1e);
+	write_reg16(0x140c36,0x0eb7);
+	write_reg16(0x140c38,0x71c4);
+	write_reg8(0x140c73,0x01);
+	#if RF_RX_SHORT_MODE_EN
+		write_reg8(0x140c79,0x30);			//default:0x00;RX_DIS_PDET_BLANK
+	#else
+		write_reg8(0x140c79,0x00);
+	#endif
+	write_reg16(0x140cc2,0x4c3b);
+	write_reg32(0x140cc4,0x7a706458);
+
+	#if 1
+		write_reg32(0x140800,0x4440081f | PRMBL_LENGTH_2M<<16);
+	#else
+		write_reg32(0x140800,0x4446081f);
+	#endif
+
+	write_reg16(0x140804,0x04e5);
+}
+
+
+
+
+static inline void rf_ble_set_coded_phy_common(void)
+{
+	write_reg8(0x140e3d,0x61);
+	write_reg32(0x140e20,0x23200a16);
+	write_reg8(0x140c20,0x85);	//Eagle multi_conn 0xc5
+	write_reg8(0x140c22,0x00);
+	write_reg8(0x140c4d,0x01);
+	write_reg8(0x140c4e,0xf0);
+	write_reg16(0x140c38,0x7dc8);
+	write_reg8(0x140c73,0x21);
+	#if RF_RX_SHORT_MODE_EN
+		write_reg8(0x140c79,0x30);
+	#else
+		write_reg8(0x140c79,0x00);
+	#endif
+	write_reg16(0x140cc2,0x4836);
+	write_reg32(0x140cc4,0x796e6254);
+
+	#if 1
+		write_reg32(0x140800,0x4440081f | PRMBL_LENGTH_Coded<<16);
+	#else
+		write_reg32(0x140800,0x444a081f);
+	#endif
+}
+
+
+static inline void rf_ble_set_coded_phy_s2(void)
+{
+	write_reg16(0x140c36,0x0cee);
+	write_reg16(0x140804,0xa4f5);
+
+}
+
+
+static inline void rf_ble_set_coded_phy_s8(void)
+{
+	write_reg16(0x140c36,0x0cf6);
+	write_reg16(0x140804,0xb4f5);
+}
+
+
+
+
+
+
+
+
 
 
 #endif /* DRIVERS_B91_DRIVER_EXT_EXT_RF_H_ */

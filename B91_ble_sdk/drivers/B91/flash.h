@@ -51,7 +51,9 @@ typedef enum{
 	FLASH_WRITE_SECURITY_REGISTERS_CMD	=	0x42,
 	FLASH_ERASE_SECURITY_REGISTERS_CMD	=	0x44,
 	FLASH_WRITE_STATUS_CMD_LOWBYTE		=	0x01,
-	FLASH_WRITE_CONFIGURE_CMD_1         =   0x31,    // Flash Type = P25Q80U/TH25Q80UA
+	FLASH_WRITE_STATUS_CMD_HIGHBYTE		=	0x31,    // Flash Type = P25Q16SU/P25Q32SH for write status register-1;
+	FLASH_WRITE_CONFIGURE_CMD_1         =   0x31,    // Flash Type = P25Q80U  for write configure register;
+	FLASH_WRITE_CONFIGURE_CMD_2         =   0x11,    // Flash Type = P25Q16SU/P25Q32SH  for write configure register;
 	//other command
 	FLASH_WRITE_DISABLE_CMD 			= 	0x04,
 	FLASH_WRITE_ENABLE_CMD 				= 	0x06,

@@ -36,6 +36,8 @@
 #include "3rd-party/freertos-V5/include/task.h"
 #include "3rd-party/freertos-V5/include/queue.h"
 
+#if( FREERTOS_ENABLE )
+
 #if ( configUSE_CO_ROUTINES == 1 )
     #include "3rd-party/freertos-V5/include/croutine.h"
 #endif
@@ -3011,3 +3013,4 @@ BaseType_t xQueueIsQueueFullFromISR( const QueueHandle_t xQueue )
     }
 
 #endif /* configUSE_QUEUE_SETS */
+#endif

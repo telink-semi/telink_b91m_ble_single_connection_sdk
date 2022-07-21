@@ -39,7 +39,7 @@
 /* *INDENT-ON* */
 
 #include "3rd-party/freertos-V5/include/task.h"
-
+#if( FREERTOS_ENABLE )
 /**
  * Type by which queues are referenced.  For example, a call to xQueueCreate()
  * returns an QueueHandle_t variable that can then be used as a parameter to
@@ -1712,5 +1712,5 @@ uint8_t ucQueueGetQueueType( QueueHandle_t xQueue ) PRIVILEGED_FUNCTION;
     }
 #endif
 /* *INDENT-ON* */
-
+#endif
 #endif /* QUEUE_H */

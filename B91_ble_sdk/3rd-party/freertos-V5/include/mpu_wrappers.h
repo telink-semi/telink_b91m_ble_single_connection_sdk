@@ -29,6 +29,7 @@
 
 /* This file redefines API functions to be called through a wrapper macro, but
  * only for ports that are using the MPU. */
+#if( FREERTOS_ENABLE )
 #ifdef portUSING_MPU_WRAPPERS
 
 /* MPU_WRAPPERS_INCLUDED_FROM_API_FILE will be defined when this file is
@@ -183,5 +184,5 @@
 
 #endif /* portUSING_MPU_WRAPPERS */
 
-
+#endif
 #endif /* MPU_WRAPPERS_H */

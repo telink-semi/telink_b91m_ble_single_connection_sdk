@@ -252,6 +252,8 @@ enum{//todo
 
 };
 
+unsigned int cpu_stall_WakeUp_By_RF_SystemTick(int WakeupSrc, unsigned short rf_mask, unsigned int tick);
+
 /******************************* plic_end ********************************************************************/
 
 
