@@ -30,10 +30,27 @@
 #define DCDC_ADC_SOFTWARE_FILTER            0  // Filter ADC data in DCDC mode//Todo:need to check,by sunwei
 
 extern u8      adc_hw_initialized;   //note: can not be retention variable
+
+/**
+ * @brief      This function serves to enable battery detect.
+ * @param[in]  en - enable battery detect
+ * @return     none
+ */
 void battery_set_detect_enable (int en);
+
+/**
+ * @brief     This function serves to get battery detect status.
+ * @param	none
+ * @return    other: battery detect enable
+ * 			  0: battery detect disable
+ */
 int  battery_get_detect_enable (void);
 
-
+/**
+ * @brief		This is battery check function
+ * @param[in]	alram_vol_mv - input battery calibration
+ * @return      0: batt_vol_mv < alram_vol_mv 1: batt_vol_mv > alram_vol_mv
+ */
 _attribute_ram_code_
 int app_battery_power_check(u16 alram_vol_mv);
 

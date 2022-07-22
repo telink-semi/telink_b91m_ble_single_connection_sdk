@@ -35,7 +35,11 @@ _attribute_data_retention_	u8 		lowBattDet_enable = 1;
 _attribute_data_retention_  u16     batt_vol_mv;
 
 
-
+/**
+ * @brief      This function serves to enable battery detect.
+ * @param[in]  en - enable battery detect
+ * @return     none
+ */
 void battery_set_detect_enable (int en)
 {
 	lowBattDet_enable = en;
@@ -46,7 +50,12 @@ void battery_set_detect_enable (int en)
 
 }
 
-
+/**
+ * @brief     This function serves to get battery detect status.
+ * @param	none
+ * @return    other: battery detect enable
+ * 			  0: battery detect disable
+ */
 int battery_get_detect_enable (void)
 {
 	return lowBattDet_enable;
@@ -56,6 +65,11 @@ extern unsigned short g_adc_vref;
 extern unsigned char g_adc_pre_scale;
 extern unsigned char g_adc_vbat_divider;
 
+/**
+ * @brief      this function is used for user to initialize battery detect.
+ * @param	   none
+ * @return     none
+ */
 _attribute_ram_code_ void adc_bat_detect_init(void)
 {
 
@@ -117,6 +131,11 @@ _attribute_ram_code_ void adc_bat_detect_init(void)
 	sleep_us(25);
 }
 
+/**
+ * @brief		This is battery check function
+ * @param[in]	alram_vol_mv - input battery calibration
+ * @return      0: batt_vol_mv < alram_vol_mv 1: batt_vol_mv > alram_vol_mv
+ */
 _attribute_ram_code_ int app_battery_power_check(u16 alram_vol_mv)
 {
 

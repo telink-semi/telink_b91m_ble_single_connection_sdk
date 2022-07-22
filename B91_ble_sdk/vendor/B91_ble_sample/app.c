@@ -284,6 +284,11 @@ void blt_pm_proc(void)
 
 _attribute_data_retention_	u32	lowBattDet_tick   = 0;
 
+/**
+ * @brief		this function is used to process battery power.
+ * @param[in]	none
+ * @return      none
+ */
 _attribute_ram_code_ void user_battery_power_check(void)
 {
 			u8 battery_check_returnVaule=0;
