@@ -328,10 +328,10 @@ _attribute_no_inline_ void user_init_normal(void)
 	#if (BATT_CHECK_ENABLE)  //battery check must do before OTA relative operation
 		u8 battery_check_returnVaule = 0;
 		if(analog_read(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
-			battery_check_returnVaule = app_battery_power_check(VBAT_ALRAM_THRES_MV + 200);  //2.2 V
+			battery_check_returnVaule = app_battery_power_check(BAT_DEEP_THRES_MV + 200);  //2.2 V
 		}
 		else{
-			battery_check_returnVaule = app_battery_power_check(VBAT_ALRAM_THRES_MV);  //2.0 V
+			battery_check_returnVaule = app_battery_power_check(BAT_DEEP_THRES_MV);  //2.0 V
 		}
 		if(battery_check_returnVaule){
 			analog_write(USED_DEEP_ANA_REG,  analog_read(USED_DEEP_ANA_REG)&(~LOW_BATT_FLG));  //clr
@@ -347,11 +347,7 @@ _attribute_no_inline_ void user_init_normal(void)
 			#endif
 			analog_write(USED_DEEP_ANA_REG,  analog_read(USED_DEEP_ANA_REG) | LOW_BATT_FLG);  //mark
 
-			u32 pin[] = KB_DRIVE_PINS;
-			for (int i=0; i<(sizeof (pin)/sizeof(*pin)); i++)
-			{
-				cpu_set_gpio_wakeup (pin[i], Level_High, 1);  //drive pin pad high wakeup deepsleep
-			}
+			cpu_set_gpio_wakeup (GPIO_PA2, Level_High, 1);  //drive pin pad high wakeup deepsleep
 
 			cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
 		}
@@ -622,10 +618,10 @@ _attribute_no_inline_ void main_loop (void)
 		lowBattDet_tick = clock_time();
 		u8 battery_check_returnVaule=0;
 		if(analog_read_reg8(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
-			battery_check_returnVaule=app_battery_power_check(VBAT_ALRAM_THRES_MV + 200);  //2.2 V
+			battery_check_returnVaule=app_battery_power_check(BAT_DEEP_THRES_MV + 200);  //2.2 V
 		}
 		else{
-			battery_check_returnVaule=app_battery_power_check(VBAT_ALRAM_THRES_MV);  //2.0 V
+			battery_check_returnVaule=app_battery_power_check(BAT_DEEP_THRES_MV);  //2.0 V
 		}
 		if(!battery_check_returnVaule)
 		{
@@ -639,11 +635,7 @@ _attribute_no_inline_ void main_loop (void)
 			#endif
 			analog_write_reg8(USED_DEEP_ANA_REG,  analog_read_reg8(USED_DEEP_ANA_REG) | LOW_BATT_FLG);  //mark
 
-			u32 pin[] = KB_DRIVE_PINS;
-			for (int i=0; i<(sizeof (pin)/sizeof(*pin)); i++)
-			{
-				cpu_set_gpio_wakeup (pin[i], Level_High, 1);  //drive pin pad high wakeup deepsleep
-			}
+			cpu_set_gpio_wakeup (GPIO_PA2, Level_High, 1);  //drive pin pad high wakeup deepsleep
 
 			cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
 		}

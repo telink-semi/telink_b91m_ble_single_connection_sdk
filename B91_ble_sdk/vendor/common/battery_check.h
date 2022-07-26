@@ -25,7 +25,6 @@
 #define BATTERY_CHECK_H_
 
 #define BAT_DEEP_THRES_MV				2000   // 2000 mV low battery alarm
-#define BAT_SUSPEND_THRES_MV			1800   // 1800 mV low battery alarm
 
 #define DCDC_ADC_SOFTWARE_FILTER            0  // Filter ADC data in DCDC mode//Todo:need to check,by sunwei
 
