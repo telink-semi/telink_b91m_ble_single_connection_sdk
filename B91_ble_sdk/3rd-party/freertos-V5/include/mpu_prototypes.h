@@ -36,6 +36,8 @@
 #ifndef MPU_PROTOTYPES_H
 #define MPU_PROTOTYPES_H
 
+#include"config.h"
+
 #if( FREERTOS_ENABLE )
 
 /* MPU versions of tasks.h API functions. */

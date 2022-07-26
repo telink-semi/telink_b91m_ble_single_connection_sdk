@@ -61,6 +61,8 @@
 #ifndef FREERTOS_MESSAGE_BUFFER_H
 #define FREERTOS_MESSAGE_BUFFER_H
 
+#include"config.h"
+
 #if( FREERTOS_ENABLE )
 
 #ifndef INC_FREERTOS_H

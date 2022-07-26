@@ -26,7 +26,7 @@
 
 #ifndef MPU_WRAPPERS_H
 #define MPU_WRAPPERS_H
-
+#include "config.h"
 /* This file redefines API functions to be called through a wrapper macro, but
  * only for ports that are using the MPU. */
 #if( FREERTOS_ENABLE )

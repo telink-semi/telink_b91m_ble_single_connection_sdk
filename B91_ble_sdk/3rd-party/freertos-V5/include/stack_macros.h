@@ -43,6 +43,7 @@
 
 /*-----------------------------------------------------------*/
 #if( FREERTOS_ENABLE )
+
 #if ( ( configCHECK_FOR_STACK_OVERFLOW == 1 ) && ( portSTACK_GROWTH < 0 ) )
 
 /* Only the current stack state is to be checked. */

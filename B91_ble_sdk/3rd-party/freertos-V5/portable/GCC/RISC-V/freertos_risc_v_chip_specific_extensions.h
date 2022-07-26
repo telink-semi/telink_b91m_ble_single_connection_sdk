@@ -58,6 +58,9 @@
 
 #ifndef __FREERTOS_RISC_V_EXTENSIONS_H__
 #define __FREERTOS_RISC_V_EXTENSIONS_H__
+
+#include"config.h"
+
 #if( FREERTOS_ENABLE )
 
 #define portasmHAS_MTIME 	1

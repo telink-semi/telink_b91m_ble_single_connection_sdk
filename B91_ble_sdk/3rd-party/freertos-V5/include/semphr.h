@@ -32,6 +32,7 @@
 #endif
 
 #include "3rd-party/freertos-V5/include/queue.h"
+#include"config.h"
 
 #if( FREERTOS_ENABLE )
 
