@@ -292,7 +292,7 @@ void proto_task( void *pvParameters ){
 			//printf("EXIT blt_sdk_main_loop.\r\n");
 		}
 		//printf("enter if.\r\n");
-		if( blc_ll_isBrxWindowBusy() )		{continue;}
+		if( blt_ota_isOtaBusy() )		{continue;}
 
 		if(blc_ll_allow_block()){
 			if(blc_ll_getCurrentState() == BLS_LINK_STATE_ADV){

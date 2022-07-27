@@ -66,17 +66,19 @@ void stimer_irq_handler(void)
 
 
 #if (FREERTOS_ENABLE)
-static void led_task(void *pvParameters){
-	reg_gpio_pb_oen &= ~ GPIO_PB7;
-	while(1){
-		reg_gpio_pb_out |= GPIO_PB7;
-		printf("LED ON;\r\n");
-		vTaskDelay(1000);
-		printf("LED OFF;\r\n");
-		reg_gpio_pb_out &= ~GPIO_PB7;
-		vTaskDelay(1000);
-	}
-}
+	#if(!TEST_CONN_CURRENT_ENABLE)
+		static void led_task(void *pvParameters){
+			reg_gpio_pb_oen &= ~ GPIO_PB7;
+			while(1){
+				reg_gpio_pb_out |= GPIO_PB7;
+				printf("LED ON;\r\n");
+				vTaskDelay(1000);
+				printf("LED OFF;\r\n");
+				reg_gpio_pb_out &= ~GPIO_PB7;
+				vTaskDelay(1000);
+			}
+		}
+	#endif
 void proto_task( void *pvParameters );
 #endif
 
@@ -141,7 +143,9 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 		vPortRestoreTask();
 
 	}else{
-		xTaskCreate( led_task, "tLed", configMINIMAL_STACK_SIZE, (void*)0, (tskIDLE_PRIORITY+1), 0 );
+		#if(!TEST_CONN_CURRENT_ENABLE)
+			xTaskCreate( led_task, "tLed", configMINIMAL_STACK_SIZE, (void*)0, (tskIDLE_PRIORITY+1), 0 );
+		#endif
 		xTaskCreate( proto_task, "tProto", 2*configMINIMAL_STACK_SIZE, (void*)0, (tskIDLE_PRIORITY+1), 0 );
 	//	xTaskCreate( ui_task, "tUI", configMINIMAL_STACK_SIZE, (void*)0, tskIDLE_PRIORITY + 1, 0 );
 		vTaskStartScheduler();
