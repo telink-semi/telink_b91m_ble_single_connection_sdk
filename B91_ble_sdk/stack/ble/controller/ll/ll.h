@@ -296,7 +296,20 @@ ble_sts_t 	bls_hci_mod_setEventMask_cmd(u32 evtMask);
  */
 ble_sts_t	blc_controller_check_appBufferInitialization(void);
 
+/**
+ * @brief      this function is used to open or close freeRTOS.
+ * @param[in]  en , 1 : open
+ * 			        0 : close
+ * @return     none
+ */
+void blc_ll_set_freertos_en(u8 en);
 
+/**
+ * @brief      this function is used to get freeRTOS state.
+ * @return     1 : open
+ * 			   0 : close
+ */
+bool blc_ll_get_freertos_state(void);
 
 
 #endif /* LL__H_ */
