@@ -62,9 +62,11 @@ int battery_get_detect_enable (void)
 }
 
 extern unsigned short g_adc_vref;
+extern unsigned short g_adc_gpio_calib_vref;
 extern unsigned char g_adc_pre_scale;
 extern unsigned char g_adc_vbat_divider;
-
+extern signed char g_adc_vref_offset;
+extern signed char g_adc_gpio_calib_vref_offset;
 /**
  * @brief      this function is used for user to initialize battery detect.
  * @param	   none
@@ -72,7 +74,12 @@ extern unsigned char g_adc_vbat_divider;
  */
 _attribute_ram_code_ void adc_bat_detect_init(void)
 {
-
+	g_adc_vref = g_adc_gpio_calib_vref;//set gpio sample calib vref
+#if VBAT_CHANNEL_EN//vbat mode, vbat channel
+	g_adc_vref_offset = 0;//Vbat has no two-point calibration, offset must be set to 0.
+#else
+	g_adc_vref_offset = g_adc_gpio_calib_vref_offset;//set adc_vref_offset as adc_gpio_calib_vref_offset
+#endif
 	/******power off sar adc********/
 	adc_power_off();
 
@@ -88,39 +95,29 @@ _attribute_ram_code_ void adc_bat_detect_init(void)
 	analog_write_reg8(areg_ain_scale  , (analog_read_reg8( areg_ain_scale  )&(0xC0)) | 0x3d );
 	g_adc_vref = 1175;
 
-#if VBAT_CHANNEL_EN//vbat mode, vbat channel
-	//set Analog input pre-scaling,ADC_PRESCALE_1F4
-	analog_write_reg8( areg_ain_scale  , (analog_read_reg8( areg_ain_scale  )&(~FLD_SEL_AIN_SCALE)) | (ADC_PRESCALE_1<<6) );
-	g_adc_pre_scale = 1<<(unsigned char)ADC_PRESCALE_1;
-#else
 	//set Analog input pre-scaling,ADC_PRESCALE_1F4
 	analog_write_reg8( areg_ain_scale  , (analog_read_reg8( areg_ain_scale  )&(~FLD_SEL_AIN_SCALE)) | (ADC_PRESCALE_1F4<<6) );
 	g_adc_pre_scale = 1<<(unsigned char)ADC_PRESCALE_1F4;
-#endif
 
 	//set sample frequency.96k
 	adc_set_state_length(240, 10);
 
-	//default adc_resolution set as 14bit ,BIT(13) is sign bit
-	adc_set_resolution(ADC_RES14);
-
 	//set misc t_sample 6 cycle of adc clock:  6 * 1/4M
 	adc_set_tsample_cycle(ADC_SAMPLE_CYC_6);
+
+	//default adc_resolution set as 14bit ,BIT(13) is sign bit
+	adc_set_resolution(ADC_RES14);
 
 	//enable adc channel.
 	adc_set_m_chn_en();
 
-#if VBAT_CHANNEL_EN//vbat mode, vbat channel
-	//set vbat divider : ADC_VBAT_DIV_1F3
-	analog_write_reg8(areg_adc_vref_vbat_div, (analog_read_reg8(areg_adc_vref_vbat_div)&(~FLD_ADC_VREF_VBAT_DIV)) | (ADC_VBAT_DIV_1F3<<2) );
-	g_adc_vbat_divider = 5-ADC_VBAT_DIV_1F3;
-
-	adc_set_diff_input(ADC_VBAT, GND);
-#else//base mode, gpio channel
 	//set vbat divider : ADC_VBAT_DIV_OFF
 	analog_write_reg8(areg_adc_vref_vbat_div, (analog_read_reg8(areg_adc_vref_vbat_div)&(~FLD_ADC_VREF_VBAT_DIV)) | (ADC_VBAT_DIV_OFF<<2) );
 	g_adc_vbat_divider = 1;
 
+#if VBAT_CHANNEL_EN//vbat mode, vbat channel
+	adc_set_diff_input(ADC_VBAT, GND);
+#else//base mode, gpio channel
 	adc_set_diff_input(ADC_INPUT_PIN_CHN>>12, GND);
 #endif
 	/******power on sar adc********/
@@ -148,7 +145,6 @@ _attribute_ram_code_ int app_battery_power_check(u16 alram_vol_mv)
 	//Note:25us should be reserved between each reading(wait at least 2 sample cycle(f = 96K, T = 10.4us)).
 	//The sdk is only sampled once, and the user can redesign the filtering algorithm according to the actual application.
 	unsigned short adc_misc_data;
-	u32 adc_result;
 	u32 adc_average=0;
 #if DCDC_ADC_SOFTWARE_FILTER
 	u8 adc_sample_num=6;
@@ -162,31 +158,31 @@ _attribute_ram_code_ int app_battery_power_check(u16 alram_vol_mv)
 			adc_misc_data=0;
 			return 1;
 		}
+		else
+		{
+			adc_misc_data &= 0x1FFF;
+		}
 		adc_average +=adc_misc_data;
 	}
 	adc_average = adc_average/adc_sample_num;
 #else
-	u8 ana_read_f3 = analog_read_reg8(areg_adc_data_sample_control);
-	analog_write_reg8(areg_adc_data_sample_control, ana_read_f3 | FLD_NOT_SAMPLE_ADC_DATA);
+	analog_write_reg8(areg_adc_data_sample_control, analog_read_reg8(areg_adc_data_sample_control) | FLD_NOT_SAMPLE_ADC_DATA);
 	adc_misc_data = analog_read_reg16(areg_adc_misc_l);
-	analog_write_reg8(areg_adc_data_sample_control, ana_read_f3 & (~FLD_NOT_SAMPLE_ADC_DATA));
+	analog_write_reg8(areg_adc_data_sample_control, analog_read_reg8(areg_adc_data_sample_control) & (~FLD_NOT_SAMPLE_ADC_DATA));
 
 
 	if(adc_misc_data & BIT(13)){
 		adc_misc_data=0;
 		return 1;
 	}
+	else{
+		adc_misc_data &= 0x1FFF;
+	}
 
 	adc_average = adc_misc_data;
 #endif
-	adc_result = adc_average;
 ////////////////// adc sample data convert to voltage(mv) ////////////////
-	//(adc_result * g_adc_vref * g_adc_vbat_divider * g_adc_pre_scale) >> 13
-#if VBAT_CHANNEL_EN
-	batt_vol_mv  = (adc_result * 1175 * 3)>>13;
-#else
-	batt_vol_mv  = (adc_result * 1175)>>10;
-#endif
+	batt_vol_mv  = (((adc_average * g_adc_vbat_divider * g_adc_pre_scale * g_adc_vref)>>13) + g_adc_vref_offset);
 
 	if(batt_vol_mv < alram_vol_mv){
 		return 0;

@@ -337,7 +337,7 @@ _attribute_no_inline_ void user_init_normal(void)
 			analog_write(USED_DEEP_ANA_REG,  analog_read(USED_DEEP_ANA_REG)&(~LOW_BATT_FLG));  //clr
 		}
 		else{
-			#if (UI_LED_ENABLE)  //led indicate
+			#if (BLT_APP_LED_ENABLE)  //led indicate
 				for(int k=0;k<3;k++){
 					gpio_write(GPIO_LED_BLUE, LED_ON_LEVAL);
 					sleep_us(200000);
@@ -623,9 +623,13 @@ _attribute_no_inline_ void main_loop (void)
 		else{
 			battery_check_returnVaule=app_battery_power_check(BAT_DEEP_THRES_MV);  //2.0 V
 		}
-		if(!battery_check_returnVaule)
+		if(battery_check_returnVaule)
 		{
-			#if (UI_LED_ENABLE)  //led indicate
+			analog_write(USED_DEEP_ANA_REG,  analog_read(USED_DEEP_ANA_REG)&(~LOW_BATT_FLG));  //clr
+		}
+		else
+		{
+			#if (BLT_APP_LED_ENABLE)  //led indicate
 				for(int k=0;k<3;k++){
 					gpio_write(GPIO_LED_BLUE, LED_ON_LEVAL);
 					sleep_us(200000);

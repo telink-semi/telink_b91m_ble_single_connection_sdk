@@ -298,7 +298,11 @@ _attribute_ram_code_ void user_battery_power_check(void)
 			else{
 				battery_check_returnVaule=app_battery_power_check(BAT_DEEP_THRES_MV);
 			}
-			if(!battery_check_returnVaule)
+			if(battery_check_returnVaule)
+			{
+				analog_write_reg8(USED_DEEP_ANA_REG,  analog_read_reg8(USED_DEEP_ANA_REG) &(~LOW_BATT_FLG));  //clr
+			}
+			else
 			{
 				#if (UI_LED_ENABLE)  //led indicate
 					for(int k=0;k<3;k++){
