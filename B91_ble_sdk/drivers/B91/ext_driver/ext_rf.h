@@ -195,6 +195,8 @@ void rf_switchPhyTestMode(rf_mode_e mode);
 typedef enum{
 	FSM_BTX 	= 0x81,
 	FSM_BRX 	= 0x82,
+	FSM_PTX	= 0x83,
+	FSM_PRX    = 0x84,
 	FSM_STX 	= 0x85,
 	FSM_SRX 	= 0x86,
 	FSM_TX2RX	= 0x87,

@@ -184,7 +184,7 @@ int controller_event_callback (u32 h, u8 *p, int n)
 
 //				event_adv_report_t *pa = (event_adv_report_t *)p;
 //				s8 rssi = (s8)pa->data[pa->len];//rssi has already plus 110.
-				//printf("LE advertising report (rssi:%ddb, len:%d):\n", rssi, pa->len+11);
+//				printf("LE advertising report (rssi:%ddb, len:%d):\n", rssi, pa->len+11);
 
 				#if (DBG_ADV_REPORT_ON_RAM)
 					if(pa->len > 31){
@@ -198,7 +198,7 @@ int controller_event_callback (u32 h, u8 *p, int n)
 			}
 		}
 	}
-return 0;
+	return 0;
 }
 
 #endif
@@ -367,6 +367,21 @@ _attribute_no_inline_ void user_init_normal(void)
 
 #elif (FEATURE_TEST_MODE == TEST_SCANNING_IN_ADV_AND_CONN_SLAVE_ROLE)
 
+		blt_ll_initScanState();
+		blc_ll_addScanningInAdvState();  //add scan in adv state
+		blc_ll_addScanningInConnSlaveRole();  //add scan in conn slave role
+
+		//scan setting
+		blc_hci_le_setEventMask_cmd(HCI_LE_EVT_MASK_ADVERTISING_REPORT);
+		blc_hci_registerControllerEventHandler(controller_event_callback);
+
+
+		blc_ll_setAclConnMaxOctetsNumber(ACL_CONN_MAX_RX_OCTETS, ACL_CONN_MAX_TX_OCTETS);
+
+		blc_ll_initAclConnTxFifo(app_acl_txfifo, ACL_TX_FIFO_SIZE, ACL_TX_FIFO_NUM);
+		blc_ll_initAclConnRxFifo(app_acl_rxfifo, ACL_RX_FIFO_SIZE, ACL_RX_FIFO_NUM);
+
+
 		////// Host Initialization  //////////
 		blc_gap_peripheral_init();    //gap initialization
 		my_att_init (); //gatt initialization
@@ -402,15 +417,7 @@ _attribute_no_inline_ void user_init_normal(void)
 		bls_ll_setAdvEnable(1);  //adv enable
 
 
-
-		//scan setting
-		blc_hci_le_setEventMask_cmd(HCI_LE_EVT_MASK_ADVERTISING_REPORT);
-		blc_hci_registerControllerEventHandler(controller_event_callback);
-
-		#if 1  //report all adv
-			blc_ll_setScanParameter(SCAN_TYPE_PASSIVE, SCAN_INTERVAL_100MS, SCAN_INTERVAL_100MS,
-									  OWN_ADDRESS_PUBLIC, SCAN_FP_ALLOW_ADV_ANY);
-		#else //report adv only in whitelist
+		#if 0  //report all adv
 			ll_whiteList_reset();
 			u8 test_adv[6] = {0x33, 0x33, 0x33, 0x33, 0x33, 0x33};
 			ll_whiteList_add(BLE_ADDR_PUBLIC, test_adv);
@@ -419,8 +426,6 @@ _attribute_no_inline_ void user_init_normal(void)
 
 		#endif
 
-		blc_ll_addScanningInAdvState();  //add scan in adv state
-		blc_ll_addScanningInConnSlaveRole();  //add scan in conn slave role
 
 
 
@@ -494,7 +499,11 @@ _attribute_no_inline_ void main_loop (void)
 
 
 	////////////////////////////////////// PM Process /////////////////////////////////
+#if(FEATURE_TEST_MODE == TEST_ADVERTISING_IN_CONN_SLAVE_ROLE || FEATURE_TEST_MODE == TEST_SCANNING_IN_ADV_AND_CONN_SLAVE_ROLE || FEATURE_TEST_MODE == TEST_ADVERTISING_SCANNING_IN_CONN_SLAVE_ROLE)
+	bls_pm_setSuspendMask (SUSPEND_DISABLE);
+#else
 	blt_pm_proc();
+#endif
 
 }
 

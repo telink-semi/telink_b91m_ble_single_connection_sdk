@@ -27,15 +27,6 @@
 
 
 
-
-/**
- * @brief      for user to initialize scanning module
- * @param	   none
- * @return     none
- */
-void 		blc_ll_initScanning_module(void);
-
-
 /**
  * @brief      This function is used to set the scan parameters
  * @param[in]  scan_type - passive Scanning or active scanning.
@@ -48,20 +39,6 @@ void 		blc_ll_initScanning_module(void);
 ble_sts_t 	blc_ll_setScanParameter (scan_type_t scan_type, u16 scan_interval, u16 scan_window, own_addr_type_t  ownAddrType, scan_fp_type_t scanFilter_policy);
 
 
-/**
- * @brief	   enable or disable legacy scanning.
- * @param[in]  scan_enable
- * @param[in]  filter_duplicate - controls whether the Link Layer should filter out
- * 								  duplicate advertising reports (Filtering_Enabled) to the Host,
- * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
- */
-ble_sts_t 	blc_ll_setScanEnable (scan_en_t scan_enable, dupFilter_en_t filter_duplicate);
-
-/**
- * @brief	   Initiate scan state in ADV and Connect.
- * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
- */
-ble_sts_t	blc_ll_initScanState(void);
 
 /**
  * @brief      This function is used to add scan state in advertise state of slave role.
@@ -93,15 +70,6 @@ ble_sts_t    blc_ll_addScanningInConnSlaveRole(void);
  * @return      Status - 0x00: BLE success; 0x01-0xFF: fail
  */
 ble_sts_t    blc_ll_removeScanningFromConnSLaveRole(void);
-
-
-/**
- * @brief      This function is used to determine whether scan request is sent for all advertising.
- * @param[in]  scan_req_all_enable - Scan request is sent for all advertising.
- * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
- */
-ble_sts_t   bls_ll_setScanReqAllEnable(u8 scan_req_all_enable);
-
 
 
 
