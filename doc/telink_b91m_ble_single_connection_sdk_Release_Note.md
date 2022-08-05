@@ -1,47 +1,54 @@
-## V3.1.0
+# V3.3.0.0(PR)
+
+### Dependency Updates
+   * telink_b91m_driver_src SHA-1: 9fa37f2092a741dafaef3d2434c641caaf5e19d1
 
 ### Features
-* SDK version：telink_eagle_ble_single_connection_sdk_v3.1.0.
-* Driver version:  B91_Driver_Demo V1.2.0-Beta.
-* This version sdk support B91 A0/A1 chip.
-* Add suspend sleep mode and long sleep mode.
-* Add more feature demo in B91_feature.
-  +  EMI/STUCK_KEY/IR/IR Learn/OTA/Audio solution integration. 
-* Add Low Battery Check demo.
-* Add Public Key Engine(PKE) Standard Performance acceleration module for ECC.
-* Demo illustration.
-  +  BLE slave demo：B91_ble_sample 
-  +  BLE feature demo：B91_feature
-  +  BLE module demo：B91_module 
-
+   * Support B91
+   * Support freeRTOS
+   * Support 4-wire JTAG
+   * Support multiple local device
+   * Add function to get version information
+   * Add a boot that all global variables are in the retention area.
+   * Support advertising in slave connection
+   * Support passive scanning in slave connection
+   * Support passive scanning in advertising
 
 ### Bug Fixes
-* Fix flash_write_page error operating across the page.
-
+   * N/A.
 
 ### BREAKING CHANGES
-* ATT write callback should add unsigned short connHandle.
+   * N/A.
 
+### CodeSize
+   * Flash： 54.4k  Byte
+   * RAM:
+     - I-RAM: 26.0k Byte
+     - D-RAM: 120 Byte
 
+### Dependency Updates
+   *  telink_b91m_driver_src SHA-1: 9fa37f2092a741dafaef3d2434c641caaf5e19d1
 
 ### Features
-* SDK 版本：telink_eagle_ble_single_connection_sdk_v3.1.0.
-* Driver 版本:  B91_Driver_Demo V1.2.0-Beta.
-* 此版本SDK支持B91 A0/A1芯片.
-* 增加suspend睡眠模式和长睡眠模式.
-* 增加测试Demo在B91_feature工程.
-  +  EMI/STUCK_KEY/IR/IR_Learn/OTA/Audio solution integration. 
-* 增加低压检测功能.
-* 增加PKE性能加速硬件模块用于ECC.
-* Demo illustration.
-  +  BLE slave demo：B91_ble_sample 
-  +  BLE feature demo：B91_feature
-  +  BLE module demo：B91_module 
-
+   * 支持B91
+   * 支持freeRTOS
+   * 支持4线JTAG
+   * 支持多设备地址支持
+   * 增加API获取SDK版本
+   * 增加默认全局变量放入retention区域的boot
+   * 支持在连接中广播
+   * 支持在连接中被动扫描
+   * 支持在广播中被动扫描
 
 ### Bug Fixes
-* 修复flash_write_page跨页写操作的错误.
-
+   * N/A.
 
 ### BREAKING CHANGES
-* ATT写回调函数需要传入connHandle变量.
+   * N/A.
+
+### CodeSize
+   * Flash： 54.4k  Byte
+   * RAM:
+     - I-RAM: 26.0k Byte
+     - D-RAM: 120 Byte
+
