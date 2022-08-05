@@ -8,7 +8,7 @@
    * Support freeRTOS
    * Support 4-wire JTAG
    * Add the function to get version information
-   * Add a boot that all global variables are in the retention area.
+   * Add a boot that all global variables are in the retention area
    * Support advertising in slave connection
    * Support passive scanning in slave connection
    * Support passive scanning in advertising
