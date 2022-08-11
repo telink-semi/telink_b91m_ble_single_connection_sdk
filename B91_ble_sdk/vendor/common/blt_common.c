@@ -146,4 +146,13 @@ void blc_initMacAddress(int flash_addr, u8 *mac_public, u8 *mac_random_static)
 		flash_write_page (flash_addr + 6, 2, (u8 *)(mac_random_static + 3) );
 	}
 }
+
+//To fix bug
+/**
+ * @brief      This function is used to request the Controller to start or stop scanning.Not support scanning only.This Api is unavailable.
+ * @param[in]  scan_enable - scanning Enable
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
+ble_sts_t blc_ll_setScanEnable (scan_en_t scan_enable, dupFilter_en_t filter_duplicate){return 0;}
+
 #endif

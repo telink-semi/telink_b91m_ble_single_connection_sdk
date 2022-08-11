@@ -71,6 +71,13 @@ ble_sts_t    blc_ll_addScanningInConnSlaveRole(void);
  */
 ble_sts_t    blc_ll_removeScanningFromConnSLaveRole(void);
 
+//To fix bug.
+/**
+ * @brief      This function is used to request the Controller to start or stop scanning.Not support scanning only.This Api is unavailable.
+ * @param[in]  scan_enable - scanning Enable
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
+ble_sts_t blc_ll_setScanEnable (scan_en_t scan_enable, dupFilter_en_t filter_duplicate);
 
 
 #endif /* LL_SCAN_H_ */
