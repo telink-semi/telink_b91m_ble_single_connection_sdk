@@ -13,6 +13,7 @@
    * Support passive scanning in slave connection
    * Support passive scanning in advertising
    * Adjust the structure of the code related to battery power detection
+   * Update b91 to support protection code
 
 ### Bug Fixes
    * N/A.
@@ -39,6 +40,7 @@
    * 支持在连接中被动扫描
    * 支持在广播中被动扫描
    * 调整电池电量检测代码的结构
+   * 更新b91以支持保护码
 
 ### Bug Fixes
    * N/A.
