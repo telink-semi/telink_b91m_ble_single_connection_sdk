@@ -26,6 +26,13 @@
    * RAM:
      - I-RAM: 26.0k Bytes
      - D-RAM: 0.1k Bytes
+   * The values above are obtained by compiling B91_ble_sample with default configuration.
+   
+   * Flash： 86.47k  Bytes
+   * RAM:
+     - I-RAM: 48.5k Bytes
+     - D-RAM: 0.1k Bytes
+   * The values above are obtained by compiling B91_ble_sample with FreeRTOS.    
 
 ### Dependency Updates
    *  telink_b91m_driver_src SHA-1: 9fa37f2092a741dafaef3d2434c641caaf5e19d1
@@ -53,4 +60,10 @@
    * RAM:
      - I-RAM: 26.0k Bytes
      - D-RAM: 0.1k Bytes
+   * 以上大小使用默认配置编译B91_ble_sample得到
 
+   * Flash： 86.47k  Bytes
+   * RAM:
+     - I-RAM: 48.5k Bytes
+     - D-RAM: 0.1k Bytes
+   * 以上大小使用基于FreeRTOS的B91_ble_sample得到.
