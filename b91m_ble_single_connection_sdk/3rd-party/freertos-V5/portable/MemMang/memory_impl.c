@@ -20,7 +20,7 @@
  *******************************************************************************
  */
 
-#include "3rd-party/freertos-V5/include/FreeRTOS.h"
+#include "FreeRTOS.h"
 
 #if( FREERTOS_ENABLE )
 

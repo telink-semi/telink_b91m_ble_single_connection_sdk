@@ -48,7 +48,7 @@
  * included here.  In this case the path to the correct portmacro.h header file
  * must be set in the compiler's include path. */
 #ifndef portENTER_CRITICAL
-    #include "3rd-party/freertos-V5/portable/GCC/RISC-V/portmacro.h"
+    #include "portmacro.h"
 #endif
 #if( FREERTOS_ENABLE )
 #if portBYTE_ALIGNMENT == 32

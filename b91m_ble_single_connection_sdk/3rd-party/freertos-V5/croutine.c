@@ -24,9 +24,9 @@
  *
  */
 
-#include "3rd-party/freertos-V5/include/FreeRTOS.h"
-#include "3rd-party/freertos-V5/include/task.h"
-#include "3rd-party/freertos-V5/include/croutine.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "croutine.h"
 
 #if( FREERTOS_ENABLE )
 

@@ -24,21 +24,24 @@
 #pragma once
 
 
-typedef unsigned char u8 ;
+typedef unsigned char 		u8;
+typedef signed char 		s8;
+typedef unsigned short 		u16;
+typedef signed short 		s16;
+typedef int 				s32;
+typedef unsigned int 		u32;
+typedef long long 			s64;
+typedef unsigned long long 	u64;
 
-typedef signed char s8;
 
-typedef unsigned short u16;
+typedef unsigned char 		uint8_t;
+typedef unsigned short 		uint16_t;
 
-typedef signed short s16;
 
-typedef int s32;
-
-typedef unsigned int u32;
-
-typedef long long s64;
-
-typedef unsigned long long u64;
+typedef unsigned char		 uint08;
+typedef unsigned short		 uint16;
+typedef unsigned int		 uint32;
+typedef unsigned long long	 uint64;
 
 #ifndef NULL
 #define NULL 	0
@@ -46,7 +49,9 @@ typedef unsigned long long u64;
 
 #ifndef __cplusplus
 
+#ifndef bool
 typedef u8 bool;
+#endif
 
 #ifndef FALSE
 #define FALSE 	0
@@ -55,8 +60,12 @@ typedef u8 bool;
 #define TRUE 	(!FALSE)
 #endif
 
+#ifndef false
 #define false 	FALSE
+#endif
+#ifndef true
 #define true 	TRUE
+#endif
 
 #endif
 

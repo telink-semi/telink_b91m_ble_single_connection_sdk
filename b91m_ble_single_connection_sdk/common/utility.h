@@ -87,6 +87,7 @@
 
 #define IS_POWER_OF_2(x)		(!(x & (x-1)))
 #define IS_LITTLE_ENDIAN 		(*(unsigned short*)"\0\xff" > 0x100)
+#define IS_4BYTE_ALIGN(x) 		(!(x & 3))
 
 #define IMPLIES(x, y) 			(!(x) || (y))
 

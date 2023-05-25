@@ -33,10 +33,10 @@
 #define MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
 /* FreeRTOS includes. */
-#include "3rd-party/freertos-V5/include/FreeRTOS.h"
-#include "3rd-party/freertos-V5/include/task.h"
-#include "3rd-party/freertos-V5/include/timers.h"
-#include "3rd-party/freertos-V5/include/event_groups.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "timers.h"
+#include "event_groups.h"
 
 #if( FREERTOS_ENABLE )
 

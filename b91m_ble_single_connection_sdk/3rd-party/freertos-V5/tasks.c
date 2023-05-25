@@ -34,10 +34,11 @@
 #define MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
 /* FreeRTOS includes. */
-#include "3rd-party/freertos-V5/include/FreeRTOS.h"
-#include "3rd-party/freertos-V5/include/task.h"
-#include "3rd-party/freertos-V5/include/timers.h"
-#include "3rd-party/freertos-V5/include/stack_macros.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "timers.h"
+#include "stack_macros.h"
+#include "driver.h"
 
 #if( FREERTOS_ENABLE )
 /* Lint e9021, e961 and e750 are suppressed as a MISRA exception justified
@@ -2611,7 +2612,7 @@ char * pcTaskGetName( TaskHandle_t xTaskToQuery ) /*lint !e971 Unqualified char 
  * implementations require configUSE_TICKLESS_IDLE to be set to a value other than
  * 1. */
 #if ( configUSE_TICKLESS_IDLE != 0 )
-
+    RAM_CODE
     void vTaskStepTick( const TickType_t xTicksToJump )
     {
         /* Correct the tick count value after a period during which the tick
@@ -2723,7 +2724,7 @@ BaseType_t xTaskCatchUpTicks( TickType_t xTicksToCatchUp )
 #endif /* INCLUDE_xTaskAbortDelay */
 /*----------------------------------------------------------*/
 
-__attribute__((section(".ram_code"))) BaseType_t xTaskIncrementTick( void )
+RAM_CODE BaseType_t xTaskIncrementTick( void )
 {
     TCB_t * pxTCB;
     TickType_t xItemValue;
@@ -3008,7 +3009,7 @@ __attribute__((section(".ram_code"))) BaseType_t xTaskIncrementTick( void )
 #endif /* configUSE_APPLICATION_TASK_TAG */
 /*-----------------------------------------------------------*/
 
-__attribute__((section(".ram_code"))) void vTaskSwitchContext( void )
+RAM_CODE void vTaskSwitchContext( void )
 {
     if( uxSchedulerSuspended != ( UBaseType_t ) pdFALSE )
     {
@@ -3986,7 +3987,7 @@ static void prvCheckTasksWaitingTermination( void )
 #endif /* INCLUDE_vTaskDelete */
 /*-----------------------------------------------------------*/
 
-__attribute__((section(".ram_code")))   static void prvResetNextTaskUnblockTime( void )
+RAM_CODE static void prvResetNextTaskUnblockTime( void )
 {
     if( listLIST_IS_EMPTY( pxDelayedTaskList ) != pdFALSE )
     {
@@ -4330,6 +4331,7 @@ __attribute__((section(".ram_code")))   static void prvResetNextTaskUnblockTime(
 
 #if ( portCRITICAL_NESTING_IN_TCB == 1 )
 
+    RAM_CODE
     void vTaskEnterCritical( void )
     {
         portDISABLE_INTERRUPTS();
@@ -4359,7 +4361,7 @@ __attribute__((section(".ram_code")))   static void prvResetNextTaskUnblockTime(
 /*-----------------------------------------------------------*/
 
 #if ( portCRITICAL_NESTING_IN_TCB == 1 )
-
+    RAM_CODE
     void vTaskExitCritical( void )
     {
         if( xSchedulerRunning != pdFALSE )
@@ -4839,7 +4841,7 @@ TickType_t uxTaskResetEventItemValue( void )
 /*-----------------------------------------------------------*/
 
 #if ( configUSE_TASK_NOTIFICATIONS == 1 )
-
+    RAM_CODE
     BaseType_t xTaskGenericNotify( TaskHandle_t xTaskToNotify,
                                    UBaseType_t uxIndexToNotify,
                                    uint32_t ulValue,
@@ -5101,7 +5103,7 @@ TickType_t uxTaskResetEventItemValue( void )
 /*-----------------------------------------------------------*/
 
 #if ( configUSE_TASK_NOTIFICATIONS == 1 )
-
+    RAM_CODE
     void vTaskGenericNotifyGiveFromISR( TaskHandle_t xTaskToNotify,
                                         UBaseType_t uxIndexToNotify,
                                         BaseType_t * pxHigherPriorityTaskWoken )

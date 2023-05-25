@@ -88,7 +88,7 @@ ble_sts_t blc_phy_setPhyTestEnable (u8 en);
 bool 	  blc_phy_isPhyTestEnable(void);
 
 
-#if (MCU_CORE_TYPE == MCU_CORE_9518)
+#if (MCU_CORE_TYPE == MCU_CORE_B91 || MCU_CORE_TYPE == MCU_CORE_B92)
 	/**
 	 * @brief      uart RX data process for PHY test 2 wire UART mode
 	 * @param      none
@@ -111,6 +111,13 @@ bool 	  blc_phy_isPhyTestEnable(void);
 	 * @return     always 0
 	 */
 	int blc_phyTest_hci_rxUartCb (void);
+
+	/**
+	 * @brief      set uart num for PHY test
+	 * @param[in]  uart_num: UART num
+	 * @return     none
+	 */
+	void blc_phyTest_Uart_num_Set (uart_num_e uart_num);
 #elif (MCU_CORE_TYPE == MCU_CORE_825x || MCU_CORE_TYPE == MCU_CORE_827x)
 	/**
 	 * @brief      uart RX data process for PHY test 2 wire UART mode

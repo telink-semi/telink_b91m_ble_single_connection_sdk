@@ -32,18 +32,16 @@
  * task.h is included from an application file. */
 #define MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
-#include "3rd-party/freertos-V5/include/FreeRTOS.h"
-#include "3rd-party/freertos-V5/include/task.h"
-#include "3rd-party/freertos-V5/include/queue.h"
-#include "3rd-party/freertos-V5/include/timers.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
+#include "timers.h"
 
 #if( FREERTOS_ENABLE )
 
 #if ( INCLUDE_xTimerPendFunctionCall == 1 ) && ( configUSE_TIMERS == 0 )
     #error configUSE_TIMERS must be set to 1 to make the xTimerPendFunctionCall() function available.
 #endif
-
-
 
 /* Lint e9021, e961 and e750 are suppressed as a MISRA exception justified
  * because the MPU ports require MPU_WRAPPERS_INCLUDED_FROM_API_FILE to be defined

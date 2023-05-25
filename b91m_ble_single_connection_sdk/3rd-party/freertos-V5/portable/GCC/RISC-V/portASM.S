@@ -105,36 +105,35 @@ specific version of freertos_risc_v_chip_specific_extensions.h.  See the notes
 at the top of this file. */
 #define portCONTEXT_SIZE ( 30 * portWORD_SIZE )
 
-.global xPortStartFirstTask
-.global trap_entry
-.global pxPortInitialiseStack
-.global freertos_task_switch_handler
-.global xPortYield
+	.global xPortStartFirstTask
+	.global trap_entry
+	.global pxPortInitialiseStack
+	.global freertos_task_switch_handler
+	.global xPortYield
 
-.extern pxCurrentTCB
-.extern ulPortTrapHandler
-.extern vTaskSwitchContext
-.extern xTaskIncrementTick
-.extern Timer_IRQHandler
-.extern pullMachineTimerCompareRegister
-.extern pullNextTime
-.extern uxTimerIncrementsForOneTick /* size_t type so 32-bit on 32-bit core and 64-bits on 64-bit core. */
-.extern xISRStackTop
-.extern portasmHANDLE_INTERRUPT
-.extern start_reboot
+	.extern pxCurrentTCB
+	.extern ulPortTrapHandler
+	.extern vTaskSwitchContext
+	.extern xTaskIncrementTick
+	.extern Timer_IRQHandler
+	.extern pullMachineTimerCompareRegister
+	.extern pullNextTime
+	.extern uxTimerIncrementsForOneTick /* size_t type so 32-bit on 32-bit core and 64-bits on 64-bit core. */
+	.extern xISRStackTop
+	.extern portasmHANDLE_INTERRUPT
 
 /*-----------------------------------------------------------*/
 .macro portasmSAVE_REGISTERS
-	addi sp, sp, -portCONTEXT_SIZE
-	store_x x1, 1 * portWORD_SIZE( sp )
-	store_x x5, 2 * portWORD_SIZE( sp )
-	store_x x6, 3 * portWORD_SIZE( sp )
-	store_x x7, 4 * portWORD_SIZE( sp )
-	store_x x8, 5 * portWORD_SIZE( sp )
-	store_x x9, 6 * portWORD_SIZE( sp )
-	store_x x10, 7 * portWORD_SIZE( sp )
-	store_x x11, 8 * portWORD_SIZE( sp )
-	store_x x12, 9 * portWORD_SIZE( sp )
+	addi    sp, sp, -portCONTEXT_SIZE
+	store_x x1,   1 * portWORD_SIZE( sp )
+	store_x x5,   2 * portWORD_SIZE( sp )
+	store_x x6,   3 * portWORD_SIZE( sp )
+	store_x x7,   4 * portWORD_SIZE( sp )
+	store_x x8,   5 * portWORD_SIZE( sp )
+	store_x x9,   6 * portWORD_SIZE( sp )
+	store_x x10,  7 * portWORD_SIZE( sp )
+	store_x x11,  8 * portWORD_SIZE( sp )
+	store_x x12,  9 * portWORD_SIZE( sp )
 	store_x x13, 10 * portWORD_SIZE( sp )
 	store_x x14, 11 * portWORD_SIZE( sp )
 	store_x x15, 12 * portWORD_SIZE( sp )
@@ -155,39 +154,40 @@ at the top of this file. */
 	store_x x30, 27 * portWORD_SIZE( sp )
 	store_x x31, 28 * portWORD_SIZE( sp )
 
-	csrr t0, mstatus					/* Required for MPIE bit. */
+	csrr    t0, mstatus					/* Required for MPIE bit. */
 	store_x t0, 29 * portWORD_SIZE( sp )
 
 	portasmSAVE_ADDITIONAL_REGISTERS	/* Defined in freertos_risc_v_chip_specific_extensions.h to save any registers unique to the RISC-V implementation. */
-	store_x x1, 0 * portWORD_SIZE( sp ) /* save ra as mepc for NONE irq switch in xPortYield function*/
 
-	load_x  t0, pxCurrentTCB			/* Load pxCurrentTCB. */
+	store_x  x1, 0 * portWORD_SIZE( sp ) /* save ra as mepc for NONE irq switch in xPortYield function*/
+
+	load_x   t0, pxCurrentTCB			/* Load pxCurrentTCB. */
 	store_x  sp, 0( t0 )				/* Write sp to first TCB member. */
 .endm
 
 .macro portasmRESTORE_REGISTERS
-	load_x  t1, pxCurrentTCB			/* Load pxCurrentTCB. */
-	load_x  sp, 0( t1 )				 	/* Read sp from first TCB member. */
+	load_x   t1, pxCurrentTCB			/* Load pxCurrentTCB. */
+	load_x   sp, 0( t1 )				 	/* Read sp from first TCB member. */
 
 	/* Load mret with the address of the next instruction in the task to run next. */
-	load_x t0, 0( sp )
-	csrw mepc, t0
+	load_x   t0, 0( sp )
+	csrw     mepc, t0
 
 	portasmRESTORE_ADDITIONAL_REGISTERS	/* Defined in freertos_risc_v_chip_specific_extensions.h to restore any registers unique to the RISC-V implementation. */
 
 	/* Load mstatus with the interrupt enable bits used by the task. */
 	load_x  t0, 29 * portWORD_SIZE( sp )
-	csrw mstatus, t0						/* Required for MPIE bit. */
+	csrw    mstatus, t0						/* Required for MPIE bit. */
 
-	load_x  x1, 1 * portWORD_SIZE( sp )
-	load_x  x5, 2 * portWORD_SIZE( sp )		/* t0 */
-	load_x  x6, 3 * portWORD_SIZE( sp )		/* t1 */
-	load_x  x7, 4 * portWORD_SIZE( sp )		/* t2 */
-	load_x  x8, 5 * portWORD_SIZE( sp )		/* s0/fp */
-	load_x  x9, 6 * portWORD_SIZE( sp )		/* s1 */
-	load_x  x10, 7 * portWORD_SIZE( sp )	/* a0 */
-	load_x  x11, 8 * portWORD_SIZE( sp )	/* a1 */
-	load_x  x12, 9 * portWORD_SIZE( sp )	/* a2 */
+	load_x  x1,   1 * portWORD_SIZE( sp )
+	load_x  x5,   2 * portWORD_SIZE( sp )		/* t0 */
+	load_x  x6,   3 * portWORD_SIZE( sp )		/* t1 */
+	load_x  x7,   4 * portWORD_SIZE( sp )		/* t2 */
+	load_x  x8,   5 * portWORD_SIZE( sp )		/* s0/fp */
+	load_x  x9,   6 * portWORD_SIZE( sp )		/* s1 */
+	load_x  x10,  7 * portWORD_SIZE( sp )	/* a0 */
+	load_x  x11,  8 * portWORD_SIZE( sp )	/* a1 */
+	load_x  x12,  9 * portWORD_SIZE( sp )	/* a2 */
 	load_x  x13, 10 * portWORD_SIZE( sp )	/* a3 */
 	load_x  x14, 11 * portWORD_SIZE( sp )	/* a4 */
 	load_x  x15, 12 * portWORD_SIZE( sp )	/* a5 */
@@ -207,11 +207,66 @@ at the top of this file. */
 	load_x  x29, 26 * portWORD_SIZE( sp )	/* t4 */
 	load_x  x30, 27 * portWORD_SIZE( sp )	/* t5 */
 	load_x  x31, 28 * portWORD_SIZE( sp )	/* t6 */
-	addi sp, sp, portCONTEXT_SIZE
+	addi    sp, sp, portCONTEXT_SIZE
 .endm
 
 /*-----------------------------------------------------------*/
+#if 1
+	.extern xPortIrqHandler
+	.globl vPortTimerUpdate
 
+.align 3
+.func
+vPortTimerUpdate:
+	load_x  t0, pullMachineTimerCompareRegister  /* Load address of compare register into t0. */
+	load_x  t1, pullNextTime  		/* Load the address of ullNextTime into t1. */
+
+  #if( __riscv_xlen == 32 )
+	/* Update the 64-bit mtimer compare match value in two 32-bit writes. */
+	li      t4, -1
+	lw      t2, 0(t1)				/* Load the low word of ullNextTime into t2. */
+	lw      t3, 4(t1)				/* Load the high word of ullNextTime into t3. */
+	sw      t4, 0(t0)				/* Low word no smaller than old value to start with - will be overwritten below. */
+	sw      t3, 4(t0)				/* Store high word of ullNextTime into compare register.  No smaller than new value. */
+	sw      t2, 0(t0)				/* Store low word of ullNextTime into compare register. */
+	lw      t0, uxTimerIncrementsForOneTick	/* Load the value of ullTimerIncrementForOneTick into t0 (could this be optimized by storing in an array next to pullNextTime?). */
+	add     t4, t0, t2				/* Add the low word of ullNextTime to the timer increments for one tick (assumes timer increment for one tick fits in 32-bits). */
+	sltu    t5, t4, t2				/* See if the sum of low words overflowed (what about the zero case?). */
+	add     t6, t3, t5				/* Add overflow to high word of ullNextTime. */
+	sw      t4, 0(t1)				/* Store new low word of ullNextTime. */
+	sw      t6, 4(t1)				/* Store new high word of ullNextTime. */
+  #endif /* __riscv_xlen == 32 */
+
+  #if( __riscv_xlen == 64 )
+	/* Update the 64-bit mtimer compare match value. */
+	ld    t2, 0(t1)			 	/* Load ullNextTime into t2. */
+	sd    t2, 0(t0)				/* Store ullNextTime into compare register. */
+	ld    t0, uxTimerIncrementsForOneTick  /* Load the value of ullTimerIncrementForOneTick into t0 (could this be optimized by storing in an array next to pullNextTime?). */
+	add   t4, t0, t2				/* Add ullNextTime to the timer increments for one tick. */
+	sd    t4, 0(t1)				/* Store ullNextTime. */
+  #endif /* __riscv_xlen == 64 */
+	ret
+.endfunc
+
+
+.align 3			//  2 ^ 3 == 8
+.func
+trap_entry:
+	portasmSAVE_REGISTERS
+
+	csrr    a0, mcause
+	csrr    a1, mepc
+
+	store_x a1, 0( sp )      /* save mepc to sp. */
+
+	load_x  sp, xISRStackTop  /* switch sp to irq stack for call functions. */
+	jal     portasmHANDLE_INTERRUPT
+
+	portasmRESTORE_REGISTERS
+	mret
+.endfunc
+
+#else
 .align 3			//  2 ^ 3 == 8
 .func
 trap_entry:
@@ -313,7 +368,7 @@ is_exception:
 	csrr t0, mcause						/* For viewing in the debugger only. */
 	csrr t1, mepc						/* For viewing in the debugger only */
 	csrr t2, mstatus
-	j start_reboot						/* No other exceptions handled yet. */
+	j is_exception						/* No other exceptions handled yet. */
 
 as_yet_unhandled:
 	csrr t0, mcause						/* For viewing in the debugger only. */
@@ -323,6 +378,8 @@ processed_source:
 	portasmRESTORE_REGISTERS
 	mret
 	.endfunc
+#endif
+
 /*-----------------------------------------------------------*/
 
 .align 3			//  2 ^ 3 == 8
@@ -331,6 +388,8 @@ xPortYield:
 	csrrci	t0, mstatus,8	// disable interrupt, save mstatus to x5 (t0) //   It is OK to change t0, because xPortYield is a normal function
 	andi	t0, t0, 8		// mask MIE bit
 	slli 	t0, t0, 4		// Copy the original MIE to MPIE
+	li      t2, 0x800       # MPP -> 1
+    or      t0, t0, t2      # MPP -> 1
 	li		t1, 0x80
 	csrc	mstatus, t1 	// Copy the original MIE to MPIE
 	csrs 	mstatus, t0		// Copy the original MIE to MPIE
@@ -454,9 +513,11 @@ chip_specific_stack_frame:				/* First add any chip specific registers to the st
 
 
 /*-----------------------------------------------------------*/
-.global vPortSuppressTicksAndSleep
-.extern vPortSuppressTicksAndSleep_i
-.global vPortRestoreActiveTask
+	.global vPortSuppressTicksAndSleep
+	.extern vPortSuppressTicksAndSleep_i
+	.global vPortRestoreActiveTask
+
+	.section .ram_code
 
 .align 3			//	2 ^ 3 == 8
 .func

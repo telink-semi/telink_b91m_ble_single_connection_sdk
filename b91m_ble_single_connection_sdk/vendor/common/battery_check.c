@@ -74,12 +74,13 @@ extern signed char g_adc_gpio_calib_vref_offset;
  */
 _attribute_ram_code_ void adc_bat_detect_init(void)
 {
+#if (MCU_CORE_TYPE == MCU_CORE_B91)
 	g_adc_vref = g_adc_gpio_calib_vref;//set gpio sample calib vref
-#if VBAT_CHANNEL_EN//vbat mode, vbat channel
-	g_adc_vref_offset = 0;//Vbat has no two-point calibration, offset must be set to 0.
-#else
-	g_adc_vref_offset = g_adc_gpio_calib_vref_offset;//set adc_vref_offset as adc_gpio_calib_vref_offset
-#endif
+	#if VBAT_CHANNEL_EN//vbat mode, vbat channel
+		g_adc_vref_offset = 0;//Vbat has no two-point calibration, offset must be set to 0.
+	#else
+		g_adc_vref_offset = g_adc_gpio_calib_vref_offset;//set adc_vref_offset as adc_gpio_calib_vref_offset
+	#endif
 	/******power off sar adc********/
 	adc_power_off();
 
@@ -115,10 +116,23 @@ _attribute_ram_code_ void adc_bat_detect_init(void)
 	analog_write_reg8(areg_adc_vref_vbat_div, (analog_read_reg8(areg_adc_vref_vbat_div)&(~FLD_ADC_VREF_VBAT_DIV)) | (ADC_VBAT_DIV_OFF<<2) );
 	g_adc_vbat_divider = 1;
 
-#if VBAT_CHANNEL_EN//vbat mode, vbat channel
-	adc_set_diff_input(ADC_VBAT, GND);
-#else//base mode, gpio channel
-	adc_set_diff_input(ADC_INPUT_PIN_CHN>>12, GND);
+	#if VBAT_CHANNEL_EN//vbat mode, vbat channel
+		adc_set_diff_input(ADC_VBAT, GND);
+	#else//base mode, gpio channel
+		adc_set_diff_input(ADC_INPUT_PIN_CHN>>12, GND);
+	#endif
+#elif (MCU_CORE_TYPE == MCU_CORE_B92)
+	adc_init(ADC_VREF_1P2V, ADC_PRESCALE_1F4, ADC_SAMPLE_FREQ_96K);
+	#if VBAT_CHANNEL_EN//vbat mode, vbat channel
+		adc_set_vbat_divider(ADC_VBAT_DIV_1F4);
+		adc_set_diff_input(ADC_VBAT, GND);
+	#else//base mode, gpio channel
+		adc_set_vbat_divider(ADC_VBAT_DIV_OFF);
+		adc_pin_config(ADC_GPIO_MODE, ADC_INPUT_PIN_CHN);
+		adc_set_diff_input(ADC_INPUT_PIN_CHN >> 12, GND);
+		gpio_set_output_en(GPIO_BAT_DETECT, 1);
+		gpio_write(GPIO_BAT_DETECT, 1);
+	#endif
 #endif
 	/******power on sar adc********/
 	//note: this setting must be set after all other settings
@@ -182,8 +196,11 @@ _attribute_ram_code_ int app_battery_power_check(u16 alram_vol_mv)
 	adc_average = adc_misc_data;
 #endif
 ////////////////// adc sample data convert to voltage(mv) ////////////////
+#if (MCU_CORE_TYPE == MCU_CORE_B91)
 	batt_vol_mv  = (((adc_average * g_adc_vbat_divider * g_adc_pre_scale * g_adc_vref)>>13) + g_adc_vref_offset);
-
+#elif (MCU_CORE_TYPE == MCU_CORE_B92)
+	batt_vol_mv  = (((adc_average * g_adc_vbat_divider * g_adc_pre_scale * g_adc_vref)>>13));
+#endif
 	if(batt_vol_mv < alram_vol_mv){
 		return 0;
 	}

@@ -60,8 +60,8 @@
 #define __FREERTOS_RISC_V_EXTENSIONS_H__
 
 #include"config.h"
-
 #if( FREERTOS_ENABLE )
+#define portasmHANDLE_INTERRUPT xPortIrqHandler
 
 #define portasmHAS_MTIME 	1
 
@@ -77,7 +77,7 @@
 	#define portFPWORD_SIZE 0
 #endif
 
-#include "3rd-party/freertos-V5/include/FreeRTOSConfig.h"
+#include "FreeRTOSConfig.h"
 
 #define portasmHAS_CLINT 0
 

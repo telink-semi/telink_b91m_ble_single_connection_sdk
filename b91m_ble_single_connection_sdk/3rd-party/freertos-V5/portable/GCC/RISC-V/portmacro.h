@@ -29,7 +29,7 @@
 #ifndef PORTMACRO_H
 #define PORTMACRO_H
 
-#include "drivers.h"
+#include "core.h"
 
 #ifdef __cplusplus
 extern "C" {

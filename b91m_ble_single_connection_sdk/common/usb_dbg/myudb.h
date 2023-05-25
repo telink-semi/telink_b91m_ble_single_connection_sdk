@@ -34,7 +34,7 @@
 #endif
 /* USB print log enable macro */
 #ifndef			DUMP_STR_EN
-#define 		DUMP_STR_EN                                   		0
+#define 		DUMP_STR_EN                                   		1
 #endif
 
 
@@ -47,6 +47,7 @@
 	#define	usb_send_data(p,n) 				usb_send_str_data(0,p,n)
 	#define my_dump_str_data(en,s,p,n)		if(en){usb_send_str_data(s,(u8*)(p),n);}
 	#define my_dump_str_u32s(en,s,d0,d1,d2,d3)		if(en){usb_send_str_u32s(s,(u32)(d0),(u32)(d1),(u32)(d2),(u32)(d3));}
+	#define my_dump_str_u8s(en,s,d0,d1,d2,d3)		if(en){usb_send_str_u8s(s,(u8)(d0),(u8)(d1),(u8)(d2),(u8)(d3));}
 	#define my_uart_send_str_data			usb_send_str_data
 	#define	my_uart_send_str_int			usb_send_str_int
 	#define	myudb_usb_handle_irq()			udb_usb_handle_irq()
@@ -56,6 +57,7 @@
 	#define	usb_send_data(p,n)
 	#define my_dump_str_data(en,s,p,n)
 	#define my_dump_str_u32s(en,s,d0,d1,d2,d3)
+	#define my_dump_str_u8s(en,s,d0,d1,d2,d3)
 	#define my_uart_send_str_data
 	#define	my_uart_send_str_int
 	#define	myudb_usb_handle_irq()
@@ -82,6 +84,7 @@ void 	usb_send_str_data (char *str, u8 *ph, int n);
 
 void 	usb_send_str_u32s (char *str, u32 d0, u32 d1, u32 d2, u32 d3);
 
+void usb_send_str_u8s (char *str, u8 d0, u8 d1, u8 d2, u8 d3);
 
 #define			my_irq_disable()		u32 rie = core_interrupt_disable ()
 #define			my_irq_restore()		core_restore_interrupt(rie)

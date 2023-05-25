@@ -181,6 +181,7 @@
     #define PRIVILEGED_DATA			__attribute__( ( section( ".retention_data" ) ) )
     #define FREERTOS_SYSTEM_CALL
     #define portUSING_MPU_WRAPPERS    0
+	#define RAM_CODE               __attribute__((section(".ram_code")))
 
 #endif /* portUSING_MPU_WRAPPERS */
 

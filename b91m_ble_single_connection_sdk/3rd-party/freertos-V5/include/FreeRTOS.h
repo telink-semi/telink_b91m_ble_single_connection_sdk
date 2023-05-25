@@ -54,7 +54,7 @@
 /* *INDENT-ON* */
 
 /* Application specific configuration options. */
-#include "3rd-party/freertos-V5/include/FreeRTOSConfig.h"
+#include "FreeRTOSConfig.h"
 
 /* Basic FreeRTOS definitions. */
 #include "projdefs.h"
@@ -789,7 +789,7 @@
 #endif
 
 #ifndef configEXPECTED_IDLE_TIME_BEFORE_SLEEP
-    #define configEXPECTED_IDLE_TIME_BEFORE_SLEEP    3
+    #define configEXPECTED_IDLE_TIME_BEFORE_SLEEP    2
 #endif
 
 #if configEXPECTED_IDLE_TIME_BEFORE_SLEEP < 2

@@ -25,7 +25,7 @@
 #define ALGORITHM_H_
 
 #include "algorithm/aes_ccm/aes_ccm.h"
-
+#include "algorithm/crypto/crypto_alg.h"
 
 
 #include "algorithm/ecc/ecc_ll.h"

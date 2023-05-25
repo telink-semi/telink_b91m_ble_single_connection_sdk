@@ -25,23 +25,6 @@
 #include "common_dbg.h"
 
 
-#if (DUMP_STR_EN || APP_DUMP_EN)
-
-MYFIFO_INIT_IRAM(print_fifo, 288, 32);
-
-
-
-void app_dmup_debug_init(void)
-{
-	my_usb_init(0x120, &print_fifo);
-	usb_set_pin_en ();
-}
-
-#endif
-
-
-
-
 
 #if (EXCEPT_HANDLE_DEBUG_ENABLE)
 

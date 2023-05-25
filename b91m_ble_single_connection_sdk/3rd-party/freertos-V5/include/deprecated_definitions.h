@@ -38,7 +38,6 @@
  * projects should not use them. */
 
 #if( FREERTOS_ENABLE )
-
 #ifdef OPEN_WATCOM_INDUSTRIAL_PC_PORT
     #include "..\..\Source\portable\owatcom\16bitdos\pc\portmacro.h"
     typedef void ( __interrupt __far * pxISR )();
@@ -86,7 +85,7 @@
 #endif
 
 #ifdef GCC_ARM7_ECLIPSE
-    #include "3rd-party/freertos-V5/portable/GCC/RISC-V/portmacro.h"
+    #include "portmacro.h"
 #endif
 
 #ifdef ROWLEY_LPC23xx
@@ -229,24 +228,24 @@
 
 #ifdef __GNUC__
     #ifdef __AVR32_AVR32A__
-        #include "3rd-party/freertos-V5/portable/GCC/RISC-V/portmacro.h"
+        #include "portmacro.h"
     #endif
 #endif
 
 #ifdef __ICCAVR32__
     #ifdef __CORE__
         #if __CORE__ == __AVR32A__
-            #include "3rd-party/freertos-V5/portable/GCC/RISC-V/portmacro.h"
+            #include "portmacro.h"
         #endif
     #endif
 #endif
 
 #ifdef __91467D
-    #include "3rd-party/freertos-V5/portable/GCC/RISC-V/portmacro.h"
+    #include "portmacro.h"
 #endif
 
 #ifdef __96340
-    #include "3rd-party/freertos-V5/portable/GCC/RISC-V/portmacro.h"
+    #include "portmacro.h"
 #endif
 
 

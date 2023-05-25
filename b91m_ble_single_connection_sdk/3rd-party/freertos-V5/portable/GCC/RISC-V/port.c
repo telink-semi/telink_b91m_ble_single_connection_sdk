@@ -30,18 +30,20 @@
  *----------------------------------------------------------*/
 
 /* Scheduler includes. */
-#include "3rd-party/freertos-V5/include/FreeRTOS.h"
-#include "3rd-party/freertos-V5/include/task.h"
-#include "3rd-party/freertos-V5/portable/GCC/RISC-V/portmacro.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "portmacro.h"
 
 /* Standard includes. */
 #include "string.h"
 #include "compiler.h"
+#include "types.h"
+#include "tlk_riscv.h"
+#include "driver.h"
+#include "stack/ble/controller/ll/ll.h"
+#include "stack/ble/controller/ll/ll_pm.h"
 
 #if( FREERTOS_ENABLE )
-
-extern bool blt_ota_isOtaBusy(void);
-extern bool blc_ll_isBrxWindowBusy(void);
 
 #if configCLINT_BASE_ADDRESS
 	#warning The configCLINT_BASE_ADDRESS constant has been deprecated.  configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS are currently being derived from the (possibly 0) configCLINT_BASE_ADDRESS setting.  Please update to define configMTIME_BASE_ADDRESS and configMTIMECMP_BASE_ADDRESS dirctly in place of configCLINT_BASE_ADDRESS.  See https://www.FreeRTOS.org/Using-FreeRTOS-on-RISC-V.html
@@ -72,7 +74,7 @@ of the stack used by main.  Using the linker script method will repurpose the
 stack that was used by main before the scheduler was started for use as the
 interrupt stack after the scheduler has started. */
 #ifdef configISR_STACK_SIZE_WORDS
-	PRIVILEGED_DATA static __attribute__ ((aligned(8))) StackType_t xISRStack[ configISR_STACK_SIZE_WORDS ] = { 0 };
+	PRIVILEGED_DATA static __attribute__ ((aligned(16))) StackType_t xISRStack[ configISR_STACK_SIZE_WORDS ] = { 0 };
 	PRIVILEGED_DATA StackType_t xISRStackTop = ( StackType_t ) &( xISRStack[ configISR_STACK_SIZE_WORDS & ~portBYTE_ALIGNMENT_MASK ] );
 
 	/* Don't use 0xa5 as the stack fill bytes as that is used by the kernerl for
@@ -123,13 +125,13 @@ task stack, not the ISR stack). */
 /*-----------------------------------------------------------*/
 
 #if( configMTIME_BASE_ADDRESS != 0 ) && ( configMTIMECMP_BASE_ADDRESS != 0 )
-
+	_attribute_ram_code_
 	void vPortSetupTimerInterrupt( void )
 	{
-	uint32_t ulCurrentTimeHigh, ulCurrentTimeLow;
-	volatile uint32_t * const pulTimeHigh = ( volatile uint32_t * const ) ( ( configMTIME_BASE_ADDRESS ) + 4UL ); /* 8-byte typer so high 32-bit word is 4 bytes up. */
-	volatile uint32_t * const pulTimeLow = ( volatile uint32_t * const ) ( configMTIME_BASE_ADDRESS );
-	volatile uint32_t ulHartId;
+		uint32_t ulCurrentTimeHigh, ulCurrentTimeLow;
+		volatile uint32_t * const pulTimeHigh = ( volatile uint32_t * const ) ( ( configMTIME_BASE_ADDRESS ) + 4UL ); /* 8-byte typer so high 32-bit word is 4 bytes up. */
+		volatile uint32_t * const pulTimeLow = ( volatile uint32_t * const ) ( configMTIME_BASE_ADDRESS );
+		volatile uint32_t ulHartId;
 
 		__asm volatile( "csrr %0, mhartid" : "=r"( ulHartId ) );
 		pullMachineTimerCompareRegister  = ( volatile uint64_t * ) ( ullMachineTimerCompareRegisterBase + ( ulHartId * sizeof( uint64_t ) ) );
@@ -220,21 +222,23 @@ void vAssertCalled( const char * pcFile, unsigned long ulLine ){
 
 
 
-////  Telink Specific //////////////////////////////////////////////////////////////////////////////
-#include "user_config.h"
-#include "core.h"
-#include "stimer.h"
-#include "stack/ble/controller/ll/ll.h"
+/**
+ **************************************************************************
+ *   Telink Specific
+ **************************************************************************
+ */
+extern void vPortRestoreActiveTask();
+extern unsigned char bls_pm_getSuspendMask (void);
+extern void bls_pm_setAppWakeupLowPower(u32 wakeup_tick, u8 enable);
+extern int blt_brx_sleep();
+extern int blc_pm_handler(void);
 
-void vPortSetupTimerInterrupt( void );
-void vPortRestoreActiveTask();
-unsigned char bls_pm_getSuspendMask (void);
-void bls_pm_setAppWakeupLowPower(u32 wakeup_tick, u8 enable);
-void blt_brx_sleep();
 
-#define SYSTICK_TO_OSTICK		(SYSTEM_TIMER_TICK_1S / configTICK_RATE_HZ)
 PRIVILEGED_DATA static unsigned int timeBeforeSleep;
-static void vPortRestoreTick(){
+PRIVILEGED_DATA volatile int pm_enable = 1;
+
+static void vPortRestoreTick()
+{
 #if ( configUSE_TICKLESS_IDLE != 0 )
 	unsigned int t = (unsigned int)(stimer_get_tick() - timeBeforeSleep);
 	if(t < ((unsigned int)0xffffffff) / 2){
@@ -244,76 +248,205 @@ static void vPortRestoreTick(){
 	vPortSetupTimerInterrupt(); 	//	reset the timer compare register to prevent irq triggered immediately
 }
 
-__attribute__(( weak )) void vPortWakeupNotify(){}
+__attribute__(( weak )) void vPortWakeupNotify()
+{
+	//user code
+}
 
-PRIVILEGED_DATA volatile int pm_enable = 1;
-void vPortSuppressTicksAndSleep_i(uint32_t xExpectedIdleTime){
-	if(pm_enable && bls_pm_getSuspendMask() && blt_miscParam.pm_enter_en){
+__attribute__(( weak )) void blt_ll_sem_give(void)
+{
+
+}
+
+_attribute_ram_code_
+void vPortSuppressTicksAndSleep_i(uint32_t xExpectedIdleTime)
+{
+#if 0
+#include "stack/ble/controller/ll/ll_stack.h"
+	if(pm_enable && bls_pm_getSuspendMask() && blt_miscParam.pm_enter_en && !blmsParam.blt_busy )
+	{
 		timeBeforeSleep = stimer_get_tick();
 
 		if(xExpectedIdleTime > ((unsigned int)0xffffffff) / 2 / SYSTICK_TO_OSTICK){
 			bls_pm_setAppWakeupLowPower(0, 0);
-		}else{
+		}
+		else{
 			bls_pm_setAppWakeupLowPower(timeBeforeSleep + xExpectedIdleTime * SYSTICK_TO_OSTICK, 1);
 		}
 		blt_brx_sleep();
+
 		vPortRestoreTick();
+
+		//blt_ll_sem_give(); //todo:
 	}
 	vPortWakeupNotify();
+#endif
+
+#if OS_PM_EN
+	uint32_t stimer_tick = timeBeforeSleep = stimer_get_tick();
+	uint32_t res = 1;
+	uint32_t wakeup_stimer_tick;
+
+	if(blc_ll_getCurrentState() != BLS_LINK_STATE_IDLE)
+	{
+		if(xExpectedIdleTime > SYSTIMER_TICK_TO_OS_TICK(0xFFFFFFFF>>1)){
+			xExpectedIdleTime = SYSTIMER_TICK_TO_OS_TICK(0xFFFFFFFF>>1);
+		}
+		uint32_t os_wakeup_tick = stimer_tick + OS_TICK_TO_SYSTIMER_TICK(xExpectedIdleTime);
+
+		bls_pm_setAppWakeupLowPower(os_wakeup_tick, 1);
+		res = blc_pm_handler();
+		wakeup_stimer_tick = stimer_get_tick();
+		bls_pm_setAppWakeupLowPower(0, 0);
+	}
+	else
+	{
+		if(xExpectedIdleTime > SYSTIMER_TICK_TO_OS_TICK(0xFFFFFFFF>>1)){
+			xExpectedIdleTime = SYSTIMER_TICK_TO_OS_TICK(0xFFFFFFFF>>1);
+		}
+
+		if(blc_pm_Oshandler(OS_TICK_TO_SYSTIMER_TICK(xExpectedIdleTime)))
+		{
+			res= 0;
+			wakeup_stimer_tick = stimer_get_tick();
+		}
+	}
+
+	if(res == 0)
+	{
+		uint32_t t = (uint32_t)(wakeup_stimer_tick - stimer_tick);
+
+		/* Restore OS count */
+		vTaskStepTick(SYSTIMER_TICK_TO_OS_TICK(t));
+
+		/* trigger mtimer interrupt */
+		vPortSetupTimerInterrupt();
+
+		/* Give Semaphore */
+		//blt_ll_sem_give();//todo:
+	}
+
+
+		vPortWakeupNotify();
+	#endif
 }
 
-void vPortRestoreTask(){
+void vPortRestoreTask()
+{
 	__asm volatile( "csrci	 mstatus,8");
+
 	vPortRestoreTick();
+
 	// to reset IDLE task stack
 	vPortRestoreActiveTask();
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ **************************************************************************
+ *   IRQ
+ **************************************************************************
+ */
+volatile uint32_t A_mcause = 0;
+volatile uint32_t A_mdcause = 0;
+volatile uint32_t A_mepc = 0;
+volatile uint32_t A_mtval = 0;
+volatile uint32_t A_mstatus = 0;
+volatile uint32_t A_trap_cnt = 0;
+
+volatile uint32_t A_mtime_cnt = 0;
+volatile uint32_t A_mswi_cnt = 0;
+
+_attribute_ram_code_sec_
+void mtime_handler(void)
+{
+	A_mtime_cnt++;
+
+	/* Update mtimecmp */
+	extern void vPortTimerUpdate(void);
+	vPortTimerUpdate();
+
+#if 1
+	/* Check if mtimer interrupt is enabled. */
+	if(!mtimer_is_irq_enable()){
+		return;
+	}
+#endif
+
+#if 1//SUPPORT_PFT_ARCH
+	/* Check if irq threshold is 0. */
+	if(reg_irq_threshold != 0){
+		return;
+	}
+#endif
+
+	if(xTaskIncrementTick() != 0){
+		vTaskSwitchContext();
+	}
+}
+
+/* Unused: Use "xPortYeild()" instead. "xPortYeild()" is efficient. */
+_attribute_ram_code_sec_
+void mswi_handler(void)
+{
+	A_mswi_cnt++;
+
+	vTaskSwitchContext();
+}
+
+_attribute_ram_code_sec_ __attribute__((weak)) void except_handler()
+{
+	A_mcause  = read_csr(NDS_MCAUSE);
+	A_mepc    = read_csr(NDS_MEPC);
+	A_mdcause = read_csr(NDS_MDCAUSE);
+	A_mtval   = read_csr(NDS_MTVAL);
+	A_mstatus = read_csr(NDS_MSTATUS);
+
+	while(1)
+	{
+		for(volatile uint32_t i = 0; i < 0xffff; i++)
+		{
+			A_trap_cnt++;
+			__asm__("nop");
+		}
+	}
+}
+
+_attribute_ram_code_sec_
+void xPortIrqHandler(uint32_t mcause, uint32_t mepc)
+{
+	(void) mepc;
+
+	if(mcause == (MCAUSE_INT + IRQ_M_TIMER))
+	{
+		/* Machine timer interrupt */
+		mtime_handler();
+    }
+	else if(mcause == (MCAUSE_INT + IRQ_M_SOFT))
+	{
+		/* Machine SWI interrupt */
+		mswi_handler();
+
+		/* Machine SWI is connected to PLIC_SW source 1 */
+		soft_irq_complete();
+    }
+    else
+    {
+	   except_handler();
+    }
+}
+
+/**
+ **************************************************************************
+ *   TASK
+ **************************************************************************
+ */
+//ble API
 extern u32 blt_advExpectTime;
 extern u32 blc_ll_cal_connwakeuptick();
 extern int blc_ll_allow_block();
-#define BLE_STATE_BRX_E_			7		//  that is the BLE_STATE_BRX_E in src
+extern bool blt_ota_isOtaBusy(void);
+extern bool blc_ll_isBrxWindowBusy(void);
+extern u32 blc_ll_next_wakeup_duration();
 
-static u32 blc_ll_next_wakeup_duration(){
-#if 0
-	u32 nexttime = ((u32)(reg_system_tick_irq - clock_time()));
-	return nexttime < (((unsigned int)0xffffffff) / 2) ? nexttime : 0;
-#else
-	u32 nexttime = ((u32)(blc_ll_cal_connwakeuptick() - clock_time()));
-	return nexttime < ((unsigned int)0xE0000000) ? nexttime : 0;
-#endif
-}
-void proto_task( void *pvParameters ){
-	while (1){
-		if(!((blc_ll_getCurrentState() == BLS_LINK_STATE_CONN) && blc_ll_isBrxBusy() )){
-			//printf("enter blt_sdk_main_loop.\r\n");
-			blt_sdk_main_loop();
-			//printf("EXIT blt_sdk_main_loop.\r\n");
-		}
-		//printf("enter if.\r\n");
-		if( blt_ota_isOtaBusy() )		{continue;}
 
-		if(blc_ll_allow_block()){
-			if(blc_ll_getCurrentState() == BLS_LINK_STATE_ADV){
-				u32 dur = blt_advExpectTime - clock_time();
-				dur = dur < (((unsigned int)0xffffffff) / 2) ? dur : 0;
-				if(dur > 2 * SYSTEM_TIMER_TICK_1MS){
-					//printf("5A. %d",dur/SYSTICK_TO_OSTICK);
-					ulTaskNotifyTake( pdTRUE, dur / SYSTICK_TO_OSTICK);
-				}
-			}else if((blc_ll_getCurrentState() == BLS_LINK_STATE_CONN) && !blc_ll_isBrxBusy()){
-				u32 dur = blc_ll_next_wakeup_duration();//blc_ll_cal_connwakeuptick() - clock_time();//blc_ll_next_wakeup_duration();
-				if(dur > 3 * SYSTEM_TIMER_TICK_1MS){
-					//printf("A %d",dur/SYSTICK_TO_OSTICK);
-					ulTaskNotifyTake( pdTRUE, dur / SYSTICK_TO_OSTICK);
-				}
-			}else{
-				//printf("EA.");
-				ulTaskNotifyTake( pdTRUE, 50 / portTICK_PERIOD_MS);
-			}
-		}
-		//printf("EXIT if.\r\n");
-	}
-}
 #endif

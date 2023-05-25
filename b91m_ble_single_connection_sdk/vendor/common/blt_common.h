@@ -27,27 +27,21 @@
 #include "drivers.h"
 
 
-
-
-//////////////////////////// Flash  Address Configuration ///////////////////////////////
-
-/**************************** 128 K Flash *****************************/
-#ifndef		CFG_ADR_MAC_128K_FLASH
-#define		CFG_ADR_MAC_128K_FLASH								0x1F000
+/* flash log, in*/
+#ifndef APP_FLASH_INIT_LOG_EN
+#define APP_FLASH_INIT_LOG_EN									0
 #endif
 
-#ifndef		CFG_ADR_CALIBRATION_128K_FLASH
-#define		CFG_ADR_CALIBRATION_128K_FLASH						0x1E000
-#endif
 
-/**************************** 512 K Flash *****************************/
-#ifndef		CFG_ADR_MAC_512K_FLASH
-#define		CFG_ADR_MAC_512K_FLASH								0x7F000	//B91 and later IC
-#endif
-
-#ifndef		CFG_ADR_CALIBRATION_512K_FLASH
-#define		CFG_ADR_CALIBRATION_512K_FLASH						0x7E000	//B91 and later IC
-#endif
+/**
+ * @brief	Flash using area default Configuration, user can change some of them in app_config.h according to your application
+ * 			CFG_ADR_MAC:  		  BLE MAC address stored in flash, can not change this value
+ * 			CFG_ADR_CALIBRATION:  some calibration data stored in flash, can not change this value
+ * 			FLASH_ADR_SMP_PAIRING:  If APP SMP enable, use 8K flash for SMP pairing information storage.
+ * 									First 4K is for normal use, second 4K is a backup to guarantee SMP information never lose.
+ * 									use API bls_smp_configParingSecurityInfoStorageAddr(FLASH_ADR_SMP_PAIRING)
+ * 									to set the two value.
+ */
 
 /**************************** 1 M Flash *******************************/
 #ifndef		CFG_ADR_MAC_1M_FLASH
@@ -59,6 +53,15 @@
 #define		CFG_ADR_CALIBRATION_1M_FLASH						0xFE000
 #endif
 
+#if (HARDWARE_SECURE_BOOT_SUPPORT_EN) //B92
+	#ifndef 	FLASH_ADR_SMP_PAIRING_1M_FLASH
+	#define 	FLASH_ADR_SMP_PAIRING_1M_FLASH         			0xF4000	//F4000 & F5000
+	#endif
+#else //B91
+	#ifndef 	FLASH_ADR_SMP_PAIRING_1M_FLASH
+	#define 	FLASH_ADR_SMP_PAIRING_1M_FLASH         			0xFC000	//FC000 & FD000
+	#endif
+#endif
 /**************************** 2 M Flash *******************************/
 #ifndef		CFG_ADR_MAC_2M_FLASH
 #define		CFG_ADR_MAC_2M_FLASH		   						0x1FF000
@@ -69,6 +72,15 @@
 #define		CFG_ADR_CALIBRATION_2M_FLASH						0x1FE000
 #endif
 
+#if (HARDWARE_SECURE_BOOT_SUPPORT_EN) //B92
+	#ifndef 	FLASH_ADR_SMP_PAIRING_2M_FLASH
+	#define 	FLASH_ADR_SMP_PAIRING_2M_FLASH         			0x1EC000 //1EC000 & 1ED000
+	#endif
+#else //B91
+	#ifndef 	FLASH_ADR_SMP_PAIRING_2M_FLASH
+	#define 	FLASH_ADR_SMP_PAIRING_2M_FLASH         			0x1FC000 //1FC000 & 1FD000
+	#endif
+#endif
 /**************************** 4 M Flash *******************************/
 #ifndef		CFG_ADR_MAC_4M_FLASH
 #define		CFG_ADR_MAC_4M_FLASH		   						0x3FF000
@@ -79,9 +91,38 @@
 #define		CFG_ADR_CALIBRATION_4M_FLASH						0x3FE000
 #endif
 
+
+#if (HARDWARE_SECURE_BOOT_SUPPORT_EN) //B92
+	#ifndef 	FLASH_ADR_SMP_PAIRING_4M_FLASH
+	#define 	FLASH_ADR_SMP_PAIRING_4M_FLASH         			0x3EC000 //3EC000 & 3ED000
+	#endif
+#else //B91
+	#ifndef 	FLASH_ADR_SMP_PAIRING_4M_FLASH
+	#define 	FLASH_ADR_SMP_PAIRING_4M_FLASH         			0x3FC000 //3FC000 & 3FD000
+	#endif
+#endif
+/**************************** 16 M Flash *******************************/
+#ifndef		CFG_ADR_MAC_16M_FLASH
+#define		CFG_ADR_MAC_16M_FLASH		   						0xFFF000
+#endif
+
+
+#ifndef		CFG_ADR_CALIBRATION_16M_FLASH
+#define		CFG_ADR_CALIBRATION_16M_FLASH						0xFFE000
+#endif
+
+
+#ifndef 	FLASH_ADR_SMP_PAIRING_16M_FLASH
+#define 	FLASH_ADR_SMP_PAIRING_16M_FLASH         			0xFEC000 //FEC000 & FED000
+#endif
+
+
+
+
+
+
 /** Calibration Information FLash Address Offset of  CFG_ADR_CALIBRATION_xx_FLASH ***/
 #define		CALIB_OFFSET_CAP_INFO								0x0
-#define		CALIB_OFFSET_TP_INFO								0x40
 
 #define		CALIB_OFFSET_ADC_VREF								0xC0
 
@@ -91,7 +132,9 @@
 
 
 
-
+extern	unsigned int  blc_flash_mid;
+extern	unsigned int  blc_flash_vendor;
+extern	unsigned char blc_flash_capacity;
 
 extern u32 flash_sector_mac_address;
 extern u32 flash_sector_calibration;
@@ -136,7 +179,7 @@ static inline void blc_app_loadCustomizedParameters(void)
 			}
 		}
 
-
+#if (MCU_CORE_TYPE == MCU_CORE_B91)
 
 		//read flash value-->efuse value-->one point value
 		unsigned char adc_vref_calib_value[7] = {0};
@@ -176,9 +219,21 @@ static inline void blc_app_loadCustomizedParameters(void)
 				}
 			}
 		}//if(adc_vref_cfg.adc_calib_en)
+#endif
 	}
 
 }
+
+
+
+
+/**
+ * @brief		This function is used to read flash mid, get flash vendor, and set flash capacity
+ * @param[in]	none
+ * @return      none
+ */
+void blc_flash_read_mid_get_vendor_set_capacity(void);
+
 
 /**
  * @brief		This function can automatically recognize the flash size,
@@ -188,6 +243,15 @@ static inline void blc_app_loadCustomizedParameters(void)
  * @return      none
  */
 void blc_readFlashSize_autoConfigCustomFlashSector(void);
+
+
+
+
+void blc_app_loadCustomizedParameters_normal(void);
+
+
+
+void blc_app_loadCustomizedParameters_deepRetn(void);
 
 /**
  * @brief		This function is used to initialize the MAC address

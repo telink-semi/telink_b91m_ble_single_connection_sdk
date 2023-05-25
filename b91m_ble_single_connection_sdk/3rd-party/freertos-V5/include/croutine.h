@@ -31,8 +31,7 @@
     #error "include FreeRTOS.h must appear in source files before include croutine.h"
 #endif
 
-#include "3rd-party/freertos-V5/include/list.h"
-
+#include "list.h"
 #if( FREERTOS_ENABLE )
 
 /* *INDENT-OFF* */

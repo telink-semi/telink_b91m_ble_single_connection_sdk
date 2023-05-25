@@ -26,6 +26,7 @@
 #include "myudb_usbdesc.h"
 #include "common/utility.h"
 #include <string.h>
+#include "vendor/common/tlkapi_debug.h"
 
 #if (VCD_EN || DUMP_STR_EN)
 
@@ -51,7 +52,7 @@ static USB_Request_Header_t control_request;
 
 
 
-_attribute_data_retention_ my_fifo_t   *myudb_print_fifo = 0;
+_attribute_data_retention_ my_fifo_t   *myudb_print_fifo = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //		USB device handling
@@ -268,12 +269,19 @@ _attribute_ram_code_ void usb_send_status_pkt(u8 status, u8 buffer_num, u8 *pkt,
 
 _attribute_ram_code_ void usb_send_str_data (char *str, u8 *ph, int n)
 {
+	if(!myudb_print_fifo){
+		return;
+	}
+
+
 //	if (myudb_print_fifo_full()) return;		//skip if overflow
 	u32 rie = core_interrupt_disable ();
-	u8 *ps =  myudb_print_fifo->p + (myudb_print_fifo->wptr & (myudb_print_fifo->num - 1)) * myudb_print_fifo->size;;
+
+	u8 *ps =  myudb_print_fifo->p + (myudb_print_fifo->wptr & (myudb_print_fifo->num - 1)) * myudb_print_fifo->size;
 	u8 *pd = ps;
 
-	int ns = str ? strlen (str) : 0;
+	extern int tlk_strlen(char *str);
+	int ns = str ? tlk_strlen (str) : 0;
 	if (ns > myudb_print_fifo->size - 12)
 	{
 		ns = myudb_print_fifo->size - 12;
@@ -284,6 +292,43 @@ _attribute_ram_code_ void usb_send_str_data (char *str, u8 *ph, int n)
 		n = myudb_print_fifo->size - 12 - ns;
 	}
 
+
+#if (TLKAPI_DEBUG_ENABLE && (TLKAPI_DEBUG_CHANNEL != TLKAPI_DEBUG_CHANNEL_UDB) && !STACK_USB_LOG_EN)
+	#if 1 //QIU new tool
+		int len = ns + n + 5;
+		*pd++ = len;
+		*pd++ = len >> 8;
+		*pd++ = 0;
+		*pd++ = 0;
+
+		*pd++ = 0x95;   //special mark¡êo 0xA695
+		*pd++ = 0xA6;
+		*pd++ = ns;     // string length, 1byte
+		*pd++ = n;	    // data length, 2 byte
+		*pd++ = n >> 8;
+
+		while (ns--)
+		{
+			*pd++ = *str++;
+		}
+		while (n--)
+		{
+			*pd++ = *ph++;
+		}
+		//add a '\n' by UART tool
+	#else
+		int len = ns + 1;
+		*pd++ = len;
+		*pd++ = len >> 8;
+		*pd++ = 0;
+		*pd++ = 0;
+		while (ns--)
+		{
+			*pd++ = *str++;
+		}
+		*pd++ = '\n';
+	#endif
+#else
 	int len = n + ns + 2 + 3;
 	*pd++ = len;
 	*pd++ = len >> 8;
@@ -295,7 +340,7 @@ _attribute_ram_code_ void usb_send_str_data (char *str, u8 *ph, int n)
 	*pd++ = 0x22;
 	*pd++ = n;
 	*pd++ = n >> 8;
-    
+
 	while (n--)
 	{
 		*pd++ = *ph++;
@@ -304,8 +349,21 @@ _attribute_ram_code_ void usb_send_str_data (char *str, u8 *ph, int n)
 	{
 		*pd++ = *str++;
 	}
+#endif
+
 	myudb_print_fifo->wptr++;
+
 	core_restore_interrupt(rie);
+}
+
+_attribute_ram_code_ void usb_send_str_u8s (char *str, u8 d0, u8 d1, u8 d2, u8 d3)
+{
+	u8 d[4];
+	d[0] = d0;
+	d[1] = d1;
+	d[2] = d2;
+	d[3] = d3;
+	usb_send_str_data (str, (u8*)d, 4);
 }
 
 _attribute_ram_code_ void usb_send_str_u32s (char *str, u32 d0, u32 d1, u32 d2, u32 d3)
@@ -415,11 +473,17 @@ int	usb_send_str_int (char *str,int w)
 
 _attribute_ram_code_ int myudb_usb_get_packet (u8 *p)
 {
+#if 1
+		if (reg_usb_ep_irq_status & USB_ENDPOINT_BULK_OUT_FLAG)
+	{
+		//clear interrupt flag
+		reg_usb_ep_irq_status = USB_ENDPOINT_BULK_OUT_FLAG;
+#else
 	if (reg_usb_irq & USB_ENDPOINT_BULK_OUT_FLAG)
 	{
 		//clear interrupt flag
 		reg_usb_irq = USB_ENDPOINT_BULK_OUT_FLAG;
-
+#endif
 		// read data
 		int n = reg_usb_ep_ptr(MYUDB_EDP_OUT_HCI);
 		reg_usb_ep_ptr(MYUDB_EDP_OUT_HCI) = 0;
@@ -542,7 +606,6 @@ _attribute_ram_code_ int myudb_mem_cmd (u8 *p, int nbyte)
 			}
 			else
 			{
-				flash_erase_chip ();
 				//flash_erase_chip ();
 				unsigned int flash_mid = flash_read_mid();
 				flash_mid >>= 16;
@@ -627,12 +690,19 @@ void udb_usb_handle_irq(void) {
 			usbhw_clr_ctrl_ep_irq(FLD_CTRL_EP_IRQ_STA);
 			myudb_usb_handle_ctl_ep_status();
 		}
-
+#if (MCU_CORE_TYPE == MCU_CORE_B91)
 		if (reg_usb_irq_mask & FLD_USB_IRQ_RESET_O)
 		{
 			reg_usb_irq_mask |= FLD_USB_IRQ_RESET_O; 		//Clear USB reset flag
 			myudb_usb_bulkout_ready ();
 	    }
+#elif (MCU_CORE_TYPE == MCU_CORE_B92)
+		if (usbhw_get_irq_status(USB_IRQ_RESET_STATUS))
+		{
+			usbhw_clr_irq_status(USB_IRQ_RESET_STATUS); 		//Clear USB reset flag
+			myudb_usb_bulkout_ready ();
+	    }
+#endif
 		myudb.stall = 0;
 	}
 
@@ -654,13 +724,10 @@ void myudb_usb_bulkout_ready ()
 
 void myudb_usb_init(u16 id, void * p_print)
 {
-	if (!myudb_print_fifo)
-	{
+	if(p_print){
 		myudb_print_fifo = p_print;
+		myudb_print_fifo->wptr = myudb_print_fifo->rptr = 0;
 	}
-
-
-	myudb_print_fifo->wptr = myudb_print_fifo->rptr = 0;
 
 	memset (&myudb, 0, sizeof (myudb));
 

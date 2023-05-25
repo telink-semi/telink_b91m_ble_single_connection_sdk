@@ -23,16 +23,12 @@
 
 #pragma once
 
-#if (__PROJECT_B91_BLE_SAMPLE__)
-	#include "../B91_ble_sample/app_config.h"
-#elif (__PROJECT_B91_MODULE__ )
-	#include "../B91_module/app_config.h"
-#elif (__PROJECT_B91_FEATURE_TEST__)
-	#include "../B91_feature/app_config.h"
-#elif(__PROJECT_B91_INTERNAL_TEST__)
-	#include "../B91_internal_test/app_config.h"
-#elif(__PROJECT_B91_DEBUG_DEMO__)
-	#include "../B91_debug_demo/app_config.h"
+#if (__PROJECT_B91_BLE_SAMPLE__ || __PROJECT_B92_BLE_SAMPLE__)
+	#include "../B91m_ble_sample/app_config.h"
+#elif (__PROJECT_B91_MODULE__ || __PROJECT_B92_MODULE__)
+	#include "../B91m_module/app_config.h"
+#elif (__PROJECT_B91_FEATURE_TEST__ || __PROJECT_B92_FEATURE_TEST__)
+	#include "../B91m_feature/app_config.h"
 #else
 	#include "../common/default_config.h"
 #endif

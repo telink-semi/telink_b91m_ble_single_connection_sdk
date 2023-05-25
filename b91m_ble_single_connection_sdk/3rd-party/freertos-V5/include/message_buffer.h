@@ -61,16 +61,14 @@
 #ifndef FREERTOS_MESSAGE_BUFFER_H
 #define FREERTOS_MESSAGE_BUFFER_H
 
-#include"config.h"
 
 #if( FREERTOS_ENABLE )
-
 #ifndef INC_FREERTOS_H
     #error "include FreeRTOS.h must appear in source files before include message_buffer.h"
 #endif
 
 /* Message buffers are built onto of stream buffers. */
-#include "3rd-party/freertos-V5/include/stream_buffer.h"
+#include "stream_buffer.h"
 
 /* *INDENT-OFF* */
 #if defined( __cplusplus )

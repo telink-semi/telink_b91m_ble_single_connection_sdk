@@ -59,7 +59,7 @@
 #endif
 
 #if TL_MIC_BUFFER_SIZE
-s16		buffer_mic[TL_MIC_BUFFER_SIZE>>1] __attribute__((aligned(4)));
+extern s16		buffer_mic[TL_MIC_BUFFER_SIZE>>1];
 #endif
 
 #if TL_NOISE_SUPRESSION_ENABLE

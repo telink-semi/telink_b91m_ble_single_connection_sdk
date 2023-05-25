@@ -44,7 +44,7 @@
 
 #define configCLINT_BASE_ADDRESS		0x00000000
 
-#define configCPU_CLOCK_HZ						( 32768UL )		//  fixed for andes MTIME CLOCK
+#define configCPU_CLOCK_HZ						( 32000UL )		//  fixed for andes MTIME CLOCK
 #define configUSE_TICKLESS_IDLE					1
 #define configTICK_RATE_HZ						( ( TickType_t ) 500 )
 #define configUSE_PREEMPTION					1
@@ -96,7 +96,7 @@
 #define configTIMER_QUEUE_LENGTH				5
 #define configTIMER_TASK_STACK_DEPTH			( configMINIMAL_STACK_SIZE * 2 )
 
-#define configISR_STACK_SIZE_WORDS				64
+#define configISR_STACK_SIZE_WORDS				256
 /* Set the following definitions to 1 to include the API function, or zero
 to exclude the API function. */
 #define INCLUDE_vTaskPrioritySet				1
@@ -111,7 +111,7 @@ to exclude the API function. */
 #define INCLUDE_eTaskGetState					1
 #define INCLUDE_xTaskAbortDelay					1
 #define INCLUDE_xTaskGetHandle					1
-#define INCLUDE_xSemaphoreGetMutexHolder			1
+#define INCLUDE_xSemaphoreGetMutexHolder		1
 
 /* The size of the global output buffer that is available for use when there
 are multiple command interpreters running at once (for example, one on a UART
@@ -123,6 +123,8 @@ be at least big enough to contain the output of the task-stats command, as the
 example implementation does not include buffer overlow checking. */
 #define configCOMMAND_INT_MAX_OUTPUT_SIZE		2096
 #define configINCLUDE_QUERY_HEAP_COMMAND		1
+
+#define configTASK_NOTIFICATION_ARRAY_ENTRIES   1
 
 /* This file is included from assembler files - make sure C code is not included
 in assembler files. */

@@ -41,7 +41,11 @@
 #endif
 
 #ifndef STRING_SERIAL
-#define STRING_SERIAL		L"TLSR9518"
+	#if (MCU_CORE_TYPE == MCU_CORE_B91)
+		#define STRING_SERIAL		L"B91"
+	#elif (MCU_CORE_TYPE == MCU_CORE_B92)
+		#define STRING_SERIAL		L"B92"
+	#endif
 #endif
 
 

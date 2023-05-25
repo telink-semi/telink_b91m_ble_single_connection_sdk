@@ -151,21 +151,33 @@ typedef enum {
 	//Service status
 	SERVICE_ERR_INVALID_PARAMETER 								   = 0xD0,
 
-	//Application buffer check error code
-	LL_ACL_RX_BUF_NO_INIT 							   	  		   = 0xE0,
-	LL_ACL_RX_BUF_PARAM_INVALID,
-	LL_ACL_RX_BUF_SIZE_NOT_MEET_MAX_RX_OCT,
-	LL_ACL_TX_BUF_NO_INIT,
-	LL_ACL_TX_BUF_PARAM_INVALID,
-	LL_ACL_TX_BUF_SIZE_MUL_NUM_EXCEED_4K,
-	LL_ACL_TX_BUF_SIZE_NOT_MEET_MAX_TX_OCT,
+
 
 } ble_sts_t;
 
 
 
 
+/**
+ *  @brief  error code for user initialization error
+ */
+typedef enum {
+    INIT_SUCCESS = 0,
 
+	//Application buffer check error code
+	LL_ACL_RX_BUF_NO_INIT 							   	  		   = 0x10,
+	LL_ACL_RX_BUF_PARAM_INVALID,
+	LL_ACL_RX_BUF_SIZE_NOT_MEET_MAX_RX_OCT,
+	LL_ACL_TX_BUF_NO_INIT,
+	LL_ACL_TX_BUF_PARAM_INVALID,
+	LL_ACL_TX_BUF_SIZE_NOT_MEET_MAX_TX_OCT,
+
+
+
+	/* special */
+	LL_ACL_TX_BUF_SIZE_MUL_NUM_EXCEED_4K						   = 0xF0,
+
+} init_err_t;
 
 
 
@@ -380,6 +392,12 @@ typedef enum {
 
 	DATA_TYPE_MANUFACTURER_SPECIFIC_DATA 	= 0xFF,     //	Manufacturer Specific Data
 }data_type_t;
+
+/**
+ * @brief	HCI ACL DATA buffer length = LE_ACL_Data_Packet_Length + 4, pkt_len is integer multiple of 4, so result is 4 Byte align
+ *			4 = 2(connHandle) + 1(PBFlag) + 1(length)
+ */
+#define 	CALCULATE_HCI_ACL_DATA_FIFO_SIZE(pkt_len)				((pkt_len + 4 +3)/4*4)
 
 /**
  * @brief	6 = header(2)+l2cap_len(2)+CID(2)

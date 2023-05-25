@@ -26,7 +26,7 @@
 
 #define BAT_DEEP_THRES_MV				2000   // 2000 mV low battery alarm
 
-#define DCDC_ADC_SOFTWARE_FILTER            0  // Filter ADC data in DCDC mode//Todo:need to check,by sunwei
+#define DCDC_ADC_SOFTWARE_FILTER            0  // Filter ADC data in DCDC mode
 
 extern u8      adc_hw_initialized;   //note: can not be retention variable
 

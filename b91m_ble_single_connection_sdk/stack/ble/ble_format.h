@@ -122,6 +122,22 @@ typedef struct{
 	u8  txAddr :1;
 	u8  rxAddr :1;
 
+	u8  rf_len;
+
+	u8	peerA[6];  //scanA or initA
+	u8	advA[6];
+}rf_pkt_adv_rx_t;
+
+
+typedef struct{
+	u32 dma_len;
+
+	u8  type   :4;
+	u8  rfu1   :1;
+	u8  chan_sel:1;
+	u8  txAddr :1;
+	u8  rxAddr :1;
+
 	u8  rf_len;				//LEN(6)_RFU(2)
 
 	u8	advA[6];			//address
@@ -401,7 +417,7 @@ typedef struct{
 	u8 data[1];
 }rf_packet_l2cap_t;
 
-#if (MCU_CORE_TYPE == MCU_CORE_9518)
+#if (MCU_CORE_TYPE == MCU_CORE_B91 || MCU_CORE_TYPE == MCU_CORE_B92)
 typedef struct{
 	rf_data_head_t	header;
 	u8  rf_len;

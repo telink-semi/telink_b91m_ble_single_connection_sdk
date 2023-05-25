@@ -32,8 +32,8 @@
  * task.h is included from an application file. */
 #define MPU_WRAPPERS_INCLUDED_FROM_API_FILE
 
-#include "3rd-party/freertos-V5/include/FreeRTOS.h"
-#include "3rd-party/freertos-V5/include/list.h"
+#include "FreeRTOS.h"
+#include "list.h"
 
 #if( FREERTOS_ENABLE )
 
@@ -84,7 +84,7 @@ void vListInitialiseItem( ListItem_t * const pxItem )
 }
 /*-----------------------------------------------------------*/
 
-__attribute__((section(".ram_code")))   void vListInsertEnd( List_t * const pxList,
+RAM_CODE void vListInsertEnd( List_t * const pxList,
                      ListItem_t * const pxNewListItem )
 {
     ListItem_t * const pxIndex = pxList->pxIndex;
@@ -114,7 +114,7 @@ __attribute__((section(".ram_code")))   void vListInsertEnd( List_t * const pxLi
 }
 /*-----------------------------------------------------------*/
 
-__attribute__((section(".ram_code"))) void vListInsert( List_t * const pxList,
+RAM_CODE void vListInsert( List_t * const pxList,
                   ListItem_t * const pxNewListItem )
 {
     ListItem_t * pxIterator;
@@ -182,7 +182,7 @@ __attribute__((section(".ram_code"))) void vListInsert( List_t * const pxList,
 }
 /*-----------------------------------------------------------*/
 
-__attribute__((section(".ram_code")))  UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove )
+RAM_CODE UBaseType_t uxListRemove( ListItem_t * const pxItemToRemove )
 {
 /* The list item knows which list it is in.  Obtain the list from the list
  * item. */

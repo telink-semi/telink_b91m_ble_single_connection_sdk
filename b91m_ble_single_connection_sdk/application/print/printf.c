@@ -54,8 +54,9 @@ __attribute__((used)) int _write(int fd, const unsigned char *buf, int size)
 
 
 #ifndef		BIT_INTERVAL
-#define		BIT_INTERVAL	(16*1000*1000/PRINT_BAUD_RATE)
+#define		BIT_INTERVAL	(SYSTEM_TIMER_TICK_1S/PRINT_BAUD_RATE)
 #endif
+#define      PRINTF_NEW_CODE 1
 
 
 #define UART_DEBUG_TX_PIN_REG	((0x140303 + ((DEBUG_INFO_TX_PIN>>8)<<3)))
@@ -66,8 +67,10 @@ __attribute__((used)) int _write(int fd, const unsigned char *buf, int size)
  */
 _attribute_ram_code_sec_noinline_  void dr_putchar(unsigned char byte){
 	unsigned char j = 0;
+#if !PRINTF_NEW_CODE
 	unsigned int t1 = 0;
 	unsigned int t2 = 0;
+#endif
 
 
 	unsigned int  pcTxReg = UART_DEBUG_TX_PIN_REG;
@@ -86,6 +89,25 @@ _attribute_ram_code_sec_noinline_  void dr_putchar(unsigned char byte){
 	bit[8] = ((byte>>7) & 0x01)? tmp_bit1 : tmp_bit0;
 	bit[9] = tmp_bit1;
 
+#if PRINTF_NEW_CODE
+	/*
+	 * bit_nop is num of clock to tranmit a bit use PRINT_BAUD_RATE.
+	 * 1 / sys_clk.cclk * (8 + 4 * bit_nop) = 1000000 / PRINT_BAUD_RATE.
+	 * 8 is clock of nop when bit_nop is 0.
+	 * 4 is clock of for(i) when bit_nop is not 0.
+	 */
+	unsigned char bit_nop = sys_clk.cclk * 250000 / PRINT_BAUD_RATE - 2;
+	for(j = 0;j<10;j++)
+	{
+		for(unsigned char i = 0;i<bit_nop;i++)//for:4us
+		{
+			__asm__("nop");
+		}
+		__asm__("nop");
+
+		write_reg8(pcTxReg,bit[j]);        //send bit0
+	}
+#else
 	t1 = clock_time();//B91 stimer register
 	for(j = 0;j<10;j++)
 	{
@@ -96,6 +118,7 @@ _attribute_ram_code_sec_noinline_  void dr_putchar(unsigned char byte){
 
 		write_reg8(pcTxReg,bit[j]);        //send bit0
 	}
+#endif
 }
 
 __attribute__((used)) int _write(int fd, const unsigned char *buf, int size)

@@ -79,7 +79,7 @@ SECTIONS
 	PROVIDE (_DLM_DATA_VMA_START = ADDR(.dlm_data));
 	PROVIDE (_DLM_DATA_LMA_START = LOADADDR(.dlm_data));
 	PROVIDE (_DLM_DATA_VMA_END = .);
-	PROVIDE (BIN_SIZE = LOADADDR(.dlm_data) + SIZEOF(.dlm_data) - BIN_BEGIN);
+
 				
 	. = 0x0001c000;
 	PROVIDE( __global_pointer$ = . + (4K / 2) );
@@ -97,6 +97,11 @@ SECTIONS
 	.bss 	(NOLOAD)	: { *(.dynbss ) *(.bss .bss.* .gnu.linkonce.b.* ) *(COMMON ) . = ALIGN(8); }
 	PROVIDE (_BSS_VMA_END = .);
 	
+	.sdk_version  	: AT(LOADADDR (.data) + SIZEOF (.data))
+		{ KEEP(*(.sdk_version )) }
+		
+	PROVIDE (BIN_SIZE = LOADADDR(.sdk_version) + SIZEOF(.sdk_version) - BIN_BEGIN);
+
 	. = ALIGN(8);
 	/* end is the starting address of the heap, the heap grows upward */
 	_end = .;

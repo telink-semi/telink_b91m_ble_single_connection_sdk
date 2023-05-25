@@ -766,9 +766,15 @@ void usb_handle_irq(void) {
 		usbhw_clr_ctrl_ep_irq(FLD_CTRL_EP_IRQ_STA);
 		usb_handle_ctl_ep_status();
 	}
+#if (MCU_CORE_TYPE == MCU_CORE_B91)
 	if (reg_usb_irq_mask & FLD_USB_IRQ_RESET_O){		//USB reset
 		usb_mouse_report_proto = 1;
 		reg_usb_irq_mask |= FLD_USB_IRQ_RESET_O; 		//Clear USB reset flag
+#elif (MCU_CORE_TYPE == MCU_CORE_B92)
+	if (usbhw_get_irq_status(USB_IRQ_RESET_STATUS)){		//USB reset
+		usb_mouse_report_proto = 1;
+		usbhw_clr_irq_status(USB_IRQ_RESET_STATUS); 		//Clear USB reset flag
+#endif
 		for (int i=0; i<8; i++) {
 			reg_usb_ep_ctrl(i) = 0;
 			edp_toggle[i]=0;

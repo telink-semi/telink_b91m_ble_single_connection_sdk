@@ -28,6 +28,9 @@
 #include	"adpcm.h"
 #include    "sbc.h"
 
+#if TL_MIC_BUFFER_SIZE
+s16		buffer_mic[TL_MIC_BUFFER_SIZE>>1] __attribute__((aligned(4)));
+#endif
 
 
 

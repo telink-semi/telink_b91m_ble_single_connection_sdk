@@ -86,10 +86,15 @@ SECTIONS
 		
 	.exec.itable 	: AT(ALIGN(LOADADDR (.eh_frame) + SIZEOF (.eh_frame), ALIGNOF(.exec.itable)))
 		{ KEEP(*(.exec.itable)) }
-	PROVIDE (BIN_SIZE = LOADADDR(.exec.itable) + SIZEOF(.exec.itable) - BIN_BEGIN);	
+
 		
 	. = 0x00080000;
 	PROVIDE( __global_pointer$ = . + (4K / 2) );
+
+	.sdk_version  	: AT(LOADADDR (.exec.itable) + SIZEOF (.exec.itable))
+		{ KEEP(*(.sdk_version )) }
+		
+	PROVIDE (BIN_SIZE = LOADADDR(.sdk_version) + SIZEOF(.sdk_version) - BIN_BEGIN);
 	
 	. = ALIGN(8);
 	/* end is the starting address of the heap, the heap grows upward */

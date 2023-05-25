@@ -30,33 +30,12 @@
 #include "vendor/common/user_config.h"
 
 
-#ifndef APP_DUMP_EN
-#define APP_DUMP_EN         						0
-#endif
-
 
 
 #ifndef EXCEPT_HANDLE_DEBUG_ENABLE
 #define EXCEPT_HANDLE_DEBUG_ENABLE         			0
 #endif
 
-
-
-
-
-
-
-
-#if (APP_DUMP_EN)
-
-extern my_fifo_t print_fifo;
-extern	unsigned char 	print_fifo_b[];
-
-
-
-void app_dmup_debug_init(void);
-
-#endif
 
 
 
