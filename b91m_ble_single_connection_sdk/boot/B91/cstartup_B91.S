@@ -20,10 +20,12 @@
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
  *******************************************************************************************************/
-
+#include "user_config.h"
 #if	1	/*default is open*/
-    .section .vectors, "ax"
+	.equ __DEEPRET_RAM_SIZE, 	PM_DEEPSLEEP_RETENTION_SIZE
 
+    .section .vectors, "ax"
+	.global		__DEEPRET_RAM_SIZE
     //.org  and linker's relaxation (-flto) cannot be used at the same time
     //Pop corresponds to push. Before using .option norelax, use push to save the current .option configuration
     //and then modify .option. After using norelax, use pop to restore

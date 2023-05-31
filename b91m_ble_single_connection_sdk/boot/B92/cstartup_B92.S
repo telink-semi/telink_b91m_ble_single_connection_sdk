@@ -20,7 +20,7 @@
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
  *******************************************************************************************************/
-
+#include "user_config.h"
  #if 1
  /**
  * @brief	Set "DP_THROUGH_SWIRE_DIS" as "1" to disable the "dp_through_swire" function. Set "DP_THROUGH_SWIRE_DIS" as "0" to enable the "dp_through_swire" function.
@@ -47,12 +47,14 @@
 	.equ __DRAM_2_EN, 	0
 	.equ __DRAM_DIS, 	1
 
+	.equ __DEEPRET_RAM_SIZE, 	PM_DEEPSLEEP_RETENTION_SIZE
+
     .section .vectors, "ax"
     .global		__IRAM_2_EN
     .global		__DRAM_1_EN
     .global		__DRAM_2_EN
     .global		__DRAM_DIS
-
+	.global		__DEEPRET_RAM_SIZE
     //.org  and linker's relaxation (-flto) cannot be used at the same time
     //Pop corresponds to push. Before using .option norelax, use push to save the current .option configuration
     //and then modify .option. After using norelax, use pop to restore
