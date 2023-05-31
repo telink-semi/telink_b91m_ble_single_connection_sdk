@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     adc.c
+ * @file    adc.c
  *
- * @brief    This is the source file for BLE SDK
+ * @brief   This is the source file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,12 +19,16 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 #include "adc.h"
 #include "audio.h"
 #include "compiler.h"
 
+/**
+ * Note: When the reference voltage is configured to 1.2V, the calculated ADC voltage value is closest to the actual voltage value using 1175 as the coefficient default.
+ * 1175 is the value obtained by ATE through big data statistics, which is more in line with most chips than 1200.
+ */
 _attribute_data_retention_sec_ unsigned short g_adc_vref = 1175; //default ADC ref voltage (unit:mV)
 _attribute_data_retention_sec_ signed char g_adc_vref_offset = 0;//ADC calibration value voltage offset (unit:mV).
 
@@ -63,7 +67,7 @@ dma_config_t adc_rx_dma_config=
  * @param[in] en - 1 enable  0 disable
  * @return     none.
  */
-static inline void	adc_calib_vref_enable(unsigned char en)
+void	adc_calib_vref_enable(unsigned char en)
 {
 	adc_vref_cfg.adc_calib_en = en;
 }
@@ -83,9 +87,10 @@ void adc_set_dma_config(dma_chn_e chn)
 }
 /**
  * @brief     This function serves to start sample with adc DMA channel.
- * @param[out] adc_data_buf 	- the address of data buffer
+ * @param[out] adc_data_buf 	- the address of data buffer.
  * @param[in] data_byte_len - the length of data size by byte
  * @return    none
+ * @note	  adc_data_buf : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void adc_start_sample_dma(unsigned short *adc_data_buf,unsigned int data_byte_len)
 {
@@ -337,6 +342,7 @@ void adc_battery_voltage_sample_init(void)
  * @param[out]   sample_buffer 		- pointer to the buffer adc sample code need to store.
  * @param[in]   sample_num 			- the number of adc sample code.
  * @return 		none
+ * @note	  sample_buffer : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void adc_get_code_dma(unsigned short *sample_buffer, unsigned short sample_num)
 {

@@ -675,7 +675,7 @@ enum{
 enum{
 	FLD_RF_R_TX_EN_DLY_EN         =	BIT(0),
 	FLD_RF_R_PLL_RESET_EN         =	BIT(1),
-	FLD_RF_R_CMD_SCHDULE_EN       =	BIT(2),
+	FLD_RF_R_CMD_SCHEDULE_EN       =	BIT(2),
 	FLD_RF_R_PLL_EN_MAN           =	BIT(3),
 	FLD_RF_R_T_TX_EN_DLY          =	BIT_RNG(4,7),
 };

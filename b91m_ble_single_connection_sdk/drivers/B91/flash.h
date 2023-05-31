@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     flash.h
+ * @file    flash.h
  *
- * @brief    This is the header file for BLE SDK
+ * @brief   This is the header file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 #pragma once
 
 #include "compiler.h"
@@ -50,9 +50,9 @@ typedef enum{
 	FLASH_WRITE_SECURITY_REGISTERS_CMD	=	0x42,
 	FLASH_ERASE_SECURITY_REGISTERS_CMD	=	0x44,
 	FLASH_WRITE_STATUS_CMD_LOWBYTE		=	0x01,
-	FLASH_WRITE_STATUS_CMD_HIGHBYTE		=	0x31,    // Flash Type = P25Q16SU/P25Q32SH for write status register-1;
+	FLASH_WRITE_STATUS_CMD_HIGHBYTE		=	0x31,    // Flash Type = P25Q16SU/P25Q32SU for write status register-1;
 	FLASH_WRITE_CONFIGURE_CMD_1         =   0x31,    // Flash Type = P25Q80U  for write configure register;
-	FLASH_WRITE_CONFIGURE_CMD_2         =   0x11,    // Flash Type = P25Q16SU/P25Q32SH  for write configure register;
+	FLASH_WRITE_CONFIGURE_CMD_2         =   0x11,    // Flash Type = P25Q16SU/P25Q32SU  for write configure register;
 	//other command
 	FLASH_WRITE_DISABLE_CMD 			= 	0x04,
 	FLASH_WRITE_ENABLE_CMD 				= 	0x06,
@@ -104,9 +104,9 @@ typedef struct{
 	unsigned char  flash_read_cmd_line:1; 	/**< 0:single line;  1:the same to dat_line_h */
 }flash_xip_config_t;
 
-typedef void (*flash_hander_t)(unsigned long, unsigned long, unsigned char*);
-extern _attribute_data_retention_sec_ flash_hander_t flash_read_page;
-extern _attribute_data_retention_sec_ flash_hander_t flash_write_page;
+typedef void (*flash_handler_t)(unsigned long, unsigned long, unsigned char*);
+extern _attribute_data_retention_sec_ flash_handler_t flash_read_page;
+extern _attribute_data_retention_sec_ flash_handler_t flash_write_page;
 
 /*******************************************************************************************************************
  *												Primary interface
@@ -118,7 +118,7 @@ extern _attribute_data_retention_sec_ flash_hander_t flash_write_page;
  * @param[in]   write	- the write function.
  * @none
  */
-static inline void flash_change_rw_func(flash_hander_t read, flash_hander_t write)
+static inline void flash_change_rw_func(flash_handler_t read, flash_handler_t write)
 {
 	flash_read_page = read;
 	flash_write_page = write;

@@ -259,9 +259,7 @@ unsigned int cpu_stall_WakeUp_By_RF_SystemTick(int WakeupSrc, unsigned short rf_
 
 
 /******************************* flash_start *****************************************************************/
-_attribute_text_code_ unsigned int flash_get_jedec_id(void);
-void flash_set_capacity(flash_capacity_e flash_cap);
-flash_capacity_e flash_get_capacity(void);
+
 
 /******************************* flash_end *******************************************************************/
 
@@ -271,17 +269,23 @@ flash_capacity_e flash_get_capacity(void);
 #define reg_usb_irq	REG_ADDR8(0x100839)
 /******************************* usb_end *********************************************************************/
 
-
+/******************************* aes_start ******************************************************************/
+extern unsigned int aes_data_buff[8];
+bool		aes_resolve_irk_rpa(u8 *key, u8 *addr);
+/******************************* aes_end ********************************************************************/
 
 /******************************* core_start ******************************************************************/
-#define	SUPPORT_PFT_ARCH		1
+#define	SUPPORT_PFT_ARCH		0
 /******************************* core_end ********************************************************************/
 
 
 
-/******************************* uart_start ******************************************************************/
-_attribute_ram_code_ void uart_receive_dma_set(dma_chn_e chn, unsigned char * addr,unsigned int rev_size);
-/******************************* uart_end ********************************************************************/
+/***********************************bsp begin***************************************************************/
+
+void sub_wr_ana(unsigned int addr, unsigned char value, unsigned char e, unsigned char s);
+void sub_wr(unsigned int addr, unsigned char value, unsigned char e, unsigned char s);
+
+/***********************************bsp end***************************************************************/
 
 
 #endif /* DRIVERS_B91_EXT_MISC_H_ */

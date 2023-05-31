@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     pke.h
+ * @file    pke.h
  *
- * @brief    This is the header file for BLE SDK
+ * @brief   This is the header file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 /********* pke version:1.0 *********/
 #ifndef _PKE_H_
 #define _PKE_H_
@@ -144,7 +144,6 @@ void reverse_byte_array(unsigned char *in, unsigned char *out, unsigned int byte
  */
 int big_integer_compare(unsigned int *a, unsigned int aWordLen, unsigned int *b, unsigned int bWordLen);
 
-#if DIRVER_CONFILCT
 /**
  * @brief		This function is used to determine whether the array is all 0s.
  * @param[in]	data	- the buffer data.
@@ -152,7 +151,7 @@ int big_integer_compare(unsigned int *a, unsigned int aWordLen, unsigned int *b,
  * @return		1: all 0, 0: not all 0.
  */
 int ismemzero4(unsigned int a[], unsigned int wordLen);
-#endif
+
 /**
  * @brief       out = (a+b) mod modulus.
  * @param[in]   modulus - modulus.

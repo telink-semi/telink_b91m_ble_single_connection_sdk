@@ -26,6 +26,12 @@
 
 
 
+/*
+ * attention: user can not change any code in this file,
+ * 			  these are hardware feature !!!
+ */
+
+
 
 
 /*
@@ -41,6 +47,16 @@
 #define FLASH_P25Q32SU_SUPPORT_EN								1
 #define FLASH_P25Q128L_SUPPORT_EN								1
 #define FLASH_GD25LQ16E_SUPPORT_EN								1
+
+
+
+
+
+
+/**
+ * @brief	MAC address burning on EFUSE
+ */
+#define BUILT_IN_MAC_ON_EFUSE									1
 
 
 

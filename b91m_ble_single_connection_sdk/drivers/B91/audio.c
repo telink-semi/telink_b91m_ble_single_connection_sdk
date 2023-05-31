@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     audio.c
+ * @file    audio.c
  *
- * @brief    This is the source file for BLE SDK
+ * @brief   This is the source file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 #include "audio.h"
 #include "clock.h"
 #include "pwm.h"
@@ -399,6 +399,7 @@ void audio_set_dmic_pin(dmic_pin_group_e pin_gp)
   * @param[in] data_len     - the length of dma rx size by byte
   * @param[in] head_of_list - the head address of dma llp.
   * @return    none
+  * @note      dst_addr : must be aligned by word (4 bytes), otherwise the program will enter an exception
   */
 void audio_rx_dma_config(dma_chn_e chn,unsigned short *dst_addr,unsigned int data_len,dma_chain_config_t *head_of_list)
 {
@@ -421,6 +422,7 @@ void audio_rx_dma_config(dma_chn_e chn,unsigned short *dst_addr,unsigned int dat
  * @param[in] dst_addr  -the dma address of destination.
  * @param[in] data_len  -the length of dma size by byte.
  * @return    none
+ * @note      dst_addr : must be aligned by word (4 bytes), otherwise the program will enter an exception
  */
 void audio_rx_dma_add_list_element(dma_chain_config_t *config_addr,dma_chain_config_t *llpointer ,unsigned short * dst_addr,unsigned int data_len)
 {
@@ -439,6 +441,7 @@ void audio_rx_dma_add_list_element(dma_chain_config_t *config_addr,dma_chain_con
  * @param[in] data_len     - the length of dma rx size by byte
  * @param[in] head_of_list - the head address of dma llp.
  * @return    none
+ * @note      src_addr : must be aligned by word (4 bytes), otherwise the program will enter an exception
  */
 void audio_tx_dma_config(dma_chn_e chn,unsigned short * src_addr, unsigned int data_len,dma_chain_config_t * head_of_list)
 {
@@ -460,6 +463,7 @@ void audio_tx_dma_config(dma_chn_e chn,unsigned short * src_addr, unsigned int d
  * @param[in] src_addr    - the address of source
  * @param[in] data_len    - the length of dma size by byte.
  * @return    none
+ * @note      src_addr : must be aligned by word (4 bytes), otherwise the program will enter an exception
  */
 void audio_tx_dma_add_list_element(dma_chain_config_t *config_addr,dma_chain_config_t *llpointer ,unsigned short * src_addr,unsigned int data_len)
 {
@@ -885,6 +889,16 @@ audio_i2s_clk_config_t   audio_i2s_16k_config=
 	.i2s_lrclk_dac_div=125, //dac sample rate =2M/125 = 16k
 };
 
+audio_i2s_clk_config_t   audio_i2s_24k_config=
+{
+	.i2s_clk_step=1,        //set i2s clk step
+	.i2s_clk_mode=125,      //set i2s clk mode,set i2s clk=192M*(1/125)= 1.536 M
+	.i2s_bclk_div=0,        //1.536 M/(1) = 1.536M bclk
+	.i2s_lrclk_adc_div=64,  //adc sample rate =1.536M/64 = 24k
+	.i2s_lrclk_dac_div=64,  //dac sample rate =1.536M/64 = 24k
+};
+
+
 audio_i2s_clk_config_t   audio_i2s_32k_config=
 {
 	.i2s_clk_step=1,        //set i2s clk step
@@ -1019,6 +1033,9 @@ _attribute_ram_code_sec_noinline_ void  audio_set_i2s_clock (audio_sample_rate_e
 			clk_config_ptr=&audio_i2s_16k_config;
 		break;
 
+		case AUDIO_24K:
+		    clk_config_ptr=&audio_i2s_24k_config;
+		break;
 		case AUDIO_32K:
 			clk_config_ptr=&audio_i2s_32k_config;
 		break;
@@ -1066,6 +1083,7 @@ _attribute_ram_code_sec_noinline_ void  audio_set_i2s_clock (audio_sample_rate_e
  * @param[in] in_buff   - the pointer of rx_buff.
  * @param[in] buff_size - the size of rx_buff.
  * @return    none
+ * @note      in_buff : must be aligned by word (4 bytes), otherwise the program will enter an exception
  */
  void audio_rx_dma_chain_init (dma_chn_e chn,unsigned short * in_buff,unsigned int buff_size )
 {
@@ -1080,6 +1098,7 @@ _attribute_ram_code_sec_noinline_ void  audio_set_i2s_clock (audio_sample_rate_e
   * @param[in] out_buff  - the pointer of tx_buff.
   * @param[in] buff_size - the size of tx_buff.
   * @return    none
+  * @note      out_buff : must be aligned by word (4 bytes), otherwise the program will enter an exception
   */
 void audio_tx_dma_chain_init (dma_chn_e chn,unsigned short * out_buff,unsigned int buff_size)
 {

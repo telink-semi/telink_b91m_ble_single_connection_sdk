@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     pwm.h
+ * @file    pwm.h
  *
- * @brief    This is the header file for BLE SDK
+ * @brief   This is the header file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 #ifndef PWM_H_
 #define PWM_H_
 #include <reg_include/register.h>
@@ -316,11 +316,11 @@ static inline void pwm_clr_irq_mask(pwm_irq_e mask){
 
 	if(mask==FLD_PWM0_IR_FIFO_IRQ)
 	{
-		BM_SET(reg_pwm_irq_mask(1), BIT(0));
+		BM_CLR(reg_pwm_irq_mask(1), BIT(0));
 	}
 	else
 	{
-		BM_SET(reg_pwm_irq_mask(0), mask);
+		BM_CLR(reg_pwm_irq_mask(0), mask);
 	}
 
 }
@@ -354,11 +354,11 @@ static inline void pwm_clr_irq_status(pwm_irq_e status){
 
 	if(status==FLD_PWM0_IR_FIFO_IRQ)
 	{
-		BM_SET(reg_pwm_irq_sta(1), BIT(0));
+		reg_pwm_irq_sta(1) = status;
 	}
 	else
 	{
-		BM_SET(reg_pwm_irq_sta(0), status);
+		reg_pwm_irq_sta(0) = status;
 	}
 
 }
@@ -499,6 +499,7 @@ void pwm_set_dma_config(dma_chn_e chn);
  * @param[in] buf_addr - the address where DMA need to get data from SRAM.
  * @param[in] len - the length of data in SRAM.
  * @return    none
+ * @note      buf_addr: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void pwm_set_dma_buf(dma_chn_e chn,unsigned int buf_addr,unsigned int len);
 
@@ -519,6 +520,7 @@ void pwm_ir_dma_mode_start(dma_chn_e chn);
  * @param[in] data_len - to configure DMA length.
  * @param[in] head_of_list - to configure the address of the next node configure.
  * @return    none
+ * @note      src_addr: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void pwm_set_dma_chain_llp(dma_chn_e chn,unsigned short * src_addr, unsigned int data_len,dma_chain_config_t * head_of_list);
 
@@ -533,6 +535,7 @@ void pwm_set_dma_chain_llp(dma_chn_e chn,unsigned short * src_addr, unsigned int
  * @param[in] src_addr - to configure DMA source address.
  * @param[in] data_len - to configure DMA length.
  * @return    none
+ * @note      src_addr: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void pwm_set_tx_dma_add_list_element(dma_chn_e chn,dma_chain_config_t *config_addr,dma_chain_config_t *llponit ,unsigned short * src_addr,unsigned int data_len);
 

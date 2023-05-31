@@ -325,8 +325,8 @@ typedef struct {
 } mcu_secure_t;
 extern mcu_secure_t  mcuSecur;
 
-bool mcu_securuty_read_efuse(void);
-bool mcu_securuty_read_idcode(void);
+bool mcu_security_read_efuse(void);
+bool mcu_security_read_idcode(void);
 bool efuse_get_pubkey_hash(u8* pHash);
 /******************************* security_end ********************************************************************/
 

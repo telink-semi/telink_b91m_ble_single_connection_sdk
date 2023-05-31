@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     flash.c
+ * @file    flash.c
  *
- * @brief    This is the source file for BLE SDK
+ * @brief   This is the source file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 #include "lib/include/plic.h"
 #include "lib/include/sys.h"
 #include "flash.h"
@@ -28,7 +28,6 @@
 #include "timer.h"
 #include "core.h"
 #include "stimer.h"
-#include "ext_driver/ext_misc.h"
 #include "string.h"
 #include "watchdog.h"
 /*
@@ -37,13 +36,13 @@
 	Flash Type	uid CMD		MID		    Company		Sector Erase Time(MAX)
 	P25Q80U		0x4b		0x146085	PUYA		20ms
 	P25Q16SU    0x4b        0x156085    PUYA        30ms
-	P25Q32SH    0x4b        0x166085    PUYA        30ms
+	P25Q32SU    0x4b        0x166085    PUYA        30ms
  */
 unsigned int flash_support_mid[] = {0x146085,0x156085,0x166085};
 const unsigned int FLASH_CNT = sizeof(flash_support_mid)/sizeof(*flash_support_mid);
 
-_attribute_data_retention_sec_ flash_hander_t flash_read_page = flash_dread;
-_attribute_data_retention_sec_ flash_hander_t flash_write_page = flash_page_program;
+_attribute_data_retention_sec_ flash_handler_t flash_read_page = flash_dread;
+_attribute_data_retention_sec_ flash_handler_t flash_write_page = flash_page_program;
 
 _attribute_data_retention_sec_ static preempt_config_t s_flash_preempt_config =
 {
@@ -142,11 +141,7 @@ _attribute_ram_code_sec_noinline_ static void flash_wait_done(void)
  */
 _attribute_ram_code_sec_noinline_ void flash_mspi_read_ram(flash_command_e cmd, unsigned long addr, unsigned char addr_en, unsigned char dummy_cnt, unsigned char *data, unsigned long data_len)
 {
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
 	unsigned int r=plic_enter_critical_sec(s_flash_preempt_config.preempt_en,s_flash_preempt_config.threshold);
-#endif
 	mspi_stop_xip();
 	/*Flash single line mode does not distinguish between mspi read and mspi write.This is just to be compatible with single line, dual line and quad line.*/
 	mspi_fm_write_en();			/* write mode */
@@ -187,11 +182,7 @@ _attribute_ram_code_sec_noinline_ void flash_mspi_read_ram(flash_command_e cmd, 
 	mspi_high();
 
 	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
 	plic_exit_critical_sec(s_flash_preempt_config.preempt_en,r);
-#endif
 }
 
 /**
@@ -206,11 +197,7 @@ _attribute_ram_code_sec_noinline_ void flash_mspi_read_ram(flash_command_e cmd, 
  */
 _attribute_ram_code_sec_noinline_ void flash_mspi_write_ram(flash_command_e cmd, unsigned long addr, unsigned char addr_en, unsigned char *data, unsigned long data_len)
 {
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
 	unsigned int r=plic_enter_critical_sec(s_flash_preempt_config.preempt_en,s_flash_preempt_config.threshold);
-#endif
 	mspi_stop_xip();
 	/*Flash single line mode does not distinguish between mspi read and mspi write.This is just to be compatible with single line, dual line and quad line.*/
 	mspi_fm_write_en();			/* write mode */
@@ -238,11 +225,7 @@ _attribute_ram_code_sec_noinline_ void flash_mspi_write_ram(flash_command_e cmd,
 	flash_wait_done();
 
 	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
 	plic_exit_critical_sec(s_flash_preempt_config.preempt_en,r);
-#endif
 }
 
 /**
@@ -614,19 +597,13 @@ _attribute_text_sec_ void flash_read_uid(unsigned char idcmd, unsigned char *buf
  */
 _attribute_ram_code_sec_noinline_ void flash_set_xip_config_sram(flash_xip_config_t config)
 {
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 1;
-#else
 	unsigned int r=plic_enter_critical_sec(s_flash_preempt_config.preempt_en,s_flash_preempt_config.threshold);
-#endif
+
 	mspi_stop_xip();
 	reg_mspi_xip_config = *((unsigned short*)(&config));
 	CLOCK_DLY_5_CYC;
-#if SUPPORT_PFT_ARCH
-	reg_irq_threshold = 0;
-#else
+
 	plic_exit_critical_sec(s_flash_preempt_config.preempt_en,r);
-#endif
 }
 _attribute_text_sec_ void flash_set_xip_config(flash_xip_config_t config)
 {
@@ -636,7 +613,7 @@ _attribute_text_sec_ void flash_set_xip_config(flash_xip_config_t config)
 }
 
 /**
- * @brief 		This function is used to write the configure of the flash,P25Q16SU/P25Q32SH uses this function.
+ * @brief 		This function is used to write the configure of the flash,P25Q16SU/P25Q32SU uses this function.
  * @param[in]   cmd			- the write command.
  * @param[out]  data		- the start address of the data buffer.
  * @return 		none.
@@ -659,7 +636,7 @@ _attribute_text_sec_ void flash_write_config(flash_command_e cmd,unsigned char d
 }
 
 /**
- * @brief 		This function is used to read the configure of the flash,P25Q16SU/P25Q32SH uses this function.
+ * @brief 		This function is used to read the configure of the flash,P25Q16SU/P25Q32SU uses this function.
  * @return 		the value of configure.
  * @note        Attention: Before calling the FLASH function, please check the power supply voltage of the chip.
  *              Only if the detected voltage is greater than the safe voltage value, the FLASH function can be called.

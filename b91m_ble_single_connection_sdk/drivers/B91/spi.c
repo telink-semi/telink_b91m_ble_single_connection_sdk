@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     spi.c
+ * @file    spi.c
  *
- * @brief    This is the source file for BLE SDK
+ * @brief   This is the source file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 #include "spi.h"
 
 
@@ -763,6 +763,8 @@ void spi_set_dma(dma_chn_e spi_dma_chn, unsigned int src_addr, unsigned int dst_
  * @param[in]  	spi_sel     - the spi module.
  * @param[in]  	src_addr 	- the address of source.
  * @param[in]  	len 		- the length of data.
+ * @return		none
+ * @note	  	src_addr : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  * */
 void spi_set_tx_dma(spi_sel_e spi_sel, unsigned char* src_addr,unsigned int len)
 {
@@ -792,6 +794,8 @@ void spi_set_tx_dma(spi_sel_e spi_sel, unsigned char* src_addr,unsigned int len)
  * @param[in]  	spi_sel     - the spi module.
  * @param[in]  	dst_addr 	- the address of destination.
  * @param[in]  	len 		- the length of data.
+ * @return		none
+ * @note	  	dst_addr : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  * */
 void spi_set_rx_dma(spi_sel_e spi_sel, unsigned char* dst_addr,unsigned int len)
 {
@@ -821,6 +825,7 @@ void spi_set_rx_dma(spi_sel_e spi_sel, unsigned char* dst_addr,unsigned int len)
  * @param[in] 	src_addr 	- the pointer to the data for write.
  * @param[in] 	len 		- write length.
  * @return  	none
+ * @note	  	src_addr : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void spi_master_write_dma(spi_sel_e spi_sel, unsigned char *src_addr, unsigned int len)
 {
@@ -850,6 +855,7 @@ void spi_master_write_dma(spi_sel_e spi_sel, unsigned char *src_addr, unsigned i
  * @param[in] 	data 		- the pointer to the data for read.
  * @param[in] 	data_len 	- read length.
  * @return  	none
+ * @note	  	addr/data : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void spi_master_write_read_dma(spi_sel_e spi_sel, unsigned char *addr, unsigned int addr_len, unsigned char *data, unsigned int data_len)
 {
@@ -885,6 +891,7 @@ void spi_master_write_read_dma(spi_sel_e spi_sel, unsigned char *addr, unsigned 
  * @param[in]  	data_len 	- length in byte of the data need to write.
  * @param[in]  	wr_mode 	- write mode.dummy or not dummy.
  * @return   	none
+ * @note	  	data : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void spi_master_write_dma_plus(spi_sel_e spi_sel, unsigned char cmd, unsigned int addr, unsigned char *data, unsigned int data_len, spi_wr_tans_mode_e wr_mode)
 {
@@ -915,6 +922,7 @@ void spi_master_write_dma_plus(spi_sel_e spi_sel, unsigned char cmd, unsigned in
  * @param[in]  	data_len 	- length in byte of the data need to read.
  * @param[in]  	rd_mode 	- read mode.dummy or not dummy.
  * @return   	none
+ * @note	  	dst_addr : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void spi_master_read_dma_plus(spi_sel_e spi_sel, unsigned char cmd, unsigned int addr, unsigned char *dst_addr, unsigned int data_len, spi_rd_tans_mode_e rd_mode)
 {
@@ -944,14 +952,15 @@ void spi_master_read_dma_plus(spi_sel_e spi_sel, unsigned char cmd, unsigned int
  * 2.must cmd is 0,addr_len is equal to rd_len,rd_mode is SPI_MODE_WRITE_AND_READ.
  * @param[in]  	spi_sel 	- the spi module.
  * @param[in]  	cmd 		- cmd one byte will first write.
- * @param[in]  	addr 		- the address of slave.
+ * @param[in]  	addr 		- the pointer to the cmd and address for write.
  * @param[in]  	addr_len 	- the length of address.
  * @param[in]  	rd_data 	- pointer to the buffer that will cache the reading out data.
  * @param[in]  	rd_len	 	- length in byte of the data need to read.
  * @param[in]  	rd_mode 	- read mode.dummy or not dummy.
  * @return   	none
+ * @note	  	addr/rd_data : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
-void spi_master_write_read_dma_plus(spi_sel_e spi_sel, unsigned char cmd, unsigned char *addr, unsigned int addr_len, unsigned char *dst_addr, unsigned int rd_len, spi_rd_tans_mode_e rd_mode)
+void spi_master_write_read_dma_plus(spi_sel_e spi_sel, unsigned char cmd, unsigned char *addr, unsigned int addr_len, unsigned char *rd_data, unsigned int rd_len, spi_rd_tans_mode_e rd_mode)
 {
 	unsigned char tx_dma_chn, rx_dma_chn;
 	spi_tx_fifo_clr(spi_sel);
@@ -972,7 +981,7 @@ void spi_master_write_read_dma_plus(spi_sel_e spi_sel, unsigned char cmd, unsign
 		rx_dma_chn = s_pspi_rx_dma_chn;
 	}
 	spi_set_dma(tx_dma_chn, (unsigned int)addr, reg_spi_data_buf_adr(spi_sel), addr_len);
-	spi_set_dma(rx_dma_chn, reg_spi_data_buf_adr(spi_sel), (unsigned int)dst_addr, rd_len);
+	spi_set_dma(rx_dma_chn, reg_spi_data_buf_adr(spi_sel), (unsigned int)rd_data, rd_len);
 	spi_set_cmd(spi_sel, cmd);//when  cmd  disable that  will not sent cmd,just trigger spi send .
 }
 

@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     rf_reg.h
+ * @file    rf_reg.h
  *
- * @brief    This is the header file for BLE SDK
+ * @brief   This is the header file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 #ifndef  RF_REG_H
 #define  RF_REG_H
 #include "soc.h"
@@ -575,20 +575,20 @@ enum{
 enum{
 	FLD_RF_R_TX_EN_DLY_EN         =	BIT(0),
 	FLD_RF_R_PLL_RESET_EN         =	BIT(1),
-	FLD_RF_R_CMD_SCHDULE_EN       =	BIT(2),
+	FLD_RF_R_CMD_SCHEDULE_EN       =	BIT(2),
 	FLD_RF_R_PLL_EN_MAN           =	BIT(3),
 	FLD_RF_R_T_TX_EN_DLY          =	BIT_RNG(4,7),
 };
 
 
-#define		reg_rf_ll_pll_reset      REG_ADDR8(REG_BB_LL_BASE_ADDR+0x17)
-#define		reg_rf_ll_cmd_schedule   REG_ADDR32(REG_BB_LL_BASE_ADDR+0x18)
-#define		reg_rf_ll_cmd_schedule0  REG_ADDR8(REG_BB_LL_BASE_ADDR+0x18)
-#define		reg_rf_ll_cmd_schedule1  REG_ADDR8(REG_BB_LL_BASE_ADDR+0x19)
-#define		reg_rf_ll_cmd_schedule2  REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1a)
-#define		reg_rf_ll_cmd_schedule3  REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1b)
-#define		reg_rf_ll_irq_mask_l     REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1c)
-#define		reg_rf_ll_irq_mask_h     REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1d)
+#define    reg_rf_ll_pll_reset      REG_ADDR8(REG_BB_LL_BASE_ADDR+0x17)
+#define    reg_rf_ll_cmd_schedule   REG_ADDR32(REG_BB_LL_BASE_ADDR+0x18)
+#define    reg_rf_ll_cmd_schedule0  REG_ADDR8(REG_BB_LL_BASE_ADDR+0x18)
+#define    reg_rf_ll_cmd_schedule1  REG_ADDR8(REG_BB_LL_BASE_ADDR+0x19)
+#define    reg_rf_ll_cmd_schedule2  REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1a)
+#define    reg_rf_ll_cmd_schedule3  REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1b)
+#define    reg_rf_ll_irq_mask_l     REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1c)
+#define    reg_rf_ll_irq_mask_h     REG_ADDR8(REG_BB_LL_BASE_ADDR+0x1d)
 #define 	reg_rf_irq_mask			REG_ADDR16(REG_BB_LL_BASE_ADDR+0x1c)
 
 

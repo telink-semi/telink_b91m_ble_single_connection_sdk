@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     clock.c
+ * @file    clock.c
  *
- * @brief    This is the source file for BLE SDK
+ * @brief   This is the source file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 #include "lib/include/sys.h"
 #include "clock.h"
 #include "mspi.h"
@@ -270,14 +270,19 @@ unsigned int clock_get_32k_tick(void)
  * @param[in]	cclk_div - the cclk divide from pll.it is useless if src is not PAD_PLL_DIV. cclk max is 96M
  * @param[in]	hclk_div - the hclk divide from cclk.hclk max is 48M.
  * @param[in]	pclk_div - the pclk divide from hclk.pclk max is 24M.if hclk = 1/2 * cclk, the pclk can not be 1/4 of hclk.
- * @param[in]	mspi_clk_div - mspi_clk has two source - pll div and hclk. If it is built-in flash, the maximum speed of mspi is 64M.
+ * @param[in]	mspi_clk_div - mspi_clk has two source - pll div and cclk. If it is built-in flash, the maximum speed of mspi is 64M.
 							   If it is an external flash, the maximum speed of mspi needs to be based on the board test.
 							   Because the maximum speed is related to the wiring of the board, and is also affected by temperature and GPIO voltage,
 							   the maximum speed needs to be tested at the highest and lowest voltage of the board,
 							   and the high and low temperature long-term stability test speed is no problem.
  * @return      none
+ * @note		Do not switch the clock during the DMA sending and receiving process;
+ * 			    because during the clock switching process, the system clock will be
+ * 			    suspended for a period of time, which may cause data loss
+
  */
-void clock_init(sys_pll_clk_e pll,
+_attribute_ram_code_sec_noinline_
+void clock_init_ram(sys_pll_clk_e pll,
 		sys_clock_src_e src,
 		sys_pll_div_to_cclk_e cclk_div,
 		sys_cclk_div_to_hclk_e hclk_div,
@@ -356,6 +361,19 @@ void clock_init(sys_pll_clk_e pll,
 	if(CCLK_TO_MSPI_CLK == mspi_clk_div){
 		sys_clk.mspi_clk = sys_clk.cclk;
 	}
+}
+
+_attribute_text_sec_
+void clock_init(sys_pll_clk_e pll,
+				sys_clock_src_e src,
+				sys_pll_div_to_cclk_e cclk_div,
+				sys_cclk_div_to_hclk_e hclk_div,
+				sys_hclk_div_to_pclk_e pclk_div,
+				sys_pll_div_to_mspi_clk_e mspi_clk_div)
+{
+	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
+	clock_init_ram(pll, src, cclk_div, hclk_div, pclk_div, mspi_clk_div);
+	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB
 }
 
 

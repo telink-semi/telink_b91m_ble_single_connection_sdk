@@ -27,6 +27,76 @@
 #include "compiler.h"
 #include "types.h"
 
+#define RF_POWER_INDEX_P3dBm RF_POWER_INDEX_P2p79dBm
+
+#define FAST_SETTLE			1
+
+#if FAST_SETTLE
+	typedef struct
+	{
+		u8 LDO_CAL_TRIM;	//0xea[5:0]
+		u8 LDO_RXTXHF_TRIM;	//0xee[5:0]
+		u8 LDO_RXTXLF_TRIM;	//0xee[7:6]  0xed[3:0]
+		u8 LDO_PLL_TRIM;	//0xee[5:0]
+		u8 LDO_VCO_TRIM;	//0xee[7:6]  0xef[3:0]
+		u8 rsvd;
+	}Ldo_Trim;
+
+	typedef struct
+	{
+		unsigned short cal_tbl[40];
+		Ldo_Trim	  ldo_trim;
+		unsigned char tx_fast_en;
+		unsigned char rx_fast_en;
+
+	}Fast_Settle;
+	extern Fast_Settle fast_settle;
+
+	void rf_tx_fast_settle(void);
+	void rf_rx_fast_settle(void);
+	unsigned short get_rf_hpmc_cal_val(void);
+	void set_rf_hpmc_cal_val(unsigned short value);
+	unsigned char is_rf_tx_fast_settle_en(void);
+	unsigned char is_rf_rx_fast_settle_en(void);
+	void get_ldo_trim_val(u8* p);
+	void set_ldo_trim_val(u8* p);
+	void set_ldo_trim_on(void);
+
+	/**
+	 *	@brief	  	this function serve to enable the tx timing sequence adjusted.
+	 *	@param[in]	none
+	 *	@return	 	none
+	*/
+	void rf_tx_fast_settle_en(void);
+
+	/**
+	 *	@brief	  	this function serve to disable the tx timing sequence adjusted.
+	 *	@param[in]	none
+	 *	@return	 	none
+	*/
+	void rf_tx_fast_settle_dis(void);
+
+
+	/**
+	 *	@brief	  	this function serve to enable the rx timing sequence adjusted.
+	 *	@param[in]	none
+	 *	@return	 	none
+	*/
+	void rf_rx_fast_settle_en(void);
+
+
+	/**
+	 *	@brief	  	this function serve to disable the rx timing sequence adjusted.
+	 *	@param[in]	none
+	 *	@return	 	none
+	*/
+	void rf_rx_fast_settle_dis(void);
+
+
+
+#endif
+
+
 #define DMA_RFRX_LEN_HW_INFO				0	// 826x: 8
 #define DMA_RFRX_OFFSET_HEADER				4	// 826x: 12
 #define DMA_RFRX_OFFSET_RFLEN				5   // 826x: 13
@@ -59,6 +129,26 @@ _attribute_ram_code_ void ble_tx_dma_config(void);
 _attribute_ram_code_ void ble_rx_dma_config(void);
 
 void rf_drv_ble_init(void);
+
+
+
+/**
+ * @brief	  	This function serves to update the value of internal cap.
+ * @param[in]  	value   - The value of internal cap which you want to set.
+ * @return	 	none.
+ */
+static inline void 	rf_update_internal_capacitance(unsigned char value)
+{
+	/*
+	 * afe1v_reg10<5:0>		reg_xo_cdac_ana<5:0>		CDAC value (lowest cap to highest cap)
+	 * afe1v_reg10<6>		reg_xo_mode_ana				mode control - 0 : AMP_OFF, 1 : AMP_ON.
+	 * 													0 is to support dc coupling and 1 is to support ac coupling
+	 * afe1v_reg10<7>		reg_xo_cap_off_ana			control of X1 and X2 capacitance values
+														0 : cap follows CDAC, 1 : cap OFF
+	 */
+	analog_write_reg8(0x8A, (analog_read_reg8(0x8A) & 0x40)|(value & 0x3f));
+}
+
 
 /**
  * @brief   This function serves to settle adjust for RF Tx.This function for adjust the differ time
@@ -130,7 +220,7 @@ static inline void rf_set_ble_access_code_adv (void)
  * @param   none.
  * @return  none.
  */
-static inline void rf_trigle_codedPhy_accesscode(void)
+static inline void rf_trigger_codedPhy_accesscode(void)
 {
 	write_reg8(0x140c25,read_reg8(0x140c25)|0x01);
 }
@@ -241,27 +331,39 @@ void rf_set_ble_channel (signed char chn_num);
 #define PRMBL_EXTRA_Coded					0     					// 10byte for Coded, 80uS, no extra byte
 
 
+/* Tdma + else settle + tx_settle = 150us .
+but Tdma is a variable value , it turns shorter with cclk getting faster
+so when cclk=64m/96m, 150us turns to 148.5us around, lead to packet loss.
+need to add tx settle time to ensure 150us . */
 
 #if RF_RX_SHORT_MODE_EN//open rx dly
 	/* TX settle time */
-	#define			TX_STL_ADV_1M									84
-	#define			TX_STL_ADV_2M									115
-	#define			TX_STL_ADV_CODED								124
+	#define			LL_TX_STL_ADV_1M									84
+	#define			LL_TX_STL_ADV_2M									115
+	#define			LL_TX_STL_ADV_CODED								124
 
 
-	#define 		LL_SCANRSP_TX_SETTLE							78
+	#define 		LL_ADV_LEGADV_SCANRSP_SETTLE							78
 
 
 	#define 		TX_STL_AUTO_MODE_1M								(126 - PRMBL_EXTRA_1M * 8)  //126 - 40 = 86
 	#define			TX_STL_AUTO_MODE_2M								(133 - PRMBL_EXTRA_2M * 4)  //133 - 16 = 117
 	#define			TX_STL_AUTO_MODE_CODED							125
 
+#if	FAST_SETTLE
+	#define			TX_STL_ADV_1M_FAST_SETTLE						(LL_TX_STL_ADV_1M-57)
+	#define			TX_STL_ADV_2M_FAST_SETTLE						(LL_TX_STL_ADV_2M-57)
+	#define			TX_STL_ADV_CODED_FAST_SETTLE					(LL_TX_STL_ADV_CODED-57)
 
-	/* Tdma + else settle + tx_settle = 150us .
-	but Tdma is a variable value , it turns shorter with cclk getting faster
-	so when cclk=64m/96m, 150us turns to 148.5us around, lead to packet loss.
-	need to add tx settle time to ensure 150us . */
-	#define 		TX_STL_AUTO_MODE_1M_HIGH_FREQ					(127 - PRMBL_EXTRA_1M * 8)  //127 - 40 = 87
+	#define 		LL_SCANRSP_TX_SETTLE_FAST_SETTLE				(LL_ADV_LEGADV_SCANRSP_SETTLE-57)
+
+	#define 		TX_STL_AUTO_MODE_1M_FAST_SETTLE					(TX_STL_AUTO_MODE_1M-57)
+	#define			TX_STL_AUTO_MODE_2M_FAST_SETTLE					(TX_STL_AUTO_MODE_2M-57)
+	#define			TX_STL_AUTO_MODE_CODED_FAST_SETTLE				(TX_STL_AUTO_MODE_CODED-57)
+
+#endif
+
+
 #else// close rx dly
 	#error "add code here, TX settle time"
 #endif
@@ -275,23 +377,30 @@ void rf_set_ble_channel (signed char chn_num);
 #define AD_CONVERT_DLY_2M											10
 #define AD_CONVERT_DLY_CODED										14
 
+#define OTHER_SWITCH_DELAY_1M										0
+#define OTHER_SWITCH_DELAY_2M										0
+#define OTHER_SWITCH_DELAY_CODED									0
+
+
+#define HW_DELAY_1M													(AD_CONVERT_DLY_1M + OTHER_SWITCH_DELAY_1M)
+#define HW_DELAY_2M													(AD_CONVERT_DLY_2M + OTHER_SWITCH_DELAY_2M)
+#define HW_DELAY_CODED												(AD_CONVERT_DLY_CODED + OTHER_SWITCH_DELAY_CODED)
+
 
 static inline void rf_ble_set_1m_phy(void)
 {
 	write_reg8(0x140e3d,0x61);
 	write_reg32(0x140e20,0x23200a16);
-	write_reg8(0x140c20,0x84);			//Eagle multi_conn 0xc4
+	write_reg8(0x140c20,0x8c);// script cc disable long rang trigger.BIT[3]continue mode.After syncing to the preamble,
+							  //it will immediately enter the sync state again, reducing the probability of mis-syncing.
+							  //modified by zhiwei,confirmed by qiangkai and xuqiang.20221205
 	write_reg8(0x140c22,0x00);
 	write_reg8(0x140c4d,0x01);
 	write_reg8(0x140c4e,0x1e);
 	write_reg16(0x140c36,0x0eb7);
 	write_reg16(0x140c38,0x71c4);
 	write_reg8(0x140c73,0x01);
-	#if RF_RX_SHORT_MODE_EN
-		write_reg8(0x140c79,0x38);			//default:0x00;RX_DIS_PDET_BLANK
-	#else
-		write_reg8(0x140c79,0x08);
-	#endif
+
 	write_reg16(0x140cc2,0x4b39);
 	write_reg32(0x140cc4,0x796e6256);
 
@@ -309,18 +418,16 @@ static inline void rf_ble_set_2m_phy(void)
 {
 	write_reg8(0x140e3d,0x41);
 	write_reg32(0x140e20,0x26432a06);
-	write_reg8(0x140c20,0x84);	//Eagle multi_conn 0xc4
+	write_reg8(0x140c20,0x8c);// script cc disable long rang trigger.BIT[3]continue mode.After syncing to the preamble,
+							  //it will immediately enter the sync state again, reducing the probability of mis-syncing.
+							  //modified by zhiwei,confirmed by qiangkai and xuqiang.20221205
 	write_reg8(0x140c22,0x01);
 	write_reg8(0x140c4d,0x01);
 	write_reg8(0x140c4e,0x1e);
 	write_reg16(0x140c36,0x0eb7);
 	write_reg16(0x140c38,0x71c4);
 	write_reg8(0x140c73,0x01);
-	#if RF_RX_SHORT_MODE_EN
-		write_reg8(0x140c79,0x30);			//default:0x00;RX_DIS_PDET_BLANK
-	#else
-		write_reg8(0x140c79,0x00);
-	#endif
+
 	write_reg16(0x140cc2,0x4c3b);
 	write_reg32(0x140cc4,0x7a706458);
 
@@ -340,17 +447,15 @@ static inline void rf_ble_set_coded_phy_common(void)
 {
 	write_reg8(0x140e3d,0x61);
 	write_reg32(0x140e20,0x23200a16);
-	write_reg8(0x140c20,0x85);	//Eagle multi_conn 0xc5
+	write_reg8(0x140c20,0x8d);// script cc disable long rang trigger.BIT[3]continue mode.After syncing to the preamble,
+							  //it will immediately enter the sync state again, reducing the probability of mis-syncing.
+							  //modified by zhiwei,confirmed by qiangkai and xuqiang.20221205
 	write_reg8(0x140c22,0x00);
 	write_reg8(0x140c4d,0x01);
 	write_reg8(0x140c4e,0xf0);
 	write_reg16(0x140c38,0x7dc8);
 	write_reg8(0x140c73,0x21);
-	#if RF_RX_SHORT_MODE_EN
-		write_reg8(0x140c79,0x30);
-	#else
-		write_reg8(0x140c79,0x00);
-	#endif
+
 	write_reg16(0x140cc2,0x4836);
 	write_reg32(0x140cc4,0x796e6254);
 

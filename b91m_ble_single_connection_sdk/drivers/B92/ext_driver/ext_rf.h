@@ -217,7 +217,7 @@ static inline void rf_set_ble_access_code_adv (void)
  * @param   none.
  * @return  none.
  */
-static inline void rf_trigle_codedPhy_accesscode(void)
+static inline void rf_trigger_codedPhy_accesscode(void)
 {
 	write_reg8(0x170425,read_reg8(0x170425)|0x01);
 }

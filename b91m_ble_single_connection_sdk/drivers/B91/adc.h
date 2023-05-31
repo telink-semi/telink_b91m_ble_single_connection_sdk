@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     adc.h
+ * @file    adc.h
  *
- * @brief    This is the header file for BLE SDK
+ * @brief   This is the header file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 /**	@page ADC
  *
  *	Introduction
@@ -301,9 +301,10 @@ static inline void adc_set_state_length(unsigned short r_max_mc,unsigned char r_
 void adc_set_dma_config(dma_chn_e chn);
 /**
  * @brief     This function serves to start sample with adc DMA channel.
- * @param[out] adc_data_buf 	- the address of data buffer
+ * @param[out] adc_data_buf 	- the address of data buffer.
  * @param[in] data_byte_len - the length of data size by byte
  * @return    none
+ * @note	  adc_data_buf : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void adc_start_sample_dma(unsigned short *adc_data_buf,unsigned int data_byte_len);
 /**
@@ -404,6 +405,7 @@ void adc_init(adc_ref_vol_e v_ref,adc_pre_scale_e pre_scale,adc_sample_freq_e sa
  * @param[out]   sample_buffer 		- pointer to the buffer adc sample code need to store.
  * @param[in]   sample_num 			- the number of adc sample code.
  * @return 		none
+ * @note	  sample_buffer : must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void adc_get_code_dma(unsigned short *sample_buffer, unsigned short sample_num);
 /**

@@ -32,7 +32,7 @@
 #endif
 
 
-
+#define DEEPSLEEP_RAM_SIZE_TO_MODE(ram_size)  ram_size==0x8000? DEEPSLEEP_MODE_RET_SRAM_LOW32K: DEEPSLEEP_MODE_RET_SRAM_LOW64K
 
 
 
@@ -172,6 +172,9 @@ unsigned int clock_get_digital_32k_tick(void);
 
 /**
  * @brief      This function serves to determine whether wake up source is internal 32k RC.
+ * 			   attention: this function must called before "sys_init()" for two situation
+ * 			   			(1). Using 32K RC for power management
+ * 			   			(2). No power management. special reason for B91, need deepSleep cycle for reboot back and watchDog back.
  * @param[in]  none.
  * @return     none.
  */

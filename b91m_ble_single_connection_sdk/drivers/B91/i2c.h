@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     i2c.h
+ * @file    i2c.h
  *
- * @brief    This is the header file for BLE SDK
+ * @brief   This is the header file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 /**	@page I2C
  *
  *	Introduction
@@ -286,6 +286,7 @@ unsigned char i2c_master_write_read(unsigned char id, unsigned char *wr_data, un
  * @param[in]  data - The data to be sent, The first three bytes represent the RAM address of the slave.
  * @param[in]  len - This length is the total length, including both the length of the slave RAM address and the length of the data to be sent.
  * @return     none.
+ * @note       data: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void i2c_master_write_dma(unsigned char id, unsigned char *data, unsigned char len);
 
@@ -294,9 +295,10 @@ void i2c_master_write_dma(unsigned char id, unsigned char *data, unsigned char l
 /**
  * @brief      This function serves to read a packet of data from the specified address of slave device.
  * @param[in]  id - to set the slave ID.for kite slave ID=0x5c,for eagle slave ID=0x5a.
- * @param[in]  data - Store the read data
+ * @param[in]  data - Store the read data.
  * @param[in]  len - The total length of the data read back.
  * @return     none.
+ * @note       data: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void i2c_master_read_dma(unsigned char id, unsigned char *data, unsigned char len);
 
@@ -308,6 +310,7 @@ void i2c_master_read_dma(unsigned char id, unsigned char *data, unsigned char le
  * @param[in]  data - the pointer of tx_buff.
  * @param[in]  len - The total length of the data .
  * @return     none.
+ * @note       data: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void i2c_slave_set_tx_dma( unsigned char *data, unsigned char len);
 
@@ -318,6 +321,7 @@ void i2c_slave_set_tx_dma( unsigned char *data, unsigned char len);
  * @param[in]  data - the pointer of rx_buff.
  * @param[in]  len  - The total length of the data.
  * @return     none.
+ * @note       data: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void i2c_slave_set_rx_dma(unsigned char *data, unsigned char len);
 

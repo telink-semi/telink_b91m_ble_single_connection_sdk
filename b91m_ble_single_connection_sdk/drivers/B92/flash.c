@@ -30,7 +30,7 @@
 #include "core.h"
 #include "stimer.h"
 #include "types.h"
-#include "watchdog.h"
+#include "watchdog.h" //For BLE SDK, do not delete it.
 /*
  *	If add flash type, need pay attention to the read uid command and the bit number of status register
  *  Flash trim scheme has been added for P25Q80U.If other types of flash adds this scheme, user need to modify "flash_trim" and "flash_trim_check" function.
@@ -97,7 +97,7 @@ void flash_plic_preempt_config(unsigned char preempt_en,unsigned char threshold)
  */
 _attribute_text_sec_ void flash_erase_sector(unsigned long addr)
 {
-	wd_clear(); //clear watch dog
+	wd_clear(); //clear watch dog //For BLE SDK, do not delete it.
 	__asm__("csrci 	mmisc_ctl,8");	//disable BTB
 	flash_mspi_write_ram(FLASH_SECT_ERASE_CMD, addr,NULL,0);
 	__asm__("csrsi 	mmisc_ctl,8");	//enable BTB

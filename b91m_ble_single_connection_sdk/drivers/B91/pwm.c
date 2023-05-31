@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     pwm.c
+ * @file    pwm.c
  *
- * @brief    This is the source file for BLE SDK
+ * @brief   This is the source file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 #include "pwm.h"
 
 
@@ -87,6 +87,7 @@ void pwm_set_dma_config(dma_chn_e chn)
  * @param[in] buf_addr - the address where DMA need to get data from SRAM.
  * @param[in] len - the length of data in SRAM.
  * @return    none
+ * @note      buf_addr: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void pwm_set_dma_buf(dma_chn_e chn,unsigned int buf_addr,unsigned int len)
 {
@@ -114,6 +115,7 @@ void pwm_ir_dma_mode_start(dma_chn_e chn)
  * @param[in] data_len - to configure DMA length.
  * @param[in] head_of_list - to configure the address of the next node configure.
  * @return    none
+ * @note      src_addr: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void pwm_set_dma_chain_llp(dma_chn_e chn,unsigned short * src_addr, unsigned int data_len,dma_chain_config_t * head_of_list)
 {
@@ -137,6 +139,7 @@ void pwm_set_dma_chain_llp(dma_chn_e chn,unsigned short * src_addr, unsigned int
  * @param[in] src_addr - to configure DMA source address.
  * @param[in] data_len - to configure DMA length.
  * @return    none
+ * @note      src_addr: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 void pwm_set_tx_dma_add_list_element(dma_chn_e chn,dma_chain_config_t *config_addr,dma_chain_config_t *llponit ,unsigned short * src_addr,unsigned int data_len)
 {

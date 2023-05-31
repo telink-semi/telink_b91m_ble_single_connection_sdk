@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     uart.h
+ * @file    uart.h
  *
- * @brief    This is the header file for BLE SDK
+ * @brief   This is the header file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 /**	@page UART
  *
  *	Introduction
@@ -137,6 +137,8 @@ typedef enum{
 	UART1_TX_PC6 = GPIO_PC6,
 	UART1_TX_PD6 = GPIO_PD6,
 	UART1_TX_PE0 = GPIO_PE0,
+
+	UART_TX_NONE_PIN =0xfff,
 }uart_tx_pin_e;
 
 
@@ -151,6 +153,8 @@ typedef enum{
 	UART1_RX_PC7 = GPIO_PC7,
 	UART1_RX_PD7 = GPIO_PD7,
 	UART1_RX_PE2 = GPIO_PE2,
+
+	UART_RX_NONE_PIN =0xfff,
 }uart_rx_pin_e;
 
 /**
@@ -223,13 +227,14 @@ static inline void uart_reset(uart_num_e uart_num)
 	  out of the interrupt, and immediately in the interrupt, and so on loop, resulting in the feeling that the program did not go down.
 	 */
 	unsigned char tx_mask_flag=0;
-	if(reg_uart_rx_timeout1(uart_num)|FLD_UART_MASK_TXDONE)
+	if(reg_uart_rx_timeout1(uart_num)&FLD_UART_MASK_TXDONE)
 	{
 		tx_mask_flag=1;
 		reg_uart_rx_timeout1(uart_num)&=~FLD_UART_MASK_TXDONE;
 	}
 	reg_rst0 &= (~((uart_num)?FLD_RST0_UART1:FLD_RST0_UART0));
 	reg_rst0 |= ((uart_num)?FLD_RST0_UART1:FLD_RST0_UART0);
+	reg_uart_state(uart_num) |=FLD_UART_CLR_TXDONE;
 	if(tx_mask_flag==1){
 		reg_uart_rx_timeout1(uart_num)|=FLD_UART_MASK_TXDONE;
 	}
@@ -404,6 +409,7 @@ void uart_set_rtx_pin(uart_rx_pin_e rx_pin);
  * @param[in] 	len      - DMA transmission length.The maximum transmission length of DMA is 0xFFFFFC bytes, so dont'n over this length.
  * @return      1  dma start send.
  *              0  the length is error.
+ * @note        addr: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 unsigned char uart_send_dma(uart_num_e uart_num, unsigned char * addr, unsigned int len );
 
@@ -424,6 +430,7 @@ unsigned char uart_send(uart_num_e uart_num, unsigned char * addr, unsigned char
  * @note        1. rev_size must be larger than the data you received actually.
  *              2. the data length can be arbitrary if less than rev_size.
  * @return    	none
+ * @note        addr: must be aligned by word (4 bytes), otherwise the program will enter an exception.
  */
 extern void uart_receive_dma(uart_num_e uart_num, unsigned char * addr,unsigned int rev_size);
 
@@ -616,8 +623,13 @@ static inline void uart_rts_manual_mode(uart_num_e uart_num)
 
 
 /**
- * @brief     This function is used to set the 'uart_rx_byte_index' to 0.
- *			  after wakeup from power-saving mode or reset uart, you must call this function before receiving the data.
+ * @brief     This function interface needs to be called in two situations:
+ * 1.After calling the uart reset interface, uart_clr_tx_index and uart_clr_rx_index must be called to clear the read/write pointer,
+ * after the uart reset interface is invoked, the hardware read and write Pointers are cleared to zero.
+ * Therefore, the software read and write Pointers are cleared to ensure logical correctness.
+ * 2.After suspend wakes up, you must call uart_clr_tx_index and uart_clr_rx_index to clear read and write pointers,
+ * because after suspend wakes up, the chip is equivalent to performing a uart_reset,
+ * so the software read and write pointer also needs to be cleared to zero.
  * @param[in] uart_num
  * @return    none.
  */
@@ -627,8 +639,13 @@ static inline void uart_clr_rx_index(uart_num_e uart_num)
 }
 
 /**
- * @brief     This function is used to set the 'uart_tx_byte_index' to 0.
- *			  after wakeup from power-saving mode or reset uart, you must call this function before sending the data.
+ * @brief     This function interface needs to be called in two situations:
+ * 1.After calling the uart reset interface, uart_clr_tx_index and uart_clr_rx_index must be called to clear the read/write pointer,
+ * after the uart reset interface is invoked, the hardware read and write Pointers are cleared to zero.
+ * Therefore, the software read and write Pointers are cleared to ensure logical correctness.
+ * 2.After suspend wakes up, you must call uart_clr_tx_index and uart_clr_rx_index to clear read and write pointers,
+ * because after suspend wakes up, the chip is equivalent to performing a uart_reset,
+ * so the software read and write pointer also needs to be cleared to zero.
  * @param[in] uart_num
  * @return    none.
  */
@@ -644,7 +661,7 @@ static inline void uart_clr_tx_index(uart_num_e uart_num)
  */
 static inline void uart_clr_tx_done(uart_num_e uart_num)
 {
-	reg_uart_state(uart_num) |=BIT(7);
+	reg_uart_state(uart_num) |=FLD_UART_CLR_TXDONE;
 }
 
 /**

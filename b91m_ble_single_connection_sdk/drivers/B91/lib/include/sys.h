@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     sys.h
+ * @file    sys.h
  *
- * @brief    This is the header file for BLE SDK
+ * @brief   This is the header file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 /**	@page SYS
  *
  *	Introduction
@@ -35,6 +35,7 @@
 #ifndef SYS_H_
 #define SYS_H_
 #include "reg_include/stimer_reg.h"
+#include "compiler.h"
 
 
 /**********************************************************************************************************************
@@ -82,7 +83,9 @@ typedef enum{
  * 			The voltage of the GPIO pin is the voltage of vbat.
  * 			When the vbat power supply voltage may be higher than 3.6V, it is configured as VBAT_MAX_VALUE_GREATER_THAN_3V6 mode,
  * 			the bypass is closed, and the vbat voltage passes through an LDO to supply power to the chip.
- * 			The voltage of the GPIO pin is the voltage after vbat passes through the LDO, about 3.3V floating 10%.
+ * 			The voltage of the GPIO pin (V_ioh) is the voltage after Vbat passes through the LDO (V_ldo),
+ * 			and the maximum value is about 3.3V floating 10% (V_ldoh).
+ * 			When Vbat > V_ldoh, V_ioh = V_ldo = V_ldoh. When Vbat < V_ldoh, V_ioh = V_ldo = Vbat.
  */
 typedef enum{
 	VBAT_MAX_VALUE_GREATER_THAN_3V6	= 0x00,		/*VBAT may be greater than 3.6V. */
@@ -112,10 +115,8 @@ extern unsigned int g_chip_version;
  * @brief      This function reboot mcu.
  * @return     none
  */
-static inline void sys_reboot(void)
-{
-	write_reg8(0x1401ef, 0x20);
-}
+_attribute_text_sec_ void sys_reboot(void);
+
 /**
  * @brief   	This function serves to initialize system.
  * @param[in]	power_mode - power mode(LDO/DCDC/LDO_DCDC)
@@ -141,11 +142,5 @@ int write_reg_table(const tbl_cmd_set_t * pt, int size);
  * @return    1 means there is a calibration value in efuse, and 0 means there is no calibration value in efuse.
  */
 unsigned char efuse_get_adc_calib_value(unsigned short* gain, signed char* offset);
-/**
- * @brief     this function servers to get data(BIT0~BIT31) from EFUSE.efuse default value is 0.
- * @param[in] none
- * @return    data(BIT0~BIT31)
- */
-unsigned int  efuse_get_low_word(void);
 
 #endif

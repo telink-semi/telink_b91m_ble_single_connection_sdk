@@ -1,12 +1,12 @@
 /********************************************************************************************************
- * @file     core.h
+ * @file    core.h
  *
- * @brief    This is the header file for BLE SDK
+ * @brief   This is the header file for B91
  *
- * @author	 BLE GROUP
- * @date         06,2022
+ * @author  Driver Group
+ * @date    2019
  *
- * @par     Copyright (c) 2022, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
+ * @par     Copyright (c) 2019, Telink Semiconductor (Shanghai) Co., Ltd. ("TELINK")
  *
  *          Licensed under the Apache License, Version 2.0 (the "License");
  *          you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@
  *          WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *          See the License for the specific language governing permissions and
  *          limitations under the License.
+ *
  *******************************************************************************************************/
-
 #ifndef CORE_H
 #define CORE_H
 #include "lib/include/sys.h"
@@ -227,7 +227,6 @@ static inline unsigned int core_get_mepc(void)
 {
 	return read_csr(NDS_MEPC);
 }
-
 /**
  * @brief 	 This function serves to mcu entry wfi(Wait-For-Interrupt) mode similar to stall mcu.
  * @return	 none

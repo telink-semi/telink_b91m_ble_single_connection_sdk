@@ -24,12 +24,15 @@
 #ifndef DRIVERS_B91_EXT_DRIVER_DRIVER_EXT_H_
 #define DRIVERS_B91_EXT_DRIVER_DRIVER_EXT_H_
 
-
+#include "mcu_config.h"
 #include "ext_rf.h"
 #include "ext_pm.h"
+#include "ext_aes.h"
 #include "ext_gpio.h"
 #include "ext_misc.h"
+#include "ext_uart.h"
 #include "software_pa.h"
+#include "ext_hci_uart.h"
 #include "mcu_boot.h"
 
 
