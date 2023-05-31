@@ -25,7 +25,7 @@
 #include "myudb.h"
 #include "myudb_usbdesc.h"
 #include "common/utility.h"
-#include <string.h>
+#include "tlk_string.h"
 #include "vendor/common/tlkapi_debug.h"
 
 #if (VCD_EN || DUMP_STR_EN)
@@ -280,7 +280,6 @@ _attribute_ram_code_ void usb_send_str_data (char *str, u8 *ph, int n)
 	u8 *ps =  myudb_print_fifo->p + (myudb_print_fifo->wptr & (myudb_print_fifo->num - 1)) * myudb_print_fifo->size;
 	u8 *pd = ps;
 
-	extern int tlk_strlen(char *str);
 	int ns = str ? tlk_strlen (str) : 0;
 	if (ns > myudb_print_fifo->size - 12)
 	{
@@ -301,7 +300,7 @@ _attribute_ram_code_ void usb_send_str_data (char *str, u8 *ph, int n)
 		*pd++ = 0;
 		*pd++ = 0;
 
-		*pd++ = 0x95;   //special mark¡êo 0xA695
+		*pd++ = 0x95;   //special markï¿½ï¿½ 0xA695
 		*pd++ = 0xA6;
 		*pd++ = ns;     // string length, 1byte
 		*pd++ = n;	    // data length, 2 byte
