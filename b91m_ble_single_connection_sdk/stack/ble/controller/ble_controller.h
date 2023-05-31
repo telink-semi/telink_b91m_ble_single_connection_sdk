@@ -39,8 +39,6 @@
 #include "stack/ble/controller/ll/ll_adv.h"
 #include "stack/ble/controller/ll/ll_pm.h"
 #include "stack/ble/controller/ll/ll_scan.h"
-#include "stack/ble/controller/ll/ll_whitelist.h"
-#include "stack/ble/controller/ll/ll_resolvlist.h"
 #include "stack/ble/controller/ll/ll_conn/ll_conn.h"
 #include "stack/ble/controller/ll/ll_conn/ll_slave.h"
 #include "stack/ble/controller/ll/ll_conn/ll_conn_csa.h"
@@ -53,9 +51,12 @@
 
 #include "phy/phy_test.h"
 
+#include "stack/ble/controller/whitelist/whitelist.h"
+#include "stack/ble/controller/whitelist/resolvelist.h"
 
 #include "algorithm/ecc/ecc_ll.h"
 #include "algorithm/aes_ccm/aes_ccm.h"
 
+#include "stack/ble/debug/debug.h"
 
 #endif /* BLE_H_ */

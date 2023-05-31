@@ -55,7 +55,7 @@ typedef int (*blc_hci_app_handler_t) (unsigned char *p);
 
 
 
-#if (MCU_CORE_TYPE == MCU_CORE_9518)
+#if (MCU_CORE_TYPE == MCU_CORE_B91 || MCU_CORE_TYPE == MCU_CORE_B92)
 	extern  my_fifo_t	hci_tx_iso_fifo;
 
 	typedef	struct {
@@ -131,6 +131,8 @@ extern u32		hci_eventMask;
 extern u32		hci_le_eventMask;
 extern u32		hci_le_eventMask_2;
 
+extern hci_fifo_t				bltHci_rxfifo;
+extern hci_fifo_t			    bltHci_txfifo;
 
 
 // Controller event handler
@@ -140,13 +142,16 @@ extern u32		hci_le_eventMask_2;
 typedef int (*hci_event_handler_t) (u32 h, u8 *para, int n);
 extern hci_event_handler_t		blc_hci_event_handler;
 
+// Controller data handler
+typedef int (*hci_data_handler_t) (u16 conn, u8 * p);
+extern hci_data_handler_t		blc_hci_data_handler;
 
 #if (MCU_CORE_TYPE == MCU_CORE_825x || MCU_CORE_TYPE == MCU_CORE_827x)
 	int 	blc_acl_from_btusb ();
 	int 	blc_hci_tx_to_btusb (void);
 #endif
 
-#if (MCU_CORE_TYPE == MCU_CORE_9518)
+#if (MCU_CORE_TYPE == MCU_CORE_B91 || MCU_CORE_TYPE == MCU_CORE_B92)
 	/**
 	 * @brief      for user to initialize HCI TX FIFO.
 	 * @param[in]  pRxbuf - TX FIFO buffer address.

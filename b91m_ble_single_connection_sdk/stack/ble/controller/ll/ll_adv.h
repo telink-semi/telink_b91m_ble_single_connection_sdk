@@ -25,6 +25,7 @@
 #define LL_ADV_H_
 
 #include "stack/ble/ble_format.h"
+#include "stack/ble/ble_config.h"
 
 
 
@@ -107,7 +108,7 @@ ble_sts_t   bls_ll_setAdvDuration (u32 duration_us, u8 duration_en);
  * @param[in]  chn2 - channel to replace channel 39
  * @return     none
  */
-void 		blc_ll_setAdvCustomedChannel (u8 chn0, u8 chn1, u8 chn2);
+void 		blc_ll_setAdvCustomizedChannel (u8 chn0, u8 chn1, u8 chn2);
 
 /**
  * @brief      this function is used to set whether to continue sending broadcast packets when receiving scan request in the current adv interval.
@@ -157,6 +158,12 @@ static inline u32 	bls_ll_getConnectionCreateTime(void)
 	return blc_rcvd_connReq_tick;
 }
 
+/**
+ * @brief      This function is used to get next ADV expect tick.
+ * @param[in]  none
+ * @return     ADV Expect tick
+ */
+u32 blc_ll_getAdvExpectTick(void);
 
 /**
  * @brief      This function is used to add adv in connection slave role.
@@ -198,7 +205,7 @@ ble_sts_t 	blc_ll_setAdvParamInConnSlaveRole( u8 		  *adv_data,  u8             
 
 /**
  * @brief      This function is used to set ADV interval in slave role.
- * @param[in]  intervalMin - minimuim adv interval
+ * @param[in]  intervalMin - minimum adv interval
  * @param[in]  intervalMin - maximum adv interval
  * @return     Status - 0x00:  success;
  * 						other: fail
@@ -207,7 +214,7 @@ ble_sts_t 	bls_ll_setAdvInterval(u16 intervalMin, u16 intervalMax);
 
 
 /**
- * @brief      This function is used to set ADV aaachannel used in slave role.
+ * @brief      This function is used to set ADV channel used in slave role.
  * @param[in]  adv_channelMap - channel map
  * @return     Status - 0x00:  success;
  * 						other: fail
@@ -216,7 +223,7 @@ ble_sts_t 	bls_ll_setAdvChannelMap(adv_chn_map_t adv_channelMap);
 
 
 /**
- * @brief      This function is used to set ADV aaachannel used in slave role.
+ * @brief      This function is used to set ADV channel used in slave role.
  * @param[in]  cmdPara - command parameter
  * @return     Status - 0x00:  success;
  * 						other: fail
@@ -240,7 +247,53 @@ void bls_set_advertise_prepare (void *p);
 
 #define blc_ll_initAdvertising_module   blc_ll_initLegacyAdvertising_module
 
+#if SECOND_ADV_ENABLE
+	/**
+	 * @brief	   set the data used in advertising packets that have a data field.
+	 * @param[in]  *data -  advertising data buffer
+	 * @param[in]  len - The number of significant octets in the Advertising_Data.
+	 * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+	 */
+	ble_sts_t	bls_ll_setSecondAdvData(u8 *data, u8 len);
 
 
 
+	/**
+	 * @brief      This function is used to set the second advertising parameters.
+	 * @param[in]  intervalMin - Minimum advertising interval(Time = N * 0.625 ms, Range: 0x0020 to 0x4000)
+	 * @param[in]  intervalMin - Maximum advertising interval(Time = N * 0.625 ms, Range: 0x0020 to 0x4000)
+	 * @param[in]  advType - Advertising_Type
+	 * @param[in]  ownAddrType - Own_Address_Type
+	 * @param[in]  peerAddrType - Peer_Address_Type
+	 * @param[in]  *peerAddr - Peer_Address
+	 * @param[in]  adv_channelMap - Advertising_Channel_Map
+	 * @param[in]  advFilterPolicy - Advertising_Filter_Policy
+	 * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+	 */
+	ble_sts_t   bls_ll_setSecondAdvParam( u16 intervalMin,  u16 intervalMax,  adv_type_t advType,  		 	  own_addr_type_t ownAddrType,  \
+								     u8 peerAddrType, u8  *peerAddr,    adv_chn_map_t 	adv_channelMap,   adv_fp_type_t   advFilterPolicy);
+
+
+	/**
+	 * @brief      This function is used to request the Controller to start or stop second advertising if advertising is enable.
+	 * @param[in]  adv_enable - Advertising_Enable
+	 * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+	 */
+	ble_sts_t    bls_ll_setSecondAdvEnable(int adv_enable);
+	/**
+	 * @brief      for user to initialize legacy advertising module use second set
+	 * 			   if use that it must be used after enable legacy advertising module
+	 * @param	   none
+	 * @return     none
+	 */
+	void blc_ll_initSecondLegacyAdvertising_module(void);
+
+	/**
+	 * @brief      This function is used to request the Controller to start or stop advertising.
+	 * @param[in]  adv_enable - Advertising_Enable
+	 * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+	 */
+	ble_sts_t   bls_ll_setAdvEnable(int adv_enable);
+
+#endif
 #endif /* LL_ADV_H_ */

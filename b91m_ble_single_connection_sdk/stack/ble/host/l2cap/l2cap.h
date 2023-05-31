@@ -100,7 +100,7 @@ void 		blc_l2cap_reg_att_sig_hander(void *p);//signaling pkt proc
  * @param	*p - the pointer of l2cap data
  * @return	none.
  */
-void 		blc_l2cap_reg_att_cli_hander(void *p);
+void 		blc_l2cap_reg_att_cli_handler(void *p);
 
 /**
  * @brief	This function is used to send connect parameter update response

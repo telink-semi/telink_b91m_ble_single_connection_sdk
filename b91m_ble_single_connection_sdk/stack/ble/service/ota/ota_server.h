@@ -58,14 +58,21 @@ void		blc_ota_initOtaServer_module(void);
 
 /**
  * @brief      This function is used to set OTA new firmware storage address on Flash.
- * 			   note: this function must be called before "sys_init" or "cpu_wakeup_init".
+ * 			   attention: If this API is used, must be called before "sys_init" or "cpu_wakeup_init" when initialization !!!
  * @param[in]  firmware_size_k - firmware maximum size unit: K Byte; must be 4K aligned
- * @param[in]  boot_addr - new firmware storage address, can only choose from multiple boot address
- * 							 supported by MCU
+ * @param[in]  boot_addr - new firmware storage address, can only choose from multiple boot address supported by MCU
  * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
 ble_sts_t	blc_ota_setFirmwareSizeAndBootAddress(int firmware_size_k, multi_boot_addr_e boot_addr);
 
+
+/**
+ * @brief      This function is used to read current used multiple boot address.
+ * 			   return value is set by API "blc ota_setFirmwareSizeAndBootAddress"
+ * @param[in]  none
+ * @return     multiple boot address
+ */
+u32			blc_ota_getCurrentUsedMultipleBootAddress(void);
 
 
 /**
@@ -132,8 +139,15 @@ ble_sts_t	blc_ota_setOtaDataPacketTimeout(int timeout_second);
 
 /**
  * @brief      This function is used to set resolution of OTA schedule indication by PDU number
- * 			   This API must be called when initialization, after "blc_ota_initOtaServer_module"
- * @param[in]  pdu_num -
+ * 			   OTA server will send a "CMD_OTA_SCHEDULE_PDU_NUM" command with packet structure "ota_sche_pdu_num_t" to notify OTA client
+ * 			   as an OTA process indication.  For example, if user set pdu_num to 10
+ * 			   		when receive PDU number 10, send notification, "success_pdu_cnt" is 10
+ *					when receive PDU number 20, send notification, "success_pdu_cnt" is 20
+ *					...
+ *					when receive PDU number 100, send notification, "success_pdu_cnt" is 100
+ *					...
+ * 			   attention: If this API is used, must be called after "blc ota_initOtaServer_module" when initialization !!!
+ * @param[in]  pdu_num - number of OTA PDU
  * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
 ble_sts_t	blc_ota_setOtaScheduleIndication_by_pduNum(int pdu_num);
@@ -157,6 +171,25 @@ void		blc_ota_setAttHandleOffset(s8 attHandle_offset);
 int			otaWrite(u16 connHandle, void * p);
 
 
+
+/**
+ * @brief      this function is used to enable Firmware encryption.
+ * 			   attention: If this API is used, must be called before "blc ota_initOtaServer_module" when initialization !!!
+						  this API must be used on MCU that support hardware firmware encryption function !!!
+ * @param	   none
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
+ble_sts_t	blc_ota_enableFirmwareEncryption(void);
+
+
+/**
+ * @brief      this function is used to enable secure boot.
+ * 			   attention: If this API is used, must be called before "blc ota_initOtaServer_module" when initialization !!!
+						  this API must be used on MCU that support hardware secure boot function !!!
+ * @param	   none
+ * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ */
+ble_sts_t	blc_ota_enableSecureBoot(void);
 
 
 #endif /* STACK_BLE_SERVICE_OTA_OTA_SERVER_H_ */

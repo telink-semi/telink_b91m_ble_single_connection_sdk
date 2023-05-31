@@ -81,7 +81,7 @@
 
 
 
-#if (MCU_CORE_TYPE == MCU_CORE_9518)
+#if (MCU_CORE_TYPE == MCU_CORE_B91 || MCU_CORE_TYPE == MCU_CORE_B92)
 	typedef int (*att_readwrite_callback_t)(u16 connHandle, void* p);
 #elif (MCU_CORE_TYPE == MCU_CORE_825x || MCU_CORE_TYPE == MCU_CORE_827x)
 	typedef int (*att_readwrite_callback_t)(void* p);
@@ -113,6 +113,15 @@ typedef int (*att_mtuSizeExchange_callback_t)(u16, u16);
 typedef int (*att_handleValueConfirm_callback_t)(void);
 
 
+/**
+ * @brief		application custom ATT handle table element structure
+ * @attention	All att handles, including attHl_sdk and attHl_cus must be sorted in ascending order.
+ * @attention	The min attHl_cus must larger than att table size.
+ */
+typedef struct att_convert_t{
+  u16  attHl_sdk; //attribute handle value in attribute table
+  u16  attHl_cus; //attribute handle value for custom need
+} attHl_convert_t;
 
 
 /**
@@ -197,6 +206,15 @@ ble_sts_t blc_att_setHIDReportMap(u8* p,u32 len);
  */
 ble_sts_t blc_att_resetHIDReportMap();
 
+
+/**
+ * @brief      This function is used to set reject of write request. If enable, return of ATT write callback will take effect.  Error codes refer to Core Spec.
+ * @param[in]  WriteReqReject_en - 0: Disable;
+ *                           1: Enable.
+ * @return     none.
+ */
+void 		blc_att_enableWriteReqReject (u8 WriteReqReject_en);
+
 #if(MCU_CORE_TYPE == MCU_CORE_825x || MCU_CORE_TYPE == MCU_CORE_827x)
 /**
  * @brief      set device name
@@ -208,7 +226,7 @@ ble_sts_t 	bls_att_setDeviceName(u8* pName,u8 len);  //only module/mesh/hci use
 
 
 /**
- * @brief      This function is used to response to MTU size exchcange.
+ * @brief      This function is used to response to MTU size exchange.
  * @param[in]  connHandle - connect handle
  * @param[in]  mtu_size - mtu size
  * @return     BLE_SUCCESS

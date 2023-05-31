@@ -51,7 +51,7 @@
 
 
 /**
- * @brief	PHY test mode enableor disable
+ * @brief	PHY test mode enable or disable
  */
 #define 		BLC_PHYTEST_DISABLE						0
 #define 		BLC_PHYTEST_ENABLE						1

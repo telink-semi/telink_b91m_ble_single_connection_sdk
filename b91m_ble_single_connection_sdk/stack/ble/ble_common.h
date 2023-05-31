@@ -372,11 +372,11 @@ typedef enum{
 
 typedef enum {
 	DT_FLAGS								= 0x01,		//	Flag
-	DT_INCOMPLT_LIST_16BIT_SERVICE_UUID		= 0x02,		//	Incomplete List of 16-bit Service Class UUIDs
+	DT_INCOMPLETE_LIST_16BIT_SERVICE_UUID		= 0x02,		//	Incomplete List of 16-bit Service Class UUIDs
 	DT_COMPLETE_LIST_16BIT_SERVICE_UUID	    = 0x03,		//	Complete List of 16-bit Service Class UUIDs
-	DT_INCOMPLT_LIST_32BIT_SERVICE_UUID    	= 0x04,		//	Incomplete List of 32-bit Service Class UUIDs
+	DT_INCOMPLETE_LIST_32BIT_SERVICE_UUID    	= 0x04,		//	Incomplete List of 32-bit Service Class UUIDs
 	DT_COMPLETE_LIST_32BIT_SERVICE_UUID		= 0x05,		//	Complete List of 32-bit Service Class UUIDs
-	DT_INCOMPLT_LIST_128BIT_SERVICE_UUID   	= 0x06,		//	Incomplete List of 128-bit Service Class UUIDs
+	DT_INCOMPLETE_LIST_128BIT_SERVICE_UUID   	= 0x06,		//	Incomplete List of 128-bit Service Class UUIDs
 	DT_COMPLETE_LIST_128BIT_SERVICE_UUID	= 0x07,		//	Complete List of 128-bit Service Class UUIDs
 	DT_SHORTENED_LOCAL_NAME					= 0x08,		//	Shortened Local Name
 	DT_COMPLETE_LOCAL_NAME					= 0x09,		//	Complete Local Name
@@ -403,6 +403,63 @@ typedef enum {
  * @brief	6 = header(2)+l2cap_len(2)+CID(2)
  */
 #define		CAL_MTU_BUFF_SIZE(n)				(((n + 6) + 3)/4 * 4)
+
+/*
+HCI TX fifo include ACL data report, HCI Event report (controller to host)
+
+1. HCI ACL out Data format in telink
++����������������������+��������������+������������������+����������������������+����������������������������������+
+| 2         | 1     | 2       | 2         | n               |
++����������������������+��������������+������������������+����������������������+����������������������������������+
+| uart_len  | type  | handle  | data_len  | data_total_len  |
++����������������������+��������������+������������������+����������������������+����������������������������������+
+ */
+#define     HCI_ACL_OUT_FIFO_SIZE(n)				((n+7 + 3) / 4 *4)
+
+/* HCI ISO out DATA format in telink
++����������������������+��������������+������������������+����������������������������������������������+������������������������+��������������������������������������������+����������������������������������+����������������������+
+| 2         | 1     | 2       | 2                     | 4          | 2                    | 2               | n         |
++����������������������+��������������+������������������+����������������������������������������������+������������������������+��������������������������������������������+����������������������������������+����������������������+
+| uart_len  | type  | handle  | ISO_data_load_length  | timestamp  | packet_sequence_num  | iso_sdu_length  | sdu_data  |
++����������������������+��������������+������������������+����������������������������������������������+������������������������+��������������������������������������������+����������������������������������+����������������������+
+ */
+#define  HCI_ISO_OUT_FIFO_SIZE(n)					((n+15 +3)/ 4*4)
+
+
+//HCI OUT hold ISO data and ACL data, Event
+#define  HCI_OUT_FIFO_MAX_SIZE(acl_len_max, iso_len_max)							(max2(HCI_ACL_OUT_FIFO_SIZE(acl_len_max), HCI_ISO_OUT_FIFO_SIZE(iso_len_max)))
+
+
+
+
+
+
+
+
+/* HCI ACL in data format in telink  (host to controller)
+ *
++��������������+������������������+����������������������+����������������������������������+
+| 1     | 2       | 2         | n               |
++��������������+������������������+����������������������+����������������������������������+
+| type  | handle  | data_len  | data_total_len  |
++��������������+������������������+����������������������+����������������������������������+
+ */
+#define  HCI_ACL_IN_FIFO_SIZE(n)				((n+5 +3)/4*4)
+
+/* HCI ISO in data format in telink  (host to controller)
++��������������+������������������+����������������������������������������������+������������������������+��������������������������������������������+����������������������������������+����������������������+
+| 1     | 2       | 2                     | 4          | 2                    | 2               | n         |
++��������������+������������������+����������������������������������������������+������������������������+��������������������������������������������+����������������������������������+����������������������+
+| type  | handle  | ISO_data_load_length  | timestamp  | packet_sequence_num  | iso_sdu_length  | sdu_data  |
++��������������+������������������+����������������������������������������������+������������������������+��������������������������������������������+����������������������������������+����������������������+
+ */
+#define HCI_ISO_IN_FIFO_SIZE(n)			(((n+13)+3)/4*4)
+
+
+/*
+ * HCI in fifo include HCI ACL data and CMD, ISO data
+ */
+#define HCI_IN_FIFO_MAX_SIZE(acl_len_max, iso_len_max)			(max2(HCI_ACL_IN_FIFO_SIZE(acl_len_max), HCI_ISO_IN_FIFO_SIZE(iso_len_max)))
 
 /**
  * @brief      get SDK and Lib version.User should get at least 5 bytes,first 5 bytes show the SDK

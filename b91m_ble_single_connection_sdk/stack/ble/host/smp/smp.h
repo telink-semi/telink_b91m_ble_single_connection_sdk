@@ -116,6 +116,22 @@ typedef enum {
 } io_capability_t;
 
 
+/**
+ * @brief	local IRK generating strategy when controller use identity address in RF packet
+ * 			default use "LOCIRK_BINDING_WITH_DEVICE" if user not set
+ */
+typedef enum {
+	LOCIRK_BINDING_WITH_DEVICE = 0,  //every device have unique local IRK, never change
+	LOCIRK_RANDOM_GENERATE     = 1,  //random generate
+}loc_irk_gen_str_t;
+
+
+/**
+ * @brief      This function is used to set local IRK generating strategy.
+ * @param[in]  str - local IRK generating strategy.
+ * @return     none.
+ */
+void		blc_smp_setLocalIrkGenerateStrategy (loc_irk_gen_str_t  str);
 
 /**
  * @brief      This function is used to set the maximum number of devices that can be bound.

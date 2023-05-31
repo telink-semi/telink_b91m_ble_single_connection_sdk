@@ -43,6 +43,7 @@
 #include "service/uuid.h"
 
 
+#include "stack/ble/debug/debug.h"
 
 
 

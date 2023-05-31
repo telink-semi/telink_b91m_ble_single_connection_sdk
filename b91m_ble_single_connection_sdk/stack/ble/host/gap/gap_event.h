@@ -136,7 +136,7 @@ Situation 2:   SMP Fast Connect																		|
 #define GAP_EVT_SMP_CONN_ENCRYPTION_DONE							 3	// Refer to SMP message sequence and event chart above
 #define GAP_EVT_SMP_SECURITY_PROCESS_DONE							 4	// Refer to SMP message sequence and event chart above
 
-#define GAP_EVT_SMP_TK_DISPALY			                             8
+#define GAP_EVT_SMP_TK_DISPLAY			                             8
 #define GAP_EVT_SMP_TK_REQUEST_PASSKEY								 9
 #define GAP_EVT_SMP_TK_REQUEST_OOB									 10
 #define GAP_EVT_SMP_TK_NUMERIC_COMPARE								 11
@@ -145,11 +145,17 @@ Situation 2:   SMP Fast Connect																		|
 #define GAP_EVT_ATT_EXCHANGE_MTU									 16
 #define GAP_EVT_GATT_HANDLE_VLAUE_CONFIRM							 17
 
-#if(MCU_CORE_TYPE == MCU_CORE_825x || MCU_CORE_TYPE == MCU_CORE_827x)
-	///Correct spelling errors, but need to be compatible with the previous version
-	#define GAP_EVT_SMP_PARING_BEAGIN		                             GAP_EVT_SMP_PAIRING_BEGIN	// Refer to SMP message sequence and event chart above
-	#define GAP_EVT_SMP_PARING_SUCCESS			                         GAP_EVT_SMP_PAIRING_SUCCESS	// Refer to SMP message sequence and event chart above
-	#define GAP_EVT_SMP_PARING_FAIL			                             GAP_EVT_SMP_PAIRING_FAIL
+#if (L2CAP_CREDIT_BASED_FLOW_CONTROL_MODE_EN)
+#define GAP_EVT_L2CAP_CONN_PARAM_UPDATE_REQ                          20
+#define GAP_EVT_L2CAP_CONN_PARAM_UPDATE_RSP                          21
+
+
+#define GAP_EVT_L2CAP_LE_CREDIT_BASED_CONNECT						 22
+#define GAP_EVT_L2CAP_CREDIT_BASED_CONNECT							 23
+#define GAP_EVT_L2CAP_CREDIT_BASED_RECONFIG							 24
+#define GAP_EVT_L2CAP_FLOW_CONTROL_CREDIT							 25
+#define GAP_EVT_L2CAP_DISCONNECT									 26
+#define GAP_EVT_L2CAP_COC_DATA										 27
 #endif
 
 /**
@@ -163,7 +169,7 @@ Situation 2:   SMP Fast Connect																		|
 #define GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE                     	 (1<<GAP_EVT_SMP_CONN_ENCRYPTION_DONE)
 #define GAP_EVT_MASK_SMP_SECURITY_PROCESS_DONE                     	 (1<<GAP_EVT_SMP_SECURITY_PROCESS_DONE)
 
-#define GAP_EVT_MASK_SMP_TK_DISPALY                  				 (1<<GAP_EVT_SMP_TK_DISPALY)
+#define GAP_EVT_MASK_SMP_TK_DISPLAY                  				 (1<<GAP_EVT_SMP_TK_DISPLAY)
 #define GAP_EVT_MASK_SMP_TK_REQUEST_PASSKEY                  		 (1<<GAP_EVT_SMP_TK_REQUEST_PASSKEY)
 #define GAP_EVT_MASK_SMP_TK_REQUEST_OOB	                     		 (1<<GAP_EVT_SMP_TK_REQUEST_OOB)
 #define GAP_EVT_MASK_SMP_TK_NUMERIC_COMPARE                     	 (1<<GAP_EVT_SMP_TK_NUMERIC_COMPARE)
@@ -172,7 +178,7 @@ Situation 2:   SMP Fast Connect																		|
 #define GAP_EVT_MASK_GATT_HANDLE_VLAUE_CONFIRM                     	 (1<<GAP_EVT_GATT_HANDLE_VLAUE_CONFIRM)
 
 
-#define GAP_EVT_MASK_DEFAULT										( GAP_EVT_MASK_SMP_TK_DISPALY 			| \
+#define GAP_EVT_MASK_DEFAULT										( GAP_EVT_MASK_SMP_TK_DISPLAY 			| \
 																	  GAP_EVT_MASK_SMP_TK_REQUEST_PASSKEY   | \
 																	  GAP_EVT_MASK_SMP_TK_REQUEST_OOB		| \
 																	  GAP_EVT_MASK_ATT_EXCHANGE_MTU )
@@ -183,6 +189,18 @@ Situation 2:   SMP Fast Connect																		|
 	#define GAP_EVT_MASK_SMP_PARING_BEAGIN                               GAP_EVT_MASK_SMP_PAIRING_BEGIN
 	#define GAP_EVT_MASK_SMP_PARING_SUCCESS                              GAP_EVT_MASK_SMP_PAIRING_SUCCESS
 	#define GAP_EVT_MASK_SMP_PARING_FAIL                                 GAP_EVT_MASK_SMP_PAIRING_FAIL
+#endif
+
+#if (L2CAP_CREDIT_BASED_FLOW_CONTROL_MODE_EN)
+#define GAP_EVT_MASK_L2CAP_CONN_PARAM_UPDATE_REQ                     (1<<GAP_EVT_L2CAP_CONN_PARAM_UPDATE_REQ)
+#define GAP_EVT_MASK_L2CAP_CONN_PARAM_UPDATE_RSP                     (1<<GAP_EVT_L2CAP_CONN_PARAM_UPDATE_RSP)
+
+#define GAP_EVT_MASK_L2CAP_LE_CREDIT_BASED_CONNECT					 (1<<GAP_EVT_L2CAP_LE_CREDIT_BASED_CONNECT)
+#define GAP_EVT_MASK_L2CAP_CREDIT_BASED_CONNECT					 	 (1<<GAP_EVT_L2CAP_CREDIT_BASED_CONNECT)
+#define GAP_EVT_MASK_L2CAP_CREDIT_BASED_RECONFIG					 (1<<GAP_EVT_L2CAP_CREDIT_BASED_RECONFIG)
+#define GAP_EVT_MASK_L2CAP_FLOW_CONTROL_CREDIT						 (1<<GAP_EVT_L2CAP_FLOW_CONTROL_CREDIT)
+#define GAP_EVT_MASK_L2CAP_DISCONNECT					 			 (1<<GAP_EVT_L2CAP_DISCONNECT)
+#define GAP_EVT_MASK_L2CAP_COC_DATA						 			 (1<<GAP_EVT_L2CAP_COC_DATA)
 #endif
 
 /**
@@ -235,8 +253,93 @@ typedef struct {
 
 
 
+#if (L2CAP_CREDIT_BASED_FLOW_CONTROL_MODE_EN)
 
+/**
+ *  @brief  Event Parameters for "GAP_EVT_L2CAP_CONN_PARAM_UPDATE_REQ"
+ */
+typedef struct {
+	u16	connHandle;
+	u8	id;
+	u16 min_interval;
+	u16 max_interval;
+	u16 latency;
+	u16 timeout;
+} gap_l2cap_connParamUpdateReqEvt_t;
 
+/**
+ *  @brief  Event Parameters for "GAP_EVT_L2CAP_CONN_PARAM_UPDATE_RSP"
+ */
+typedef struct {
+	u16	connHandle;
+	u8  id;
+	u16	result;
+} gap_l2cap_connParamUpdateRspEvt_t;
+typedef struct{
+	u16	connHandle;
+	u16 result;
+	u16 reason;
+	u16 local_mtu;
+	u16 local_mps;
+	u16 local_credit;
+	u16 peer_mtu;
+	u16 peer_mps;
+	u16 peer_credit;
+	u8  srv_num;
+	u16 scid;
+	u16 dcid;
+} gap_l2cap_leCreditBasedConnectEvt_t;
+typedef struct {
+	u16	connHandle;
+	u16 result;
+	u16 reason;
+	u16 local_mtu;
+	u16 local_mps;
+	u16 local_credit;
+	u16 peer_mtu;
+	u16 peer_mps;
+	u16 peer_credit;
+	u8  srv_num;
+	u8  cid_count;
+	u16 scid[5];
+	u16 dcid[5];
+} gap_l2cap_creditBasedConnectEvt_t;
+typedef struct{
+	u16	connHandle;
+	u16 local_credit;
+	u16 peer_credit;
+	u16 scid;
+	u16 dcid;
+} gap_l2cap_flowControlCreditEvt_t;
+typedef struct{
+	u16	connHandle;
+	u16 spsm;
+	u16 scid;
+	u16 dcid;
+} gap_l2cap_disconnectEvt_t;
+typedef struct {
+	u16	connHandle;
+	u16 result;
+	u16 local_mtu;
+	u16 local_mps;
+	u16 local_credit;
+	u16 peer_mtu;
+	u16 peer_mps;
+	u16 peer_credit;
+	u8  srv_num;
+	u8  cid_count;
+	u16 scid[5];
+	u16 dcid[5];
+} gap_l2cap_creditBasedReconfigEvt_t;
+typedef struct{
+	u16 connHandle;
+	u16 spsm;
+	u16 scid;
+	u16 dcid;
+	u16 dataLen;
+	u8* pData;
+} gap_l2cap_cocData_t;
+#endif //#if (L2CAP_CREDIT_BASED_FLOW_CONTROL_MODE_EN)
 
 /**
  * @brief     GAP event callback function declaration

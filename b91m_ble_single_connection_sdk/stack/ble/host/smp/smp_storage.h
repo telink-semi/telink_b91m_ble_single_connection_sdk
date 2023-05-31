@@ -43,6 +43,7 @@ typedef enum {
  * */
 
 #define DEVICE_IDX_MASK				0x03
+#define IS_PEER_ADDR_RES_SUPPORT(peerAddrResSuppFlg)	(!(peerAddrResSuppFlg & BIT(7)))
 
 typedef union {
 	struct{
@@ -152,19 +153,8 @@ int			blc_smp_multi_device_param_getCurrentBondingDeviceNumber(int local_dev_idx
 u32 		bls_smp_multi_device_param_loadByIndex(int local_dev_idx, int bond_dev_idx, smp_param_save_t* smp_param_load);
 
 
-
-
-#if (LL_FEATURE_ENABLE_LL_PRIVACY)
-/*
- *  Address resolution is not supported by default. After pairing and binding, we need to obtain the central Address Resolution
- *  feature value of the opposite end to determine whether the opposite end supports the address resolution function, and write
- *  the result to smp_bonding_flg. Currently, we leave it to the user to obtain this feature.
- */
-#define 	IS_PEER_ADDR_RES_SUPPORT(peerAddrResSuppFlg)	(!(peerAddrResSuppFlg & BIT(7)))
-
 int			blc_smp_setPeerAddrResSupportFlg(u32 flash_addr, u8 support);
 
-#endif
 
 
 #endif /* SMP_STORAGE_H_ */

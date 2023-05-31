@@ -68,7 +68,7 @@
 
 
 
-#define GAP_APPEARE_UNKNOWN                     0x0000 //!< Unknown
+#define GAP_APPEARANCE_UNKNOWN                     0x0000 //!< Unknown
 
 
 

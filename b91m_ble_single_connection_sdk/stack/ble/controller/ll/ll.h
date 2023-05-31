@@ -58,7 +58,7 @@ typedef void (*blt_event_callback_t)(u8 e, u8 *p, int n);
 #define			BLT_EV_FLAG_CONNECT								3
 #define			BLT_EV_FLAG_TERMINATE							4
 #define			BLT_EV_FLAG_LL_REJECT_IND		    			5
-#define			BLT_EV_FLAG_RX_DATA_ABANDOM						6
+#define			BLT_EV_FLAG_RX_DATA_ABANDON						6
 #define 		BLT_EV_FLAG_PHY_UPDATE							7
 #define			BLT_EV_FLAG_DATA_LENGTH_EXCHANGE				8
 #define			BLT_EV_FLAG_GPIO_EARLY_WAKEUP					9
@@ -69,6 +69,28 @@ typedef void (*blt_event_callback_t)(u8 e, u8 *p, int n);
 #define			BLT_EV_FLAG_SUSPEND_ENTER						14
 #define			BLT_EV_FLAG_SUSPEND_EXIT						15
 #define			BLT_EV_FLAG_VERSION_IND_REV						16
+
+
+
+/**
+ *  @brief  Event Parameters for "BLT_EV_FLAG_CONNECT"
+ */
+typedef struct {
+	u8	initA[6];
+	u8	advA[6];
+	u8	accessCode[4];
+	u8	crcinit[3];
+	u8	winSize;
+	u16	winOffset;
+	u16 interval;
+	u16 latency;
+	u16 timeout;
+	u8	chm[5];
+	u8	hop_sca;
+} tlk_evt_connect_t;
+
+
+
 
 
 
@@ -91,7 +113,7 @@ typedef struct {
 
 	u8	 	connInitialMaxTxOctets;  //u8 is enough
 	u8		connMaxTxRxOctets_req;
-	u8		connRxDiff100;
+	u8		rsvd;
 	u8		connTxDiff100;
 }ll_data_extension_t;
 
@@ -179,7 +201,7 @@ u8 			blc_ll_getCurrentState(void);
 /**
  * @brief      this function is used to get the most recent average RSSI
  * @param[in]  none.
- * @return     bltParam.ll_recentAvgRSSI
+ * @return     blmsParam.ll_recentAvgRSSI
  */
 u8 			blc_ll_getLatestAvgRSSI(void);
 
@@ -231,7 +253,7 @@ bool 		blc_ll_isBrxBusy (void);
  * @param[in]  none.
  * @return     none.
  */
-void  blc_ll_set_CustomedAdvScanAccessCode(u32 accss_code);
+void  blc_ll_set_CustomizedAdvScanAccessCode(u32 access_code);
 
 
 /**
@@ -288,13 +310,13 @@ ble_sts_t 	bls_hci_mod_setEventMask_cmd(u32 evtMask);
 
 
 /**
- * @brief      this function is used check if any controller buffer initialized by application incorrect.
+ * @brief      this function is used check if any controller initialization incorrect.
  * 			   attention: this function must be called at the end of BLE LinkLayer Initialization.
  * @param	   none
  * @return     status, 0x00:  succeed, no buffer error
  * 					   other: buffer error code
  */
-ble_sts_t	blc_controller_check_appBufferInitialization(void);
+init_err_t	blc_contr_checkControllerInitialization(void);
 
 /**
  * @brief      this function is used to open or close freeRTOS.
@@ -311,5 +333,11 @@ void blc_ll_set_freertos_en(u8 en);
  */
 bool blc_ll_get_freertos_state(void);
 
+typedef void (*os_give_sem_t)(void);
+void blc_ll_registerGiveSemCb(os_give_sem_t give_sem_from_isr, os_give_sem_t give_sem);
+
+#if FAST_SETTLE
+	void	blc_ll_initFastSettle(u8 tx_fast_en,u8 rx_fast_en);
+#endif
 
 #endif /* LL__H_ */

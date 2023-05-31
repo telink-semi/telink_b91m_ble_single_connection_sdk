@@ -62,7 +62,7 @@ typedef struct{
 typedef struct
 {
     u8		adv_handle;
-    u8 		extAdv_en;
+    u8 		ext_adv_en;
     u8 		adv_chn_mask;
     u8		adv_chn_num;
 
@@ -74,12 +74,12 @@ typedef struct
 
     u8 		max_ext_adv_evt;
     u8 		run_ext_adv_evt;
-    u8		unfinish_advData;
-    u8		unfinish_scanRsp;
+    u8		unfinished_advData;
+    u8		unfinished_scanRsp;
 
 
 	u8		adv_filterPolicy;
-    u8 		scan_req_noti_en;
+    u8 		scan_req_notify_en;
     u8 		coding_ind;					//s2 or s8
     u8		param_update_flag;
 
@@ -116,7 +116,7 @@ typedef struct
 	u8 		peer_addr[6];
 }ll_ext_adv_t;
 
-
+extern ll_ext_adv_t		*cur_pextadv;  //latest adv_set pointer, for ADV setting
 #define ADV_SET_PARAM_LENGTH				(sizeof(ll_ext_adv_t))   //sizeof(ll_ext_adv_t) =  ,  must 4 byte aligned
 
 
@@ -131,7 +131,7 @@ typedef struct
  * @brief      this function is used to initialize extended advertising module
  * @param[in]  *pAdvCtrl - advertising set control buffer address
  * @param[in]  *pPriAdv - Primary channel advertising packet data buffer address
- * @param[in]	num_sets - number of advertising set
+ * @param[in]	num_sets - number of advertising set. Only 1 is supported. if ADV sets are required, please use the multi-connection SDK.
  * @return     none
  */
 void 		blc_ll_initExtendedAdvertising_module(	u8 *pAdvCtrl, u8 *pPriAdv,int num_sets);
@@ -181,14 +181,14 @@ void 		blc_ll_initExtScanRspDataBuffer(u8 *pScanRspData, int max_len_scanRspData
  * @param[in]  sec_adv_max_skip - secondary advertising minimum skip number
  * @param[in]  sec_adv_phy - - primary advertising channel PHY type
  * @param[in]  adv_sid - advertising set id
- * @param[in]  scan_req_noti_en -scan response notify enable
+ * @param[in]  scan_req_notify_en -scan response notify enable
  * @return     Status - 0x00: command succeeded;
 						others: failed
  */
 ble_sts_t 	blc_ll_setExtAdvParam(  adv_handle_t advHandle, 		advEvtProp_type_t adv_evt_prop, u32 pri_advIntervalMin, 		u32 pri_advIntervalMax,
 									u8 pri_advChnMap,	 			own_addr_type_t ownAddrType, 	u8 peerAddrType, 			u8  *peerAddr,
 									adv_fp_type_t advFilterPolicy,  tx_power_t adv_tx_pow,			le_phy_type_t pri_adv_phy, 	u8 sec_adv_max_skip,
-									le_phy_type_t sec_adv_phy, 	 	u8 adv_sid, 					u8 scan_req_noti_en);
+									le_phy_type_t sec_adv_phy, 	 	u8 adv_sid, 					u8 scan_req_notify_en);
 
 
 
@@ -201,7 +201,7 @@ ble_sts_t 	blc_ll_setExtAdvParam(  adv_handle_t advHandle, 		advEvtProp_type_t a
  * @param[in]  *advData - advertising data buffer address
  * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
-ble_sts_t	blc_ll_setExtAdvData	(u8 advHandle, data_oper_t operation, data_fragm_t fragment_prefer, u8 adv_dataLen, 	u8 *advdata);
+ble_sts_t	blc_ll_setExtAdvData	(u8 advHandle, data_oper_t operation, data_fragment_t fragment_prefer, u8 adv_dataLen, 	u8 *advdata);
 
 
 
@@ -215,21 +215,22 @@ ble_sts_t	blc_ll_setExtAdvData	(u8 advHandle, data_oper_t operation, data_fragm_
  * @param[in]  *scanRspData - advertising scan response data buffer address
  * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
-ble_sts_t 	blc_ll_setExtScanRspData(u8 advHandle, data_oper_t operation, data_fragm_t fragment_prefer, u8 scanRsp_dataLen, u8 *scanRspData);
+ble_sts_t 	blc_ll_setExtScanRspData(u8 advHandle, data_oper_t operation, data_fragment_t fragment_prefer, u8 scanRsp_dataLen, u8 *scanRspData);
 
 
 /**
  * @brief      This function is used to request the Controller to enable or disable one or more advertising sets using the
 			   advertising sets identified by the adv_handle
- * @param[in]  extAdv_en -
+ * @param[in]  ext_adv_en -
  * @param[in]  advHandle - advertising handle
+ * @param[in]  sets_num - number of advertising set. Only 1 is supported. if ADV sets are required, please use the multi-connection SDK.
  * @param[in]  duration -	the duration for which that advertising set is enabled
  * 							Range: 0x0001 to 0xFFFF, Time = N * 10 ms, Time Range: 10 ms to 655,350 ms
  * @param[in]  max_extAdvEvt - Maximum number of extended advertising events the Controller shall
  *                             attempt to send prior to terminating the extended advertising
  * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
  */
-ble_sts_t 	blc_ll_setExtAdvEnable_1(u32 extAdv_en, u8 sets_num, u8 advHandle, 	 u16 duration, 	  u8 max_extAdvEvt);
+ble_sts_t 	blc_ll_setExtAdvEnable_1(u32 ext_adv_en, u8 sets_num, u8 advHandle, 	 u16 duration, 	  u8 max_extAdvEvt);
 
 
 

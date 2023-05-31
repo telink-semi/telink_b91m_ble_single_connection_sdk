@@ -37,13 +37,16 @@
 #define			DEEPSLEEP_RETENTION_ADV		BIT(2)
 #define			DEEPSLEEP_RETENTION_CONN	BIT(3)
 
+#define			OS_SLEEP_DISABLE			0
+#define			SUSPEND_OS_SLEEP			BIT(0)
+#define			DEEPRET_OS_SLEEP			BIT(1)
 
 
 
 /**
  * @brief	Telink defined ble stack low power mode process callback function
  */
-typedef 	void (*ll_module_pm_callback_t)(void);
+typedef 	int (*ll_module_pm_callback_t)(void);
 
 /**
  * @brief	Telink defined application wake up low power mode process callback function
@@ -94,7 +97,7 @@ u32 		bls_pm_getSystemWakeupTick(void);
  * @param	none
  * @return	blt_next_event_tick
  */
-u32 		bls_pm_getNexteventWakeupTick(void);
+u32 		bls_pm_getNextEventWakeupTick(void);
 
 /**
  * @brief	for user to set latency manually for save power
@@ -120,11 +123,11 @@ void 		bls_pm_registerAppWakeupLowPowerCb(pm_appWakeupLowPower_callback_t cb);
 
 /**
  * @brief	for user to set the threshold of sleep tick for entering deep retention mode
- * @param	adv_thres_ms - the threshold of sleep tick for advertisement state
- * @param	conn_thres_ms - the threshold of sleep tick for connection state
+ * @param	adv_threshold_ms - the threshold of sleep tick for advertisement state
+ * @param	conn_threshold_ms - the threshold of sleep tick for connection state
  * @return  none.
  */
-void 		blc_pm_setDeepsleepRetentionThreshold(u32 adv_thres_ms, u32 conn_thres_ms);
+void 		blc_pm_setDeepsleepRetentionThreshold(u32 adv_threshold_ms, u32 conn_threshold_ms);
 
 /**
  * @brief	for user to set early wake up tick for deep retention mode
@@ -135,14 +138,23 @@ void 		blc_pm_setDeepsleepRetentionEarlyWakeupTiming(u32 earlyWakeup_us);
 
 /**
  * @brief	for user to set the type of deep retention mode
- * @param	sleep_type - the type of deep retention mode
+ * @param	sleep_type - the type of deep retention mode, can only choose DEEPSLEEP_MODE_RET_SRAM_LOW32K or  DEEPSLEEP_MODE_RET_SRAM_LOW64K !!!
  * @return  none.
  */
 void 		blc_pm_setDeepsleepRetentionType(SleepMode_TypeDef sleep_type);
 
 
+#if	FREERTOS_ENABLE
+
+void	blc_pm_setOsSleepThreshold(u32 os_threshold_ms);
+
+void	bls_pm_setOsSleepMask (u8 mask);
+
+u8	bls_pm_getOsSleepMask ();
+
+int blc_pm_OShandler(uint32_t expect_time);
 
 
-
+#endif
 
 #endif /* LL_PM_H_ */

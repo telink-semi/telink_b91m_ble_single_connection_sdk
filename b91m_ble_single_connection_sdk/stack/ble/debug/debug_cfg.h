@@ -240,7 +240,7 @@
 #define SL_STACK_BIS_BASIC_TIMING_EN		0
 
 
-#define SL_SATCK_FSM_TIMING_EN				0
+#define SL_STACK_FSM_TIMING_EN				0
 
 
 
@@ -286,7 +286,7 @@
 #define 		SLET_06_rx_1st				6
 #define 		SLET_07_rx_new				7
 #define			SLET_10_tx					10
-#define 		SLET_11_c_cmdone			11
+#define 		SLET_11_c_cmdDone			11
 #define 		SLET_12_c_1stRxTmt			12
 #define 		SLET_13_c_rxTmt				13
 #define 		SLET_14_c_rxCrc2			14

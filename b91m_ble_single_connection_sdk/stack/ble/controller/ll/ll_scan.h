@@ -71,13 +71,25 @@ ble_sts_t    blc_ll_addScanningInConnSlaveRole(void);
  */
 ble_sts_t    blc_ll_removeScanningFromConnSLaveRole(void);
 
-//To fix bug.
+
 /**
- * @brief      This function is used to request the Controller to start or stop scanning.Not support scanning only.This Api is unavailable.
- * @param[in]  scan_enable - scanning Enable
- * @return     Status - 0x00: command succeeded; 0x01-0xFF: command failed
+ * @brief      This function is used to set Scan channel.
+ * @param[in]  scan_channelMap - channel map
+ * @return     Status - 0x00:  success;
+ * 						other: fail
  */
-ble_sts_t blc_ll_setScanEnable (scan_en_t scan_enable, dupFilter_en_t filter_duplicate);
+ble_sts_t bls_ll_setScanChannelMap(adv_chn_map_t scan_channelMap);
+
+
+/**
+ * @brief      This function is used to set some other channel to replace scan chn37/38/39.
+ * @param[in]  chn0 - channel to replace channel 37
+ * @param[in]  chn1 - channel to replace channel 38
+ * @param[in]  chn2 - channel to replace channel 39
+ * @return     none
+ */
+void 		blc_ll_setScanCustomizedChannel (u8 chn0, u8 chn1, u8 chn2);
+
 
 
 #endif /* LL_SCAN_H_ */

@@ -116,7 +116,7 @@ ble_sts_t 	bls_hci_le_getRemoteSupportedFeatures(u16 connHandle);
  * @param[in]  us - early time
  * @return     none
  */
-void blc_pm_modefy_brx_early_set(int us);
+void blc_pm_modify_brx_early_set(int us);
 
 
 /**

@@ -43,7 +43,7 @@ typedef enum {
 typedef enum {
 	MULTI_DEV_DISABLE = 0x00,
 	MULTI_DEV_ENABLE  = 0x01,
-} muti_dev_en_t;
+} multi_dev_en_t;
 
 
 /**
@@ -52,7 +52,7 @@ typedef enum {
  * @param[in]  enable - enable or disable.
  * @return     none
  */
-void 		blc_ll_setMultipleLocalDeviceEnable (muti_dev_en_t enable);
+void 		blc_ll_setMultipleLocalDeviceEnable (multi_dev_en_t enable);
 
 
 /**
