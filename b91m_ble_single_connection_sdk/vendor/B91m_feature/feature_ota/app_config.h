@@ -74,7 +74,7 @@
 		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
 		#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
 
-		#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+		#define	KB_LINE_HIGH_VALID				0   //drive pin output 0 when scan key, scan pin read 0 is valid
 
 
 
@@ -122,7 +122,7 @@
 		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
 		#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
 
-		#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+		#define	KB_LINE_HIGH_VALID				0   //drive pin output 0 when scan key, scan pin read 0 is valid
 
 
 
@@ -177,7 +177,7 @@
 		#define	GPIO_LED_GREEN			GPIO_PB5
 		#define	GPIO_LED_BLUE			GPIO_PB4
 		#define GPIO_LED_RED			GPIO_PB7
-		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+		#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 		#define PB7_FUNC				AS_GPIO
 		#define PB6_FUNC				AS_GPIO
@@ -196,7 +196,7 @@
 		#define	GPIO_LED_GREEN			GPIO_PD1
 		#define	GPIO_LED_BLUE			GPIO_PD0
 		#define GPIO_LED_RED			GPIO_PE7
-		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+		#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 		#define PE6_FUNC				AS_GPIO
 		#define PD1_FUNC				AS_GPIO

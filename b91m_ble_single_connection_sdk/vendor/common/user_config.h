@@ -29,6 +29,16 @@
 	#include "../B91m_module/app_config.h"
 #elif (__PROJECT_B91_FEATURE_TEST__ || __PROJECT_B92_FEATURE_TEST__)
 	#include "../B91m_feature/app_config.h"
+#elif(__PROJECT_B91_HCI__ || __PROJECT_B92_HCI__)
+	#include "../B91m_hci/app_config.h"
+#elif(__PROJECT_B91_INTERNAL_TEST__)
+	#include "../B91_internal_test/app_config.h"
+#elif(__PROJECT_B91_DEBUG_DEMO__)
+	#include "../B91_debug_demo/app_config.h"
+#elif(__PROJECT_B92_INTERNAL_TEST__)
+	#include "../B92_internal_test/app_config.h"
+#elif(__PROJECT_B92_DEBUG_DEMO__)
+	#include "../B92_debug_demo/app_config.h"
 #else
 	#include "../common/default_config.h"
 #endif

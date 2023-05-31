@@ -34,7 +34,7 @@
 
 
 /**
- * @brief	Flash using area default Configuration, user can change some of them in app_config.h according to your application
+ * @brief	Flash using area default Configuration, user can change some of them in app_config.h according to application
  * 			CFG_ADR_MAC:  		  BLE MAC address stored in flash, can not change this value
  * 			CFG_ADR_CALIBRATION:  some calibration data stored in flash, can not change this value
  * 			FLASH_ADR_SMP_PAIRING:  If APP SMP enable, use 8K flash for SMP pairing information storage.

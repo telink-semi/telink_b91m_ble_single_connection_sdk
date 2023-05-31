@@ -28,8 +28,6 @@
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "../default_att.h"
 
 #if (FEATURE_TEST_MODE == TEST_BLE_PHY)
@@ -89,7 +87,7 @@ void	task_connect (u8 e, u8 *p, int n)
 	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+	gpio_write(GPIO_LED_RED, LED_ON_LEVEL);  //red light on
 #endif
 }
 
@@ -120,7 +118,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+	gpio_write(GPIO_LED_RED, !LED_ON_LEVEL);  //red light off
 #endif
 
 }
@@ -212,7 +210,7 @@ void phy_test_uart_init(uart_num_e uart_num,gpio_func_pin_e tx_pin, gpio_func_pi
  */
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
@@ -258,10 +256,10 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_register_hci_handler (blc_phyTest_hci_rxUartCb, blc_phyTest_2wire_txUartCb);
 #endif
 #if (MCU_CORE_TYPE == MCU_CORE_B91)
-	phy_test_uart_init(UART_TX_PIN, UART_RX_PIN, BANDRATE);
+	phy_test_uart_init(UART_TX_PIN, UART_RX_PIN, BAUDRATE);
 #elif (MCU_CORE_TYPE == MCU_CORE_B92)
 	blc_phyTest_Uart_num_Set(UART_NUM);
-	phy_test_uart_init(UART_NUM,UART_TX_PIN, UART_RX_PIN, BANDRATE);
+	phy_test_uart_init(UART_NUM,UART_TX_PIN, UART_RX_PIN, BAUDRATE);
 #endif
 
 	//set rf power index, user must set it after every suspend wakeup, cause relative setting will be reset in suspend

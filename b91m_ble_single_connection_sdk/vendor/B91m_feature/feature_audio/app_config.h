@@ -65,7 +65,7 @@
  */
 
 /* Audio MODE:
- * TL_AUDIO_RCU_ADPCM_GATT_TLEINK
+ * TL_AUDIO_RCU_ADPCM_GATT_TELINK
  * TL_AUDIO_RCU_ADPCM_GATT_GOOGLE
  * TL_AUDIO_RCU_ADPCM_HID
  * TL_AUDIO_RCU_SBC_HID
@@ -73,13 +73,13 @@
  * TL_AUDIO_RCU_SBC_HID_DONGLE_TO_STB
  * TL_AUDIO_RCU_MSBC_HID
  */
-	#define TL_AUDIO_MODE					TL_AUDIO_RCU_ADPCM_GATT_TLEINK
+	#define TL_AUDIO_MODE					TL_AUDIO_RCU_ADPCM_GATT_TELINK
 
 	#define BLE_DMIC_SELECT					0
 	#define BLE_AMIC_SELECT					1
-	#define MICPHONE_SELECT					BLE_AMIC_SELECT
+	#define MICROPHONE_SELECT					BLE_AMIC_SELECT
 	#define MCU_STALL_ENABLE				0
-#if	(MICPHONE_SELECT == BLE_DMIC_SELECT)
+#if	(MICROPHONE_SELECT == BLE_DMIC_SELECT)
 	#define PD4_INPUT_ENABLE				1
 	#define PD5_INPUT_ENABLE				1
 #endif
@@ -94,7 +94,7 @@
 		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
 		#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
 
-		#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+		#define	KB_LINE_HIGH_VALID				0   //drive pin output 0 when scan key, scan pin read 0 is valid
 
 
 
@@ -142,7 +142,7 @@
 		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
 		#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
 
-		#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+		#define	KB_LINE_HIGH_VALID				0   //drive pin output 0 when  scan key, scan pin read 0 is valid
 
 
 
@@ -197,7 +197,7 @@
 		#define	GPIO_LED_GREEN			GPIO_PB5
 		#define	GPIO_LED_BLUE			GPIO_PB4
 		#define GPIO_LED_RED			GPIO_PB7
-		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+		#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 		#define PB7_FUNC				AS_GPIO
 		#define PB6_FUNC				AS_GPIO
@@ -216,7 +216,7 @@
 		#define	GPIO_LED_GREEN			GPIO_PD1
 		#define	GPIO_LED_BLUE			GPIO_PD0
 		#define GPIO_LED_RED			GPIO_PE7
-		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+		#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 		#define PE6_FUNC				AS_GPIO
 		#define PD1_FUNC				AS_GPIO

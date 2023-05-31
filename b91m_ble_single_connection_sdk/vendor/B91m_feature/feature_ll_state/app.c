@@ -28,8 +28,6 @@
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "../default_att.h"
 
 #if (FEATURE_TEST_MODE == TEST_ADVERTISING_ONLY || \
@@ -191,7 +189,7 @@ int controller_event_callback (u32 h, u8 *p, int n)
  */
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
@@ -246,7 +244,7 @@ _attribute_no_inline_ void user_init_normal(void)
 		while(1);
 	}
 
-	//blc_ll_setAdvCustomedChannel(37, 38, 39);
+	//blc_ll_setAdvCustomizedChannel(37, 38, 39);
 	bls_ll_setAdvEnable(1);  //adv enable
 
 #elif (FEATURE_TEST_MODE == TEST_ADVERTISING_IN_CONN_SLAVE_ROLE)

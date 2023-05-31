@@ -43,7 +43,7 @@ volatile u32 g_mscratch;
 _attribute_ram_code_
 void except_handler()
 {
-	gpio_write(GPIO_LED_WHITE, LED_ON_LEVAL);
+	gpio_write(GPIO_LED_WHITE, LED_ON_LEVEL);
 
 	g_mcause = read_csr(NDS_MCAUSE);
 	g_mepc = read_csr(NDS_MEPC);

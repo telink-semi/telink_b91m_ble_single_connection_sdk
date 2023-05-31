@@ -29,7 +29,7 @@
 /////////////////// MODULE /////////////////////////////////
 #define BLE_MODULE_PM_ENABLE				0
 #define PM_DEEPSLEEP_RETENTION_ENABLE		0
-#define TELIK_SPP_SERVICE_ENABLE			1
+#define TELINK_SPP_SERVICE_ENABLE			1
 #define BLE_MODULE_INDICATE_DATA_TO_MCU		1
 #define BATT_CHECK_ENABLE       			0   //enable or disable battery voltage detection
 #define BLT_APP_LED_ENABLE					1
@@ -46,7 +46,7 @@
 /**
  *  @brief  firmware signature check
  */
-#define FIRMWARES_SIGNATURE_ENABLE			0
+#define FIRMWARE_SIGNATURE_ENABLE			0
 
 
 /**
@@ -110,7 +110,7 @@
 		#define	GPIO_LED_GREEN			GPIO_PB5
 		#define	GPIO_LED_BLUE			GPIO_PB4
 		#define GPIO_LED_RED			GPIO_PB7
-		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+		#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 		#define PB7_FUNC				AS_GPIO
 		#define PB6_FUNC				AS_GPIO
@@ -129,7 +129,7 @@
 		#define	GPIO_LED_GREEN			GPIO_PD1
 		#define	GPIO_LED_BLUE			GPIO_PD0
 		#define GPIO_LED_RED			GPIO_PE7
-		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+		#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 		#define PE6_FUNC				AS_GPIO
 		#define PD1_FUNC				AS_GPIO

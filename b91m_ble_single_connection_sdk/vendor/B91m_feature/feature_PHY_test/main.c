@@ -75,7 +75,7 @@ extern hci_fifo_t bltHci_rxfifo;
 			{
 			    uart_clr_tx_done(UART_CHN);
 			}
-		    if(uart_get_irq_status(UART_CHN,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can noly used in A1-SOC.
+		    if(uart_get_irq_status(UART_CHN,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can only used in A1-SOC.
 		    {
 		    	/************************get the length of receive data****************************/
 				rev_data_len = uart_get_dma_rev_data_len(UART_CHN,DMA2);
@@ -123,7 +123,7 @@ extern hci_fifo_t bltHci_rxfifo;
 		{
 			uart_clr_irq_status(UART_NUM,UART_TXDONE_IRQ_STATUS);
 		}
-	    if(uart_get_irq_status(UART_NUM,UART_RXDONE_IRQ_STATUS)) //A0-SOC can't use RX-DONE status,so this interrupt can noly used in A1-SOC.
+	    if(uart_get_irq_status(UART_NUM,UART_RXDONE_IRQ_STATUS)) //A0-SOC can't use RX-DONE status,so this interrupt can only used in A1-SOC.
 	    {
 	    	/************************get the length of receive data****************************/
 			rev_data_len = uart_get_dma_rev_data_len(UART_NUM,DMA2);

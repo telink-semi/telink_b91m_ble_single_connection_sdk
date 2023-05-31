@@ -144,7 +144,7 @@ u16 flash_change_app_lock_block_to_flash_lock_block(flash_app_lock_e app_lock_bl
 
 	switch(blc_flash_mid)
 	{
-		#if (FLASH_P25Q80U_SUPPORT_EN)
+		#if (FLASH_P25Q80U_SUPPORT_EN) //1M capacity
 			case 0x146085:
 				if(app_lock_block == FLASH_LOCK_LOW_256K){
 					flash_lock_block_size = FLASH_LOCK_LOW_256K_MID146085;
@@ -153,14 +153,15 @@ u16 flash_change_app_lock_block_to_flash_lock_block(flash_app_lock_e app_lock_bl
 					flash_lock_block_size = FLASH_LOCK_LOW_512K_MID146085;
 				}
 				else if(app_lock_block == FLASH_LOCK_LOW_1M){
-					/* attention 1: use can change this value according to their application
-					 * attention 2: can not cover stack SMP data area */
+					/* attention 1: use can change this value according to application
+					 * attention 2: can not cover stack SMP data storage area
+					 * choose 960K, leave 64K for system data and user data */
 					flash_lock_block_size = FLASH_LOCK_LOW_960K_MID146085;
 				}
 				break;
 		#endif
 
-		#if (FLASH_P25Q16SU_SUPPORT_EN)
+		#if (FLASH_P25Q16SU_SUPPORT_EN) //2M capacity
 			case 0x156085:
 				if(app_lock_block == FLASH_LOCK_LOW_256K){
 					flash_lock_block_size = FLASH_LOCK_LOW_256K_MID156085;
@@ -175,7 +176,7 @@ u16 flash_change_app_lock_block_to_flash_lock_block(flash_app_lock_e app_lock_bl
 		#endif
 
 
-		#if (FLASH_P25Q32SU_SUPPORT_EN)
+		#if (FLASH_P25Q32SU_SUPPORT_EN) //4M capacity
 			case 0x166085:
 				if(app_lock_block == FLASH_LOCK_LOW_256K){
 					flash_lock_block_size = FLASH_LOCK_LOW_256K_MID166085;
@@ -184,12 +185,12 @@ u16 flash_change_app_lock_block_to_flash_lock_block(flash_app_lock_e app_lock_bl
 					flash_lock_block_size = FLASH_LOCK_LOW_512K_MID166085;
 				}
 				else if(app_lock_block == FLASH_LOCK_LOW_1M){
-					flash_lock_block_size = FLASH_LOCK_LOW_1M_MID166085; //attention: use can change this value according to your application
+					flash_lock_block_size = FLASH_LOCK_LOW_1M_MID166085;
 				}
 				break;
 		#endif
 
-		#if (FLASH_P25Q128L_SUPPORT_EN)
+		#if (FLASH_P25Q128L_SUPPORT_EN) //16M capacity
 			case 0x186085:
 				if(app_lock_block == FLASH_LOCK_LOW_256K){
 					flash_lock_block_size = FLASH_LOCK_LOW_256K_MID186085;
@@ -203,7 +204,7 @@ u16 flash_change_app_lock_block_to_flash_lock_block(flash_app_lock_e app_lock_bl
 				break;
 		#endif
 
-		#if (FLASH_GD25LQ16E_SUPPORT_EN)
+		#if (FLASH_GD25LQ16E_SUPPORT_EN) //2M capacity
 			case 0x1560C8:
 				if(app_lock_block == FLASH_LOCK_LOW_256K){
 					flash_lock_block_size = FLASH_LOCK_LOW_256K_MID1560c8;
@@ -212,7 +213,7 @@ u16 flash_change_app_lock_block_to_flash_lock_block(flash_app_lock_e app_lock_bl
 					flash_lock_block_size = FLASH_LOCK_LOW_512K_MID1560c8;
 				}
 				else if(app_lock_block == FLASH_LOCK_LOW_1M){
-					flash_lock_block_size = FLASH_LOCK_LOW_1M_MID1560c8; //attention: use can change this value according to your application
+					flash_lock_block_size = FLASH_LOCK_LOW_1M_MID1560c8;
 				}
 				break;
 		#endif

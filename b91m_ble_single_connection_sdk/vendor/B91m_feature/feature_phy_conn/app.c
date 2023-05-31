@@ -28,8 +28,6 @@
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "../default_att.h"
 
 #if (FEATURE_TEST_MODE == TEST_2M_CODED_PHY_CONNECTION)
@@ -44,7 +42,7 @@ const u8	tbl_advData[] = {
 	 0x08, DT_COMPLETE_LOCAL_NAME, 'f', 'e', 'a', 't', 'u', 'r', 'e',
 	 0x02, DT_FLAGS, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
 	 0x03, DT_APPEARANCE, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
-	 0x05, DT_INCOMPLT_LIST_16BIT_SERVICE_UUID, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
+	 0x05, DT_INCOMPLETE_LIST_16BIT_SERVICE_UUID, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
 };
 
 /**
@@ -93,7 +91,7 @@ void	task_connect (u8 e, u8 *p, int n)
 	device_connection_tick = clock_time() | 1;
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+	gpio_write(GPIO_LED_RED, LED_ON_LEVEL);  //red light on
 #endif
 }
 
@@ -126,7 +124,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+	gpio_write(GPIO_LED_RED, !LED_ON_LEVEL);  //red light off
 #endif
 
 }
@@ -199,7 +197,7 @@ void blt_pm_proc(void)
  */
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
@@ -327,8 +325,8 @@ _attribute_no_inline_ void user_init_normal(void)
 						   ADV_FP_NONE,  		TX_POWER_8dBm,												   	user_primary_adv_phy, 			0,
 						   user_secondary_adv_phy, 	ADV_SID_0, 													0);
 
-	blc_ll_setExtAdvData( ADV_HANDLE0, DATA_OPER_COMPLETE, DATA_FRAGM_ALLOWED, sizeof(tbl_advData),   (u8*)tbl_advData);
-	blc_ll_setExtScanRspData( ADV_HANDLE0, DATA_OPER_COMPLETE, DATA_FRAGM_ALLOWED, sizeof(tbl_scanRsp) , (u8 *)tbl_scanRsp);
+	blc_ll_setExtAdvData( ADV_HANDLE0, DATA_OPER_COMPLETE, DATA_FRAGMENT_ALLOWED, sizeof(tbl_advData),   (u8*)tbl_advData);
+	blc_ll_setExtScanRspData( ADV_HANDLE0, DATA_OPER_COMPLETE, DATA_FRAGMENT_ALLOWED, sizeof(tbl_scanRsp) , (u8 *)tbl_scanRsp);
 
 	blc_ll_setExtAdvEnable_1( BLC_ADV_ENABLE, 1, ADV_HANDLE0, 0 , 0);
 #endif

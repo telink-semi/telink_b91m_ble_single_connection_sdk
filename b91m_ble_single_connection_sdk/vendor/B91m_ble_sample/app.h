@@ -53,7 +53,7 @@ void main_loop (void);
  * @param[in]	none
  * @return      none
  */
-void user_battery_power_check(u16 alram_vol_mv);
+void user_battery_power_check(u16 alarm_vol_mv);
 
 
 

@@ -69,11 +69,11 @@ static const u16 my_devNameUUID = GATT_UUID_DEVICE_NAME;
 
 static const u16 my_gapServiceUUID = SERVICE_UUID_GENERIC_ACCESS;
 
-static const u16 my_appearanceUIID = GATT_UUID_APPEARANCE;
+static const u16 my_appearanceUUID = GATT_UUID_APPEARANCE;
 
 static const u16 my_periConnParamUUID = GATT_UUID_PERI_CONN_PARAM;
 
-static const u16 my_appearance = GAP_APPEARE_UNKNOWN;
+static const u16 my_appearance = GAP_APPEARANCE_UNKNOWN;
 
 static const gap_periConnectParams_t my_periConnParameters = {8, 11, 0, 1000};
 
@@ -201,7 +201,7 @@ static const attribute_t my_Attributes[] = {
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_devNameCharVal),(u8*)(&my_characterUUID), (u8*)(my_devNameCharVal), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_devName), (u8*)(&my_devNameUUID), (u8*)(my_devName), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_appearanceCharVal),(u8*)(&my_characterUUID), (u8*)(my_appearanceCharVal), 0},
-	{0,ATT_PERMISSIONS_READ,2,sizeof (my_appearance), (u8*)(&my_appearanceUIID), 	(u8*)(&my_appearance), 0},
+	{0,ATT_PERMISSIONS_READ,2,sizeof (my_appearance), (u8*)(&my_appearanceUUID), 	(u8*)(&my_appearance), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_periConnParamCharVal),(u8*)(&my_characterUUID), (u8*)(my_periConnParamCharVal), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof (my_periConnParameters),(u8*)(&my_periConnParamUUID), 	(u8*)(&my_periConnParameters), 0},
 

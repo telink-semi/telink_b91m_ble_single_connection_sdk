@@ -25,8 +25,6 @@
 #include "drivers.h"
 #include "stack/ble/ble.h"
 
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "app_att.h"
 #include "app_ui.h"
 

@@ -30,13 +30,11 @@
 #include "app_ui.h"
 #include "app_att.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "battery_check.h"
 
 #define 	ADV_IDLE_ENTER_DEEP_TIME			60  //60 s
 #define 	CONN_IDLE_ENTER_DEEP_TIME			60  //60 s
 
-#define 	MY_DIRECT_ADV_TMIE					2000000
+#define 	MY_DIRECT_ADV_TIME					2000000
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P3dBm
 
@@ -53,7 +51,7 @@ const u8	tbl_advData[] = {
 	 5,  DT_COMPLETE_LOCAL_NAME, 				't', 'H', 'I', 'D',
 	 2,	 DT_FLAGS, 								0x05, 					// BLE limited discoverable mode and BR/EDR not supported
 	 3,  DT_APPEARANCE, 						0x80, 0x01, 			// 384, Generic Remote Control, Generic category
-	 5,  DT_INCOMPLT_LIST_16BIT_SERVICE_UUID,	0x12, 0x18, 0x0F, 0x18,	// incomplete list of service class UUIDs (0x1812, 0x180F)
+	 5,  DT_INCOMPLETE_LIST_16BIT_SERVICE_UUID,	0x12, 0x18, 0x0F, 0x18,	// incomplete list of service class UUIDs (0x1812, 0x180F)
 };
 
 /**
@@ -107,7 +105,7 @@ _attribute_ram_code_ void  ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
  * @param[in]  n - data length of event
  * @return     none
  */
-void 	app_switch_to_undirect_adv(u8 e, u8 *p, int n)
+void 	app_switch_to_undirected_adv(u8 e, u8 *p, int n)
 {
 
 	bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
@@ -148,7 +146,7 @@ void	task_connect (u8 e, u8 *p, int n)
 
 
 #if (UI_LED_ENABLE && !TEST_CONN_CURRENT_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red led on
+	gpio_write(GPIO_LED_RED, LED_ON_LEVEL);  //red led on
 #endif
 }
 
@@ -193,7 +191,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 #if (UI_LED_ENABLE && !TEST_CONN_CURRENT_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red led off
+	gpio_write(GPIO_LED_RED, !LED_ON_LEVEL);  //red led off
 #endif
 
 	advertise_begin_tick = clock_time();
@@ -297,7 +295,7 @@ _attribute_data_retention_	u32	lowBattDet_tick   = 0;
  * @param[in]	none
  * @return      none
  */
-_attribute_ram_code_ void user_battery_power_check(u16 alram_vol_mv)
+_attribute_ram_code_ void user_battery_power_check(u16 alarm_vol_mv)
 {
 	/*For battery-powered products, as the battery power will gradually drop, when the voltage is low to a certain
 	  value, it will cause many problems.
@@ -305,14 +303,14 @@ _attribute_ram_code_ void user_battery_power_check(u16 alram_vol_mv)
 		b) When the battery voltage is low, due to the unstable power supply, the write and erase operations
 			of Flash may have the risk of error, causing the program firmware and user data to be modified abnormally,
 			and eventually causing the product to fail. */
-	u8 battery_check_returnVaule=0;
+	u8 battery_check_returnValue=0;
 	if(analog_read(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
-		battery_check_returnVaule=app_battery_power_check(alram_vol_mv+200);
+		battery_check_returnValue=app_battery_power_check(alarm_vol_mv+200);
 	}
 	else{
-		battery_check_returnVaule=app_battery_power_check(alram_vol_mv);
+		battery_check_returnValue=app_battery_power_check(alarm_vol_mv);
 	}
-	if(battery_check_returnVaule)
+	if(battery_check_returnValue)
 	{
 		analog_write_reg8(USED_DEEP_ANA_REG,  analog_read_reg8(USED_DEEP_ANA_REG) &(~LOW_BATT_FLG));  //clr
 	}
@@ -320,9 +318,9 @@ _attribute_ram_code_ void user_battery_power_check(u16 alram_vol_mv)
 	{
 		#if (UI_LED_ENABLE)  //led indicate
 			for(int k=0;k<3;k++){
-				gpio_write(GPIO_LED_BLUE, LED_ON_LEVAL);
+				gpio_write(GPIO_LED_BLUE, LED_ON_LEVEL);
 				sleep_us(200000);
-				gpio_write(GPIO_LED_BLUE, !LED_ON_LEVAL);
+				gpio_write(GPIO_LED_BLUE, !LED_ON_LEVEL);
 				sleep_us(200000);
 			}
 		#endif
@@ -382,7 +380,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	#endif
 
 //////////////////////////// basic hardware Initialization  Begin //////////////////////////////////
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
@@ -503,8 +501,8 @@ _attribute_no_inline_ void user_init_normal(void)
 			if(status != BLE_SUCCESS) { while(1); }  //debug: adv setting err
 
 			//it is recommended that direct adv only last for several seconds, then switch to undirected adv
-			bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE, 1);
-			bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &app_switch_to_undirect_adv);
+			bls_ll_setAdvDuration(MY_DIRECT_ADV_TIME, 1);
+			bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &app_switch_to_undirected_adv);
 
 		}
 		else   //set undirected adv
@@ -544,7 +542,7 @@ _attribute_no_inline_ void user_init_normal(void)
 
 		#if (PM_DEEPSLEEP_RETENTION_ENABLE)
 			/* pay attention: if your RamCode and retention data bigger than 32K, you must choose retention SRAM 64K */
-			blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW64K);
+			blc_pm_setDeepsleepRetentionType(DEEPSLEEP_RAM_SIZE_TO_MODE(PM_DEEPSLEEP_RETENTION_SIZE));
 			bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
 			blc_pm_setDeepsleepRetentionThreshold(95, 95);
 			blc_pm_setDeepsleepRetentionEarlyWakeupTiming(TEST_CONN_CURRENT_ENABLE ? 370 : 400);
@@ -584,7 +582,7 @@ _attribute_no_inline_ void user_init_normal(void)
 			#if (!HARDWARE_FIRMWARE_ENCRYPTION_SUPPORT_EN)
 				#error "MCU do not support HW FIRMWARE ENCRYPTION"
 			#endif
-			blc_ota_enableFirmwareEncrption();
+			blc_ota_enableFirmwareEncryption();
 		#endif
 
 		#if (APP_HW_SECURE_BOOT_ENABLE)
@@ -685,7 +683,7 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 
 
 
-
+#if (APP_FLASH_PROTECTION_ENABLE)
 
 /**
  * @brief      flash protection operation, including all locking & unlocking for application
@@ -706,9 +704,12 @@ void app_flash_protection_operation(u8 flash_op_evt, u32 op_addr_begin, u32 op_a
 {
 	if(flash_op_evt == FLASH_OP_EVT_APP_INITIALIZATION)
 	{
-		/* ignore "op addr_begin" and "op addr_end" for initialization event */
+		/* ignore "op addr_begin" and "op addr_end" for initialization event
+		 * must call "flash protection_init" first, will choose correct flash protection relative API according to current internal flash type in MCU */
 		flash_protection_init();
 
+		/* just sample code here, protect all flash area for old firmware and OTA new firmware.
+		 * user can change this design if have other consideration */
 		u32  app_lockBlock;
 		#if (BLE_OTA_SERVER_ENABLE)
 			u32 multiBootAddress = blc_ota_getCurrentUsedMultipleBootAddress();
@@ -719,10 +720,12 @@ void app_flash_protection_operation(u8 flash_op_evt, u32 op_addr_begin, u32 op_a
 				app_lockBlock = FLASH_LOCK_LOW_512K;
 			}
 			else if(multiBootAddress == MULTI_BOOT_ADDR_0x80000){
-				app_lockBlock = FLASH_LOCK_LOW_1M; //attention that some flash do not support 1M block, we will use a approximate value
+				/* attention that 1M capacity flash can not lock all 1M area, should leave some upper sector for system data and user data
+				 * will use a approximate value */
+				app_lockBlock = FLASH_LOCK_LOW_1M;
 			}
 		#else
-			app_lockBlock = FLASH_LOCK_LOW_256K; //just demo value, user can change this value according to your application
+			app_lockBlock = FLASH_LOCK_LOW_256K; //just demo value, user can change this value according to application
 		#endif
 
 
@@ -733,34 +736,45 @@ void app_flash_protection_operation(u8 flash_op_evt, u32 op_addr_begin, u32 op_a
 	}
 	else if(flash_op_evt == FLASH_OP_EVT_STACK_OTA_CLEAR_OLD_FW_BEGIN)
 	{
-		/* OTA clear old firmware begin event, erase whole old firmware, may need unlock flash if any part of flash address area
-		 * from "op addr_begin" to "op addr_end" is in locking block area. */
+		/* OTA clear old firmware begin event is triggered by stack, in "blc ota_initOtaServer_module", rebooting from a successful OTA.
+		 * Software will erase whole old firmware for potential next new OTA, need unlock flash if any part of flash address from
+		 * "op addr_begin" to "op addr_end" is in locking block area.
+		 * In this sample code, we protect whole flash area for old and new firmware, so here we do not need judge "op addr_begin" and "op addr_end",
+		 * must unlock flash */
 		tlkapi_send_string_u32s(APP_FLASH_PROT_LOG_EN, "[FLASH][PROT] OTA clear old FW begin, un_lock flash", op_addr_begin, op_addr_end, 0, 0);
 		flash_unlock();
 	}
 	else if(flash_op_evt == FLASH_OP_EVT_STACK_OTA_CLEAR_OLD_FW_END)
 	{
-		/* ignore "op addr_begin" and "op addr_end" for END event */
+		/* ignore "op addr_begin" and "op addr_end" for END event
+		 * OTA clear old firmware end event is triggered by stack, in "blc ota_initOtaServer_module", erasing old firmware data finished.
+		 * In this sample code, we need lock flash again, because we have unlocked it at the begin event of clear old firmware */
 		tlkapi_send_string_data(APP_FLASH_PROT_LOG_EN, "[FLASH][PROT] OTA clear old FW end, restore flash locking ", 0, 0);
 		flash_lock(flash_lockBlock_cmd);
 	}
 	else if(flash_op_evt == FLASH_OP_EVT_STACK_OTA_WRITE_NEW_FW_BEGIN)
 	{
-		/* OTA write new firmware begin event, need unlock flash if flash locked */
+		/* OTA write new firmware begin event is triggered by stack, when receive first OTA data PDU.
+		 * Software will write data to flash on new firmware area,  need unlock flash if any part of flash address from
+		 * "op addr_begin" to "op addr_end" is in locking block area.
+		 * In this sample code, we protect whole flash area for old and new firmware, so here we do not need judge "op addr_begin" and "op addr_end",
+		 * must unlock flash */
 		tlkapi_send_string_u32s(APP_FLASH_PROT_LOG_EN, "[FLASH][PROT] OTA write new FW begin, un_lock flash", op_addr_begin, op_addr_end, 0, 0);
 		flash_unlock();
 	}
 	else if(flash_op_evt == FLASH_OP_EVT_STACK_OTA_WRITE_NEW_FW_END)
 	{
-		/* ignore "op addr_begin" and "op addr_end" for END event */
+		/* ignore "op addr_begin" and "op addr_end" for END event
+		 * OTA write new firmware end event is triggered by stack, after OTA end or an OTA error happens, writing new firmware data finished.
+		 * In this sample code, we need lock flash again, because we have unlocked it at the begin event of write new firmware */
 		tlkapi_send_string_data(APP_FLASH_PROT_LOG_EN, "[FLASH][PROT] OTA write new FW end, restore flash locking ", 0, 0);
 		flash_lock(flash_lockBlock_cmd);
 	}
-	/* add more flash protection for your application if needed */
+	/* add more flash protection operation for your application if needed */
 }
 
 
-
+#endif
 
 
 
@@ -792,7 +806,7 @@ _attribute_no_inline_ void main_loop (void)
 		 500ms in the demo. Users can modify this time according to their needs.*/
 		if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 500000) ){
 			lowBattDet_tick = clock_time();
-			user_battery_power_check(BAT_DEEP_THRES_MV);
+			user_battery_power_check(BAT_DEEP_THRESHOLD_MV);
 		}
 	#endif
 
@@ -820,20 +834,6 @@ _attribute_no_inline_ void main_loop (void)
 				bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 			}
 	#endif
-
-
-#if 0 // test debug
-	static u32 ledScanTick = 0;
-	static int loop_cnt = 0;
-	if(clock_time_exceed(ledScanTick, 2000 * 1000)){
-		loop_cnt ++;
-		ledScanTick = clock_time();
-		gpio_toggle(GPIO_LED_WHITE);
-
-		tlkapi_send_string_data(1, "tlkapi loop1", &loop_cnt, 4);
-		tlkapi_printf(1, "print loop1, %d\n", loop_cnt);
-	}
-#endif
 
 }
 

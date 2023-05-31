@@ -76,7 +76,7 @@ int controller_event_handler(u32 h, u8 *para, int n)
 
 				spp_send_data(HCI_FLAG_EVENT_TLK_MODULE, pEvt);
 				#if (BLT_APP_LED_ENABLE)
-				gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+				gpio_write(GPIO_LED_RED, LED_ON_LEVEL);  //red light on
 				#endif
 			}
 			break;
@@ -86,7 +86,7 @@ int controller_event_handler(u32 h, u8 *para, int n)
 			{
 				spp_send_data(HCI_FLAG_EVENT_TLK_MODULE, pEvt);
 			#if (BLT_APP_LED_ENABLE)
-				gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+				gpio_write(GPIO_LED_RED, !LED_ON_LEVEL);  //red light off
 			#endif
 			}
 			break;
@@ -448,7 +448,7 @@ int tx_to_uart_cb (void)
  */
 void spp_restart_proc(void)
 {
-	//when received SPP_CMD_RESTART_MOD, leave 500ms(you can change this time) for moudle to send uart ack to host, then restart.
+	//when received SPP_CMD_RESTART_MOD, leave 500ms(you can change this time) for module to send uart ack to host, then restart.
 	if(spp_cmd_restart_flag && clock_time_exceed(spp_cmd_restart_flag, 500000)){
 		cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_TIMER, clock_time() + 10000 * SYSTEM_TIMER_TICK_1US);
 	}

@@ -144,10 +144,10 @@ _attribute_ram_code_ void adc_bat_detect_init(void)
 
 /**
  * @brief		This is battery check function
- * @param[in]	alram_vol_mv - input battery calibration
- * @return      0: batt_vol_mv < alram_vol_mv 1: batt_vol_mv > alram_vol_mv
+ * @param[in]	alarm_vol_mv - input battery calibration
+ * @return      0: batt_vol_mv < alarm_vol_mv 1: batt_vol_mv > alarm_vol_mv
  */
-_attribute_ram_code_ int app_battery_power_check(u16 alram_vol_mv)
+_attribute_ram_code_ int app_battery_power_check(u16 alarm_vol_mv)
 {
 
 
@@ -201,7 +201,7 @@ _attribute_ram_code_ int app_battery_power_check(u16 alram_vol_mv)
 #elif (MCU_CORE_TYPE == MCU_CORE_B92)
 	batt_vol_mv  = (((adc_average * g_adc_vbat_divider * g_adc_pre_scale * g_adc_vref)>>13));
 #endif
-	if(batt_vol_mv < alram_vol_mv){
+	if(batt_vol_mv < alarm_vol_mv){
 		return 0;
 	}
 	return 1;

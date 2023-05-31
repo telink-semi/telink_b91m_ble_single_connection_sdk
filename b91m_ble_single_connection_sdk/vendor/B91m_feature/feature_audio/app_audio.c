@@ -28,8 +28,6 @@
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "app_att.h"
 
 
@@ -59,7 +57,7 @@ extern u8 audio_tx_dma_chn;
 extern u8 audio_rx_dma_chn;
 volatile u8 amic_enable;
 
-#if(MICPHONE_SELECT == BLE_DMIC_SELECT)
+#if(MICROPHONE_SELECT == BLE_DMIC_SELECT)
 /**
  * @brief      the func serve to init dmic
  * @param[in]  none
@@ -73,7 +71,7 @@ void audio_dmic_init()
 	audio_init(DMIC_IN_TO_BUF ,AUDIO_16K,MONO_BIT_16);
 	audio_rx_dma_chain_init(DMA2,(u16*)&buffer_mic,TL_MIC_BUFFER_SIZE);
 #elif (MCU_CORE_TYPE == MCU_CORE_B92)
-	audio_codec_stream0_input_t audio_codec_dimc0_input =
+	audio_codec_stream0_input_t audio_codec_dmic0_input =
 	{
 		.input_src	 = DMIC_STREAM0_MONO_R,
 		.sample_rate = AUDIO_16K,
@@ -86,23 +84,23 @@ void audio_dmic_init()
 		 /****dmic input ****/
 	audio_codec_init();
 	audio_set_stream0_dmic_pin(GPIO_PD5,GPIO_PD4,GPIO_PD3);
-	audio_codec_stream0_input_init(&audio_codec_dimc0_input);
+	audio_codec_stream0_input_init(&audio_codec_dmic0_input);
 	//audio_set_stream0_dig_gain1(CODEC_IN_D_GAIN1_30_DB);
-	audio_rx_dma_chain_init(audio_codec_dimc0_input.fifo_num,audio_codec_dimc0_input.dma_num,(unsigned short*)audio_codec_dimc0_input.data_buf,audio_codec_dimc0_input.data_buf_size);
-	audio_rx_dma_en(audio_codec_dimc0_input.dma_num);
+	audio_rx_dma_chain_init(audio_codec_dmic0_input.fifo_num,audio_codec_dmic0_input.dma_num,(unsigned short*)audio_codec_dmic0_input.data_buf,audio_codec_dmic0_input.data_buf_size);
+	audio_rx_dma_en(audio_codec_dmic0_input.dma_num);
 #endif
 }
-#elif(MICPHONE_SELECT == BLE_AMIC_SELECT)
+#elif(MICROPHONE_SELECT == BLE_AMIC_SELECT)
 
 /**
  * @brief      the func serve to init amic
- * @param[in]  en   0:close the micphone  1:open the micphone
+ * @param[in]  en   0:close the microphone  1:open the microphone
  * @return     none
  */
 void audio_amic_init(void)
 {
 #if (MCU_CORE_TYPE == MCU_CORE_B91)
-	audio_set_codec_in_path_a_d_gain(CODEC_IN_D_GAIN_20_DB,CODEC_IN_A_GAIN_0_DB);//recommend setting dgain:20db,again 0db
+	audio_set_codec_in_path_a_d_gain(CODEC_IN_D_GAIN_20_DB,CODEC_IN_A_GAIN_0_DB);//recommend setting d gain:20db,a gain 0db
 	audio_init(AMIC_IN_TO_BUF_TO_LINE_OUT ,AUDIO_16K,MONO_BIT_16);
 	audio_rx_dma_chain_init(DMA2,(u16*)buffer_mic,TL_MIC_BUFFER_SIZE);
 #elif (MCU_CORE_TYPE == MCU_CORE_B92)
@@ -142,14 +140,14 @@ void audio_mic_off()//
 }
 
 
-#if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)					//GATT Telink
+#if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TELINK)					//GATT Telink
 
 	u32 audio_stick = 0;
 	_attribute_data_retention_	u8  audio_start = 0;
 
 	/**
 	 * @brief      for open the audio and mtu size exchange
-	 * @param[in]  en   0:close the micphone  1:open the micphone
+	 * @param[in]  en   0:close the microphone  1:open the microphone
 	 * @return     none
 	 */
 	void ui_enable_mic (int en)
@@ -162,14 +160,14 @@ void audio_mic_off()//
 		gpio_write(GPIO_LED_BLUE,en);
 		if(en){  //audio on
 			///////////////////// AUDIO initialization///////////////////
-			#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+			#if (MICROPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
 				audio_dmic_init();
 			#else  //Amic config
 				audio_amic_init();
 			#endif
 		}
 		else{  //audio off
-			#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+			#if (MICROPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
 				audio_mic_off();
 			#else  //audio off
 				audio_mic_off();
@@ -280,7 +278,7 @@ _attribute_data_retention_ u8  audio_start = 0;
 
 /**
  * @brief      for open the audio and mtu size exchange
- * @param[in]  en   0:close the micphone  1:open the micphone
+ * @param[in]  en   0:close the microphone  1:open the microphone
  * @return     none
  */
 void ui_enable_mic (int en)
@@ -301,7 +299,7 @@ void ui_enable_mic (int en)
 		adpcm_serial_num = 0;
 		audio_send_index = 0;
 		///////////////////// AUDIO initialization///////////////////
-		#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+		#if (MICROPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
 			audio_dmic_init();
 		#else  //Amic config
 			audio_amic_init();
@@ -311,7 +309,7 @@ void ui_enable_mic (int en)
 		audio_stick = 0;
 		app_audio_timer = 0;
 		audio_start = 0;
-		#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+		#if (MICROPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
 			audio_mic_off();
 		#else  //audio off
 			audio_mic_off();
@@ -429,7 +427,7 @@ void proc_audio(void){
 
 	/**
 	 * @brief      for open the audio and mtu size exchange
-	 * @param[in]  en   0:close the micphone  1:open the micphone
+	 * @param[in]  en   0:close the microphone  1:open the microphone
 	 * @return     none
 	 */
 	void ui_enable_mic (int en)
@@ -446,7 +444,7 @@ void proc_audio(void){
 			audio_end_tick = 0;
 			buffer_mic_pkt_rptr = buffer_mic_pkt_wptr = 0;
 			///////////////////// AUDIO initialization///////////////////
-			#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+			#if (MICROPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
 				audio_dmic_init();
 			#else  //Amic config
 				audio_amic_init();
@@ -459,7 +457,7 @@ void proc_audio(void){
 			audio_stick = 0;
 			audio_end_tick = 0;
 			audio_bt_status = APP_AUDIO_BT_CLOSE;
-			#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+			#if (MICROPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
 				audio_mic_off();
 			#else  //audio off
 				audio_mic_off();
@@ -519,7 +517,7 @@ void proc_audio(void){
 		}
 	}
 
-	int server2client_auido_proc(u16 connHandle,void* p)
+	int server2client_audio_proc(u16 connHandle,void* p)
 	{
 		rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
 
@@ -624,7 +622,7 @@ void proc_audio(void){
 
 	/**
 	 * @brief      for open the audio and mtu size exchange
-	 * @param[in]  en   0:close the micphone  1:open the micphone
+	 * @param[in]  en   0:close the microphone  1:open the microphone
 	 * @return     none
 	 */
 	void ui_enable_mic (int en)
@@ -640,7 +638,7 @@ void proc_audio(void){
 			audio_send_idx = 0;
 			audio_end_tick = 0;
 			///////////////////// AUDIO initialization///////////////////
-			#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+			#if (MICROPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
 				audio_dmic_init();
 			#else  //Amic config
 				audio_amic_init();
@@ -653,7 +651,7 @@ void proc_audio(void){
 			audio_stick = 0;
 			audio_end_tick = 0;
 			audio_bt_status = APP_AUDIO_BT_CLOSE;
-			#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+			#if (MICROPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
 				audio_mic_off();
 			#else  //audio off
 				audio_mic_off();
@@ -711,7 +709,7 @@ void proc_audio(void){
 		}
 	}
 
-	int server2client_auido_proc(u16 connHandle, void* p)
+	int server2client_audio_proc(u16 connHandle, void* p)
 	{
 		rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
 
@@ -811,7 +809,7 @@ void proc_audio(void){
 
 		/**
 		 * @brief      for open the audio and mtu size exchange
-		 * @param[in]  en   0:close the micphone  1:open the micphone
+		 * @param[in]  en   0:close the microphone  1:open the microphone
 		 * @return     none
 		 */
 		void ui_enable_mic (int en)
@@ -827,7 +825,7 @@ void proc_audio(void){
 				audio_send_idx = 0;
 				audio_end_tick = 0;
 				///////////////////// AUDIO initialization///////////////////
-				#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+				#if (MICROPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
 					audio_dmic_init();
 				#else  //Amic config
 					audio_amic_init();
@@ -840,7 +838,7 @@ void proc_audio(void){
 				audio_stick = 0;
 				audio_end_tick = 0;
 				audio_bt_status = APP_AUDIO_BT_CLOSE;
-				#if (MICPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
+				#if (MICROPHONE_SELECT == BLE_DMIC_SELECT)  //Dmic config
 					audio_mic_off();
 				#else  //audio off
 					audio_mic_off();
@@ -900,7 +898,7 @@ void proc_audio(void){
 			}
 		}
 
-		int server2client_auido_proc(u16 connHandle,void* p)
+		int server2client_audio_proc(u16 connHandle,void* p)
 		{
 			rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
 

@@ -113,7 +113,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 #if (FREERTOS_ENABLE)
 	extern void vPortRestoreTask();
 	if( deepRetWakeUp ){
-		tlkapi_send_string_data(APP_LOG_EN,"enter restor work.",0,0);
+		tlkapi_send_string_data(APP_LOG_EN,"enter restore work.",0,0);
 		vPortRestoreTask();
 	}
 	else{

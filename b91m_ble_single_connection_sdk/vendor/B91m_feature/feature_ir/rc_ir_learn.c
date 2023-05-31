@@ -43,7 +43,7 @@ void ir_learn_init(void)
 	memset(&ir_learn_ctrl,0,sizeof(ir_learn_ctrl_t));
 #endif
 
-	// To output ircontrol and irout low, then ir receive can work.
+	// To output ir control and ir out low, then ir receive can work.
 	gpio_function_en(GPIO_IR_OUT);
 	gpio_set_input_en(GPIO_IR_OUT, 0);
 	gpio_set_output_en(GPIO_IR_OUT, 1);
@@ -260,7 +260,7 @@ void ir_learn_copy_result(ir_learn_send_t* send_buffer)
 	g_ir_learn_send -> ir_learn_wave_num = g_ir_learn_ctrl -> wave_series_cnt;
 	for(u32 i=0;i<(g_ir_learn_ctrl -> wave_series_cnt)+1;i++)
 	{
-		g_ir_learn_send -> ir_lenrn_send_buf[i] = g_ir_learn_ctrl -> wave_series_buf[i];
+		g_ir_learn_send -> ir_learn_send_buf[i] = g_ir_learn_ctrl -> wave_series_buf[i];
 	}
 }
 
@@ -283,7 +283,7 @@ void ir_learn_send(ir_learn_send_t* send_buffer)
     u8 is_carrier = 1;
     foreach (i,g_ir_learn_send->ir_learn_wave_num+2)
     {
-    	ir_send_dma_data.data[ir_send_dma_data.data_num] = pwm_cal_pwm0_ir_fifo_cfg_data(g_ir_learn_send->ir_lenrn_send_buf[i]/carrier_cycle, PWM0_PULSE_NORMAL,is_carrier);
+    	ir_send_dma_data.data[ir_send_dma_data.data_num] = pwm_cal_pwm0_ir_fifo_cfg_data(g_ir_learn_send->ir_learn_send_buf[i]/carrier_cycle, PWM0_PULSE_NORMAL,is_carrier);
     	ir_send_dma_data.data_num ++;
     	is_carrier = (is_carrier == 1) ? 0:1;
     }

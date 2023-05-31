@@ -26,8 +26,6 @@
 #include "stack/ble/ble.h"
 
 #include "spp.h"
-#include "vendor/common/blt_common.h"
-#include "battery_check.h"
 #include "app_buffer.h"
 
 
@@ -54,7 +52,7 @@ _attribute_data_retention_	my_fifo_t	spp_tx_fifo = {
 #define 	MY_ADV_INTERVAL_MIN					ADV_INTERVAL_30MS
 #define 	MY_ADV_INTERVAL_MAX					ADV_INTERVAL_40MS
 
-#define 	MY_DIRECT_ADV_TMIE					2000000  //us
+#define 	MY_DIRECT_ADV_TIME					2000000  //us
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P3dBm
 
@@ -70,15 +68,15 @@ _attribute_data_retention_	own_addr_type_t 	app_own_address_type = OWN_ADDRESS_P
 
 #endif
 volatile _attribute_data_retention_ unsigned char uart_send_flag = 0;
-#define UATRT_TIMNEOUT_US					   100 //100uS for 115200
+#define UART_TIMEOUT_US					   100 //100uS for 115200
 
-_attribute_data_retention_ volatile unsigned int   uart0_ndmairq_cnt=0;//Pre-4B for len
+_attribute_data_retention_ volatile unsigned int   uart0_ndma_irq_cnt=0;//Pre-4B for len
 _attribute_data_retention_ volatile unsigned int   uart0_ndma_tick = 0;
 _attribute_data_retention_ volatile unsigned char  uart0_flag = 0;
 enum
 {
-	UART0_RECIEVE_IDLE=0,
-	UART0_RECIEVE_START=1,
+	UART0_RECEIVE_IDLE=0,
+	UART0_RECEIVE_START=1,
 };
 volatile unsigned int uart0_rx_buff_byte[16] __attribute__((aligned(4))) ={0x00};
 
@@ -96,7 +94,7 @@ const u8	tbl_advData[] = {
  * @brief	Scan Response Packet data
  */
 const u8	tbl_scanRsp [] = {
-		 0x07, 0x09, 'k', 'M', 'o', 'd', 'u', 'l',	//scan name " tmodul"
+		 0x07, 0x09, 'k', 'M', 'o', 'd', 'u', 'l',	//scan name 
 	};
 
 
@@ -143,7 +141,7 @@ int app_module_busy ()
  * @param[in]  n - data length of event
  * @return     none
  */
-void 	app_switch_to_undirect_adv(u8 e, u8 *p, int n)
+void 	app_switch_to_undirected_adv(u8 e, u8 *p, int n)
 {
 
 	bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
@@ -238,7 +236,7 @@ void app_power_management ()
  * @param[in]  none
  * @return     none
  */
-void uart0_recieve_irq(void)
+void uart0_receive_irq(void)
 {
 
 
@@ -257,7 +255,7 @@ void uart0_recieve_irq(void)
 	}
 #if UART_DMA_USE
 	#if (MCU_CORE_TYPE == MCU_CORE_B91)
-    	if(uart_get_irq_status(UART0,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can noly used in A1-SOC.
+    	if(uart_get_irq_status(UART0,UART_RXDONE)) //A0-SOC can't use RX-DONE status,so this interrupt can only used in A1-SOC.
 	#elif (MCU_CORE_TYPE == MCU_CORE_B92)
 		if(uart_get_irq_status(UART0,UART_RXDONE_IRQ_STATUS))
 	#endif
@@ -289,17 +287,17 @@ void uart0_recieve_irq(void)
 
 	if(uart_get_irq_status(UART0, UART_RXBUF_IRQ_STATUS))
 	{
-		if(uart0_flag == UART0_RECIEVE_IDLE)
+		if(uart0_flag == UART0_RECEIVE_IDLE)
 		{
-			uart0_ndmairq_cnt = 4;//recieve packet start
+			uart0_ndma_irq_cnt = 4;//receive packet start
 		}
 
 		u8* p = my_fifo_wptr(&spp_rx_fifo);
-		p[uart0_ndmairq_cnt++] = uart_read_byte(UART0);
+		p[uart0_ndma_irq_cnt++] = uart_read_byte(UART0);
 
-		if(uart0_flag == UART0_RECIEVE_IDLE)
+		if(uart0_flag == UART0_RECEIVE_IDLE)
 		{
-			uart0_flag = UART0_RECIEVE_START;
+			uart0_flag = UART0_RECEIVE_START;
 		}
 		uart0_ndma_tick = clock_time();
 	}
@@ -312,18 +310,18 @@ void uart0_recieve_irq(void)
  * @param[in]	none
  * @return      none
  */
-void uart0_recieve_process(void)
+void uart0_receive_process(void)
 {
-	if(uart0_flag == UART0_RECIEVE_START)
+	if(uart0_flag == UART0_RECEIVE_START)
 	{
-		if(clock_time_exceed(uart0_ndma_tick,UATRT_TIMNEOUT_US))//recieve timeout && 1 packet end
+		if(clock_time_exceed(uart0_ndma_tick,UART_TIMEOUT_US))//receive timeout && 1 packet end
 		{
 			//add len
-			uart0_ndmairq_cnt -= 4;
+			uart0_ndma_irq_cnt -= 4;
 			u8* p = my_fifo_wptr(&spp_rx_fifo);
-			memcpy(p,(u8 *)&uart0_ndmairq_cnt,4);
+			memcpy(p,(u8 *)&uart0_ndma_irq_cnt,4);
 			my_fifo_next(&spp_rx_fifo);
-			uart0_flag = UART0_RECIEVE_IDLE;
+			uart0_flag = UART0_RECEIVE_IDLE;
 		}
 	}
 }
@@ -336,7 +334,7 @@ void uart0_recieve_process(void)
  */
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
@@ -357,22 +355,22 @@ _attribute_no_inline_ void user_init_normal(void)
 				So these initialization must be done after  battery check
 	*****************************************************************************************/
 	#if (BATT_CHECK_ENABLE)  //battery check must do before OTA relative operation
-		u8 battery_check_returnVaule = 0;
+		u8 battery_check_returnValue = 0;
 		if(analog_read(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
-			battery_check_returnVaule = app_battery_power_check(BAT_DEEP_THRES_MV + 200);  //2.2 V
+			battery_check_returnValue = app_battery_power_check(BAT_DEEP_THRESHOLD_MV + 200);  //2.2 V
 		}
 		else{
-			battery_check_returnVaule = app_battery_power_check(BAT_DEEP_THRES_MV);  //2.0 V
+			battery_check_returnValue = app_battery_power_check(BAT_DEEP_THRESHOLD_MV);  //2.0 V
 		}
-		if(battery_check_returnVaule){
+		if(battery_check_returnValue){
 			analog_write(USED_DEEP_ANA_REG,  analog_read(USED_DEEP_ANA_REG)&(~LOW_BATT_FLG));  //clr
 		}
 		else{
 			#if (BLT_APP_LED_ENABLE)  //led indicate
 				for(int k=0;k<3;k++){
-					gpio_write(GPIO_LED_BLUE, LED_ON_LEVAL);
+					gpio_write(GPIO_LED_BLUE, LED_ON_LEVEL);
 					sleep_us(200000);
-					gpio_write(GPIO_LED_BLUE, !LED_ON_LEVAL);
+					gpio_write(GPIO_LED_BLUE, !LED_ON_LEVEL);
 					sleep_us(200000);
 				}
 			#endif
@@ -476,8 +474,8 @@ _attribute_no_inline_ void user_init_normal(void)
 		if(status != BLE_SUCCESS) { while(1); }  //debug: adv setting err
 
 		//it is recommended that direct adv only last for several seconds, then switch to undirected adv
-		bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE, 1);
-		bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &app_switch_to_undirect_adv);
+		bls_ll_setAdvDuration(MY_DIRECT_ADV_TIME, 1);
+		bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &app_switch_to_undirected_adv);
 
 	}
 	else   //set undirected adv
@@ -689,14 +687,14 @@ _attribute_no_inline_ void main_loop (void)
 #if (BATT_CHECK_ENABLE)
 	if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 500000) ){
 		lowBattDet_tick = clock_time();
-		u8 battery_check_returnVaule=0;
+		u8 battery_check_returnValue=0;
 		if(analog_read_reg8(USED_DEEP_ANA_REG) & LOW_BATT_FLG){
-			battery_check_returnVaule=app_battery_power_check(BAT_DEEP_THRES_MV + 200);  //2.2 V
+			battery_check_returnValue=app_battery_power_check(BAT_DEEP_THRESHOLD_MV + 200);  //2.2 V
 		}
 		else{
-			battery_check_returnVaule=app_battery_power_check(BAT_DEEP_THRES_MV);  //2.0 V
+			battery_check_returnValue=app_battery_power_check(BAT_DEEP_THRESHOLD_MV);  //2.0 V
 		}
-		if(battery_check_returnVaule)
+		if(battery_check_returnValue)
 		{
 			analog_write(USED_DEEP_ANA_REG,  analog_read(USED_DEEP_ANA_REG)&(~LOW_BATT_FLG));  //clr
 		}
@@ -704,9 +702,9 @@ _attribute_no_inline_ void main_loop (void)
 		{
 			#if (BLT_APP_LED_ENABLE)  //led indicate
 				for(int k=0;k<3;k++){
-					gpio_write(GPIO_LED_BLUE, LED_ON_LEVAL);
+					gpio_write(GPIO_LED_BLUE, LED_ON_LEVEL);
 					sleep_us(200000);
-					gpio_write(GPIO_LED_BLUE, !LED_ON_LEVAL);
+					gpio_write(GPIO_LED_BLUE, !LED_ON_LEVEL);
 					sleep_us(200000);
 				}
 			#endif
@@ -724,24 +722,11 @@ _attribute_no_inline_ void main_loop (void)
 
 
 #if !UART_DMA_USE
-	uart0_recieve_process();
+	uart0_receive_process();
 #endif
 
 
 	spp_restart_proc();
-
-#if 0 // test debug
-	static u32 ledScanTick = 0;
-	static int loop_cnt = 0;
-	if(clock_time_exceed(ledScanTick, 2000 * 1000)){
-		loop_cnt ++;
-		ledScanTick = clock_time();
-		gpio_toggle(GPIO_LED_WHITE);
-
-		tlkapi_send_string_data(1, "tlkapi loop1", &loop_cnt, 4);
-		tlkapi_printf(1, "print loop1, %d\n", loop_cnt);
-	}
-#endif
 
 }
 

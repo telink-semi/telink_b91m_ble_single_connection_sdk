@@ -67,7 +67,7 @@
 	 *  UART_RX_PIN can choose :
 	 *	UART0_RX_PA4, UART0_RX_PB3, UART0_RX_PD3, UART1_RX_PC7, UART1_RX_PD7, UART1_RX_PE2
 	 *
-	 *	BANDRATE:
+	 *	BAUDRATE:
 	 *	Recommend setting to 115200
 	 */
 
@@ -79,16 +79,16 @@
 		#define UART_TX_PIN			UART1_TX_PC6
 		#define UART_RX_PIN			UART1_RX_PC7
 	#endif
-	#define BANDRATE			115200
+	#define BAUDRATE			115200
 #elif (MCU_CORE_TYPE == MCU_CORE_B92)
 	/**
-	 *	BANDRATE:
+	 *	BAUDRATE:
 	 *	Recommend setting to 115200
 	 */
 	#define UART_NUM				UART0
 	#define UART_TX_PIN			GPIO_FC_PB1
 	#define UART_RX_PIN			GPIO_FC_PB2
-	#define BANDRATE			115200
+	#define BAUDRATE			115200
 	#define uart_irq_handler        uart0_irq_handler
 #endif
 /**
@@ -116,7 +116,7 @@
 		#define	GPIO_LED_GREEN			GPIO_PB5
 		#define	GPIO_LED_BLUE			GPIO_PB4
 		#define GPIO_LED_RED			GPIO_PB7
-		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+		#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 		#define PB7_FUNC				AS_GPIO
 		#define PB6_FUNC				AS_GPIO
@@ -135,7 +135,7 @@
 		#define	GPIO_LED_GREEN			GPIO_PD1
 		#define	GPIO_LED_BLUE			GPIO_PD0
 		#define GPIO_LED_RED			GPIO_PE7
-		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+		#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 		#define PE6_FUNC				AS_GPIO
 		#define PD1_FUNC				AS_GPIO

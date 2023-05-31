@@ -99,7 +99,7 @@ typedef struct{
 typedef struct{
 	unsigned int   ir_learn_carrier_cycle;
 	unsigned short ir_learn_wave_num;
-	unsigned int   ir_lenrn_send_buf[MAX_SECTION_NUMBER];
+	unsigned int   ir_learn_send_buf[MAX_SECTION_NUMBER];
 }ir_learn_send_t;
 
 // ir_send_dma_data_t

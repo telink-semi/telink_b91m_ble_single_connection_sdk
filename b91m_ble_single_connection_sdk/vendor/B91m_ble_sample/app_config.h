@@ -37,18 +37,11 @@
 #define APP_DIRECT_ADV_ENABLE				0
 #define BLE_OTA_SERVER_ENABLE				1
 #define BATT_CHECK_ENABLE					0
-#define APP_FLASH_PROTECTION_ENABLE			0
+#define APP_FLASH_PROTECTION_ENABLE			1
+#define PM_DEEPSLEEP_RETENTION_SIZE		0x10000 //B91 only support 0x8000(32k) & 0x10000(64k)
+																		//B92 only support 0x8000(32k) & 0x10000(64k) & 0x18000(96k)
 
 
-#define BOARD_B91_EVK_C1T213A20						1
-#define BOARD_B91_DONGLEC1T213A3					2
-#define BOARD_B92_EVKC1T266A20						3
-
-#if (MCU_CORE_TYPE == MCU_CORE_B91)
-#define BOARD_SELECT							BOARD_B91_EVK_C1T213A20
-#elif (MCU_CORE_TYPE == MCU_CORE_B92)
-#define BOARD_SELECT							BOARD_B92_EVKC1T266A20
-#endif
 
 #define APP_HW_FIRMWARE_ENCRYPTION_ENABLE	0 	//firmware Encryption
 #define APP_HW_SECURE_BOOT_ENABLE			0 	//secure boot: firmware signature verification
@@ -79,7 +72,17 @@
 /**
  *  @brief  UI Configuration
  */
-#if(BOARD_SELECT == BOARD_B91_EVK_C1T213A20 || BOARD_SELECT == BOARD_B92_EVKC1T266A20)
+#define BOARD_B91_EVK_C1T213A20						1
+#define BOARD_B91_DONGLE_C1T213A3					2
+#define BOARD_B92_EVK_C1T266A20						3
+
+#if (MCU_CORE_TYPE == MCU_CORE_B91)
+#define BOARD_SELECT							BOARD_B91_EVK_C1T213A20
+#elif (MCU_CORE_TYPE == MCU_CORE_B92)
+#define BOARD_SELECT							BOARD_B92_EVK_C1T266A20
+#endif
+
+#if(BOARD_SELECT == BOARD_B91_EVK_C1T213A20 || BOARD_SELECT == BOARD_B92_EVK_C1T266A20)
 	#if (TEST_CONN_CURRENT_ENABLE) //test current, disable keyboard
 			#define	UI_KEYBOARD_ENABLE			0
 			#define UI_LED_ENABLE          	 		0
@@ -87,7 +90,7 @@
 			#define	UI_KEYBOARD_ENABLE			1
 			#define UI_LED_ENABLE          	 		1
 	#endif
-#elif(BOARD_SELECT == BOARD_B91_DONGLEC1T213A3)
+#elif(BOARD_SELECT == BOARD_B91_DONGLE_C1T213A3)
 	#define UI_BUTTON_ENABLE					1 //Only B91 DONGLE
 	#define UI_LED_ENABLE          	 			1
 #endif
@@ -98,7 +101,7 @@
 		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
 		#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
 
-		#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+		#define	KB_LINE_HIGH_VALID				0   //drive pin output 0 when scan key, scan pin read 0 is valid
 
 
 
@@ -147,7 +150,7 @@
 		#define	MATRIX_ROW_PULL					PM_PIN_PULLDOWN_100K
 		#define	MATRIX_COL_PULL					PM_PIN_PULLUP_10K
 
-		#define	KB_LINE_HIGH_VALID				0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+		#define	KB_LINE_HIGH_VALID				0   //drive pin output 0 when scan key, scan pin read 0 is valid
 
 
 
@@ -222,7 +225,7 @@
 			#define	GPIO_LED_GREEN			GPIO_PB5
 			#define	GPIO_LED_BLUE			GPIO_PB4
 			#define GPIO_LED_RED			GPIO_PB7
-			#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+			#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 			#define PB7_FUNC				AS_GPIO
 			#define PB6_FUNC				AS_GPIO
@@ -234,7 +237,7 @@
 			#define PB5_OUTPUT_ENABLE		1
 			#define	PB4_OUTPUT_ENABLE		1
 
-	#elif(BOARD_SELECT == BOARD_B91_DONGLEC1T213A3)
+	#elif(BOARD_SELECT == BOARD_B91_DONGLE_C1T213A3)
 			/**
 			 *  @brief  Definition gpio for led
 			 */
@@ -257,12 +260,12 @@
 			#define	PB7_OUTPUT_ENABLE		1
 			#define	PB5_OUTPUT_ENABLE		1
 
-			#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+			#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 
 
 
-	#elif(BOARD_SELECT == BOARD_B92_EVKC1T266A20)
+	#elif(BOARD_SELECT == BOARD_B92_EVK_C1T266A20)
 			/**
 			 *  @brief  Definition gpio for led
 			 */
@@ -270,7 +273,7 @@
 			#define	GPIO_LED_GREEN			GPIO_PD1
 			#define	GPIO_LED_BLUE			GPIO_PD0
 			#define GPIO_LED_RED			GPIO_PE7
-			#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+			#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 			#define PE6_FUNC				AS_GPIO
 			#define PD1_FUNC				AS_GPIO

@@ -28,8 +28,6 @@
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "../default_att.h"
 
 #if (FEATURE_TEST_MODE == TEST_POWER_ADV)
@@ -40,15 +38,15 @@
 #define CONNECT_12B_500MS_3CHANNEL   	2
 #define CONNECT_12B_30MS_3CHANNEL    	3
 
-#define UNCONNECT_16B_1S_3CHANNEL       4
-#define UNCONNECT_16B_1_5S_3CHANNEL     5
-#define UNCONNECT_16B_2S_3CHANNEL   	6
+#define UNCONNECTED_16B_1S_3CHANNEL       4
+#define UNCONNECTED_16B_1_5S_3CHANNEL     5
+#define UNCONNECTED_16B_2S_3CHANNEL   	6
 
-#define UNCONNECT_31B_1S_3CHANNEL      	7
-#define UNCONNECT_31B_1_5S_3CHANNEL     8
-#define UNCONNECT_31B_2S_3CHANNEL   	9
+#define UNCONNECTED_31B_1S_3CHANNEL      	7
+#define UNCONNECTED_31B_1_5S_3CHANNEL     8
+#define UNCONNECTED_31B_2S_3CHANNEL   	9
 
-#define APP_ADV_POWER_TEST_TYPE        UNCONNECT_31B_2S_3CHANNEL
+#define APP_ADV_POWER_TEST_TYPE        UNCONNECTED_31B_2S_3CHANNEL
 
 #define		MY_RF_POWER_INDEX					RF_POWER_INDEX_P3dBm
 
@@ -110,7 +108,7 @@ void blt_pm_proc(void)
  */
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
@@ -171,9 +169,9 @@ _attribute_no_inline_ void user_init_normal(void)
 
 		//set to special ADV channel can avoid master's scan_req to get a very clean power,
 		// but remember that special channel ADV packet can not be scanned by BLE master and captured by BLE sniffer
-	//	blc_ll_setAdvCustomedChannel(33,34,35);
+	//	blc_ll_setAdvCustomizedChannel(33,34,35);
 
-	#if APP_ADV_POWER_TEST_TYPE < UNCONNECT_16B_1S_3CHANNEL  // connectable undirected ADV
+	#if APP_ADV_POWER_TEST_TYPE < UNCONNECTED_16B_1S_3CHANNEL  // connectable undirected ADV
 		/**
 		 * @brief	Adv Packet data
 		 */
@@ -233,7 +231,7 @@ _attribute_no_inline_ void user_init_normal(void)
 		/**
 		 * @brief	Adv Packet data
 		 */
-		#if APP_ADV_POWER_TEST_TYPE < UNCONNECT_31B_1S_3CHANNEL
+		#if APP_ADV_POWER_TEST_TYPE < UNCONNECTED_31B_1S_3CHANNEL
 			//ADV data length: 16 byte
 			u8 tbl_advData[] = {
 				 0x0F, 0x09, 't', 'e', 's', 't', 'a', 'd', 'v', '8', '9', 'A', 'B', 'C', 'D', 'E',
@@ -247,21 +245,21 @@ _attribute_no_inline_ void user_init_normal(void)
 
 		bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) );
 
-		#if APP_ADV_POWER_TEST_TYPE == UNCONNECT_16B_1S_3CHANNEL || APP_ADV_POWER_TEST_TYPE == UNCONNECT_31B_1S_3CHANNEL
+		#if APP_ADV_POWER_TEST_TYPE == UNCONNECTED_16B_1S_3CHANNEL || APP_ADV_POWER_TEST_TYPE == UNCONNECTED_31B_1S_3CHANNEL
 			// ADV type: non_connectable undirected ADV
 			// ADV power index: 3 dBm
 			// ADV interval: 1S
 			// ADV channel: 3 channel
 			u8 status = bls_ll_setAdvParam( ADV_INTERVAL_1S, ADV_INTERVAL_1S, ADV_TYPE_NONCONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC, 0,  NULL,  BLT_ENABLE_ADV_ALL, ADV_FP_NONE);
 
-		#elif APP_ADV_POWER_TEST_TYPE == UNCONNECT_16B_1_5S_3CHANNEL || APP_ADV_POWER_TEST_TYPE == UNCONNECT_31B_1_5S_3CHANNEL
+		#elif APP_ADV_POWER_TEST_TYPE == UNCONNECTED_16B_1_5S_3CHANNEL || APP_ADV_POWER_TEST_TYPE == UNCONNECTED_31B_1_5S_3CHANNEL
 			// ADV type: non_connectable undirected ADV
 			// ADV power index: 3 dBm
 			// ADV interval: 1.5S
 			// ADV channel: 3 channel
 			u8 status = bls_ll_setAdvParam( ADV_INTERVAL_1S5, ADV_INTERVAL_1S5, ADV_TYPE_NONCONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC, 0,  NULL,  BLT_ENABLE_ADV_ALL, ADV_FP_NONE);
 
-		#elif APP_ADV_POWER_TEST_TYPE == UNCONNECT_16B_2S_3CHANNEL || APP_ADV_POWER_TEST_TYPE == UNCONNECT_31B_2S_3CHANNEL
+		#elif APP_ADV_POWER_TEST_TYPE == UNCONNECTED_16B_2S_3CHANNEL || APP_ADV_POWER_TEST_TYPE == UNCONNECTED_31B_2S_3CHANNEL
 			// ADV type: non_connectable undirected ADV
 			// ADV power index: 3 dBm
 			// ADV interval: 2S

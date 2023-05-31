@@ -28,8 +28,6 @@
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "../default_att.h"
 
 #if (FEATURE_TEST_MODE == TEST_STUCK_KEY)
@@ -40,12 +38,12 @@
 #define 	ADV_IDLE_ENTER_DEEP_TIME			60  //60 s
 #define 	CONN_IDLE_ENTER_DEEP_TIME			60  //60 s
 
-#define 	MY_DIRECT_ADV_TMIE					2000000
+#define 	MY_DIRECT_ADV_TIME					2000000
 #define     MY_APP_ADV_CHANNEL					BLT_ENABLE_ADV_ALL
 #define 	MY_ADV_INTERVAL_MIN					ADV_INTERVAL_30MS
 #define 	MY_ADV_INTERVAL_MAX					ADV_INTERVAL_35MS
 
-#define 	STUCK_KEY_ENTERDEEP_TIME			60  //in s
+#define 	STUCK_KEY_ENTER_DEEP_TIME			60  //in s
 
 /**
  * @brief	Adv Packet data
@@ -54,7 +52,7 @@ const u8	tbl_advData[] = {
 	 0x0A, DT_COMPLETE_LOCAL_NAME, 't', 'e', 's', 't', 'S', 'T', 'U','C','K',
 	 0x02, DT_FLAGS, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
 	 0x03, DT_APPEARANCE, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
-	 0x05, DT_INCOMPLT_LIST_16BIT_SERVICE_UUID, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
+	 0x05, DT_INCOMPLETE_LIST_16BIT_SERVICE_UUID, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
 };
 
 /**
@@ -104,7 +102,7 @@ void	task_connect (u8 e, u8 *p, int n)
 	//bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+	gpio_write(GPIO_LED_RED, LED_ON_LEVEL);  //red light on
 #endif
 }
 
@@ -141,7 +139,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 #endif
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+	gpio_write(GPIO_LED_RED, !LED_ON_LEVEL);  //red light off
 #endif
 
 }
@@ -323,7 +321,7 @@ void blt_pm_proc(void)
 	#if (LONG_PRESS_KEY_POWER_OPTIMIZE)
 		bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 		extern int  key_matrix_same_as_last_cnt;
-		if(key_matrix_same_as_last_cnt > 5){  //key matrix stable can optize
+		if(key_matrix_same_as_last_cnt > 5){  //key matrix stable can optimize
 			bls_pm_setManualLatency(3);
 		}
 		else{
@@ -334,7 +332,7 @@ void blt_pm_proc(void)
 
 
 	//If press any key during 1 minute, RCU enter sleep mode.
-	if (key_not_released && clock_time_exceed(stuckKey_keyPressTime, STUCK_KEY_ENTERDEEP_TIME * 1000000))
+	if (key_not_released && clock_time_exceed(stuckKey_keyPressTime, STUCK_KEY_ENTER_DEEP_TIME * 1000000))
 	{
 		u32 pin[] = KB_DRIVE_PINS;
 		for (u8 i = 0; i < ARRAY_SIZE(pin); i ++){
@@ -343,7 +341,7 @@ void blt_pm_proc(void)
 				continue;
 			cpu_set_gpio_wakeup (pin[i], 0, 1);  // reverse stuck key pad wakeup level
 		}
-		bls_pm_setWakeupSource(PM_WAKEUP_PAD);  //gpio PAD wakeup deesleep
+		bls_pm_setWakeupSource(PM_WAKEUP_PAD);  //gpio PAD wakeup deepsleep
 
 		if( blc_ll_getCurrentState() == BLS_LINK_STATE_CONN)
 		{
@@ -397,7 +395,7 @@ void blt_pm_proc(void)
  */
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 

@@ -42,14 +42,14 @@
 #define 	SMP_TEST_LEGACY_PAIRING_JUST_WORKS	2 //JustWorks
 #define 	SMP_TEST_SC_PAIRING_JUST_WORKS		3 //JustWorks
 // LE_Security_Mode_1_Level_3, authenticated paring with encryption
-#define 	SMP_TEST_LEGACY_PASSKEY_ENTRY_SDMI	4 //PK_Resp_Dsply_Init_Input
-#define 	SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI	5 //PK_Init_Dsply_Resp_Input
+#define 	SMP_TEST_LEGACY_PASSKEY_ENTRY_SDMI	4 //PK_Resp_Display_Init_Input
+#define 	SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI	5 //PK_Init_Display_Resp_Input
 #define 	SMP_TEST_LEGACY_PASSKEY_ENTRY_MISI	6 //PK_BOTH_INPUT, not test
 #define 	SMP_TEST_LEGACY_PASSKEY_ENTRY_OOB	7 //OOB_Authentication, not test
 // LE_Security_Mode_1_Level_4, authenticated paring with encryption
-#define 	SMP_TEST_SC_NUMERIC_COMPARISON		8 //Numric_Comparison
-#define 	SMP_TEST_SC_PASSKEY_ENTRY_SDMI		9 //PK_Resp_Dsply_Init_Input
-#define 	SMP_TEST_SC_PASSKEY_ENTRY_MDSI		10//PK_Init_Dsply_Resp_Input
+#define 	SMP_TEST_SC_NUMERIC_COMPARISON		8 //Numeric_Comparison
+#define 	SMP_TEST_SC_PASSKEY_ENTRY_SDMI		9 //PK_Resp_Display_Init_Input
+#define 	SMP_TEST_SC_PASSKEY_ENTRY_MDSI		10//PK_Init_Display_Resp_Input
 #define 	SMP_TEST_SC_PASSKEY_ENTRY_MISI		11//PK_BOTH_INPUT, not test
 #define 	SMP_TEST_SC_PASSKEY_ENTRY_OOB		12//OOB_Authentication, not test
 
@@ -123,7 +123,7 @@
 		#define	GPIO_LED_GREEN			GPIO_PB5
 		#define	GPIO_LED_BLUE			GPIO_PB4
 		#define GPIO_LED_RED			GPIO_PB7
-		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+		#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 		#define PB7_FUNC				AS_GPIO
 		#define PB6_FUNC				AS_GPIO
@@ -142,7 +142,7 @@
 		#define	GPIO_LED_GREEN			GPIO_PD1
 		#define	GPIO_LED_BLUE			GPIO_PD0
 		#define GPIO_LED_RED			GPIO_PE7
-		#define LED_ON_LEVAL 			1 		//gpio output high voltage to turn on led
+		#define LED_ON_LEVEL 			1 		//gpio output high voltage to turn on led
 
 		#define PE6_FUNC				AS_GPIO
 		#define PD1_FUNC				AS_GPIO
@@ -159,22 +159,6 @@
 
 
 
-
-
-
-
-
-#ifndef UART_PRINT_DEBUG_ENABLE
-#define UART_PRINT_DEBUG_ENABLE  			1
-#endif
-/////////////////////////////////////// PRINT DEBUG INFO ///////////////////////////////////////
-#if (UART_PRINT_DEBUG_ENABLE)
-	#define PRINT_BAUD_RATE             					115200
-	#define DEBUG_INFO_TX_PIN           					GPIO_PA0
-	#define PULL_WAKEUP_SRC_PA0         					PM_PIN_PULLUP_10K
-	#define PA0_OUTPUT_ENABLE         					1
-	#define PA0_DATA_OUT                                      1 //must
-#endif
 
 
 /**

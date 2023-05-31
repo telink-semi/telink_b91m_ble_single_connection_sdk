@@ -23,10 +23,11 @@
 #include "tl_common.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
-
+#include "tlk_string.h"
 #include "tlkapi_debug.h"
 
-#include "stdarg.h"
+#include <stdio.h>
+#include <stdarg.h>
 
 _attribute_ble_data_retention_ tlk_dbg_t tlkDbgCtl;
 
@@ -84,7 +85,7 @@ void tlkapi_debug_putchar(uint08 byte)
 		bits[3] = bit1;
 		unsigned char i,j = 0;
 		/*
-		 * bit_nop is num of clock to tranmit a bit use PRINT_BAUD_RATE.
+		 * bit_nop is num of clock to transmit a bit use PRINT_BAUD_RATE.
 		 * 1 / sys_clk.cclk * (8 + 4 * bit_nop) = 1000000 / PRINT_BAUD_RATE.
 		 * 8 is clock of nop when bit_nop is 0.
 		 * 4 is clock of for(i) when bit_nop is not 0.
@@ -141,7 +142,11 @@ void uart0_irq_handler(void)
 
 
 
-
+/**
+ * @brief   	Debug log initialization when MCU power on or wake_up from deepSleep mode
+ * @param[in]	none
+ * @return		none
+ */
 int tlkapi_debug_init(void)
 {
 	tlkDbgCtl.dbg_en = 1;
@@ -186,6 +191,11 @@ int tlkapi_debug_init(void)
 }
 
 
+/**
+ * @brief   	Debug log initialization when MCU wake_up from deepSleep_retention mode
+ * @param[in]	none
+ * @return		none
+ */
 int tlkapi_debug_deepRetn_init(void)
 {
 
@@ -201,6 +211,12 @@ int tlkapi_debug_deepRetn_init(void)
 }
 
 
+
+/**
+ * @brief   	Debug log process in mainloop, output log form log FIFO if FIFO not empty
+ * @param[in]	none
+ * @return		none
+ */
 _attribute_ram_code_sec_noinline_
 void tlkapi_debug_handler(void)
 {
@@ -234,6 +250,13 @@ void tlkapi_debug_handler(void)
 #endif
 }
 
+
+/**
+ * @brief  		check if debug log busy
+ * @param[in]	none
+ * @return		1: debug log busy, some log pending in FIFO, not all finish;
+ * 				0: debug log empty
+ */
 bool tlkapi_debug_isBusy(void)
 {
 	#if (TLKAPI_DEBUG_CHANNEL == TLKAPI_DEBUG_CHANNEL_UART)
@@ -258,28 +281,34 @@ bool tlkapi_debug_isBusy(void)
 
 
 
-
+/**
+ * @brief   Send debug log to log FIFO, character string and data mixed mode.
+ *			attention: here just send log to FIFO, can not output immediately, wait for "tlkapi debug_handler" to output log.
+ * @param[in]	str - character string
+ * @param[in]	pData - pointer of data
+ * @param[in]	len - length of data
+ * @return		none
+ */
 _attribute_ram_code_sec_noinline_
-void tlkapi_send_str_data (char *str, u8 *ph, u32 n)
+void tlkapi_send_str_data (char *str, u8 *pData, u32 data_len)
 {
 	if(!tlkapi_print_fifo){
 		return;
 	}
 
-	if(n > 500){
+	if(data_len > 500){
 		return;
 	}
 
-	extern int tlk_strlen(char *str);
 	int ns = str ? tlk_strlen (str) : 0;
 	if (ns > tlkDbgCtl.fifo_data_len)
 	{
 		ns = tlkDbgCtl.fifo_data_len;
-		n = 0;
+		data_len = 0;
 	}
-	else if (n + ns > tlkDbgCtl.fifo_data_len)
+	else if (data_len + ns > tlkDbgCtl.fifo_data_len)
 	{
-		n = tlkDbgCtl.fifo_data_len - ns;
+		data_len = tlkDbgCtl.fifo_data_len - ns;
 	}
 
 
@@ -289,7 +318,7 @@ void tlkapi_send_str_data (char *str, u8 *ph, u32 n)
 	u8 *pd =  tlkapi_print_fifo->p + (tlkapi_print_fifo->wptr & (tlkapi_print_fifo->num - 1)) * tlkapi_print_fifo->size;
 
 	if(tlkDbgCtl.dbg_chn == TLKAPI_DEBUG_CHANNEL_UDB){
-		int len = n + ns + 5;
+		int len = data_len + ns + 5;
 		*pd++ = len;
 		*pd++ = len >> 8;
 		*pd++ = 0;
@@ -298,12 +327,12 @@ void tlkapi_send_str_data (char *str, u8 *ph, u32 n)
 		*pd++ = 8;
 
 		*pd++ = 0x22;
-		*pd++ = n;
-		*pd++ = n >> 8;
+		*pd++ = data_len;
+		*pd++ = data_len >> 8;
 
-		while (n--)
+		while (data_len--)
 		{
-			*pd++ = *ph++;
+			*pd++ = *pData++;
 		}
 		while (ns--)
 		{
@@ -311,25 +340,25 @@ void tlkapi_send_str_data (char *str, u8 *ph, u32 n)
 		}
 	}
 	else{
-		int len = ns + n + 5;
+		int len = ns + data_len + 5;
 		*pd++ = len;
 		*pd++ = len >> 8;
 		*pd++ = 0;
 		*pd++ = 0;
 
-		*pd++ = 0x95;   //special mark�� 0xA695
+		*pd++ = 0x95;   //special mark： 0xA695
 		*pd++ = 0xA6;
 		*pd++ = ns;     // string length, 1byte
-		*pd++ = n;	    // data length, 2 byte
-		*pd++ = n >> 8;
+		*pd++ = data_len;	    // data length, 2 byte
+		*pd++ = data_len >> 8;
 
 		while (ns--)
 		{
 			*pd++ = *str++;
 		}
-		while (n--)
+		while (data_len--)
 		{
-			*pd++ = *ph++;
+			*pd++ = *pData++;
 		}
 		//add a '\n' by UART tool
 	}
@@ -339,29 +368,50 @@ void tlkapi_send_str_data (char *str, u8 *ph, u32 n)
 	irq_restore(r);
 }
 
-_attribute_ram_code_ void tlkapi_send_str_u8s (char *str, u8 d0, u8 d1, u8 d2, u8 d3)
-{
-	u8 d[4];
-	d[0] = d0;
-	d[1] = d1;
-	d[2] = d2;
-	d[3] = d3;
-	tlkapi_send_str_data (str, (u8*)d, 4);
-}
+#define SEND_U8S_MAX_NUM						16
 
-_attribute_ram_code_ void tlkapi_send_str_u32s (char *str, u32 d0, u32 d1, u32 d2, u32 d3)
+_attribute_ram_code_sec_noinline_
+void tlkapi_send_str_u8s(char *str, int size, ...)
 {
-	u32 d[4];
-	d[0] = d0;
-	d[1] = d1;
-	d[2] = d2;
-	d[3] = d3;
-	tlkapi_send_str_data (str, (u8*)d, 16);
+	u8 d[SEND_U8S_MAX_NUM];
+	size = min(SEND_U8S_MAX_NUM, size);
+	va_list args;
+	va_start( args, size);
+	for(int i=0; i<size; i++)
+	{
+		d[i] = va_arg(args, unsigned int);
+	}
+	tlkapi_send_str_data(str, d, size);
+	va_end( args );
 }
 
 
+#define SEND_U32S_MAX_NUM						8
+
+_attribute_ram_code_sec_noinline_
+void tlkapi_send_str_u32s(char *str, int size, ...)
+{
+	u32 d[SEND_U32S_MAX_NUM];
+	size = min(SEND_U32S_MAX_NUM, size);
+	va_list args;
+	va_start( args, size);
+	for(int i=0; i<size; i++)
+	{
+		d[i] = va_arg(args, unsigned int);
+	}
+	tlkapi_send_str_data(str, (u8*)d, size*4);
+	va_end( args );
+}
 
 
+
+
+/**
+ * @brief   	Send debug log to log FIFO, printf mode
+ *				attention: here just send log to FIFO, can not output immediately, wait for "tlkapi debug_handler" to output log.
+ * @param[in]	format -
+ * @return
+ */
 int my_printf(const char *format, ...)
 {
 	if(!tlkapi_print_fifo){

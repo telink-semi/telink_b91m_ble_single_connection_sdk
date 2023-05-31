@@ -28,8 +28,6 @@
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "app_att.h"
 
 #include "app_audio.h"
@@ -111,7 +109,7 @@ void	task_connect (u8 e, u8 *p, int n)
 	ui_mtu_size_exchange_req = 1;
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+	gpio_write(GPIO_LED_RED, LED_ON_LEVEL);  //red light on
 #endif
 }
 
@@ -144,7 +142,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+	gpio_write(GPIO_LED_RED, !LED_ON_LEVEL);  //red light off
 #endif
 
 }
@@ -211,7 +209,7 @@ void blt_pm_proc(void)
  */
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
@@ -433,7 +431,7 @@ _attribute_data_retention_	u8 		key_type;
 
 _attribute_data_retention_		static u32 keyScanTick = 0;
 
-#if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)			//GATT Telink
+#if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TELINK)			//GATT Telink
 /**
  * @brief      this function is used to detect if key pressed or released.
  * @param[in]  e - LinkLayer Event type

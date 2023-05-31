@@ -28,13 +28,11 @@
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "../default_att.h"
 
 #if (FEATURE_TEST_MODE == TEST_PRIVACY)
 
-#define 	MY_DIRECT_ADV_TMIE					20000000
+#define 	MY_DIRECT_ADV_TIME					20000000
 
 
 #define     MY_APP_ADV_CHANNEL					BLT_ENABLE_ADV_ALL
@@ -55,7 +53,7 @@ const u8	tbl_advData[] = {
 	 0x08, DT_COMPLETE_LOCAL_NAME, 'f', 'e', 'a', 't', 'u', 'r', 'e',
 	 0x02, DT_FLAGS, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
 	 0x03, DT_APPEARANCE, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
-	 0x05, DT_INCOMPLT_LIST_16BIT_SERVICE_UUID, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
+	 0x05, DT_INCOMPLETE_LIST_16BIT_SERVICE_UUID, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
 };
 
 /**
@@ -100,7 +98,7 @@ void	task_connect (u8 e, u8 *p, int n)
 	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+	gpio_write(GPIO_LED_RED, LED_ON_LEVEL);  //red light on
 #endif
 }
 
@@ -131,7 +129,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+	gpio_write(GPIO_LED_RED, !LED_ON_LEVEL);  //red light off
 #endif
 
 }
@@ -377,23 +375,23 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 	{
 		case GAP_EVT_SMP_PAIRING_BEGIN:
 		{
-			my_dump_str_data(APP_DUMP_EN,"Pairing Begin",0,0);
+			tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] Pairing Begin",0,0);
 		}
 		break;
 
 		case GAP_EVT_SMP_PAIRING_SUCCESS:
 		{
 			gap_smp_paringSuccessEvt_t* p = (gap_smp_paringSuccessEvt_t*)para;
-			my_dump_str_u8s(APP_DUMP_EN,"Pairing success,bond flg", p->bonding ?1:0,0,0,0);
+			tlkapi_send_string_u8s(APP_LOG_EN,"[APP][SMP] Pairing success,bond flg", p->bonding ?1:0,0,0,0);
 
 			if(p->bonding_result){
-				my_dump_str_data(APP_DUMP_EN,"save smp key succ",0,0);
+				tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] save smp key succ",0,0);
 
 			    u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
 			    smp_param_save_t  bondInfo;
 
 			    bondingFlashAddr = bls_smp_param_loadByIndex(bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
-			    my_dump_str_u32s(APP_DUMP_EN,"bondingFlashAddr", bondingFlashAddr,0,0,0);
+			    tlkapi_send_string_u32s(APP_LOG_EN,"[APP][SMP] bondingFlashAddr", bondingFlashAddr,0,0,0);
 
 				u16 my_centralAddrResUUID = GATT_UUID_CENTRAL_ADDR_RES;
 				u8 dat[64];
@@ -402,11 +400,11 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 			    if(bls_ll_pushTxFifo (BLS_CONN_HANDLE, dat)){
 			    	DBG_CHN3_TOGGLE;
 			    	centralAddrResHdlReq = 1;
-			    	my_dump_str_data(APP_DUMP_EN,"read by type req: UUID: 0x%x\n", &my_centralAddrResUUID,2);
+			    	tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] read by type req: UUID: 0x%x\n", &my_centralAddrResUUID,2);
 			    }
 			}
 			else{
-				my_dump_str_data(APP_DUMP_EN,"save smp key failed",0,0);
+				tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] save smp key failed",0,0);
 			}
 		}
 		break;
@@ -414,14 +412,14 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		case GAP_EVT_SMP_PAIRING_FAIL:
 		{
 			gap_smp_paringFailEvt_t* p = (gap_smp_paringFailEvt_t*)para;
-			my_dump_str_u8s(APP_DUMP_EN,"Pairing failed", p->reason,0,0,0);
+			tlkapi_send_string_u8s(APP_LOG_EN,"[APP][SMP] Pairing failed", p->reason,0,0,0);
 		}
 		break;
 
 		case GAP_EVT_SMP_CONN_ENCRYPTION_DONE:
 		{
 			gap_smp_connEncDoneEvt_t* p = (gap_smp_connEncDoneEvt_t*)para;
-			my_dump_str_data(APP_DUMP_EN,"Pairing failed",0,0);
+			tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] Pairing failed",0,0);
 
 			if(p->re_connect == SMP_STANDARD_PAIR){  //first paring
 
@@ -448,7 +446,7 @@ int controller_event_callback (u32 h, u8 *p, int n)
 		//------------ disconnect -------------------------------------
 		if(evtCode == HCI_EVT_DISCONNECTION_COMPLETE)  //connection terminate
 		{
-			my_dump_str_data(APP_DUMP_EN,"le connection terminate event",0,0);
+			tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] le connection terminate event",0,0);
 		}
 		else if(evtCode == HCI_EVT_LE_META)
 		{
@@ -458,15 +456,15 @@ int controller_event_callback (u32 h, u8 *p, int n)
 			//------hci le event: le connection complete event---------------------------------
 			if (subEvt_code == HCI_SUB_EVT_LE_CONNECTION_COMPLETE)	// connection complete
 			{
-				my_dump_str_data(APP_DUMP_EN,"le conn complete event",0,0);
+				tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] le conn complete event",0,0);
 			}
 			else if (subEvt_code == HCI_SUB_EVT_LE_ENHANCED_CONNECTION_COMPLETE)
 			{
 				hci_le_enhancedConnCompleteEvt_t *pEvt = (hci_le_enhancedConnCompleteEvt_t *)p;
-				my_dump_str_data(APP_DUMP_EN,"le enhanced conn complete event",0,0);
-				my_dump_str_data(APP_DUMP_EN,"peerAddrType,peerAddr",&pEvt->PeerAddrType,7);
-				my_dump_str_data(APP_DUMP_EN,"localRpa",pEvt->localRslvPrivAddr, 6);
-				my_dump_str_data(APP_DUMP_EN,"peerRpa",pEvt->Peer_RslvPrivAddr, 6);
+				tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] le enhanced conn complete event",0,0);
+				tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] peerAddrType,peerAddr",&pEvt->PeerAddrType,7);
+				tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] localRpa",pEvt->localRslvPrivAddr, 6);
+				tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] peerRpa",pEvt->Peer_RslvPrivAddr, 6);
 			}
 		}
 	}
@@ -475,7 +473,7 @@ int controller_event_callback (u32 h, u8 *p, int n)
 
 }
 
-void 	app_switch_to_undirect_adv(u8 e, u8 *p, int n)
+void 	app_switch_to_undirected_adv(u8 e, u8 *p, int n)
 {
 	bls_ll_setAdvEnable(0);
 
@@ -497,16 +495,16 @@ void slave_cfgLegAdvParam(void){
 	bls_ll_setAdvEnable(0);  //adv disable
 	////////////////// config adv packet /////////////////////
 	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
-	my_dump_str_u8s(APP_DUMP_EN,"bond_number", bond_number,0,0,0);
+	tlkapi_send_string_u8s(APP_LOG_EN,"[APP][SMP] bond_number", bond_number,0,0,0);
 	smp_param_save_t  bondInfo;
 	if(bond_number)   //at least 1 bonding device exist
 	{
 
 		u32 current_addr = bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
-		my_dump_str_u32s(APP_DUMP_EN,"smpAddr", current_addr,0,0,0);
+		tlkapi_send_string_u32s(APP_LOG_EN,"[APP][SMP] smpAddr", current_addr,0,0,0);
 		ble_sts_t status;
 
-		my_dump_str_data(APP_DUMP_EN,"central bondInfo.flag", &bondInfo.flag,1);
+		tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] central bondInfo.flag", &bondInfo.flag,1);
 
 		u8 own_use_rpa = 1;
 		u8 empty_16_ff[16] = {0xFF, 0xFF, 0xFF, 0xFF,  0xFF, 0xFF, 0xFF, 0xFF,  0xFF, 0xFF, 0xFF, 0xFF,  0xFF, 0xFF, 0xFF, 0xFF};
@@ -518,20 +516,20 @@ void slave_cfgLegAdvParam(void){
 			memset(bondInfo.local_irk, 0, 16);
 		}
 
-		status = blc_ll_addDeivceToResolvingList(bondInfo.peer_id_adrType, bondInfo.peer_id_addr, bondInfo.peer_irk, bondInfo.local_irk);
-		my_dump_str_data(APP_DUMP_EN,"LL resolving list add status", &status,1);
+		status = blc_ll_addDeviceToResolvingList(bondInfo.peer_id_adrType, bondInfo.peer_id_addr, bondInfo.peer_irk, bondInfo.local_irk);
+		tlkapi_send_string_data(APP_LOG_EN,"[APP][RPA] LL resolving list add status", &status,1);
 
 		status = blc_ll_setAddressResolutionEnable(1);
-		my_dump_str_data(APP_DUMP_EN,"LL add resolution enable status", &status,1);
+		tlkapi_send_string_data(APP_LOG_EN,"[APP][RPA] LL add resolution enable status", &status,1);
 
-		my_dump_str_data(APP_DUMP_EN,"central bondInfo.flag", &bondInfo.flag,1);
+		tlkapi_send_string_data(APP_LOG_EN,"[APP][SMP] central bondInfo.flag", &bondInfo.flag,1);
 
 		app_own_address_type = own_use_rpa ? OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC : OWN_ADDRESS_PUBLIC;
 		if(app_own_address_type == OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC){
-			my_dump_str_data(APP_DUMP_EN,"RPA",0,0);
+			tlkapi_send_string_data(APP_LOG_EN,"[APP][RPA] RPA",0,0);
 			DBG_CHN3_TOGGLE;;
 		}else{
-			my_dump_str_data(APP_DUMP_EN,"PUB",0,0);
+			tlkapi_send_string_data(APP_LOG_EN,"[APP][RPA] PUB",0,0);
 			DBG_CHN4_TOGGLE;
 		}
 
@@ -540,12 +538,12 @@ void slave_cfgLegAdvParam(void){
 		if(app_own_address_type < OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC){
 			peerAddr = bondInfo.peer_addr;
 			peerAddrType = bondInfo.peer_addr_type;
-			my_dump_str_data(APP_DUMP_EN,"AdvA: pub",bondInfo.peer_addr,6);
+			tlkapi_send_string_data(APP_LOG_EN,"[APP][RPA] AdvA: pub",bondInfo.peer_addr,6);
 		}
 		else{
 			peerAddr = bondInfo.peer_id_addr;
 			peerAddrType = bondInfo.peer_id_adrType;
-			my_dump_str_data(APP_DUMP_EN,"AdvA: rpa",bondInfo.peer_id_addr,6);
+			tlkapi_send_string_data(APP_LOG_EN,"[APP][RPA] AdvA: rpa",bondInfo.peer_id_addr,6);
 		}
 
 		status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
@@ -555,8 +553,8 @@ void slave_cfgLegAdvParam(void){
 									 ADV_FP_NONE);//  ADV_FP_NONE  ADV_FP_ALLOW_SCAN_ANY_ALLOW_CONN_WL
 		if(status != BLE_SUCCESS) { 	while(1);}  //debug: adv setting err
 
-		bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE>>1, 1);
-		bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &app_switch_to_undirect_adv);
+		bls_ll_setAdvDuration(MY_DIRECT_ADV_TIME>>1, 1);
+		bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &app_switch_to_undirected_adv);
 	}
 	else{
 #if	0
@@ -568,7 +566,7 @@ void slave_cfgLegAdvParam(void){
 										 ADV_FP_NONE);
 		if(status != BLE_SUCCESS) { 	while(1);}  //debug: adv setting err
 		status = blc_ll_setAddressResolutionEnable(0);
-		my_dump_str_u8s(APP_DUMP_EN,"LL add resolution disable status",status,0,0,0);
+		tlkapi_send_string_u8s(APP_LOG_EN,"[APP][RPA] LL add resolution disable status",status,0,0,0);
 #else
 
 		u8	tmp_peer_irk[16] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
@@ -576,10 +574,10 @@ void slave_cfgLegAdvParam(void){
 		u8	tmp_peer_addr[6] = {0x11,0x22,0x33,0x44,0x55,0x66};
 		u8	tmp_peer_addr_type = OWN_ADDRESS_PUBLIC;
 
-		my_dump_str_data(APP_DUMP_EN,"First Connection,made Irk and related message", tmp_local_irk,16);
+		tlkapi_send_string_data(APP_LOG_EN,"[APP][RPA] First Connection,made Irk and related message", tmp_local_irk,16);
 
-		u8 status =blc_ll_addDeivceToResolvingList(tmp_peer_addr_type,tmp_peer_addr,tmp_peer_irk,tmp_local_irk);
-		my_dump_str_data(APP_DUMP_EN,"LL resolving list add status", &status,1);
+		u8 status =blc_ll_addDeviceToResolvingList(tmp_peer_addr_type,tmp_peer_addr,tmp_peer_irk,tmp_local_irk);
+		tlkapi_send_string_data(APP_LOG_EN,"[APP][RPA] LL resolving list add status", &status,1);
 
 		status = blc_ll_setAddressResolutionEnable(1);
 
@@ -606,7 +604,7 @@ void slave_cfgLegAdvParam(void){
  */
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
@@ -662,7 +660,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	/* L2CAP Initialization */
 	blc_l2cap_register_handler (blc_l2cap_packet_receive);
 
-	blc_l2cap_reg_att_cli_hander(l2cap_matt_handler);
+	blc_l2cap_reg_att_cli_handler(l2cap_matt_handler);
 
 	/* SMP Initialization may involve flash write/erase(when one sector stores too much information,
 	 *   is about to exceed the sector threshold, this sector must be erased, and all useful information

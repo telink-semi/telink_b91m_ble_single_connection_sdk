@@ -40,10 +40,10 @@
 
 
 //smp test
-#define TEST_SMP_SECURITY								20 //If testing SECURITY, such as Passkey Entry or Numric_Comparison, we use the remote control board for testing
+#define TEST_SMP_SECURITY								20 //If testing SECURITY, such as Passkey Entry or Numeric_Comparison, we use the remote control board for testing
 
 //gatt secure test
-#define TEST_GATT_SECURITY								21 //If testing SECURITY, such as Passkey Entry or Numric_Comparison, we use the remote control board for testing
+#define TEST_GATT_SECURITY								21 //If testing SECURITY, such as Passkey Entry or Numeric_Comparison, we use the remote control board for testing
 
 //slave data length exchange test
 #define TEST_SDATA_LENGTH_EXTENSION						22

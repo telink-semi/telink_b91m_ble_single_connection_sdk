@@ -69,11 +69,11 @@ static const u16 my_devNameUUID = GATT_UUID_DEVICE_NAME;
 
 static const u16 my_gapServiceUUID = SERVICE_UUID_GENERIC_ACCESS;
 
-static const u16 my_appearanceUIID = GATT_UUID_APPEARANCE;
+static const u16 my_appearanceUUID = GATT_UUID_APPEARANCE;
 
 static const u16 my_periConnParamUUID = GATT_UUID_PERI_CONN_PARAM;
 
-static const u16 my_appearance = GAP_APPEARE_UNKNOWN;
+static const u16 my_appearance = GAP_APPEARANCE_UNKNOWN;
 
 static const u16 my_gattServiceUUID = SERVICE_UUID_GENERIC_ATTRIBUTE;
 
@@ -107,9 +107,9 @@ static const u16 my_hidServiceUUID        = SERVICE_UUID_HUMAN_INTERFACE_DEVICE;
 static const u16 hidProtocolModeUUID      = CHARACTERISTIC_UUID_HID_PROTOCOL_MODE;
 static const u16 hidReportUUID            = CHARACTERISTIC_UUID_HID_REPORT;
 static const u16 hidReportMapUUID         = CHARACTERISTIC_UUID_HID_REPORT_MAP;
-static const u16 hidbootKeyInReportUUID   = CHARACTERISTIC_UUID_HID_BOOT_KEY_INPUT;
-static const u16 hidbootKeyOutReportUUID  = CHARACTERISTIC_UUID_HID_BOOT_KEY_OUTPUT;
-static const u16 hidinformationUUID       = CHARACTERISTIC_UUID_HID_INFORMATION;
+static const u16 hidBootKeyInReportUUID   = CHARACTERISTIC_UUID_HID_BOOT_KEY_INPUT;
+static const u16 hidBootKeyOutReportUUID  = CHARACTERISTIC_UUID_HID_BOOT_KEY_OUTPUT;
+static const u16 hidInformationUUID       = CHARACTERISTIC_UUID_HID_INFORMATION;
 static const u16 hidCtrlPointUUID         = CHARACTERISTIC_UUID_HID_CONTROL_POINT;
 static const u16 hidIncludeUUID           = GATT_UUID_INCLUDE;
 
@@ -214,7 +214,7 @@ static const u8 reportMap[] =
 	0x26,0x8c,0x02,  //global, max  0x28c
 	0x19,0x01,     //local, min   0x01
 	0x2a,0x8c,0x02,  //local, max    0x28c
-	0x81,0x00,     //main,  input data varible, absolute
+	0x81,0x00,     //main,  input data variable, absolute
 	0xc0,        //main, end collection
 
 #if (TL_AUDIO_MODE & TL_AUDIO_MASK_HID_SERVICE_CHANNEL)							//HID Service
@@ -229,7 +229,7 @@ static const u8 reportMap[] =
 	0x26,0x8c,0x02,  //global, max  0x28c
 	0x19,0x01,     //local, min   0x01
 	0x2a,0x8c,0x02,  //local, max    0x28c
-	0x81,0x00,     //main,  input data varible, absolute
+	0x81,0x00,     //main,  input data variable, absolute
 	0xc0,        //main, end collection
 
 	//audio 3
@@ -277,7 +277,7 @@ static const u8 reportMap[] =
 	0x26,0x8c,0x02,  //global, max  0x28c
 	0x19,0x01,     //local, min   0x01
 	0x2a,0x8c,0x02,  //local, max    0x28c
-	0x81,0x00,     //main,  input data varible, absolute
+	0x81,0x00,     //main,  input data variable, absolute
 	0xc0,        //main, end collection
 #endif
 };
@@ -294,7 +294,7 @@ static 		  u8 otaDataCCC[2] 						= {0,0};
 static const  u8 my_OtaName[] 						= {'O', 'T', 'A'};
 
 
-#if(TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)
+#if(TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TELINK)
 /////////////////////////////////////////////////////////
 static const u8 my_AudioUUID[16]   = WRAPPING_BRACES(TELINK_AUDIO_UUID_SERVICE);
 static const u8 my_MicUUID[16]		= WRAPPING_BRACES(TELINK_MIC_DATA);
@@ -330,7 +330,7 @@ static u8 AudioReportFirst[2] = {HID_REPORT_ID_AUDIO_FIRST_INPUT, HID_REPORT_TYP
 static u8 AudioReportSecnd[2] = {HID_REPORT_ID_AUDIO_SECND_INPUT, HID_REPORT_TYPE_INPUT};
 static u8 AudioReportThird[2] = {HID_REPORT_ID_AUDIO_THIRD_INPUT, HID_REPORT_TYPE_INPUT};
 
-static const u8 my_hidReportAudioFristCharVal[5] = {
+static const u8 my_hidReportAudioFirstCharVal[5] = {
 	CHAR_PROP_READ | CHAR_PROP_NOTIFY,
 	U16_LO(HID_AUDIO_REPORT_INPUT_FIRST_DP_H), U16_HI(HID_AUDIO_REPORT_INPUT_FIRST_DP_H),
 	U16_LO(CHARACTERISTIC_UUID_HID_REPORT), U16_HI(CHARACTERISTIC_UUID_HID_REPORT)
@@ -421,12 +421,12 @@ static const u8 my_hidProtocolModeCharVal[5] = {
 	U16_LO(HID_PROTOCOL_MODE_DP_H), U16_HI(HID_PROTOCOL_MODE_DP_H),
 	U16_LO(CHARACTERISTIC_UUID_HID_PROTOCOL_MODE), U16_HI(CHARACTERISTIC_UUID_HID_PROTOCOL_MODE)
 };
-static const u8 my_hidbootKeyInReporCharVal[5] = {
+static const u8 my_hidBootKeyInReportCharVal[5] = {
 	CHAR_PROP_READ | CHAR_PROP_NOTIFY,
 	U16_LO(HID_BOOT_KB_REPORT_INPUT_DP_H), U16_HI(HID_BOOT_KB_REPORT_INPUT_DP_H),
 	U16_LO(CHARACTERISTIC_UUID_HID_BOOT_KEY_INPUT), U16_HI(CHARACTERISTIC_UUID_HID_BOOT_KEY_INPUT)
 };
-static const u8 my_hidbootKeyOutReporCharVal[5] = {
+static const u8 my_hidBootKeyOutReportCharVal[5] = {
 	CHAR_PROP_READ | CHAR_PROP_WRITE | CHAR_PROP_WRITE_WITHOUT_RSP,
 	U16_LO(HID_BOOT_KB_REPORT_OUTPUT_DP_H), U16_HI(HID_BOOT_KB_REPORT_OUTPUT_DP_H),
 	U16_LO(CHARACTERISTIC_UUID_HID_BOOT_KEY_OUTPUT), U16_HI(CHARACTERISTIC_UUID_HID_BOOT_KEY_OUTPUT)
@@ -451,7 +451,7 @@ static const u8 my_hidReportMapCharVal[5] = {
 	U16_LO(HID_REPORT_MAP_DP_H), U16_HI(HID_REPORT_MAP_DP_H),
 	U16_LO(CHARACTERISTIC_UUID_HID_REPORT_MAP), U16_HI(CHARACTERISTIC_UUID_HID_REPORT_MAP)
 };
-static const u8 my_hidinformationCharVal[5] = {
+static const u8 my_hidInformationCharVal[5] = {
 	CHAR_PROP_READ,
 	U16_LO(HID_INFORMATION_DP_H), U16_HI(HID_INFORMATION_DP_H),
 	U16_LO(CHARACTERISTIC_UUID_HID_INFORMATION), U16_HI(CHARACTERISTIC_UUID_HID_INFORMATION)
@@ -479,7 +479,7 @@ static const u8 my_OtaCharVal[19] = {
 };
 
 // TM : to modify
-#if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)						//GATT Telink
+#if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TELINK)						//GATT Telink
 static const attribute_t my_Attributes[] = {
 
 	{ATT_END_H - 1, 0,0,0,0,0},	// total num of attribute
@@ -490,7 +490,7 @@ static const attribute_t my_Attributes[] = {
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_devNameCharVal),(u8*)(&my_characterUUID), (u8*)(my_devNameCharVal), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_devName), (u8*)(&my_devNameUUID), (u8*)(my_devName), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_appearanceCharVal),(u8*)(&my_characterUUID), (u8*)(my_appearanceCharVal), 0},
-	{0,ATT_PERMISSIONS_READ,2,sizeof (my_appearance), (u8*)(&my_appearanceUIID), 	(u8*)(&my_appearance), 0},
+	{0,ATT_PERMISSIONS_READ,2,sizeof (my_appearance), (u8*)(&my_appearanceUUID), 	(u8*)(&my_appearance), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_periConnParamCharVal),(u8*)(&my_characterUUID), (u8*)(my_periConnParamCharVal), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof (my_periConnParameters),(u8*)(&my_periConnParamUUID), 	(u8*)(&my_periConnParameters), 0},
 
@@ -521,13 +521,13 @@ static const attribute_t my_Attributes[] = {
 	{0,ATT_PERMISSIONS_RDWR,2, sizeof(protocolMode),(u8*)(&hidProtocolModeUUID), 	(u8*)(&protocolMode), 0},	//value
 
 	// 0013 - 0015  boot keyboard input report (char-val-client)
-	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidbootKeyInReporCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidbootKeyInReporCharVal), 0},				//prop
-	{0,ATT_PERMISSIONS_READ,2,sizeof(bootKeyInReport),(u8*)(&hidbootKeyInReportUUID), 	(u8*)(&bootKeyInReport), 0},	//value
+	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidBootKeyInReportCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidBootKeyInReportCharVal), 0},				//prop
+	{0,ATT_PERMISSIONS_READ,2,sizeof(bootKeyInReport),(u8*)(&hidBootKeyInReportUUID), 	(u8*)(&bootKeyInReport), 0},	//value
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(bootKeyInReportCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(bootKeyInReportCCC), 0},	//value
 
 	// 0016 - 0017   boot keyboard output report (char-val)
-	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidbootKeyOutReporCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidbootKeyOutReporCharVal), 0},				//prop
-	{0,ATT_PERMISSIONS_RDWR,2, sizeof(bootKeyOutReport), (u8*)(&hidbootKeyOutReportUUID), 	(u8*)(&bootKeyOutReport), 0},	//value
+	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidBootKeyOutReportCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidBootKeyOutReportCharVal), 0},				//prop
+	{0,ATT_PERMISSIONS_RDWR,2, sizeof(bootKeyOutReport), (u8*)(&hidBootKeyOutReportUUID), 	(u8*)(&bootKeyOutReport), 0},	//value
 
 
 	// 0018 - 001b. consume report in: 4 (char-val-client-ref)
@@ -554,8 +554,8 @@ static const attribute_t my_Attributes[] = {
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(extServiceUUID),(u8*)(&extReportRefUUID), 	(u8*)(&extServiceUUID), 0},	//value
 
 	// 0026 - 0027 . hid information: 2
-	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidinformationCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidinformationCharVal), 0},				//prop
-	{0,ATT_PERMISSIONS_READ,2, sizeof(hidInformation),(u8*)(&hidinformationUUID), 	(u8*)(hidInformation), 0},	//value
+	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidInformationCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidInformationCharVal), 0},				//prop
+	{0,ATT_PERMISSIONS_READ,2, sizeof(hidInformation),(u8*)(&hidInformationUUID), 	(u8*)(hidInformation), 0},	//value
 
 	// 0028 - 0029 . control point: 2
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidCtrlPointCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidCtrlPointCharVal), 0},				//prop
@@ -602,7 +602,7 @@ static const attribute_t my_Attributes[] = {
 		{0,ATT_PERMISSIONS_READ,2,sizeof(my_devNameCharVal),(u8*)(&my_characterUUID), (u8*)(my_devNameCharVal), 0},
 		{0,ATT_PERMISSIONS_READ,2,sizeof(my_devName), (u8*)(&my_devNameUUID), (u8*)(my_devName), 0},
 		{0,ATT_PERMISSIONS_READ,2,sizeof(my_appearanceCharVal),(u8*)(&my_characterUUID), (u8*)(my_appearanceCharVal), 0},
-		{0,ATT_PERMISSIONS_READ,2,sizeof (my_appearance), (u8*)(&my_appearanceUIID), 	(u8*)(&my_appearance), 0},
+		{0,ATT_PERMISSIONS_READ,2,sizeof (my_appearance), (u8*)(&my_appearanceUUID), 	(u8*)(&my_appearance), 0},
 		{0,ATT_PERMISSIONS_READ,2,sizeof(my_periConnParamCharVal),(u8*)(&my_characterUUID), (u8*)(my_periConnParamCharVal), 0},
 		{0,ATT_PERMISSIONS_READ,2,sizeof (my_periConnParameters),(u8*)(&my_periConnParamUUID), 	(u8*)(&my_periConnParameters), 0},
 
@@ -633,13 +633,13 @@ static const attribute_t my_Attributes[] = {
 		{0,ATT_PERMISSIONS_RDWR,2, sizeof(protocolMode),(u8*)(&hidProtocolModeUUID), 	(u8*)(&protocolMode), 0},	//value
 
 		// 0013 - 0015  boot keyboard input report (char-val-client)
-		{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidbootKeyInReporCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidbootKeyInReporCharVal), 0},				//prop
-		{0,ATT_PERMISSIONS_READ,2,sizeof(bootKeyInReport),(u8*)(&hidbootKeyInReportUUID), 	(u8*)(&bootKeyInReport), 0},	//value
+		{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidBootKeyInReportCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidBootKeyInReportCharVal), 0},				//prop
+		{0,ATT_PERMISSIONS_READ,2,sizeof(bootKeyInReport),(u8*)(&hidBootKeyInReportUUID), 	(u8*)(&bootKeyInReport), 0},	//value
 		{0,ATT_PERMISSIONS_RDWR,2,sizeof(bootKeyInReportCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(bootKeyInReportCCC), 0},	//value
 
 		// 0016 - 0017   boot keyboard output report (char-val)
-		{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidbootKeyOutReporCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidbootKeyOutReporCharVal), 0},				//prop
-		{0,ATT_PERMISSIONS_RDWR,2, sizeof(bootKeyOutReport), (u8*)(&hidbootKeyOutReportUUID), 	(u8*)(&bootKeyOutReport), 0},	//value
+		{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidBootKeyOutReportCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidBootKeyOutReportCharVal), 0},				//prop
+		{0,ATT_PERMISSIONS_RDWR,2, sizeof(bootKeyOutReport), (u8*)(&hidBootKeyOutReportUUID), 	(u8*)(&bootKeyOutReport), 0},	//value
 
 
 		// 0018 - 001b. consume report in: 4 (char-val-client-ref)
@@ -656,7 +656,7 @@ static const attribute_t my_Attributes[] = {
 
 		// 0020 - 0022 . keyboard report out: 3 (char-val-ref)
 		{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidReportKEYoutCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidReportKEYoutCharVal), 0},				//prop
-		{0,ATT_PERMISSIONS_RDWR,2,sizeof(reportKeyOut),(u8*)(&hidReportUUID), 	(u8*)(reportKeyOut), &server2client_auido_proc},	//value
+		{0,ATT_PERMISSIONS_RDWR,2,sizeof(reportKeyOut),(u8*)(&hidReportUUID), 	(u8*)(reportKeyOut), &server2client_audio_proc},	//value
 		{0,ATT_PERMISSIONS_RDWR,2,sizeof(reportRefKeyOut),(u8*)(&reportRefUUID), 	(u8*)(reportRefKeyOut), 0},	//value
 
 
@@ -666,8 +666,8 @@ static const attribute_t my_Attributes[] = {
 		{0,ATT_PERMISSIONS_RDWR,2,sizeof(extServiceUUID),(u8*)(&extReportRefUUID), 	(u8*)(&extServiceUUID), 0},	//value
 
 		// 0026 - 0027 . hid information: 2
-		{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidinformationCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidinformationCharVal), 0},				//prop
-		{0,ATT_PERMISSIONS_READ,2, sizeof(hidInformation),(u8*)(&hidinformationUUID), 	(u8*)(hidInformation), 0},	//value
+		{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidInformationCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidInformationCharVal), 0},				//prop
+		{0,ATT_PERMISSIONS_READ,2, sizeof(hidInformation),(u8*)(&hidInformationUUID), 	(u8*)(hidInformation), 0},	//value
 
 		// 0028 - 0029 . control point: 2
 		{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidCtrlPointCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidCtrlPointCharVal), 0},				//prop
@@ -675,7 +675,7 @@ static const attribute_t my_Attributes[] = {
 
 
 		//audio character 1     //HID_NORMAL_AUDIO_REPORT_INPUT_FIRST_CD_H
-		{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidReportAudioFristCharVal),(u8*)(&my_characterUUID),(u8*)(&my_hidReportAudioFristCharVal), 0},				        //prop
+		{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidReportAudioFirstCharVal),(u8*)(&my_characterUUID),(u8*)(&my_hidReportAudioFirstCharVal), 0},				        //prop
 		{0,ATT_PERMISSIONS_READ,2, sizeof(AudioHandleFirst),(u8*)(&hidReportUUID),(u8*)(AudioHandleFirst), 0},	//value  handle 36
 		{0,ATT_PERMISSIONS_RDWR,2,sizeof(AudioCCCFirst),(u8*)(&clientCharacterCfgUUID), (u8*)(AudioCCCFirst), 0},	//value
 		{0,ATT_PERMISSIONS_RDWR,2,sizeof(AudioReportFirst),(u8*)(&reportRefUUID), (u8*)(AudioReportFirst), 0},	    //value
@@ -717,7 +717,7 @@ static const attribute_t my_Attributes[] = {
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_devNameCharVal),(u8*)(&my_characterUUID), (u8*)(my_devNameCharVal), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_devName), (u8*)(&my_devNameUUID), (u8*)(my_devName), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_appearanceCharVal),(u8*)(&my_characterUUID), (u8*)(my_appearanceCharVal), 0},
-	{0,ATT_PERMISSIONS_READ,2,sizeof (my_appearance), (u8*)(&my_appearanceUIID), 	(u8*)(&my_appearance), 0},
+	{0,ATT_PERMISSIONS_READ,2,sizeof (my_appearance), (u8*)(&my_appearanceUUID), 	(u8*)(&my_appearance), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_periConnParamCharVal),(u8*)(&my_characterUUID), (u8*)(my_periConnParamCharVal), 0},
 	{0,ATT_PERMISSIONS_READ,2,sizeof (my_periConnParameters),(u8*)(&my_periConnParamUUID), 	(u8*)(&my_periConnParameters), 0},
 
@@ -748,13 +748,13 @@ static const attribute_t my_Attributes[] = {
 	{0,ATT_PERMISSIONS_RDWR,2, sizeof(protocolMode),(u8*)(&hidProtocolModeUUID), 	(u8*)(&protocolMode), 0},	//value
 
 	// 0013 - 0015  boot keyboard input report (char-val-client)
-	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidbootKeyInReporCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidbootKeyInReporCharVal), 0},				//prop
-	{0,ATT_PERMISSIONS_READ,2,sizeof(bootKeyInReport),(u8*)(&hidbootKeyInReportUUID), 	(u8*)(&bootKeyInReport), 0},	//value
+	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidBootKeyInReportCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidBootKeyInReportCharVal), 0},				//prop
+	{0,ATT_PERMISSIONS_READ,2,sizeof(bootKeyInReport),(u8*)(&hidBootKeyInReportUUID), 	(u8*)(&bootKeyInReport), 0},	//value
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(bootKeyInReportCCC),(u8*)(&clientCharacterCfgUUID), 	(u8*)(bootKeyInReportCCC), 0},	//value
 
 	// 0016 - 0017   boot keyboard output report (char-val)
-	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidbootKeyOutReporCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidbootKeyOutReporCharVal), 0},				//prop
-	{0,ATT_PERMISSIONS_RDWR,2, sizeof(bootKeyOutReport), (u8*)(&hidbootKeyOutReportUUID), 	(u8*)(&bootKeyOutReport), 0},	//value
+	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidBootKeyOutReportCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidBootKeyOutReportCharVal), 0},				//prop
+	{0,ATT_PERMISSIONS_RDWR,2, sizeof(bootKeyOutReport), (u8*)(&hidBootKeyOutReportUUID), 	(u8*)(&bootKeyOutReport), 0},	//value
 
 
 	// 0018 - 001b. consume report in: 4 (char-val-client-ref)
@@ -780,8 +780,8 @@ static const attribute_t my_Attributes[] = {
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(extServiceUUID),(u8*)(&extReportRefUUID), 	(u8*)(&extServiceUUID), 0},	//value
 
 	// 0026 - 0027 . hid information: 2
-	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidinformationCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidinformationCharVal), 0},				//prop
-	{0,ATT_PERMISSIONS_READ,2, sizeof(hidInformation),(u8*)(&hidinformationUUID), 	(u8*)(hidInformation), 0},	//value
+	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidInformationCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidInformationCharVal), 0},				//prop
+	{0,ATT_PERMISSIONS_READ,2, sizeof(hidInformation),(u8*)(&hidInformationUUID), 	(u8*)(hidInformation), 0},	//value
 
 	// 0028 - 0029 . control point: 2
 	{0,ATT_PERMISSIONS_READ,2,sizeof(my_hidCtrlPointCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidCtrlPointCharVal), 0},				//prop
@@ -811,7 +811,7 @@ static const attribute_t my_Attributes[] = {
 	{9,ATT_PERMISSIONS_READ,2,16, (u8*)(&my_primaryServiceUUID), (u8*)(&sAudioGoogleServiceUUID), 0},
 	//TX 0034-0035
 	{0,ATT_PERMISSIONS_RDWR,2,sizeof(sAudioGoogleTXChar),(u8*)(&my_characterUUID),(u8*)(sAudioGoogleTXChar), 0},
-	{0,ATT_PERMISSIONS_RDWR,16,sizeof(sAudioGoogleTXData),(u8*)(&sAudioGoogleTXUUID),(u8*)(&sAudioGoogleTXData), &app_auido_google_callback},	//value
+	{0,ATT_PERMISSIONS_RDWR,16,sizeof(sAudioGoogleTXData),(u8*)(&sAudioGoogleTXUUID),(u8*)(&sAudioGoogleTXData), &app_audio_google_callback},	//value
 	//RX 0036 - 0038
 	{0,ATT_PERMISSIONS_READ,2,sizeof(sAudioGoogleRXChar),(u8*)(&my_characterUUID),(u8*)(sAudioGoogleRXChar), 0},
 	{0,ATT_PERMISSIONS_READ,16,sizeof(sAudioGoogleRXData),(u8*)(&sAudioGoogleRXUUID),(u8*)(&sAudioGoogleRXData), 0},

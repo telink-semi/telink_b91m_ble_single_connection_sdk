@@ -28,8 +28,6 @@
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "../default_att.h"
 
 #if (FEATURE_TEST_MODE == TEST_GATT_SECURITY)
@@ -84,7 +82,7 @@ void	task_connect (u8 e, u8 *p, int n)
 	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+	gpio_write(GPIO_LED_RED, LED_ON_LEVEL);  //red light on
 #endif
 }
 
@@ -115,7 +113,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+	gpio_write(GPIO_LED_RED, !LED_ON_LEVEL);  //red light off
 #endif
 
 }
@@ -198,7 +196,7 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		}
 		break;
 
-		case GAP_EVT_SMP_TK_DISPALY:
+		case GAP_EVT_SMP_TK_DISPLAY:
 		{
 			char pc[7];
 			u32 pinCode = *(u32*)para;
@@ -268,7 +266,7 @@ void blt_pm_proc(void)
  */
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
@@ -397,7 +395,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_gap_setEventMask( GAP_EVT_MASK_SMP_PAIRING_BEGIN 			|  \
 						  GAP_EVT_MASK_SMP_PAIRING_SUCCESS   		|  \
 						  GAP_EVT_MASK_SMP_PAIRING_FAIL				|  \
-						  GAP_EVT_MASK_SMP_TK_DISPALY				|  \
+						  GAP_EVT_MASK_SMP_TK_DISPLAY				|  \
 						  GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE );
 
 #elif (SMP_TEST_MODE == LE_SECURITY_MODE_1_LEVEL_4)
@@ -426,7 +424,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_gap_setEventMask( GAP_EVT_MASK_SMP_PAIRING_BEGIN 			|  \
 						  GAP_EVT_MASK_SMP_PAIRING_SUCCESS   		|  \
 						  GAP_EVT_MASK_SMP_PAIRING_FAIL				|  \
-						  GAP_EVT_MASK_SMP_TK_DISPALY				|  \
+						  GAP_EVT_MASK_SMP_TK_DISPLAY				|  \
 						  GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE );
 
 #endif

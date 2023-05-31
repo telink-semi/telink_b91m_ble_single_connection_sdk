@@ -24,8 +24,6 @@
 #include "tl_common.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
@@ -84,7 +82,7 @@ void	task_connect (u8 e, u8 *p, int n)
 	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+	gpio_write(GPIO_LED_RED, LED_ON_LEVEL);  //red light on
 #endif
 }
 
@@ -113,7 +111,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+	gpio_write(GPIO_LED_RED, !LED_ON_LEVEL);  //red light off
 #endif
 
 }
@@ -190,7 +188,7 @@ typedef enum{
 typedef enum{
 	led_off = 0,
 	led_on = 1,
-	led_turkle = 2
+	led_turtle = 2
 }led_state_e;
 
 typedef struct{
@@ -206,7 +204,7 @@ typedef struct{
 led_typedef_t  led_st;
 led_typedef_t  *g_led_st;
 
-void led_turkle_ctrl(led_typedef_t *led_st)
+void led_turtle_ctrl(led_typedef_t *led_st)
 {
    if(led_st->num >= 2 * (led_st->times))
    {
@@ -243,8 +241,8 @@ void led_ctrl(led_typedef_t *led_st)
 			 gpio_write(led_st->pin,1);
 		 break;
 
-		 case led_turkle:
-			 led_turkle_ctrl(led_st);
+		 case led_turtle:
+			 led_turtle_ctrl(led_st);
 		 break;
 
 		 default:
@@ -274,7 +272,7 @@ void key_change_proc(void)
 
 				if(switch_key == IR_mode)
 				{
-					g_led_st->stat = led_turkle;
+					g_led_st->stat = led_turtle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
 					g_led_st->tick_time = 0;
@@ -302,7 +300,7 @@ void key_change_proc(void)
 					}
 					else
 					{
-						g_led_st->stat = led_turkle;
+						g_led_st->stat = led_turtle;
 						g_led_st->num = 0;
 						g_led_st->tick_en = 0;
 						g_led_st->tick_time = 0;
@@ -313,7 +311,7 @@ void key_change_proc(void)
 				}
 				else
 				{
-					g_led_st->stat = led_turkle;
+					g_led_st->stat = led_turtle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
 					g_led_st->tick_time = 0;
@@ -330,7 +328,7 @@ void key_change_proc(void)
 
 				if(switch_key == IR_mode)
 				{
-					g_led_st->stat = led_turkle;
+					g_led_st->stat = led_turtle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
 					g_led_st->tick_time = 0;
@@ -358,7 +356,7 @@ void key_change_proc(void)
 				}
 				else
 				{
-					g_led_st->stat = led_turkle;
+					g_led_st->stat = led_turtle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
 					g_led_st->tick_time = 0;
@@ -374,7 +372,7 @@ void key_change_proc(void)
 			case VK_1:
 				if(switch_key == IR_mode)
 				{
-					g_led_st->stat = led_turkle;
+					g_led_st->stat = led_turtle;
 					g_led_st->num = 0;
 					g_led_st->tick_en = 0;
 					g_led_st->tick_time = 0;
@@ -418,7 +416,7 @@ void key_change_proc(void)
 				switch(switch_key)
 				{
 					case Ble_mode:
-						g_led_st->stat = led_turkle;
+						g_led_st->stat = led_turtle;
 						g_led_st->num = 0;
 						g_led_st->tick_en = 0;
 						g_led_st->tick_time = 0;
@@ -431,7 +429,7 @@ void key_change_proc(void)
 					break;
 
 					case IR_mode:
-						g_led_st->stat = led_turkle;
+						g_led_st->stat = led_turtle;
 						g_led_st->num = 0;
 						g_led_st->tick_en = 0;
 						g_led_st->tick_time = 0;
@@ -441,7 +439,7 @@ void key_change_proc(void)
 					break;
 
 					case IR_Learn_mode:
-						g_led_st->stat = led_turkle;
+						g_led_st->stat = led_turtle;
 						g_led_st->num = 0;
 						g_led_st->tick_en = 0;
 						g_led_st->tick_time = 0;
@@ -463,7 +461,7 @@ void key_change_proc(void)
 				break;
 
 			default:
-				g_led_st->stat = led_turkle;
+				g_led_st->stat = led_turtle;
 				g_led_st->num = 0;
 				g_led_st->tick_en = 0;
 				g_led_st->tick_time = 0;
@@ -531,7 +529,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
 
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 

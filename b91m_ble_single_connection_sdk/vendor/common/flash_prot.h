@@ -40,13 +40,15 @@
  *   Different flash, especially form different vendor(such as PUYA and GD), do not use all same lock block size.
  *   If use want protect certain range of flash, they must consider different kind of flash supported lock block size.
  *   Here, we just put a few of block size to show how to use flash protection, for typically multiple boot device with firmware size smaller
- *   than 448K(for 1M flash, leave 64K for system data or user data. if user need more data area, should change flash lock size)
+ *   than 448K(for 1M capacity flash, leave 64K for system data or user data. if user need more data area, should change flash lock size)
  *   If you want use more specific flash protection area, please add by yourself.
  */
 typedef enum{
 	FLASH_LOCK_LOW_256K			=	2,		//000000h-03FFFFh
 	FLASH_LOCK_LOW_512K			=	3,		//000000h-07FFFFh
-	FLASH_LOCK_LOW_1M			=   4,      //attention: for 1M flash, can not lock all, we choose most part
+
+	/* attention: for 1M capacity flash, can not lock all, should leave some upper sector for system data and user data */
+	FLASH_LOCK_LOW_1M			=   4,
 }flash_app_lock_e;
 
 
@@ -65,14 +67,9 @@ extern flash_prot_t	blc_flashProt;
 
 
 typedef void  (*flash_lock_t)(unsigned int);
-//extern	flash_lock_t 	flash_lock_mid;
-
 typedef void  (*flash_unlock_t)(void);
-//extern	flash_unlock_t 	flash_unlock_mid;
 
 typedef unsigned short  (*flash_read_status_t)(void);
-//extern	flash_read_status_t 	flash_read_status_mid;
-
 typedef unsigned short  (*flash_get_lock_status_t)(unsigned short);
 
 

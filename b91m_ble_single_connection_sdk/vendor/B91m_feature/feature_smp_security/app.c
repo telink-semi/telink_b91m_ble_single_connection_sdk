@@ -28,8 +28,6 @@
 #include "app_config.h"
 #include "app.h"
 #include "app_buffer.h"
-#include "application/keyboard/keyboard.h"
-#include "application/usbstd/usbkeycode.h"
 #include "../default_att.h"
 
 #if (FEATURE_TEST_MODE == TEST_SMP_SECURITY)
@@ -44,7 +42,7 @@ const u8	tbl_advData[] = {
 	 0x08, DT_COMPLETE_LOCAL_NAME, 't', 'e', 's', 't', 'S', 'M', 'P',
 	 0x02, DT_FLAGS, 0x05, 							// BLE limited discoverable mode and BR/EDR not supported
 	 0x03, DT_APPEARANCE, 0x80, 0x01, 					// 384, Generic Remote Control, Generic category
-	 0x05, DT_INCOMPLT_LIST_16BIT_SERVICE_UUID, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
+	 0x05, DT_INCOMPLETE_LIST_16BIT_SERVICE_UUID, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
 };
 
 /**
@@ -97,7 +95,7 @@ void	task_connect (u8 e, u8 *p, int n)
 	bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);  // 1 S
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, LED_ON_LEVAL);  //red light on
+	gpio_write(GPIO_LED_RED, LED_ON_LEVEL);  //red light on
 #endif
 }
 
@@ -128,7 +126,7 @@ void 	task_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
 
 #if (UI_LED_ENABLE)
-	gpio_write(GPIO_LED_RED, !LED_ON_LEVAL);  //red light off
+	gpio_write(GPIO_LED_RED, !LED_ON_LEVEL);  //red light off
 #endif
 
 }
@@ -214,7 +212,7 @@ static u16 vk_consumer_map[16] = {
 #if (SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MDSI || SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MISI || \
 	 SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MISI || SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI)
 
-#define LED_ON_LEVAL 			1 			//gpio output high voltage to turn on led
+#define LED_ON_LEVEL 			1 			//gpio output high voltage to turn on led
 #define	GPIO_LED				GPIO_PB6
 #define PB6_FUNC				AS_GPIO
 /**
@@ -313,11 +311,11 @@ void key_change_proc(void)
 							}
 						}
 
-						led_onoff(LED_ON_LEVAL);
+						led_onoff(LED_ON_LEVEL);
 					}
 					else if( key_value == VK_ENTER){// key: Enter/OK
 
-						led_onoff(LED_ON_LEVAL);
+						led_onoff(LED_ON_LEVEL);
 
 						if(digital_key_cnt >= 6){
 							digital_key_cnt = 0;
@@ -457,7 +455,7 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 		}
 		break;
 
-		case GAP_EVT_SMP_TK_DISPALY:
+		case GAP_EVT_SMP_TK_DISPLAY:
 		{
 			char pc[7];
 			u32 pinCode = *(u32*)para;
@@ -502,7 +500,7 @@ int app_host_event_callback (u32 h, u8 *para, int n)
  */
 _attribute_no_inline_ void user_init_normal(void)
 {
-	/* random number generator must be initiated here( in the beginning of user_init_nromal).
+	/* random number generator must be initiated here( in the beginning of user_init_normal).
 	 * When deepSleep retention wakeUp, no need initialize again */
 	random_generator_init();  //this is must
 
@@ -644,7 +642,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_gap_setEventMask( GAP_EVT_MASK_SMP_PAIRING_BEGIN 			|  \
 						  GAP_EVT_MASK_SMP_PAIRING_SUCCESS   		|  \
 						  GAP_EVT_MASK_SMP_PAIRING_FAIL				|  \
-						  GAP_EVT_MASK_SMP_TK_DISPALY				|  \
+						  GAP_EVT_MASK_SMP_TK_DISPLAY				|  \
 						  GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE );
 
 #elif ( SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI )
@@ -673,7 +671,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_gap_setEventMask( GAP_EVT_MASK_SMP_PAIRING_BEGIN 			|  \
 						  GAP_EVT_MASK_SMP_PAIRING_SUCCESS   		|  \
 						  GAP_EVT_MASK_SMP_PAIRING_FAIL				|  \
-						  GAP_EVT_MASK_SMP_TK_DISPALY				|  \
+						  GAP_EVT_MASK_SMP_TK_DISPLAY				|  \
 						  GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE     |  \
 						  GAP_EVT_MASK_SMP_SECURITY_PROCESS_DONE);
 
@@ -734,7 +732,7 @@ _attribute_no_inline_ void user_init_normal(void)
 	blc_gap_setEventMask( GAP_EVT_MASK_SMP_PAIRING_BEGIN 			|  \
 						  GAP_EVT_MASK_SMP_PAIRING_SUCCESS   		|  \
 						  GAP_EVT_MASK_SMP_PAIRING_FAIL				|  \
-						  GAP_EVT_MASK_SMP_TK_DISPALY				|  \
+						  GAP_EVT_MASK_SMP_TK_DISPLAY				|  \
 						  GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE );
 
 #elif ( SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MDSI  )
@@ -872,7 +870,7 @@ _attribute_no_inline_ void main_loop (void)
 
 #if (SMP_TEST_MODE == SMP_TEST_LEGACY_PASSKEY_ENTRY_MDSI || SMP_TEST_MODE == SMP_TEST_SC_PASSKEY_ENTRY_MDSI)
 
-	//user use bdttool write slave_pk_entry (16 hexadecimal) then write slave_pk_entry_flag = 1
+	//user use BDT write slave_pk_entry (16 hexadecimal) then write slave_pk_entry_flag = 1
 	if(slave_pk_entry && slave_pk_entry_flag)
 	{
 		blc_smp_setTK_by_PasskeyEntry(slave_pk_entry);

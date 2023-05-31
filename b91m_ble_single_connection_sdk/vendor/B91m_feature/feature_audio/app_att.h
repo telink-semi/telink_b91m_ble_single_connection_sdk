@@ -164,7 +164,7 @@ typedef enum
 	AUDIO_GOOGLE_CTL_DP_H,
 	AUDIO_GOOGLE_CTL_CCC_H,
 
-#elif (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)
+#elif (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TELINK)
 //// Audio ////
 /**********************************************************************************************/
 	AUDIO_PS_H, 							//UUID: 2800, 	VALUE: telink audio service uuid
@@ -178,7 +178,7 @@ typedef enum
 	//speaker
 	AUDIO_SPEAKER_OUT_CD_H,					//UUID: 2803, 	VALUE:  			Prop: write_without_rsp
 	AUDIO_SPEAKER_OUT_DP_H,					//UUID: telink speaker uuid,  VALUE: speakerData
-	AUDIO_SPEAKEROUT_DESC_H,				//UUID: 2901, 	VALUE: speakerName
+	AUDIO_SPEAKER_OUT_DESC_H,				//UUID: 2901, 	VALUE: speakerName
 #endif
 
 

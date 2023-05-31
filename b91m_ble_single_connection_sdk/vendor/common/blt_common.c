@@ -232,10 +232,6 @@ void blc_initMacAddress(int flash_addr, u8 *mac_public, u8 *mac_random_static)
 
 void blc_app_loadCustomizedParameters_normal(void)
 {
-	/* Attention:
-	 * for 1M  Flash, flash_sector_calibration equals to 0xFE000
-	 * for 2M  Flash, flash_sector_calibration equals to 0x1FE000
-	 * Other Size, SDK do not support now, user should contact Telink to process this special situation */
 	if(flash_sector_calibration)
 	{
 		if(!blt_miscParam.ext_cap_en){

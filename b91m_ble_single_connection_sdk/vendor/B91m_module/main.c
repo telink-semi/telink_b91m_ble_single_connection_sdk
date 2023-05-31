@@ -63,8 +63,8 @@ void stimer_irq_handler(void)
  */
 void uart0_irq_handler(void)
 {
-	extern void uart0_recieve_irq(void);
-	uart0_recieve_irq();
+	extern void uart0_receive_irq(void);
+	uart0_receive_irq();
 }
 
 /**
@@ -98,7 +98,7 @@ _attribute_ram_code_ int main (void)   //must on ramcode
 			blt_firmware_completeness_check();
 		#endif
 
-		#if FIRMWARES_SIGNATURE_ENABLE
+		#if FIRMWARE_SIGNATURE_ENABLE
 			blt_firmware_signature_check();
 		#endif
 	}
