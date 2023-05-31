@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>b91m_ble_single_conn_sdk</name>
+	<name>b91_ble_single_conn_src</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -23,4 +23,66 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>3rd-party</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/3rd-party</locationURI>
+		</link>
+		<link>
+			<name>algorithm</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/algorithm</locationURI>
+		</link>
+		<link>
+			<name>application</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/application</locationURI>
+		</link>
+		<link>
+			<name>boot</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/boot</locationURI>
+		</link>
+		<link>
+			<name>common</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/common</locationURI>
+		</link>
+		<link>
+			<name>config.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/config.h</locationURI>
+		</link>
+		<link>
+			<name>drivers</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/drivers</locationURI>
+		</link>
+		<link>
+			<name>drivers.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/drivers.h</locationURI>
+		</link>
+		<link>
+			<name>proj_lib</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/proj_lib</locationURI>
+		</link>
+		<link>
+			<name>stack</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/stack</locationURI>
+		</link>
+		<link>
+			<name>tl_common.h</name>
+			<type>1</type>
+			<locationURI>PARENT-2-PROJECT_LOC/tl_common.h</locationURI>
+		</link>
+		<link>
+			<name>vendor</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/vendor</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
