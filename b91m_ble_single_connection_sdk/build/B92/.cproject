@@ -150,7 +150,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="vendor/b92_internal_test|vendor/B92_hci|vendor/B92_ble_remote|src/boot.c|vendor/PKE_Demo|vendor/SPI_Demo|vendor/TRNG_Demo|div_mod.S|vendor/B92_ble_sample|9528_Flash_Demo|vendor/Flash_Demo|vendor/9528_USB_Speaker_Demo|vendor/9528_HSPI_Demo|vendor/ALG_REG_Demo|vendor/HSPI_Demo|vendor/B92_module|vendor/B91_internal_test|vendor/s7816_Demo|vendor/9528_USB_Mouse_Demo|vendor/B91m_hci|vendor/IIC_DEMO|vendor/I2C_Demo|vendor/B91m_module|vendor/Debug_Demo|vendor/USB_MIC_Demo|vendor/B91m_ble_sample|boot/B91|vendor/src|application/audio/opus|vendor/9528_ble_remote|vendor/GPIO_DEMO|vendor/9528_module|vendor/9528_ble_sample|vendor/B91_feature|vendor/GPIO_Demo|vendor/USB_Speaker_Demo|vendor/Timer_Demo|vendor/RF_DEMO|vendor/B92_internal_test|vendor/Base_Test_Demo|vendor/9528_PSPI_Demo|vendor/8258_USB_Speaker_Demo|vendor/9528_Debug_Demo|vendor/UART1_DEMO|drivers/B91|vendor/8258_USB_MIC_Demo|vendor/UART_DEMO/9528_Debug_Demo|vendor/B91_module|vendor/USB_Demo|vendor/9528_USB_MIC_Demo|vendor/9528_hci|vendor/B91_debug_demo|vendor/9528_feature_test|usbstd|vendor/9528_master_kma_dongle|vendor/B91_ble_sample|vendor/NPE_Demo|vendor/B92_debug_demo|vendor/PSPI_Demo|vendor/STimer_Demo|vendor/USB_Mouse_Demo|vendor/PWM_DEMO|vendor/PSRAM_Demo|vendor/B92_master_kma_dongle|alg_test_demo|vendor/9528_SPI_Demo|vendor/9528_internal_test" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="vendor/B91m_module|vendor/B91m_ble_sample|boot/B91|drivers/B91" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -308,7 +308,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="vendor/b92_internal_test|vendor/B92_hci|vendor/B92_ble_remote|src/boot.c|vendor/PKE_Demo|vendor/SPI_Demo|vendor/TRNG_Demo|div_mod.S|9528_Flash_Demo|vendor/Flash_Demo|vendor/9528_USB_Speaker_Demo|vendor/UART0_DEMO|vendor/9528_HSPI_Demo|vendor/UART_DEMO|vendor/ALG_REG_Demo|vendor/HSPI_Demo|vendor/B92_module|vendor/B91m_feature|vendor/B91_internal_test|vendor/s7816_Demo|vendor/9528_USB_Mouse_Demo|vendor/B91m_hci|vendor/IIC_DEMO|vendor/I2C_Demo|vendor/B91m_module|vendor/Debug_Demo|vendor/USB_MIC_Demo|boot/B91|vendor/src|application/audio/opus|vendor/9528_ble_remote|vendor/9528_module|vendor/9528_ble_sample|vendor/B91_feature|vendor/GPIO_Demo|vendor/USB_Speaker_Demo|vendor/Timer_Demo|vendor/RF_DEMO|vendor/B92_internal_test|vendor/Base_Test_Demo|vendor/9528_PSPI_Demo|vendor/8258_USB_Speaker_Demo|vendor/9528_Debug_Demo|vendor/UART1_DEMO|drivers/B91|vendor/8258_USB_MIC_Demo|vendor/B91_module|vendor/B92_feature|vendor/9528_USB_MIC_Demo|vendor/9528_hci|vendor/B91_debug_demo|vendor/9528_feature_test|usbstd|vendor/9528_master_kma_dongle|vendor/B91_ble_sample|vendor/NPE_Demo|vendor/B92_debug_demo|vendor/PSPI_Demo|vendor/STimer_Demo|vendor/USB_Mouse_Demo|vendor/PWM_DEMO|vendor/PSRAM_Demo|vendor/B92_master_kma_dongle|alg_test_demo|vendor/9528_SPI_Demo|vendor/9528_internal_test|vendor/B92_feature_test" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="vendor/B91m_feature|vendor/B91m_module|boot/B91|drivers/B91" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -467,7 +467,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="vendor/b92_internal_test|vendor/B92_hci|vendor/B92_ble_remote|src/boot.c|vendor/PKE_Demo|vendor/SPI_Demo|vendor/TRNG_Demo|div_mod.S|vendor/B92_ble_sample|9528_Flash_Demo|vendor/Flash_Demo|vendor/9528_USB_Speaker_Demo|vendor/UART0_DEMO|vendor/9528_HSPI_Demo|vendor/UART_DEMO|vendor/ALG_REG_Demo|vendor/HSPI_Demo|vendor/B91m_feature|vendor/B91_internal_test|vendor/s7816_Demo|vendor/9528_USB_Mouse_Demo|vendor/B91m_hci|vendor/IIC_DEMO|vendor/I2C_Demo|vendor/Debug_Demo|vendor/USB_MIC_Demo|vendor/B91m_ble_sample|boot/B91|vendor/src|application/audio/opus|vendor/9528_ble_remote|vendor/GPIO_DEMO|vendor/9528_module|vendor/9528_ble_sample|vendor/B91_feature|vendor/GPIO_Demo|vendor/Timer_Demo|vendor/USB_Speaker_Demo|vendor/RF_DEMO|vendor/B92_internal_test|vendor/Base_Test_Demo|vendor/9528_PSPI_Demo|vendor/8258_USB_Speaker_Demo|vendor/9528_Debug_Demo|vendor/UART1_DEMO|drivers/B91|vendor/8258_USB_MIC_Demo|vendor/B91_module|vendor/B92_feature|vendor/USB_Demo|vendor/9528_USB_MIC_Demo|vendor/9528_hci|vendor/B91_debug_demo|vendor/9528_feature_test|usbstd|vendor/9528_master_kma_dongle|vendor/B91_ble_sample|vendor/NPE_Demo|vendor/B92_debug_demo|vendor/PSPI_Demo|vendor/USB_Mouse_Demo|vendor/PWM_DEMO|vendor/PSRAM_Demo|vendor/B92_master_kma_dongle|alg_test_demo|vendor/9528_SPI_Demo|vendor/9528_internal_test|vendor/B92_feature_test" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="vendor/B91m_feature|vendor/B91m_ble_sample|boot/B91|drivers/B91" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -625,7 +625,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="vendor/b92_internal_test|vendor/B92_hci|vendor/B92_ble_remote|src/boot.c|vendor/PKE_Demo|vendor/SPI_Demo|vendor/TRNG_Demo|div_mod.S|9528_Flash_Demo|vendor/Flash_Demo|vendor/9528_USB_Speaker_Demo|vendor/UART0_DEMO|vendor/9528_HSPI_Demo|vendor/UART_DEMO|vendor/ALG_REG_Demo|vendor/HSPI_Demo|vendor/B92_module|vendor/B91m_feature|vendor/B91_internal_test|vendor/s7816_Demo|vendor/9528_USB_Mouse_Demo|vendor/B91m_hci|vendor/IIC_DEMO|vendor/I2C_Demo|vendor/B91m_module|vendor/Debug_Demo|vendor/USB_MIC_Demo|boot/B91|vendor/src|application/audio/opus|vendor/9528_ble_remote|vendor/9528_module|vendor/9528_ble_sample|vendor/B91_feature|vendor/GPIO_Demo|vendor/USB_Speaker_Demo|vendor/Timer_Demo|vendor/RF_DEMO|vendor/B92_internal_test|vendor/Base_Test_Demo|vendor/9528_PSPI_Demo|vendor/8258_USB_Speaker_Demo|vendor/9528_Debug_Demo|vendor/UART1_DEMO|drivers/B91|vendor/8258_USB_MIC_Demo|vendor/B91_module|vendor/B92_feature|vendor/9528_USB_MIC_Demo|vendor/9528_hci|vendor/B91_debug_demo|vendor/9528_feature_test|usbstd|vendor/9528_master_kma_dongle|vendor/B91_ble_sample|vendor/NPE_Demo|vendor/B92_debug_demo|vendor/PSPI_Demo|vendor/STimer_Demo|vendor/USB_Mouse_Demo|vendor/PWM_DEMO|vendor/PSRAM_Demo|vendor/B92_master_kma_dongle|alg_test_demo|vendor/9528_SPI_Demo|vendor/9528_internal_test|vendor/B92_feature_test" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="vendor/B91m_feature|vendor/B91m_module|boot/B91|drivers/B91" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -650,21 +650,8 @@
 	<storageModule moduleId="refreshScope" versionNumber="2">
 		<configuration configurationName="B92_module"/>
 		<configuration configurationName="B92_ble_sample_SecureBoot"/>
-		<configuration configurationName="B92_master_kma_dongle"/>
 		<configuration configurationName="B92_feature_test"/>
-		<configuration configurationName="B92_hci"/>
-		<configuration configurationName="B92_debug_demo"/>
 		<configuration configurationName="B92_ble_sample"/>
-		<configuration configurationName="GPIO_Demo">
-			<resource resourceType="PROJECT" workspacePath="/driver_sdk_demo"/>
-		</configuration>
-		<configuration configurationName="Debug">
-			<resource resourceType="PROJECT" workspacePath="/driver_sdk_demo"/>
-		</configuration>
-		<configuration configurationName="Release">
-			<resource resourceType="PROJECT" workspacePath="/driver_sdk_demo"/>
-		</configuration>
-		<configuration configurationName="B92_internal_test"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
