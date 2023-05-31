@@ -28,7 +28,7 @@
 //#define FLOW_NO_OS         0
 //#define USB_MOUSE_ENABLE   1
 
-#if(USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE || USB_ID_AND_STRING_CUSTOM)
+#if(USB_DESCRIPTOR_CONFIGURATION_FOR_KM_DONGLE || USB_ID_AND_STRING_CUSTOM)
 	#include "../../vendor/8267_multi_mode/dongle_usb.h"
 #endif
 
@@ -121,7 +121,7 @@ void usb_prepare_desc_data(void) {
 		break;
 
 	case DTYPE_Configuration:
-#if(USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE)
+#if(USB_DESCRIPTOR_CONFIGURATION_FOR_KM_DONGLE)
 		g_response = (u8*) (&configuration_km_desc);
 		g_response_len = configuration_km_desc[2];  //the third element is the len
 #else
@@ -202,7 +202,7 @@ void usb_handle_std_intf_req() {
 		}
 #endif
 #if(USB_MOUSE_ENABLE)
-#if(USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE)
+#if(USB_DESCRIPTOR_CONFIGURATION_FOR_KM_DONGLE)
 		if (index_l == mouse_interface_number)
 		{
 			g_response = (u8*) (&configuration_desc_mouse[9]);
@@ -218,7 +218,7 @@ void usb_handle_std_intf_req() {
 #endif
 #endif
 #if(USB_KEYBOARD_ENABLE)
-#if(USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE)
+#if(USB_DESCRIPTOR_CONFIGURATION_FOR_KM_DONGLE)
 		if (index_l == keyboard_interface_number)
 		{
 			g_response = (u8*) (&configuration_desc_keyboard[9]);
@@ -262,14 +262,14 @@ void usb_handle_std_intf_req() {
 		}
 #endif
 #if(USB_KEYBOARD_ENABLE)
-		 if (index_l == (USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE ? keyboard_interface_number : USB_INTF_KEYBOARD)) {
+		 if (index_l == (USB_DESCRIPTOR_CONFIGURATION_FOR_KM_DONGLE ? keyboard_interface_number : USB_INTF_KEYBOARD)) {
 			//keyboard
 			g_response = (u8*) usbkb_get_report_desc();
 			g_response_len = usbkb_get_report_desc_size();
 		}
 #endif
 #if(USB_MOUSE_ENABLE)
-		else if (index_l == (USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE ? mouse_interface_number : USB_INTF_MOUSE)) {
+		else if (index_l == (USB_DESCRIPTOR_CONFIGURATION_FOR_KM_DONGLE ? mouse_interface_number : USB_INTF_MOUSE)) {
 			//mouse
 			g_response = (u8*) usbmouse_get_report_desc();
 			g_response_len = usbmouse_get_report_desc_size();
@@ -832,7 +832,7 @@ void usb_handle_irq(void) {
 	}
 #endif
 
-#if (!USB_DESCRIPTER_CONFIGURATION_FOR_KM_DONGLE)
+#if (!USB_DESCRIPTOR_CONFIGURATION_FOR_KM_DONGLE)
 	if ((reg_irq_src(FLD_IRQ_USB_PWDN_EN) & FLD_IRQ_USB_PWDN_EN))
 	{
 		return;

@@ -65,7 +65,7 @@ enum CDC_Descriptor_ClassSubclass_Protocol_t
 	CDC_CSCP_VendorSpecific_Protocol = 0xFF,
 };
 
-enum CDC_Class_Requestions_t
+enum CDC_Class_Requests_t
 {
 	CDC_REQ_SendEncapsulated_Cmd,
 	CDC_REQ_GetEncapsulated_Rsp,

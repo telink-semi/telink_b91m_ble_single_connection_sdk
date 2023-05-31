@@ -52,7 +52,7 @@ u8		buffer_mic_pkt_wptr;
 u8		buffer_mic_pkt_rptr;
 
 
-#if  TL_NOISE_SUPRESSION_ENABLE
+#if  TL_NOISE_SUPPRESSION_ENABLE
 
 	int md_long =0;
 	int md_short =0;
@@ -328,7 +328,7 @@ _attribute_ram_code_ void	proc_mic_encoder (void)
 	if ((l >=(TL_MIC_BUFFER_SIZE>>2)) && (((u8)(buffer_mic_pkt_wptr - buffer_mic_pkt_rptr) & (TL_MIC_PACKET_BUFFER_NUM * 2 - 1)) < TL_MIC_PACKET_BUFFER_NUM)) {
 
 		s16 *ps = buffer_mic + buffer_mic_rptr;
-#if 	TL_NOISE_SUPRESSION_ENABLE
+#if 	TL_NOISE_SUPPRESSION_ENABLE
         // for FIR adc sample data, only half part data are effective
 		for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
 			ps[i] = noise_supression (ps[i]);
@@ -430,7 +430,7 @@ _attribute_ram_code_ void	proc_mic_encoder (void)
 		s16 *ps = buffer_mic + buffer_mic_rptr;
 		u8 *out = (u8 *)(buffer_mic_enc + (ADPCM_PACKET_LEN+3) * (buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1)));
 
-#if 	TL_NOISE_SUPRESSION_ENABLE
+#if 	TL_NOISE_SUPPRESSION_ENABLE
         // for FIR adc sample data, only half part data are effective
 		for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
 			ps[i] = noise_supression (ps[i]);
@@ -536,7 +536,7 @@ void	proc_mic_encoder (void)
 		s16 *ps = buffer_mic + buffer_mic_rptr;
 		u8 *out = (u8 *)(buffer_mic_enc + (ADPCM_PACKET_LEN+3) * (buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1)));
 
-#if 	TL_NOISE_SUPRESSION_ENABLE
+#if 	TL_NOISE_SUPPRESSION_ENABLE
         // for FIR adc sample data, only half part data are effective
 		for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
 			ps[i] = noise_supression (ps[i]);
@@ -622,7 +622,7 @@ void mic_encoder_data_read_ok (void)
 	buffer_mic_pkt_rptr++;
 }
 
-#elif (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)						//RCU,GATT Telink
+#elif (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TELINK)						//RCU,GATT Telink
 void	proc_mic_encoder (void)
 {
 	static u16	buffer_mic_rptr;
@@ -632,7 +632,7 @@ void	proc_mic_encoder (void)
 	if (l >=(TL_MIC_BUFFER_SIZE>>2)) {
 
 		s16 *ps = buffer_mic + buffer_mic_rptr;
-#if 	TL_NOISE_SUPRESSION_ENABLE
+#if 	TL_NOISE_SUPPRESSION_ENABLE
         // for FIR adc sample data, only half part data are effective
 		for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
 			ps[i] = noise_supression (ps[i]);
@@ -732,7 +732,7 @@ void	proc_mic_encoder (void)
 	if (l >=(TL_MIC_BUFFER_SIZE>>2)) {
 
 		s16 *ps = buffer_mic + buffer_mic_rptr;
-#if 	TL_NOISE_SUPRESSION_ENABLE
+#if 	TL_NOISE_SUPPRESSION_ENABLE
         // for FIR adc sample data, only half part data are effective
 		for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
 			ps[i] = noise_supression (ps[i]);

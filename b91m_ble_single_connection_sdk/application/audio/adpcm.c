@@ -46,7 +46,7 @@ static const unsigned short steptbl[] = {
 
 #if  (TL_AUDIO_MODE & RCU_PROJECT)							//RCU
 
-#if  (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)		//RCU,GATT TELINK
+#if  (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TELINK)		//RCU,GATT TELINK
 /////////////////////////////////////////////////////////////////////////////////
 //	256-samples split into 2
 /////////////////////////////////////////////////////////////////////////////////
@@ -410,7 +410,7 @@ _attribute_ram_code_ void adpcm_to_pcm (signed short *ps, signed short *pd, int 
 
 		if(i&1){
 			code = *pcode ++;
-			code = ((code>>4)&0x0f)|((code<<4)&0xf0);  //add by qiuwei for android 8
+			code = ((code>>4)&0x0f)|((code<<4)&0xf0);  //add by QiuWei for android 8
 		}else{
 			code = code >> 4;
 		}
