@@ -31,7 +31,6 @@
 #include "common/static_assert.h"
 #include "common/assert.h"
 
-#include "application/print/printf.h"
 #include "vendor/common/user_config.h"
 #include "config.h"
 
@@ -50,6 +49,10 @@
 #include "vendor/common/common_dbg.h"
 #include "vendor/common/tlkapi_debug.h"
 #include "vendor/common/flash_prot.h"
+#include "vendor/common/battery_check.h"
+
+#include "application/keyboard/keyboard.h"
+#include "application/usbstd/usbkeycode.h"
 
 #include "gpio_default.h"
 
