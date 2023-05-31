@@ -305,7 +305,7 @@ void vPortSuppressTicksAndSleep_i(uint32_t xExpectedIdleTime)
 			xExpectedIdleTime = SYSTIMER_TICK_TO_OS_TICK(0xFFFFFFFF>>1);
 		}
 
-		if(blc_pm_Oshandler(OS_TICK_TO_SYSTIMER_TICK(xExpectedIdleTime)))
+		if(blc_pm_OShandler(OS_TICK_TO_SYSTIMER_TICK(xExpectedIdleTime)))
 		{
 			res= 0;
 			wakeup_stimer_tick = stimer_get_tick();
