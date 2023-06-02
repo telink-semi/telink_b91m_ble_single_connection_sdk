@@ -25,7 +25,6 @@
 #define LL_ADV_H_
 
 #include "stack/ble/ble_format.h"
-#include "stack/ble/ble_config.h"
 
 
 

@@ -26,7 +26,6 @@
 #include "drivers.h"
 #include "blt_common.h"
 #include "stack/ble/ble.h"
-#include "stack/ble/ble_config.h"
 
 
 
